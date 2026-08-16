@@ -96,8 +96,8 @@ export default function Home() {
       <section className="workspace data-main" id="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">WORKSPACE / DATASET 01</p>
-            <h1>把数据，变成清晰的结论。</h1>
+            <p className="eyebrow">当前数据集</p>
+            <h1>数据分析工作台</h1>
           </div>
           <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
         </header>

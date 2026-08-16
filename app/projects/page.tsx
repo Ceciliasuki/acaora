@@ -173,7 +173,7 @@ export default function ProjectsPage() {
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className="student-main project-main">
-        <header className="student-topbar project-topbar"><div><span>PROJECT WORKSPACE</span><h1>项目工作台</h1><p>把目标、论文、数据和行动放进同一条研究路径。</p></div><button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}>＋ 新建项目</button></header>
+        <header className="student-topbar project-topbar"><div><span>项目管理</span><h1>项目工作台</h1><p>集中管理目标、论文、数据和行动。</p></div><button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}>＋ 新建项目</button></header>
 
         {message && <div className="project-message" role="status">{message}</div>}
 

@@ -246,8 +246,8 @@ export default function PaperLab() {
       <section className="paper-shell paper-app paper-main">
       <section className="paper-commandbar">
         <div>
-          <p className="section-kicker">PAPER WORKSPACE / LOCAL FIRST</p>
-          <h1>读懂论文，而不只是翻译论文。</h1>
+          <p className="section-kicker">论文工作台</p>
+          <h1>论文阅读与分析</h1>
         </div>
         <div className="paper-commandbar-actions">
           <div className={`translator-status state-${translationState}`}>
