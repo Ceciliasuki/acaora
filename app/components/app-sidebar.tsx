@@ -1,4 +1,4 @@
-import Link from "next/link";
+/* eslint-disable @next/next/no-html-link-for-pages */
 
 type AppSection = "dashboard" | "papers" | "data" | "projects";
 
@@ -25,10 +25,10 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   return (
     <aside className="student-sidebar app-sidebar">
-      <Link className="acaora-brand light" href="/" aria-label="返回 Acaora 首页">
+      <a className="acaora-brand light" href="/" aria-label="返回 Acaora 首页">
         <span>A</span>
         <div><strong>Acaora</strong><small>学曦</small></div>
-      </Link>
+      </a>
       <nav aria-label="主要导航">
         {navigation.map((item) => (
           <a className={item.id === active ? "active" : ""} href={item.href} key={item.id} aria-current={item.id === active ? "page" : undefined}>
