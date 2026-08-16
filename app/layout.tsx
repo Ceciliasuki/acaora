@@ -6,9 +6,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
-  const image = `${protocol}://${host}/og.png`;
-  const title = "StatLab · 交互式数据分析实验室";
-  const description = "上传 CSV，在浏览器中完成数据质量检查、可视化、相关回归与独立样本 t 检验。";
+  const image = `${protocol}://${host}/og-research.png`;
+  const title = "StatLab · 数据分析与双语论文工作台";
+  const description = "在浏览器中分析 CSV、双语阅读英文论文、保存阅读记忆并检索相关学术文献。";
 
   return {
     title,

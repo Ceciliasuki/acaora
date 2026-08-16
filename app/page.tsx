@@ -97,6 +97,7 @@ export default function Home() {
         </div>
         <nav className="nav-list" aria-label="主要导航">
           <a className="nav-item active" href="#workspace"><span>⌁</span>分析工作台</a>
+          <a className="nav-item" href="/papers"><span>文</span>论文工作台</a>
           <a className="nav-item" href="#quality"><span>▦</span>数据质量</a>
           <a className="nav-item" href="#analysis"><span>↗</span>分析中心</a>
           <a className="nav-item" href="#preview"><span>Σ</span>数据预览</a>
