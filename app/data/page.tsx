@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
+import AppSidebar from "../components/app-sidebar";
 import {
   categoricalColumns,
   DataSet,
@@ -89,31 +90,10 @@ export default function Home() {
   }
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-row">
-          <a className="brand-mark" href="/">A</a>
-          <div className="brand-copy"><strong>Acaora</strong><span>DATA LAB</span></div>
-        </div>
-        <nav className="nav-list" aria-label="主要导航">
-          <a className="nav-item" href="/dashboard"><span>⌂</span>平台总览</a>
-          <a className="nav-item active" href="#workspace"><span>⌁</span>分析工作台</a>
-          <a className="nav-item" href="/papers"><span>文</span>论文工作台</a>
-          <a className="nav-item" href="#quality"><span>▦</span>数据质量</a>
-          <a className="nav-item" href="#analysis"><span>↗</span>分析中心</a>
-          <a className="nav-item" href="#preview"><span>Σ</span>数据预览</a>
-        </nav>
-        <div className="sidebar-progress">
-          <div className="progress-copy"><span>数据完整度</span><strong>{completeness.toFixed(1)}%</strong></div>
-          <div className="progress-track"><i style={{ width: `${completeness}%` }} /></div>
-        </div>
-        <div className="sidebar-note">
-          <span className="note-label">LOCAL FIRST</span>
-          <p>数据只在你的浏览器中处理，不会上传到服务器。</p>
-        </div>
-      </aside>
+    <main className="student-app data-app">
+      <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
-      <section className="workspace" id="workspace">
+      <section className="workspace data-main" id="workspace">
         <header className="topbar">
           <div>
             <p className="eyebrow">WORKSPACE / DATASET 01</p>
@@ -121,6 +101,11 @@ export default function Home() {
           </div>
           <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
         </header>
+
+        <section className="data-context-strip" aria-label="数据处理状态">
+          <div><span>数据完整度</span><strong>{completeness.toFixed(1)}%</strong><i><b style={{ width: `${completeness}%` }} /></i></div>
+          <p><b>LOCAL FIRST</b> 数据在浏览器内处理，不会上传到服务器。</p>
+        </section>
 
         <section className="hero-grid">
           <div className="upload-panel">

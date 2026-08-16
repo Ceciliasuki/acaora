@@ -1,5 +1,7 @@
 "use client";
 
+import AppSidebar from "../components/app-sidebar";
+
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type Viewer = { id: string; email?: string } | null;
@@ -168,11 +170,7 @@ export default function ProjectsPage() {
 
   return (
     <main className="student-app project-app">
-      <aside className="student-sidebar">
-        <a className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></a>
-        <nav><a href="/dashboard"><i>⌂</i><span>总览</span></a><a href="/papers"><i>文</i><span>论文研究</span></a><a href="/data"><i>Σ</i><span>数据分析</span></a><a className="active" href="/projects"><i>◇</i><span>项目空间</span></a></nav>
-        <div className="student-sidebar-foot"><a href="#privacy"><i>◎</i><span>隐私与同步</span></a><div><b>{initials}</b><p><strong>{viewer?.email?.split("@")[0] ?? "匿名学习者"}</strong><small>{viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"}</small></p></div></div>
-      </aside>
+      <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className="student-main project-main">
         <header className="student-topbar project-topbar"><div><span>PROJECT WORKSPACE</span><h1>项目工作台</h1><p>把目标、论文、数据和行动放进同一条研究路径。</p></div><button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}>＋ 新建项目</button></header>

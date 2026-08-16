@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AppSidebar from "../components/app-sidebar";
 
 type Viewer = { id: string; email?: string } | null;
 
@@ -32,11 +33,7 @@ export default function DashboardPage() {
 
   return (
     <main className="student-app">
-      <aside className="student-sidebar">
-        <a className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></a>
-        <nav><a className="active" href="/dashboard"><i>⌂</i><span>总览</span></a><a href="#courses"><i>◫</i><span>我的课程</span></a><a href="/papers"><i>文</i><span>论文研究</span></a><a href="/data"><i>Σ</i><span>数据分析</span></a><a href="/projects"><i>◇</i><span>项目空间</span></a></nav>
-        <div className="student-sidebar-foot"><a href="#settings"><i>⚙</i><span>设置与隐私</span></a><div><b>{initials}</b><p><strong>{viewer?.email?.split("@")[0] ?? "匿名学习者"}</strong><small>{viewer ? "云端同步已开启" : "仅保存在当前设备"}</small></p></div></div>
-      </aside>
+      <AppSidebar active="dashboard" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "云端同步已开启" : "仅保存在当前设备"} />
 
       <section className="student-main">
         <header className="student-topbar"><div><span>SUNDAY · 16 AUGUST</span><h1>下午好，{viewer?.email?.split("@")[0] ?? "同学"}。</h1></div><div><button className="command-button">⌘ K <span>快速开始</span></button>{viewer ? <button className="account-button" onClick={() => void signOut()}>{initials}<span>退出</span></button> : <a className="dashboard-login" href="/auth">登录同步</a>}</div></header>

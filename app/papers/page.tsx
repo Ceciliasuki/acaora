@@ -1,5 +1,7 @@
 "use client";
 
+import AppSidebar from "../components/app-sidebar";
+
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
@@ -239,27 +241,26 @@ export default function PaperLab() {
   }
 
   return (
-    <main className="paper-shell paper-app">
-      <header className="paper-topbar">
-        <a className="paper-brand" href="/"><span>A</span><strong>Acaora</strong></a>
-        <nav aria-label="工作区切换"><a href="/dashboard">总览</a><a href="/data">DataLab</a><a className="active" href="/papers">PaperLab</a></nav>
-        <div className={`translator-status state-${translationState}`}>
-          <i />
-          <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
-        </div>
-      </header>
-
+    <main className="student-app paper-layout">
+      <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : "本地研究模式"} />
+      <section className="paper-shell paper-app paper-main">
       <section className="paper-commandbar">
         <div>
           <p className="section-kicker">PAPER WORKSPACE / LOCAL FIRST</p>
           <h1>读懂论文，而不只是翻译论文。</h1>
         </div>
-        <div className="paper-actions">
-          <button className="secondary-paper-button" type="button" onClick={() => setMobilePanel("search")}>⌕ 检索论文</button>
-          <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
-            <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
-          </button>
-          <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handlePdf} />
+        <div className="paper-commandbar-actions">
+          <div className={`translator-status state-${translationState}`}>
+            <i />
+            <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
+          </div>
+          <div className="paper-actions">
+            <button className="secondary-paper-button" type="button" onClick={() => setMobilePanel("search")}>⌕ 检索论文</button>
+            <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+              <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
+            </button>
+            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handlePdf} />
+          </div>
         </div>
       </section>
 
@@ -352,6 +353,7 @@ export default function PaperLab() {
             {!searchResults.length && !searching && <div className="search-empty"><span>⌕</span><strong>从当前论文开始发现</strong><p>检索结果会展示来源、作者、年份、引用次数和开放全文入口。</p></div>}
           </div>
         </section>
+      </section>
       </section>
     </main>
   );

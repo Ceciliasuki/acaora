@@ -1098,6 +1098,153 @@ footer { font-size: 12px; }
   .paper-workbench { display: block; }
 }
 
+/* Unified application shell -------------------------------------------------
+   Dashboard, PaperLab, DataLab and Projects now share one navigation model,
+   one palette and the same responsive behavior. These rules intentionally
+   resolve the older page-specific shell breakpoints above. */
+.student-app {
+  width: 100%;
+  max-width: 100vw;
+  grid-template-columns: 248px minmax(0, 1fr);
+  overflow-x: clip;
+  background: #f4f5f8;
+}
+.student-main,
+.data-main,
+.paper-main {
+  width: 100%;
+  min-width: 0;
+  max-width: 1680px;
+  margin-inline: auto;
+}
+.app-sidebar { z-index: 20; min-width: 0; }
+.app-sidebar > nav a { min-width: 0; }
+.app-sidebar > nav a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-sidebar > nav a:focus-visible,
+.app-sidebar a:focus-visible { outline: 2px solid #70dfc5; outline-offset: 2px; }
+
+.data-app,
+.paper-layout {
+  --ink: #131a2a;
+  --navy: #111727;
+  --paper: #f4f5f8;
+  --card: #ffffff;
+  --line: #dfe3e9;
+  --muted: #70798a;
+  --lime: #70dfc5;
+  --orange: #ec7653;
+  color: #131a2a;
+}
+.data-main,
+.paper-main { background: #f4f5f8; }
+.data-main { padding: 38px clamp(28px, 4vw, 68px) 72px; }
+.paper-main { min-height: 100vh; padding: 38px clamp(24px, 4vw, 64px) 72px; }
+.paper-commandbar { padding-top: 0; }
+.paper-commandbar-actions { flex: 0 1 470px; display: grid; justify-items: end; gap: 12px; }
+.paper-commandbar-actions .translator-status { width: fit-content; margin-left: 0; }
+.paper-workbench { grid-template-columns: minmax(210px, 260px) minmax(0, 1fr) minmax(260px, 320px); }
+.paper-library { background: #151c2c; }
+.library-title { border-color: #30384a; }
+.library-list article.active { background: #273044; box-shadow: inset 3px 0 #70dfc5; }
+.library-privacy { border-color: #374156; color: #9ca6b7; }
+.paper-mobile-tabs { background: #e7e9ee; }
+
+.data-context-strip {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  margin: -10px 0 24px;
+  padding: 15px 18px;
+  border: 1px solid #dfe3e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(24, 31, 46, .035);
+}
+.data-context-strip > div { min-width: 0; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px 16px; }
+.data-context-strip span { color: #6e7788; font-size: 12px; font-weight: 700; }
+.data-context-strip strong { color: #171e2e; font-size: 13px; }
+.data-context-strip i { grid-column: 1 / -1; height: 5px; overflow: hidden; border-radius: 999px; background: #e7eaf0; }
+.data-context-strip i b { display: block; height: 100%; border-radius: inherit; background: #70dfc5; }
+.data-context-strip p { margin: 0; color: #6e7788; font-size: 13px; text-align: right; }
+.data-context-strip p b { margin-right: 7px; color: #5c56ce; font: 800 10px/1 monospace; letter-spacing: .1em; }
+
+@media (max-width: 1100px) {
+  .student-app { grid-template-columns: 88px minmax(0, 1fr); }
+  .app-sidebar { align-items: center; padding: 24px 12px; }
+  .app-sidebar .acaora-brand > div,
+  .app-sidebar > nav a span,
+  .app-sidebar .student-sidebar-foot > a span,
+  .app-sidebar .student-sidebar-foot p { display: none; }
+  .app-sidebar > nav { width: 100%; margin-top: 42px; }
+  .app-sidebar > nav a { justify-content: center; padding: 13px 10px; }
+  .app-sidebar > nav a i { width: auto; }
+  .app-sidebar .student-sidebar-foot > div { display: block; padding: 0; }
+  .paper-workbench { grid-template-columns: 230px minmax(0, 1fr); }
+  .paper-insights { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .student-app { display: block; overflow-x: clip; }
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 76px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    box-shadow: 0 8px 28px rgba(9, 14, 27, .18);
+  }
+  .app-sidebar .acaora-brand { flex: 0 0 auto; }
+  .app-sidebar .acaora-brand > div { display: none; }
+  .app-sidebar > nav {
+    width: auto;
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .app-sidebar > nav::-webkit-scrollbar { display: none; }
+  .app-sidebar > nav a,
+  .app-sidebar > nav a.active {
+    flex: 0 0 48px;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    font-size: 0;
+  }
+  .app-sidebar > nav a i,
+  .app-sidebar > nav a.active i { width: auto; font-size: 17px; }
+  .app-sidebar .student-sidebar-foot { display: none; }
+  .student-main,
+  .data-main,
+  .paper-main { max-width: 100%; padding: 26px 16px 50px; }
+  .paper-commandbar { padding-top: 0; }
+  .paper-commandbar-actions { width: 100%; flex-basis: auto; justify-items: stretch; }
+  .paper-commandbar-actions .translator-status { width: 100%; border-radius: 10px; }
+  .paper-commandbar-actions .translator-status div { display: grid; }
+  .data-context-strip { grid-template-columns: 1fr; gap: 12px; margin-top: -4px; }
+  .data-context-strip p { text-align: left; }
+}
+
+@media (max-width: 460px) {
+  .app-sidebar { gap: 8px; padding-inline: 10px; }
+  .app-sidebar .acaora-brand > span { width: 42px; height: 42px; }
+  .app-sidebar > nav a,
+  .app-sidebar > nav a.active { flex-basis: 44px; padding-inline: 8px; }
+  .paper-commandbar h1 { font-size: 34px; }
+  .paper-actions { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; }
+  .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* Project workspace */
 .dashboard-section-title > a {
   min-height: 42px;
