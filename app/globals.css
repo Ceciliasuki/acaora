@@ -736,3 +736,364 @@ footer p { margin: 0; text-align: right; }
 .brand-mark { text-decoration: none; }
 @media (max-width: 900px) { .auth-shell { grid-template-columns: 1fr; } .auth-story { min-height: 350px; } .auth-story-copy { margin-top: 65px; } .auth-privacy { margin-top: 55px; } .student-app { grid-template-columns: 74px 1fr; } .student-sidebar { align-items: center; padding: 20px 10px; } .student-sidebar .acaora-brand > div, .student-sidebar nav span, .student-sidebar-foot > a span, .student-sidebar-foot p { display: none; } .student-sidebar-foot > div { display: block; padding: 0; } .dashboard-hero { grid-template-columns: 1fr; } .dashboard-hero > aside { border-left: 0; border-top: 1px solid rgba(255,255,255,.16); } .dashboard-modules { grid-template-columns: 1fr 1fr; } .dashboard-lower { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .auth-page { padding: 0; } .auth-back { top: 14px; left: 15px; color: #aab3c4; } .auth-shell { min-height: 100vh; border: 0; border-radius: 0; } .auth-story { min-height: 300px; padding: 26px 24px; } .auth-story-copy { margin-top: 52px; } .auth-story-copy h1 { font-size: 34px; } .auth-privacy { display: none; } .auth-form-side { padding: 42px 25px; } .student-app { display: block; } .student-sidebar { position: static; width: 100%; height: 66px; padding: 10px 15px; flex-direction: row; justify-content: space-between; } .student-sidebar > nav { margin: 0; display: flex; } .student-sidebar > nav a { display: none; } .student-sidebar > nav a.active { display: flex; } .student-sidebar-foot { margin: 0; } .student-sidebar-foot > a { display: none; } .student-main { padding: 24px 15px 45px; } .command-button span, .account-button span { display: none; } .account-button { width: 34px; justify-content: center; } .dashboard-hero > div { padding: 27px 22px; } .dashboard-hero > div > div { flex-direction: column; } .dashboard-hero > div a, .dashboard-hero > div button { text-align: center; } .dashboard-modules { grid-template-columns: 1fr; } .guest-banner { align-items: flex-start; flex-direction: column; } }
+
+/* Readability and layout refresh */
+:root { font-size: 16px; }
+body {
+  min-width: 320px;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+button, input:not([type="file"]), select, textarea { min-height: 42px; }
+button, a { -webkit-tap-highlight-color: transparent; }
+
+/* Landing page: readable editorial scale */
+.acaora-site { font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif; }
+.acaora-nav,
+.acaora-modules,
+.acaora-principles,
+.acaora-footer { width: min(1240px, calc(100% - 64px)); }
+.acaora-nav { height: 92px; gap: 52px; }
+.acaora-brand { gap: 12px; }
+.acaora-brand > span { width: 44px; height: 44px; font-size: 21px; }
+.acaora-brand strong { font-size: 20px; }
+.acaora-brand small { font-size: 10px; }
+.acaora-nav-links { gap: 34px; }
+.acaora-nav-links a,
+.acaora-nav-actions a { font-size: 14px; }
+.acaora-nav-actions .primary-link { padding: 13px 18px; }
+.acaora-hero { width: min(1160px, calc(100% - 64px)); padding-top: 92px; }
+.hero-proof { padding: 9px 14px; font-size: 12px; }
+.hero-proof span { font-size: 10px; }
+.acaora-hero > h1 { margin-top: 28px; font-size: clamp(48px, 6.4vw, 84px); line-height: 1.03; }
+.acaora-hero > p { max-width: 760px; font-size: 17px; line-height: 1.85; }
+.hero-actions { margin-top: 34px; gap: 12px; }
+.hero-actions a { min-height: 52px; font-size: 15px; }
+.hero-main { min-width: 230px; padding: 15px 22px; }
+.hero-demo { padding: 14px 20px; }
+.hero-product { margin-top: 72px; min-height: 620px; grid-template-columns: 170px 1fr; border-radius: 22px; }
+.hero-product > aside { padding: 24px 18px; }
+.mini-brand { font-size: 15px; }
+.mini-nav { padding: 12px 13px; font-size: 12px; }
+.mini-nav i { font-size: 15px; }
+.mini-profile { font-size: 11px; }
+.mini-profile b { width: 32px; height: 32px; font-size: 10px; }
+.hero-product > article { padding: 32px; }
+.hero-product article > header small,
+.focus-card > span,
+.signal-card > span,
+.ai-brief > span { font-size: 10px; }
+.hero-product article > header h2 { font-size: 27px; }
+.hero-product header button { padding: 11px 15px; font-size: 12px; }
+.focus-card h3 { font-size: 24px; }
+.focus-card p { font-size: 13px; }
+.focus-card small { font-size: 11px; }
+.focus-card button { padding: 11px 14px; font-size: 12px; }
+.signal-card > p,
+.recent-card li p small { font-size: 11px; }
+.recent-card > div > span,
+.recent-card li p { font-size: 13px; }
+.recent-card a,
+.recent-card li em { font-size: 11px; }
+.ai-brief > p { font-size: 14px; }
+.ai-brief > div small { font-size: 12px; }
+.section-intro > div > span,
+.principle-copy > span { font-size: 11px; }
+.section-intro h2,
+.principle-copy h2 { font-size: clamp(36px, 4vw, 54px); }
+.section-intro > p { max-width: 500px; font-size: 15px; }
+.module-grid { gap: 16px; }
+.module-card { min-height: 320px; padding: 24px; border-radius: 16px; }
+.module-card > small { margin-top: 62px; font-size: 10px; }
+.module-card h3 { font-size: 30px; }
+.module-card p { font-size: 14px; line-height: 1.75; }
+.module-card footer { font-size: 12px; }
+.acaora-principles { gap: 88px; }
+.principle-copy > p { font-size: 16px; }
+.principle-copy > a { font-size: 14px; }
+.principle-list article { grid-template-columns: 48px 1fr; }
+.principle-list article > b { font-size: 11px; }
+.principle-list h3 { font-size: 24px; }
+.principle-list p { font-size: 14px; }
+.acaora-footer > p,
+.acaora-footer > div:last-child a { font-size: 12px; }
+
+/* Account page: practical form dimensions and stronger hierarchy */
+.auth-page { padding: 52px 32px; }
+.auth-back { top: 28px; left: 32px; font-size: 14px; }
+.auth-shell { width: min(1240px, 100%); min-height: 720px; grid-template-columns: 1fr 1fr; border-radius: 24px; }
+.auth-story { padding: 48px 54px; }
+.auth-story-copy { margin-top: 120px; }
+.auth-story-copy > span { font-size: 11px; }
+.auth-story-copy h1 { max-width: 520px; font-size: clamp(44px, 4.3vw, 64px); line-height: 1.1; }
+.auth-story-copy p { max-width: 500px; font-size: 16px; line-height: 1.85; }
+.auth-privacy { max-width: 500px; padding: 18px; grid-template-columns: 40px 1fr; gap: 14px; }
+.auth-privacy > b { width: 40px; height: 40px; }
+.auth-privacy strong { font-size: 14px; }
+.auth-privacy p { font-size: 12px; line-height: 1.65; }
+.auth-form-side { padding: 64px 70px; }
+.auth-form-wrap { width: min(460px, 100%); }
+.auth-form-head > span { font-size: 11px; }
+.auth-form-head h2 { margin-top: 14px; font-size: 38px; }
+.auth-form-head p { margin-top: 12px; font-size: 15px; }
+.auth-form-wrap form { margin-top: 32px; }
+.auth-form-wrap form > label { margin-bottom: 10px; font-size: 14px; }
+.email-field { grid-template-columns: 52px 1fr; border-radius: 12px; }
+.email-field input,
+.otp-input { min-height: 58px; padding: 16px 18px; font-size: 16px; }
+.email-field span { font-size: 18px; }
+.otp-input { font-size: 34px; }
+.auth-submit { min-height: 56px; margin-top: 14px; padding: 15px 18px; border-radius: 12px; font-size: 15px; }
+.otp-actions { margin-top: 14px; }
+.otp-actions button { min-height: auto; padding: 5px 0; font-size: 13px; }
+.auth-setup-note { padding: 16px; }
+.auth-setup-note b { font-size: 14px; }
+.auth-setup-note p { font-size: 13px; }
+.auth-message { margin-top: 14px; padding: 13px 15px; font-size: 14px; }
+.auth-divider { margin: 28px 0; }
+.auth-divider span { top: -12px; font-size: 12px; }
+.guest-entry { min-height: 52px; align-items: center; padding: 14px 17px; font-size: 14px; }
+.auth-legal { font-size: 12px; line-height: 1.7; }
+.email-support { gap: 7px; }
+.email-support span,
+.email-support b { padding: 6px 8px; font-size: 11px; }
+
+/* Student workspace: larger navigation and scannable cards */
+.student-app { grid-template-columns: 248px 1fr; }
+.student-sidebar { padding: 30px 22px; }
+.student-sidebar > nav { margin-top: 52px; gap: 7px; }
+.student-sidebar > nav a,
+.student-sidebar-foot > a { padding: 13px 14px; font-size: 14px; }
+.student-sidebar > nav a i,
+.student-sidebar-foot > a i { width: 20px; font-size: 16px; }
+.student-sidebar-foot > div { grid-template-columns: 40px 1fr; gap: 12px; }
+.student-sidebar-foot > div > b { width: 40px; height: 40px; font-size: 12px; }
+.student-sidebar-foot p strong { font-size: 13px; }
+.student-sidebar-foot p small { font-size: 11px; }
+.student-main { padding: 38px clamp(28px, 4vw, 68px) 72px; }
+.student-topbar > div:first-child span { font-size: 10px; }
+.student-topbar h1 { font-size: 34px; }
+.command-button,
+.account-button,
+.dashboard-login { min-height: 44px; font-size: 13px; }
+.account-button { width: 96px; }
+.guest-banner { padding: 16px 18px; }
+.guest-banner b,
+.guest-banner a { font-size: 13px; }
+.guest-banner p { font-size: 13px; }
+.dashboard-hero { min-height: 360px; grid-template-columns: 1fr 320px; border-radius: 18px; }
+.dashboard-hero > div { padding: 44px; }
+.dashboard-hero > div > span,
+.dashboard-hero > aside > span,
+.dashboard-section-title span,
+.dashboard-lower article header span,
+.dashboard-lower > aside > span { font-size: 10px; }
+.dashboard-hero h2 { font-size: clamp(36px, 4vw, 52px); }
+.dashboard-hero > div > p { font-size: 15px; }
+.dashboard-hero > div a,
+.dashboard-hero > div button { padding: 13px 17px; font-size: 14px; }
+.dashboard-hero > aside { padding: 36px 30px; }
+.dashboard-hero > aside > p { font-size: 13px; }
+.dashboard-hero > aside > small { font-size: 11px; }
+.dashboard-section-title h2,
+.dashboard-lower h2 { font-size: 26px; }
+.dashboard-section-title button { padding: 10px 14px; font-size: 13px; }
+.dashboard-modules { gap: 16px; }
+.dashboard-modules > a { min-height: 210px; padding: 22px; border-radius: 14px; }
+.dashboard-modules > a > div b { width: 40px; height: 40px; font-size: 14px; }
+.dashboard-modules > a > div span { font-size: 10px; }
+.dashboard-modules h3 { font-size: 23px; }
+.dashboard-modules p { font-size: 14px; line-height: 1.65; }
+.dashboard-lower { gap: 16px; }
+.dashboard-lower > article,
+.dashboard-lower > aside { padding: 26px; }
+.dashboard-lower article header button { font-size: 13px; }
+.dashboard-lower li { grid-template-columns: 44px 1fr auto; gap: 14px; }
+.dashboard-lower li > b { width: 44px; height: 44px; font-size: 10px; }
+.dashboard-lower li p strong { font-size: 14px; }
+.dashboard-lower li p small,
+.dashboard-lower li em { font-size: 12px; }
+.dashboard-lower > aside p { font-size: 14px; }
+.dashboard-lower > aside small { font-size: 11px; }
+.dashboard-lower > aside button { padding: 11px 14px; font-size: 13px; }
+
+/* DataLab: raise every analytical label above the readability floor */
+.app-shell { grid-template-columns: 248px 1fr; }
+.sidebar { padding: 30px 24px; }
+.workspace { padding: 40px clamp(28px, 4vw, 68px) 72px; }
+.eyebrow,
+.section-kicker { font-size: 11px; }
+.sample-button,
+.history-button { font-size: 14px; }
+.upload-panel,
+.overview-panel,
+.quality-panel { padding: 28px; }
+.panel-heading h2,
+.analysis-header h2 { font-size: 26px; }
+.panel-heading.compact h2 { font-size: 22px; }
+.step-pill,
+.privacy-pill,
+.updated-label,
+.quality-score { font-size: 11px; }
+.dropzone { min-height: 220px; }
+.dropzone strong { font-size: 16px; }
+.dropzone small,
+.file-chip small,
+.error-message,
+.text-button { font-size: 13px; }
+.file-chip strong,
+.ready-dot { font-size: 14px; }
+.metric-grid span,
+.metric-grid small,
+.type-breakdown span,
+.overview-note,
+.progress-copy,
+.variable-card small { font-size: 12px; }
+.variable-card strong { font-size: 14px; }
+.analysis-tabs button { padding: 10px 15px; font-size: 13px; }
+label { font-size: 13px; }
+select { min-height: 42px; font-size: 14px; }
+table { font-size: 14px; }
+th { font-size: 11px; }
+.status-copy,
+.table-title strong,
+.axis-labels,
+.big-result span,
+.big-result small,
+.stats-list dt,
+.stats-list dd,
+.plain-conclusion p,
+.method-note,
+.group-comparison span,
+.group-comparison small,
+.empty-state p { font-size: 13px; }
+footer { font-size: 12px; }
+
+/* PaperLab: comfortable research reading and useful controls */
+.paper-shell { padding: 32px clamp(24px, 4vw, 64px) 72px; }
+.paper-topbar nav a { padding: 10px 16px; font-size: 13px; }
+.translator-status strong { font-size: 12px; }
+.translator-status small { font-size: 11px; }
+.paper-message { padding: 13px 16px; font-size: 13px; }
+.secondary-paper-button { min-height: 48px; font-size: 14px; }
+.paper-app .paper-upload { min-width: 220px; }
+.paper-upload strong { font-size: 14px; }
+.paper-upload small { font-size: 12px; }
+.paper-workbench { grid-template-columns: 260px minmax(520px, 1fr) 320px; border-radius: 18px; }
+.library-title { padding: 24px 20px; }
+.library-title p,
+.search-head p,
+.insight-head p { font-size: 10px; }
+.library-title h2,
+.search-head h2,
+.insight-head h2 { font-size: 21px; }
+.library-list article strong { font-size: 13px; }
+.library-list article small { font-size: 11px; }
+.library-empty span,
+.library-privacy p { font-size: 12px; }
+.library-privacy strong { font-size: 11px; }
+.paper-title-edit span,
+.reader-progress span,
+.paragraph-meta span { font-size: 10px; }
+.paper-title-edit input { font-size: 17px; }
+.reader-controls button { width: 42px; height: 42px; min-height: 42px; }
+.reader-controls span { font-size: 12px; }
+.section-chips button,
+.paragraph-meta strong,
+.paragraph-meta button,
+.paragraph-actions button { font-size: 12px; }
+.bilingual-active p { font-size: 19px; line-height: 1.9; }
+.translation-placeholder span,
+.translation-placeholder button { font-size: 12px; }
+.paper-empty p { font-size: 13px; }
+.insight-head span,
+.paper-insights article > span,
+.term-list b { font-size: 10px; }
+.paper-insights article p,
+.check-card li { font-size: 13px; }
+.note-card textarea { min-height: 130px; font-size: 14px; }
+.paper-search-box input,
+.paper-search-box button { font-size: 14px; }
+.search-source,
+.result-authors,
+.result-abstract,
+.search-empty p { font-size: 12px; }
+.result-topline span,
+.result-topline small,
+.result-links a,
+.result-links button { font-size: 11px; }
+.search-results h3 { font-size: 19px; }
+.ai-studio-head p,
+.ai-key-box label,
+.ai-task-card > p,
+.result-field h4 { font-size: 10px; }
+.ai-studio-head > div > span,
+.ai-key-box small,
+.ai-action-tabs button,
+.ai-task-card > small,
+.ai-error,
+.ai-result-foot { font-size: 11px; }
+.ai-key-box input,
+.ai-key-box button,
+.ai-task-card textarea,
+.ai-task-card select,
+.ai-run,
+.ai-task-card > span,
+.result-field p,
+.ai-empty-result p { font-size: 13px; }
+.ai-run { min-height: 46px; }
+
+@media (max-width: 1100px) {
+  .paper-workbench { grid-template-columns: 230px minmax(0, 1fr); }
+  .paper-insights { grid-column: 1 / -1; }
+  .auth-shell { grid-template-columns: .92fr 1.08fr; }
+  .auth-story { padding: 42px; }
+  .auth-form-side { padding: 56px 44px; }
+}
+
+@media (max-width: 900px) {
+  .acaora-nav,
+  .acaora-modules,
+  .acaora-principles,
+  .acaora-footer,
+  .acaora-hero { width: calc(100% - 40px); }
+  .auth-shell { grid-template-columns: 1fr; }
+  .auth-story { min-height: 430px; }
+  .auth-story-copy { margin-top: 72px; }
+  .student-app { grid-template-columns: 88px 1fr; }
+  .dashboard-hero { grid-template-columns: 1fr; }
+  .app-shell { grid-template-columns: 88px 1fr; }
+}
+
+@media (max-width: 650px) {
+  body { font-size: 15px; }
+  .acaora-nav,
+  .acaora-modules,
+  .acaora-principles,
+  .acaora-footer,
+  .acaora-hero { width: calc(100% - 28px); }
+  .acaora-hero { padding-top: 62px; }
+  .acaora-hero > h1 { font-size: 43px; }
+  .acaora-hero > p { font-size: 16px; }
+  .hero-product { margin-top: 48px; min-height: auto; }
+  .hero-product > article { padding: 22px 16px; }
+  .product-grid { gap: 12px; }
+  .module-card { min-height: 270px; }
+  .auth-page { padding: 0; }
+  .auth-shell { min-height: 100vh; border-radius: 0; }
+  .auth-story { min-height: 360px; padding: 30px 24px; }
+  .auth-story-copy { margin-top: 60px; }
+  .auth-story-copy h1 { font-size: 39px; }
+  .auth-story-copy p { font-size: 14px; }
+  .auth-form-side { padding: 44px 24px 52px; }
+  .auth-form-head h2 { font-size: 32px; }
+  .student-main { padding: 26px 16px 50px; }
+  .student-topbar h1 { font-size: 27px; }
+  .dashboard-hero > div { padding: 30px 24px; }
+  .dashboard-hero h2 { font-size: 36px; }
+  .paper-commandbar h1 { font-size: 40px; }
+  .paper-workbench { display: block; }
+}
