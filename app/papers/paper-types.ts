@@ -9,6 +9,22 @@ export type Paragraph = {
   read: boolean;
 };
 
+export type AiSavedResult = {
+  action: string;
+  title: string;
+  data: Record<string, unknown>;
+  createdAt: number;
+};
+
+export type AiMemory = {
+  paragraph: Record<string, AiSavedResult>;
+  summary?: AiSavedResult;
+  audit?: AiSavedResult;
+  replication?: AiSavedResult;
+  search?: AiSavedResult;
+  chats: AiSavedResult[];
+};
+
 export type PaperRecord = {
   id: string;
   fileName: string;
@@ -17,6 +33,7 @@ export type PaperRecord = {
   updatedAt: number;
   activeParagraph: number;
   paragraphs: Paragraph[];
+  aiMemory?: AiMemory;
 };
 
 export type SearchPaper = {

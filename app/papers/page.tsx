@@ -3,7 +3,8 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
-import type { PaperRecord, Paragraph, SearchPaper } from "./paper-types";
+import AiStudio from "./ai-studio";
+import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
 
 type TranslatorSession = {
@@ -38,7 +39,7 @@ export default function PaperLab() {
   const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
-  const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "search">("reader");
+  const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
   const activeParagraph = paper.paragraphs[activeIndex];
@@ -235,7 +236,7 @@ export default function PaperLab() {
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
-        {(["library", "reader", "insight", "search"] as const).map((panel) => <button className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", search: "检索" }[panel]}</button>)}
+        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
       <section className="paper-workbench">
@@ -280,6 +281,7 @@ export default function PaperLab() {
             </div>
             <div className="paragraph-actions">
               <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
+              <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
               <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
             </div>
           </div> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
@@ -294,6 +296,16 @@ export default function PaperLab() {
             <article className="note-card"><span>我的笔记</span><textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} /></article>
           </>}
         </aside>
+
+        <AiStudio
+          paper={paper}
+          activeParagraph={activeParagraph}
+          activeIndex={activeIndex}
+          mobileVisible={mobilePanel === "ai"}
+          onSave={(aiMemory: AiMemory) => updatePaper((current) => ({ ...current, aiMemory }))}
+          onTranslation={(translation) => updateActiveParagraph({ translation })}
+          onSearchQuery={(query) => setSearchQuery(query)}
+        />
 
         <section className={`paper-search ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
           <div className="search-head"><div><p>OPEN SCHOLARLY INDEX</p><h2>相关论文检索</h2></div><span>免密钥</span></div>
