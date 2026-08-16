@@ -6,9 +6,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
-  const image = `${protocol}://${host}/og-research.png`;
-  const title = "StatLab · 数据分析与双语论文工作台";
-  const description = "在浏览器中分析 CSV、双语阅读英文论文、保存阅读记忆并检索相关学术文献。";
+  const image = `${protocol}://${host}/og-acaora.png`;
+  const title = "Acaora 学曦 · 大学生智能学习与研究平台";
+  const description = "把课程、论文、数据分析与研究项目放进同一个可信、可追溯的智能学习工作台。";
 
   return {
     title,

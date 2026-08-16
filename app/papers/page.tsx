@@ -39,6 +39,7 @@ export default function PaperLab() {
   const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
+  const [cloudState, setCloudState] = useState<"checking" | "guest" | "ready" | "error">("checking");
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
@@ -51,14 +52,37 @@ export default function PaperLab() {
   const isEdge = typeof navigator !== "undefined" && /Edg\//.test(navigator.userAgent);
 
   useEffect(() => {
-    void getPaperLibrary().then((records) => {
-      setLibrary(records);
-      if (records.length) {
-        setPaper(records[0]);
-        setSearchQuery(records[0].title);
+    void (async () => {
+      try {
+        const localRecords = await getPaperLibrary();
+        let records = localRecords;
+        const sessionResponse = await fetch("/api/auth/session");
+        const session = await sessionResponse.json() as { user?: { id: string } | null };
+        if (session.user) {
+          const cloudResponse = await fetch("/api/cloud/papers");
+          if (cloudResponse.ok) {
+            const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
+            const byId = new Map<string, PaperRecord>();
+            [...localRecords, ...(cloud.papers ?? [])].forEach((record) => {
+              const existing = byId.get(record.id);
+              if (!existing || record.updatedAt > existing.updatedAt) byId.set(record.id, record);
+            });
+            records = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
+            await Promise.all((cloud.papers ?? []).map((record) => savePaper(record)));
+            setCloudState("ready");
+          } else setCloudState("error");
+        } else setCloudState("guest");
+        setLibrary(records);
+        if (records.length) {
+          setPaper(records[0]);
+          setSearchQuery(records[0].title);
+        }
+      } catch {
+        setCloudState("error");
+      } finally {
+        setHydrated(true);
       }
-      setHydrated(true);
-    }).catch(() => setHydrated(true));
+    })();
   }, []);
 
   useEffect(() => {
@@ -80,9 +104,14 @@ export default function PaperLab() {
       void savePaper(updated).then(() => {
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
       });
+      if (cloudState === "ready") {
+        void fetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+          .then((response) => { if (!response.ok) setCloudState("error"); })
+          .catch(() => setCloudState("error"));
+      }
     }, 450);
     return () => window.clearTimeout(handle);
-  }, [paper, hydrated]);
+  }, [paper, hydrated, cloudState]);
 
   function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
     setPaper((current) => updater(current));
@@ -197,6 +226,7 @@ export default function PaperLab() {
   async function removeFromLibrary(record: PaperRecord) {
     if (!window.confirm(`从当前设备删除“${record.title}”的阅读记忆？`)) return;
     await deletePaper(record.id);
+    if (cloudState === "ready") void fetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
     const remaining = library.filter((item) => item.id !== record.id);
     setLibrary(remaining);
     if (paper.id === record.id) setPaper(remaining[0] ?? samplePaper);
@@ -211,8 +241,8 @@ export default function PaperLab() {
   return (
     <main className="paper-shell paper-app">
       <header className="paper-topbar">
-        <a className="paper-brand" href="/"><span>S</span><strong>StatLab</strong></a>
-        <nav aria-label="工作区切换"><a href="/">DataLab</a><a className="active" href="/papers">PaperLab</a></nav>
+        <a className="paper-brand" href="/"><span>A</span><strong>Acaora</strong></a>
+        <nav aria-label="工作区切换"><a href="/dashboard">总览</a><a href="/data">DataLab</a><a className="active" href="/papers">PaperLab</a></nav>
         <div className={`translator-status state-${translationState}`}>
           <i />
           <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
@@ -251,7 +281,7 @@ export default function PaperLab() {
               </article>;
             }) : <div className="library-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
           </div>
-          <div className="library-privacy"><strong>设备端记忆</strong><p>原始 PDF 不会保存；仅保留提取文本、译文、笔记与阅读进度。</p></div>
+          <div className="library-privacy"><strong>{cloudState === "ready" ? "云端记忆已同步" : cloudState === "checking" ? "正在检查账户" : cloudState === "error" ? "云同步暂不可用" : "设备端记忆"}</strong><p>{cloudState === "ready" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
         <section className={`paper-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
