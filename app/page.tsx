@@ -2,7 +2,7 @@ const modules = [
   { code: "01", name: "Study", title: "课程与复习", copy: "把课件、课程大纲和笔记变成知识地图、测验与复习计划。", href: "/dashboard", tone: "violet" },
   { code: "02", name: "Papers", title: "论文与文献", copy: "双语阅读、真实检索、统计审查和可追溯的 AI 论文问答。", href: "/papers", tone: "mint" },
   { code: "03", name: "Data", title: "数据与统计", copy: "浏览器本地完成数据清洗、探索分析、假设检验与可视化。", href: "/data", tone: "coral" },
-  { code: "04", name: "Projects", title: "项目与成长", copy: "集中管理课程项目、研究进度、作品证据和未来能力地图。", href: "/dashboard", tone: "blue" },
+  { code: "04", name: "Projects", title: "项目与成长", copy: "集中管理课程项目、研究进度、作品证据和未来能力地图。", href: "/projects", tone: "blue" },
 ];
 
 export default function AcaoraHome() {

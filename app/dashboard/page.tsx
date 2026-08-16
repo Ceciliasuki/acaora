@@ -7,7 +7,7 @@ type Viewer = { id: string; email?: string } | null;
 const moduleCards = [
   { label: "PAPERS", title: "继续精读论文", copy: "双语阅读、AI 拆解与统计审查", href: "/papers", icon: "文", tone: "violet" },
   { label: "DATA", title: "打开数据工作台", copy: "清洗、检验、回归与可视化", href: "/data", icon: "Σ", tone: "mint" },
-  { label: "STUDY", title: "建立课程空间", copy: "课件、知识图谱和智能复习", href: "#roadmap", icon: "课", tone: "blue" },
+  { label: "PROJECTS", title: "推进学习项目", copy: "目标、任务、笔记与研究成果", href: "/projects", icon: "◇", tone: "blue" },
 ];
 
 export default function DashboardPage() {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
     <main className="student-app">
       <aside className="student-sidebar">
         <a className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></a>
-        <nav><a className="active" href="/dashboard"><i>⌂</i><span>总览</span></a><a href="#courses"><i>◫</i><span>我的课程</span></a><a href="/papers"><i>文</i><span>论文研究</span></a><a href="/data"><i>Σ</i><span>数据分析</span></a><a href="#projects"><i>◇</i><span>项目空间</span></a></nav>
+        <nav><a className="active" href="/dashboard"><i>⌂</i><span>总览</span></a><a href="#courses"><i>◫</i><span>我的课程</span></a><a href="/papers"><i>文</i><span>论文研究</span></a><a href="/data"><i>Σ</i><span>数据分析</span></a><a href="/projects"><i>◇</i><span>项目空间</span></a></nav>
         <div className="student-sidebar-foot"><a href="#settings"><i>⚙</i><span>设置与隐私</span></a><div><b>{initials}</b><p><strong>{viewer?.email?.split("@")[0] ?? "匿名学习者"}</strong><small>{viewer ? "云端同步已开启" : "仅保存在当前设备"}</small></p></div></div>
       </aside>
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
 
         <section className="dashboard-hero"><div><span>TODAY’S FOCUS</span><h2>把最重要的一件事，<br />推进到下一步。</h2><p>你正在阅读《Statistical learning in observational studies》，上次停在方法部分。</p><div><a href="/papers">继续阅读论文 <b>→</b></a><button>更换今日重点</button></div></div><aside><span>WEEKLY SIGNAL</span><strong>6.4<small>h</small></strong><p>本周深度学习时间</p><div>{[45, 68, 38, 82, 60, 74, 52].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div><small>比上周提高 18%</small></aside></section>
 
-        <div className="dashboard-section-title"><div><span>WORKSPACES</span><h2>从你的工作区继续</h2></div><button>＋ 新建空间</button></div>
+        <div className="dashboard-section-title"><div><span>WORKSPACES</span><h2>从你的工作区继续</h2></div><a href="/projects?new=1">＋ 新建项目</a></div>
         <section className="dashboard-modules">{moduleCards.map((module) => <a className={module.tone} href={module.href} key={module.label}><div><b>{module.icon}</b><span>{module.label}</span><i>↗</i></div><h3>{module.title}</h3><p>{module.copy}</p></a>)}</section>
 
         <section className="dashboard-lower" id="courses"><article><header><div><span>RECENT ACTIVITY</span><h2>最近项目</h2></div><button>查看全部</button></header><ul><li><b className="file-pdf">PDF</b><p><strong>Statistical learning in observational studies</strong><small>PaperLab · 已读 68% · 2 条 AI 记忆</small></p><em>今天</em></li><li><b className="file-csv">CSV</b><p><strong>大学生睡眠与成绩调查</strong><small>DataLab · 326 行 · 8 个变量</small></p><em>昨天</em></li><li><b className="file-course">课</b><p><strong>计量经济学 · 第 06 周</strong><small>StudyLab · 4 / 6 个目标</small></p><em>周五</em></li></ul></article><aside id="roadmap"><span>COMING NEXT</span><h2>课程空间</h2><p>导入教学大纲、课件和笔记，自动形成知识地图、测验与复习计划。</p><div><i style={{ width: "72%" }} /></div><small>产品路线进度 72%</small><button>加入优先体验</button></aside></section>
