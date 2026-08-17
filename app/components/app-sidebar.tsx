@@ -20,6 +20,7 @@ const navigation: Array<{ id: AppSection; href: string; icon: string; label: str
   { id: "papers", href: "/papers", icon: "文", label: "论文研究" },
   { id: "data", href: "/data", icon: "Σ", label: "数据分析" },
   { id: "projects", href: "/projects", icon: "◇", label: "项目空间" },
+  { id: "settings", href: "/settings", icon: "⚙", label: "设置与隐私" },
 ];
 
 export default function AppSidebar({
@@ -58,13 +59,18 @@ export default function AppSidebar({
       </a>
       <nav aria-label="主要导航">
         {navigation.map((item) => (
-          <a className={item.id === active ? "active" : ""} href={item.href} key={item.id} aria-current={item.id === active ? "page" : undefined}>
+          <a
+            aria-current={item.id === active ? "page" : undefined}
+            aria-label={item.label}
+            className={item.id === active ? "active" : ""}
+            href={item.href}
+            key={item.id}
+          >
             <i aria-hidden="true">{item.icon}</i><span>{item.label}</span>
           </a>
         ))}
       </nav>
       <div className="student-sidebar-foot">
-        <a className={active === "settings" ? "active" : ""} href="/settings"><i aria-hidden="true">⚙</i><span>设置与隐私</span></a>
         <a className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料">
           {profile.avatarUrl ? <img src={profile.avatarUrl} alt="个人头像" /> : <b>{profile.initials}</b>}
           <p><strong>{profile.title}</strong><small>{profile.subtitle}</small></p>
