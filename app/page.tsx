@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const modules = [
-  { icon: "课", title: "课程管理", copy: "整理课件、课程大纲和笔记，生成知识地图、测验与复习计划。", href: "/dashboard", tone: "violet" },
+  { icon: "课", title: "课程管理", copy: "整理课件、课程大纲和笔记，生成知识地图、测验与复习计划。", href: "/courses", tone: "violet" },
   { icon: "文", title: "论文阅读与分析", copy: "导入英文 PDF，进行双语阅读、文献检索、段落分析与统计审查。", href: "/papers", tone: "mint" },
   { icon: "Σ", title: "数据分析", copy: "在浏览器中完成数据清洗、描述统计、假设检验、回归与可视化。", href: "/data", tone: "coral" },
   { icon: "◇", title: "项目管理", copy: "管理课程论文、研究项目、任务进度、项目笔记与相关材料。", href: "/projects", tone: "blue" },

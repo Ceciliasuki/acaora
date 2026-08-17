@@ -2,6 +2,7 @@
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
+import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
 import {
   categoricalColumns,
   DataSet,
@@ -10,7 +11,6 @@ import {
   histogram,
   isMissing,
   numericColumns,
-  parseCsv,
   regression,
   sampleData,
   summarize,
@@ -24,6 +24,7 @@ export default function Home() {
   const [data, setData] = useState<DataSet>(sampleData);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [reading, setReading] = useState(false);
   const [tab, setTab] = useState<AnalysisTab>("describe");
   const [xVariable, setXVariable] = useState("睡眠时长");
   const [yVariable, setYVariable] = useState("统计学成绩");
@@ -49,13 +50,9 @@ export default function Home() {
 
   async function loadFile(file?: File) {
     if (!file) return;
-    if (!file.name.toLowerCase().endsWith(".csv")) {
-      setError("请选择 CSV 格式的文件。" );
-      return;
-    }
+    setReading(true);
     try {
-      const text = await file.text();
-      const parsed = parseCsv(text.replace(/^\uFEFF/, ""), file.name);
+      const parsed = await readDataFile(file);
       const parsedNumeric = numericColumns(parsed);
       const parsedCategorical = categoricalColumns(parsed);
       setData(parsed);
@@ -66,6 +63,8 @@ export default function Home() {
       setError("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "文件读取失败，请检查格式。" );
+    } finally {
+      setReading(false);
     }
   }
 
@@ -110,7 +109,7 @@ export default function Home() {
         <section className="hero-grid">
           <div className="upload-panel">
             <div className="panel-heading">
-              <div><p className="section-kicker">01 · 导入数据</p><h2>上传你的 CSV 文件</h2></div>
+              <div><p className="section-kicker">01 · 导入数据</p><h2>读取常用数据文件</h2></div>
               <span className="privacy-pill">● 仅本地处理</span>
             </div>
             <button
@@ -123,13 +122,19 @@ export default function Home() {
               onDrop={onDrop}
             >
               <span className="upload-icon">↑</span>
-              <strong>{dragging ? "松开即可读取文件" : "拖入 CSV，或点击选择文件"}</strong>
-              <small>支持带引号字段与中英文表头 · 建议小于 10 MB</small>
+              <strong>{reading ? "正在识别并读取数据…" : dragging ? "松开即可读取文件" : "拖入文件，或点击选择"}</strong>
+              <small>CSV · Excel · Stata · SPSS · SAS · R 数据文件</small>
             </button>
-            <input ref={inputRef} className="sr-only" type="file" accept=".csv,text/csv" onChange={onFileChange} />
+            <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} onChange={onFileChange} />
             {error && <p className="error-message" role="alert">{error}</p>}
+            <div className="format-support" aria-label="支持的数据格式">
+              <span>Excel <small>.xlsx .xls .ods</small></span>
+              <span>Stata <small>.dta</small></span>
+              <span>SPSS / SAS <small>.sav .xpt</small></span>
+              <span>R <small>.rds .RData</small></span>
+            </div>
             <div className="file-chip">
-              <span className="csv-badge">CSV</span>
+              <span className="csv-badge">{formatLabel(data.name)}</span>
               <div><strong>{data.name}</strong><small>{data.rows.length} 行 × {data.headers.length} 列</small></div>
               <span className="ready-dot">读取正常</span>
             </div>

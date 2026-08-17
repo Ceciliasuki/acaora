@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-type AiAction = "paragraph" | "summary" | "audit" | "replication" | "translate" | "chat" | "search";
+type AiAction = "paragraph" | "summary" | "audit" | "replication" | "translate" | "chat" | "search" | "practice";
 
 type AiRequest = {
   action?: AiAction;
@@ -24,6 +24,7 @@ const actionPrompts: Record<AiAction, string> = {
   translate: `把英文论文段落翻译为简体中文。输出 JSON：{"translation":"译文","glossary":[{"term":"英文","translation":"中文"}],"notes":["歧义或表达说明"]}。保持统计术语准确、公式和数值不变。`,
   chat: `回答用户关于论文的问题。输出 JSON：{"answer":"中文回答","citations":[{"paragraph":"P1","quote":"不超过20个英文单词的依据摘录"}],"uncertainty":"不确定性说明","followups":["后续可问的问题"]}。只能使用所给论文片段，每个实质结论都引用段落编号；证据不足时直接说明。`,
   search: `把研究主题设计成学术检索策略。输出 JSON：{"english_query":"最推荐的英文检索式","alternative_queries":["替代检索式"],"keywords":{"population":[],"exposure":[],"outcome":[],"method":[]},"inclusion_criteria":["纳入标准"],"exclusion_criteria":["排除标准"],"suggested_databases":["数据库"]}。检索式适合 Semantic Scholar 和 Crossref，不要杜撰论文。`,
+  practice: `根据给出的课程名称、学习目标和资料内容生成本科阶段练习。输出 JSON：{"knowledge_map":["本次覆盖知识点"],"questions":[{"type":"单选题|计算题|简答题|案例题","difficulty":"基础|进阶|挑战","question":"题目","options":["仅单选题提供选项"],"answer":"答案","explanation":"分步解析","common_mistake":"常见误区"}],"next_review":["建议复习内容"]}。题目必须以资料为依据；资料不足时减少题量并明确说明，不得虚构定理、数据或课程要求。`,
 };
 
 export async function GET() {
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
   const text = (body.text ?? "").slice(0, 90000);
   const context = (body.context ?? "").slice(0, 90000);
   if (!text && !context) {
-    return NextResponse.json({ error: "没有可分析的论文内容。" }, { status: 400 });
+    return NextResponse.json({ error: "没有可分析的内容。" }, { status: 400 });
   }
 
   const userContent = [
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model,
         messages: [
-          { role: "system", content: `你是 StatLab 的论文研究助理。${actionPrompts[action]} 输出必须是 JSON，不要使用 Markdown 代码块。` },
+          { role: "system", content: `你是 Acaora 的大学学习与研究助理。${actionPrompts[action]} 输出必须是 JSON，不要使用 Markdown 代码块。` },
           { role: "user", content: userContent },
         ],
         response_format: { type: "json_object" },
