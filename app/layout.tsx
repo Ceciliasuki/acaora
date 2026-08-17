@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import AuthHashRedirect from "./components/auth-hash-redirect";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body><AuthHashRedirect />{children}</body>
     </html>
   );
 }

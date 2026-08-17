@@ -1,6 +1,9 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { ChangeEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
 
 type Profile = {
@@ -14,6 +17,7 @@ type Profile = {
 const emptyProfile: Profile = { display_name: "", university: "", major: "", graduation_year: "", preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" } };
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [email, setEmail] = useState("");
   const [interestInput, setInterestInput] = useState("");
@@ -22,6 +26,9 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [signedIn, setSignedIn] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     fetch("/api/profile", { cache: "no-store" })
@@ -106,7 +113,29 @@ export default function SettingsPage() {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    location.href = "/";
+    router.push("/");
+  }
+
+  async function changePassword() {
+    if (newPassword !== confirmNewPassword) {
+      setError("两次输入的新密码不一致。" );
+      return;
+    }
+    setChangingPassword(true);
+    setError("");
+    setMessage("");
+    try {
+      const response = await fetch("/api/auth/password", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: newPassword }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "密码更新失败。" );
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setMessage("登录密码已更新。" );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "密码更新失败。" );
+    } finally {
+      setChangingPassword(false);
+    }
   }
 
   return <main className="student-app settings-app">
@@ -120,11 +149,11 @@ export default function SettingsPage() {
             <div className="settings-section-head"><span>01</span><div><p>PROFILE</p><h2>个人资料</h2></div></div>
             <div className="avatar-editor">{profile.preferences.avatar ? <img src={profile.preferences.avatar} alt="当前头像" /> : <b>{(profile.display_name || email).slice(0, 2).toUpperCase()}</b>}<div><label>更换头像<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void chooseAvatar(event)} /></label>{profile.preferences.avatar && <button type="button" onClick={() => updatePreference("avatar", "")}>移除</button>}<small>自动裁剪并压缩为 256 × 256</small></div></div>
             <div className="settings-form"><label>昵称<input value={profile.display_name} maxLength={40} onChange={(event) => updateField("display_name", event.target.value)} /></label><label>登录邮箱<input value={email} disabled /></label><label>学校<input value={profile.university} maxLength={80} placeholder="例如：××大学" onChange={(event) => updateField("university", event.target.value)} /></label><label>专业 / 双学位<input value={profile.major} maxLength={100} placeholder="应用统计学 · 国际经济与贸易" onChange={(event) => updateField("major", event.target.value)} /></label><label>预计毕业年份<input type="number" min={2000} max={2100} value={profile.graduation_year} onChange={(event) => updateField("graduation_year", event.target.value ? Number(event.target.value) : "")} /></label><label>界面语言<select value={profile.preferences.language} onChange={(event) => updatePreference("language", event.target.value)}><option value="zh-CN">简体中文</option><option value="en">English（预留）</option></select></label><label className="full">个人简介<textarea maxLength={240} value={profile.preferences.bio} placeholder="研究兴趣、学习目标或希望长期积累的方向" onChange={(event) => updatePreference("bio", event.target.value)} /></label></div>
-            <div className="interest-editor"><label>学习与研究兴趣</label><div>{profile.preferences.interests.map((item) => <button type="button" key={item} onClick={() => updatePreference("interests", profile.preferences.interests.filter((current) => current !== item))}>{item} ×</button>)}</div><form onSubmit={(event) => { event.preventDefault(); addInterest(); }}><input value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="如：计量经济学" /><button type="submit">添加</button></form></div>
+            <div className="interest-editor"><span className="interest-label">学习与研究兴趣</span><div>{profile.preferences.interests.map((item) => <button type="button" key={item} onClick={() => updatePreference("interests", profile.preferences.interests.filter((current) => current !== item))}>{item} ×</button>)}</div><form onSubmit={(event) => { event.preventDefault(); addInterest(); }}><input aria-label="添加学习与研究兴趣" value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="如：计量经济学" /><button type="submit">添加</button></form></div>
           </section>
           <aside className="privacy-card">
             <div className="settings-section-head"><span>02</span><div><p>PRIVACY</p><h2>数据与隐私</h2></div></div>
-            <article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户资料</b><p>昵称、头像和学校信息保存在你的 Supabase 用户记录中，并由用户级权限隔离。</p></article><article><b>DeepSeek 密钥</b><p>研究工作台中的 Key 只放在当前浏览器会话；关闭会话后清除。</p><button type="button" onClick={() => { sessionStorage.removeItem("statlab-deepseek-key"); setMessage("已清除当前设备上的 DeepSeek 会话密钥。" ); }}>清除会话密钥</button></article><article><b>导出与退出</b><p>你可以随时导出当前个人资料，或结束此设备上的登录。</p><div><button type="button" onClick={exportProfile}>导出资料</button><button type="button" className="danger" onClick={() => void logout()}>退出登录</button></div></article>
+            <article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户资料</b><p>昵称、头像和学校信息保存在你的 Supabase 用户记录中，并由用户级权限隔离。</p></article><article className="password-settings"><b>登录密码</b><p>修改后，下次可继续使用邮箱和新密码登录，不需要再次接收验证码。</p><label htmlFor="settings-new-password">新密码<input id="settings-new-password" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="含大小写字母和数字" /></label><label htmlFor="settings-confirm-password">确认新密码<input id="settings-confirm-password" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} /></label><button type="button" disabled={changingPassword || !newPassword || !confirmNewPassword} onClick={() => void changePassword()}>{changingPassword ? "正在更新…" : "更新密码"}</button></article><article><b>DeepSeek 密钥</b><p>研究工作台中的 Key 只放在当前浏览器会话；关闭会话后清除。</p><button type="button" onClick={() => { sessionStorage.removeItem("statlab-deepseek-key"); setMessage("已清除当前设备上的 DeepSeek 会话密钥。" ); }}>清除会话密钥</button></article><article><b>导出与退出</b><p>你可以随时导出当前个人资料，或结束此设备上的登录。</p><div><button type="button" onClick={exportProfile}>导出资料</button><button type="button" className="danger" onClick={() => void logout()}>退出登录</button></div></article>
           </aside>
         </div>
       </>}

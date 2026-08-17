@@ -1,64 +1,74 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
-type Step = "email" | "code";
+type Mode = "login" | "register" | "recover" | "check-email";
 
 export default function AuthPage() {
-  const [step, setStep] = useState<Step>("email");
+  const router = useRouter();
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [configured, setConfigured] = useState<boolean | null>(null);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
-  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    void fetch("/api/auth/status").then((response) => response.json()).then((payload: { configured?: boolean }) => setConfigured(Boolean(payload.configured))).catch(() => setConfigured(false));
+    void fetch("/api/auth/status")
+      .then((response) => response.json())
+      .then((payload: { configured?: boolean }) => setConfigured(Boolean(payload.configured)))
+      .catch(() => setConfigured(false));
   }, []);
 
-  useEffect(() => {
-    if (retry <= 0) return;
-    const timer = window.setInterval(() => setRetry((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearInterval(timer);
-  }, [retry]);
-
-  async function sendCode(event?: FormEvent) {
-    event?.preventDefault();
-    if (!configured || retry > 0) return;
-    setWorking(true);
+  function switchMode(next: Mode) {
+    setMode(next);
     setMessage("");
-    try {
-      const response = await fetch("/api/auth/otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
-      const payload = await response.json() as { error?: string; retryAfter?: number };
-      if (!response.ok) throw new Error(payload.error ?? "验证码发送失败。" );
-      setStep("code");
-      setRetry(payload.retryAfter ?? 60);
-      setMessage("验证码已发送，请检查收件箱和垃圾邮件。" );
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "验证码发送失败。" );
-    } finally {
-      setWorking(false);
-    }
+    setPassword("");
+    setConfirmPassword("");
   }
 
-  async function verifyCode(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    if (code.length !== 6) return;
+    if (!configured || working) return;
+    if (mode === "register" && password !== confirmPassword) {
+      setMessage("两次输入的密码不一致。");
+      return;
+    }
     setWorking(true);
     setMessage("");
     try {
-      const response = await fetch("/api/auth/verify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, token: code }) });
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "验证码验证失败。" );
-      window.location.assign("/dashboard");
+      const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, displayName }),
+      });
+      const payload = await response.json() as { error?: string; confirmationRequired?: boolean };
+      if (!response.ok) throw new Error(payload.error || "操作失败，请稍后重试。");
+      if (mode === "recover" || payload.confirmationRequired) {
+        setMode("check-email");
+        return;
+      }
+      router.push("/dashboard");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "验证码验证失败。" );
+      setMessage(error instanceof Error ? error.message : "操作失败，请稍后重试。");
     } finally {
       setWorking(false);
     }
   }
+
+  const heading = mode === "login" ? "欢迎回来" : mode === "register" ? "创建你的账户" : mode === "recover" ? "找回账户" : "检查你的邮箱";
+  const intro = mode === "login"
+    ? "使用邮箱和密码登录。会话将在当前设备安全保持。"
+    : mode === "register"
+      ? "设置密码并完成一次邮箱确认，之后即可直接登录。"
+      : mode === "recover"
+        ? "我们会发送安全链接，用于设置新密码。"
+        : "安全链接已经发送，请打开邮件完成操作。";
 
   return (
     <main className="auth-page">
@@ -66,32 +76,39 @@ export default function AuthPage() {
       <section className="auth-shell">
         <div className="auth-story">
           <Link className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
-          <div className="auth-story-copy"><span>YOUR LEARNING, CONTINUED</span><h1>在每台设备上，<br />继续你的思考。</h1><p>登录后同步论文进度、笔记、AI 分析与课程项目。原始 PDF 和数据仍默认留在你的设备。</p></div>
-          <div className="auth-privacy"><b>◉</b><div><strong>隐私分层</strong><p>本地文件、云端记忆和 AI 请求分别控制，不会因为登录自动上传全部内容。</p></div></div>
+          <div className="auth-story-copy"><span>ONE ACCOUNT · ALL YOUR WORK</span><h1>你的课程、研究与数据，<br />持续积累。</h1><p>一个账户管理课程进度、论文笔记、数据项目和 AI 学习记录。原始文件仍默认留在你的设备。</p></div>
+          <div className="auth-privacy"><b>◉</b><div><strong>账户安全</strong><p>密码由 Supabase Auth 安全处理；本站不保存或读取你的明文密码。</p></div></div>
           <div className="auth-orbit"><i /><i /><i /><b>A</b></div>
         </div>
 
         <div className="auth-form-side">
           <div className="auth-form-wrap">
-            <div className="auth-form-head"><span>{step === "email" ? "WELCOME" : "CHECK YOUR EMAIL"}</span><h2>{step === "email" ? "登录或创建账户" : "输入六位验证码"}</h2><p>{step === "email" ? "无需密码。新邮箱验证成功后会自动创建账户。" : <>验证码已发送至 <strong>{email}</strong></>}</p></div>
+            <div className="auth-form-head"><span>ACCOUNT</span><h2>{heading}</h2><p>{intro}</p></div>
 
-            {configured === false && <div className="auth-setup-note"><b>云端认证等待连接</b><p>登录界面已经就绪；完成 Supabase 与发信服务连接后，即可向 QQ、163、Outlook、Gmail 和学校邮箱发送验证码。</p></div>}
+            {configured === false && <div className="auth-setup-note"><b>账户服务等待连接</b><p>Supabase 环境变量尚未配置，当前仍可使用匿名模式。</p></div>}
 
-            {step === "email" ? <form onSubmit={(event) => void sendCode(event)}>
-              <label htmlFor="account-email">邮箱地址</label>
-              <div className="email-field"><span>@</span><input id="account-email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@qq.com" /></div>
-              <button className="auth-submit" type="submit" disabled={working || configured !== true}>{working ? "正在发送…" : "发送验证码"}<span>→</span></button>
-            </form> : <form onSubmit={(event) => void verifyCode(event)}>
-              <label htmlFor="account-code">邮箱验证码</label>
-              <input className="otp-input" id="account-code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="000000" />
-              <button className="auth-submit" type="submit" disabled={working || code.length !== 6}>{working ? "正在验证…" : "验证并登录"}<span>→</span></button>
-              <div className="otp-actions"><button type="button" onClick={() => setStep("email")}>更换邮箱</button><button type="button" disabled={retry > 0} onClick={() => void sendCode()}>{retry > 0 ? `${retry}s 后重新发送` : "重新发送"}</button></div>
-            </form>}
+            {mode === "check-email" ? <div className="auth-check-email">
+              <span>✓</span><h3>邮件已发送至</h3><strong>{email}</strong><p>请打开邮件中的安全链接完成操作。完成后将自动返回 Acaora。</p><button type="button" onClick={() => switchMode("login")}>返回密码登录</button>
+            </div> : <>
+              {mode !== "recover" && <div className="auth-mode-tabs" role="tablist" aria-label="账户操作">
+                <button type="button" role="tab" aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => switchMode("login")}>密码登录</button>
+                <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => switchMode("register")}>注册账户</button>
+              </div>}
+              <form onSubmit={(event) => void submit(event)}>
+                {mode === "register" && <label htmlFor="display-name">昵称<input className="auth-text-input" id="display-name" type="text" required maxLength={40} autoComplete="name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="你的昵称" /></label>}
+                <label htmlFor="account-email">邮箱地址<div className="email-field"><span>@</span><input id="account-email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@qq.com" /></div></label>
+                {mode !== "recover" && <label htmlFor="account-password">密码<div className="password-field"><input id="account-password" type="password" required minLength={8} maxLength={72} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 8 位，含大小写字母和数字" /></div></label>}
+                {mode === "register" && <label htmlFor="confirm-password">确认密码<input className="auth-text-input" id="confirm-password" type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" /></label>}
+                {mode === "login" && <button className="auth-forgot" type="button" onClick={() => switchMode("recover")}>忘记密码？</button>}
+                <button className="auth-submit" type="submit" disabled={working || configured !== true}>{working ? "正在处理…" : mode === "login" ? "登录账户" : mode === "register" ? "创建账户" : "发送重置链接"}<span>→</span></button>
+              </form>
+              {mode === "recover" && <button className="auth-return" type="button" onClick={() => switchMode("login")}>← 返回密码登录</button>}
+            </>}
 
-            {message && <div className="auth-message" role="status">{message}</div>}
+            {message && <div className="auth-message error" role="alert">{message}</div>}
             <div className="auth-divider"><span>或</span></div>
             <a className="guest-entry" href="/dashboard?guest=1">先以匿名模式体验 <span>→</span></a>
-            <p className="auth-legal">继续即表示你同意平台仅按隐私说明处理账户与学习数据。你可以随时导出数据或注销账户。</p>
+            <p className="auth-legal">注册即表示你同意平台按隐私说明处理账户与学习数据。密码只由认证服务验证，Acaora 不保存明文密码。</p>
             <div className="email-support"><span>支持</span><b>QQ 邮箱</b><b>163 / 126</b><b>Outlook</b><b>Gmail</b><b>学校邮箱</b></div>
           </div>
         </div>

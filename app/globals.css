@@ -866,6 +866,48 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .email-support span,
 .email-support b { padding: 6px 8px; font-size: 11px; }
 
+/* Account system */
+.auth-mode-tabs { margin-top: 26px; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border-radius: 12px; background: #f0f2f6; }
+.auth-mode-tabs button { min-height: 43px; border: 0; border-radius: 9px; color: #6f7787; background: transparent; font-size: 14px; font-weight: 700; cursor: pointer; }
+.auth-mode-tabs button.active { color: #101526; background: white; box-shadow: 0 4px 16px rgba(19, 26, 43, .08); }
+.auth-mode-tabs + form { margin-top: 22px; }
+.auth-form-wrap form > label { margin-top: 15px; }
+.auth-form-wrap form > label:first-child { margin-top: 0; }
+.auth-form-wrap form > label > input,
+.password-field { width: 100%; min-height: 58px; margin-top: 9px; border: 1px solid #d5d9e2; border-radius: 12px; background: white; }
+.auth-form-wrap form > label > .email-field { margin-top: 9px; }
+.auth-form-wrap form > label > input,
+.password-field input { width: 100%; min-height: 56px; padding: 15px 17px; border: 0; border-radius: inherit; outline: none; color: #101526; background: transparent; font-size: 15px; }
+.auth-form-wrap form > label > input:focus,
+.password-field:focus-within { border-color: #6c67e8; box-shadow: 0 0 0 3px rgba(108, 103, 232, .1); }
+.auth-forgot { float: right; margin-top: 9px; padding: 4px 0; border: 0; color: #5e59d9; background: transparent; font-size: 13px; cursor: pointer; }
+.auth-forgot + .auth-submit { clear: both; }
+.auth-return { margin-top: 16px; padding: 5px 0; border: 0; color: #5e59d9; background: transparent; font-size: 13px; cursor: pointer; }
+.auth-message.error { color: #87392e; background: #fff1ee; }
+.auth-check-email { margin-top: 34px; padding: 26px 22px; border: 1px solid #dfe4ea; border-radius: 14px; background: #f8fafb; text-align: center; }
+.auth-check-email > span { width: 48px; height: 48px; margin: 0 auto 16px; display: grid; place-items: center; border-radius: 50%; color: #1e6355; background: #dff5ef; font-size: 22px; font-weight: 800; }
+.auth-check-email h3 { margin: 0; font-size: 16px; }
+.auth-check-email > strong { display: block; margin-top: 8px; color: #5c57d2; font-size: 15px; overflow-wrap: anywhere; }
+.auth-check-email p { margin: 14px 0 0; color: #71798a; font-size: 13px; line-height: 1.7; }
+.auth-check-email button { margin-top: 20px; padding: 11px 15px; border: 1px solid #d7dbe3; border-radius: 9px; color: #283143; background: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+.auth-result-page { min-height: 100vh; padding: 30px; display: grid; place-items: center; color: #111827; background: #edf0f5; }
+.auth-result-page > section { width: min(520px, 100%); padding: 48px; border: 1px solid #dce1e8; border-radius: 22px; background: white; box-shadow: 0 28px 80px rgba(17, 24, 39, .12); text-align: center; }
+.auth-result-page > section > span { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border-radius: 15px; color: #70dfc5; background: #111827; font: 800 25px/1 Georgia, serif; }
+.auth-result-page h1 { margin: 0; font: 700 35px/1.2 Georgia, "Songti SC", serif; }
+.auth-result-page section > p:not(.eyebrow) { margin: 14px 0 0; color: #70798a; font-size: 14px; line-height: 1.75; }
+.auth-result-page a { display: inline-flex; margin-top: 24px; padding: 12px 17px; border-radius: 9px; color: white; background: #111827; text-decoration: none; font-size: 13px; font-weight: 700; }
+.reset-card form { margin-top: 25px; display: grid; gap: 15px; text-align: left; }
+.reset-card form label { display: grid; gap: 8px; color: #4d5666; font-size: 13px; font-weight: 700; }
+.reset-card form input { min-height: 51px; padding: 13px 15px; border: 1px solid #d7dce4; border-radius: 10px; outline: none; font-size: 15px; }
+.reset-card form input:focus { border-color: #625de5; box-shadow: 0 0 0 3px rgba(98, 93, 229, .1); }
+.reset-card form button { min-height: 51px; border: 0; border-radius: 10px; color: white; background: #111827; font-size: 14px; font-weight: 800; cursor: pointer; }
+
+@media (max-width: 600px) {
+  .auth-mode-tabs { margin-top: 22px; }
+  .auth-result-page { padding: 0; }
+  .auth-result-page > section { min-height: 100vh; padding: 42px 24px; display: flex; flex-direction: column; justify-content: center; border: 0; border-radius: 0; }
+}
+
 /* Student workspace: larger navigation and scannable cards */
 .student-app { grid-template-columns: 248px 1fr; }
 .student-sidebar { padding: 30px 22px; }
@@ -1223,7 +1265,8 @@ footer { font-size: 12px; }
 .settings-form input:disabled { color: #808899; background: #f4f5f7; }
 .settings-form textarea { min-height: 100px; resize: vertical; line-height: 1.6; }
 .interest-editor { margin-top: 22px; }
-.interest-editor > label { color: #4f596a; font-size: 11px; font-weight: 700; }
+.interest-editor > label,
+.interest-editor > .interest-label { color: #4f596a; font-size: 11px; font-weight: 700; }
 .interest-editor > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
 .interest-editor > div button { padding: 7px 9px; border: 0; border-radius: 999px; color: #4d48b8; background: #ecebff; font-size: 10px; cursor: pointer; }
 .interest-editor form { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 9px; }
@@ -1236,6 +1279,10 @@ footer { font-size: 12px; }
 .privacy-card article > div button { min-height: 36px; margin-top: 12px; padding: 8px 10px; border: 1px solid #d8dde5; border-radius: 8px; color: #333c4d; background: white; font-size: 10px; font-weight: 700; cursor: pointer; }
 .privacy-card article > div { display: flex; gap: 7px; }
 .privacy-card button.danger { color: #923d31; border-color: #efcfc9; }
+.password-settings label { display: grid; gap: 7px; margin-top: 12px; color: #4f596a; font-size: 10px; font-weight: 700; }
+.password-settings input { min-height: 40px; padding: 9px 11px; border: 1px solid #d8dde5; border-radius: 8px; outline: none; color: #252e3f; background: white; font-size: 11px; }
+.password-settings input:focus { border-color: #625de5; box-shadow: 0 0 0 3px rgba(98, 93, 229, .09); }
+.password-settings button:disabled { opacity: .45; cursor: default; }
 .settings-message { margin-top: 20px; padding: 13px 15px; border: 1px solid #cce9e2; border-radius: 10px; color: #246357; background: #eefaf7; font-size: 12px; }
 .settings-message.error { color: #87392e; border-color: #efcfc9; background: #fff3f0; }
 .settings-state { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 28px; padding: 40px; border: 1px solid #dfe3e9; border-radius: 18px; background: white; text-align: center; }

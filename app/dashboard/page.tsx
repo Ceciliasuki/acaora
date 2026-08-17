@@ -38,7 +38,7 @@ export default function DashboardPage() {
       <section className="student-main">
         <header className="student-topbar"><div><span>SUNDAY · 16 AUGUST</span><h1>下午好，{viewer?.email?.split("@")[0] ?? "同学"}。</h1></div><div><button className="command-button">⌘ K <span>快速开始</span></button>{viewer ? <button className="account-button" onClick={() => void signOut()}>{initials}<span>退出</span></button> : <a className="dashboard-login" href="/auth">登录同步</a>}</div></header>
 
-        {!viewer && loaded && <div className="guest-banner"><div><b>{configured ? "匿名模式" : "账户服务等待连接"}</b><p>{configured ? "当前内容只保存在这台设备。登录后可以跨设备同步学习记忆。" : "你可以继续使用 PaperLab 和 DataLab；Supabase 连接完成后将开放邮箱验证码登录。"}</p></div><a href="/auth">{configured ? "登录账户" : "查看登录页"} →</a></div>}
+        {!viewer && loaded && <div className="guest-banner"><div><b>{configured ? "匿名模式" : "账户服务等待连接"}</b><p>{configured ? "当前内容只保存在这台设备。登录后可以跨设备同步学习记忆。" : "你可以继续使用 PaperLab 和 DataLab；Supabase 连接完成后将开放注册与密码登录。"}</p></div><a href="/auth">{configured ? "登录账户" : "查看登录页"} →</a></div>}
 
         <section className="dashboard-hero"><div><span>TODAY’S FOCUS</span><h2>把最重要的一件事，<br />推进到下一步。</h2><p>你正在阅读《Statistical learning in observational studies》，上次停在方法部分。</p><div><a href="/papers">继续阅读论文 <b>→</b></a><button>更换今日重点</button></div></div><aside><span>WEEKLY SIGNAL</span><strong>6.4<small>h</small></strong><p>本周深度学习时间</p><div>{[45, 68, 38, 82, 60, 74, 52].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div><small>比上周提高 18%</small></aside></section>
 

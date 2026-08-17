@@ -179,7 +179,7 @@ export default function ProjectsPage() {
         {message && <div className="project-message" role="status">{message}</div>}
 
         {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : !viewer ? (
-          <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><a href="/auth">使用邮箱验证码登录 <b>→</b></a></section>
+          <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><a href="/auth">注册或密码登录 <b>→</b></a></section>
         ) : (
           <>
             <section className="project-metrics">
