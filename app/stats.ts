@@ -198,7 +198,7 @@ export function regression(data: DataSet, xHeader: string, yHeader: string) {
   };
 }
 
-function logGamma(value: number) {
+function logGamma(value: number): number {
   const coefficients = [676.5203681218851, -1259.1392167224028, 771.3234287776531,
     -176.6150291621406, 12.507343278686905, -0.13857109526572012,
     9.984369578019572e-6, 1.5056327351493116e-7];
@@ -213,9 +213,9 @@ function logGamma(value: number) {
 function betaFraction(a: number, b: number, x: number) {
   const maxIterations = 160;
   const epsilon = 3e-12;
-  let qab = a + b;
-  let qap = a + 1;
-  let qam = a - 1;
+  const qab = a + b;
+  const qap = a + 1;
+  const qam = a - 1;
   let c = 1;
   let d = 1 - (qab * x) / qap;
   if (Math.abs(d) < 1e-30) d = 1e-30;

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 type Step = "email" | "code";
@@ -61,10 +62,10 @@ export default function AuthPage() {
 
   return (
     <main className="auth-page">
-      <a className="auth-back" href="/">← 返回 Acaora</a>
+      <Link className="auth-back" href="/">← 返回 Acaora</Link>
       <section className="auth-shell">
         <div className="auth-story">
-          <a className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></a>
+          <Link className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
           <div className="auth-story-copy"><span>YOUR LEARNING, CONTINUED</span><h1>在每台设备上，<br />继续你的思考。</h1><p>登录后同步论文进度、笔记、AI 分析与课程项目。原始 PDF 和数据仍默认留在你的设备。</p></div>
           <div className="auth-privacy"><b>◉</b><div><strong>隐私分层</strong><p>本地文件、云端记忆和 AI 请求分别控制，不会因为登录自动上传全部内容。</p></div></div>
           <div className="auth-orbit"><i /><i /><i /><b>A</b></div>

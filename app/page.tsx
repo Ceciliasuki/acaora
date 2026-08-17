@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const modules = [
   { icon: "课", title: "课程管理", copy: "整理课件、课程大纲和笔记，生成知识地图、测验与复习计划。", href: "/dashboard", tone: "violet" },
   { icon: "文", title: "论文阅读与分析", copy: "导入英文 PDF，进行双语阅读、文献检索、段落分析与统计审查。", href: "/papers", tone: "mint" },
@@ -9,7 +11,7 @@ export default function AcaoraHome() {
   return (
     <main className="acaora-site">
       <nav className="acaora-nav" aria-label="主导航">
-        <a className="acaora-brand" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></a>
+        <Link className="acaora-brand" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
         <div className="acaora-nav-links"><a href="#platform">平台</a><a href="/papers">论文研究</a><a href="/data">数据分析</a><a href="#principles">可信 AI</a></div>
         <div className="acaora-nav-actions"><a className="ghost-link" href="/auth">登录</a><a className="primary-link" href="/auth">免费开始 <span>↗</span></a></div>
       </nav>

@@ -3,7 +3,6 @@
 import AppSidebar from "../components/app-sidebar";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
-import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
@@ -90,7 +89,7 @@ export default function PaperLab() {
   useEffect(() => {
     const factory = getTranslatorFactory();
     if (!factory) {
-      setTranslationState("unsupported");
+      void Promise.resolve().then(() => setTranslationState("unsupported"));
       return;
     }
     void factory.availability({ sourceLanguage: "en", targetLanguage: "zh" })
@@ -383,7 +382,10 @@ function translationStatusDetail(state: TranslationState, modelProgress: number)
 
 async function extractPdf(file: File, onProgress: (progress: number) => void): Promise<PaperRecord> {
   const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url,
+  ).toString();
   const buffer = new Uint8Array(await file.arrayBuffer());
   const document = await pdfjs.getDocument({ data: buffer }).promise;
   const paragraphs: Paragraph[] = [];

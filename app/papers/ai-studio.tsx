@@ -38,6 +38,8 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
   const [sessionResult, setSessionResult] = useState<AiSavedResult | null>(null);
 
   useEffect(() => {
+    // Session storage is a browser-only external store, so it is read after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setApiKey(sessionStorage.getItem("statlab-deepseek-key") ?? "");
   }, []);
 

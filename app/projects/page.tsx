@@ -32,6 +32,7 @@ const kindOptions = [
 ];
 
 const statusLabels = { active: "进行中", paused: "已暂停", completed: "已完成" };
+const dueSoonReferenceTime = Date.now();
 
 function kindInfo(kind: string) {
   return kindOptions.find((item) => item.value === kind) ?? kindOptions[0];
@@ -58,7 +59,7 @@ export default function ProjectsPage() {
   const completedTasks = projects.reduce((total, project) => total + (project.metadata.tasks ?? []).filter((task) => task.done).length, 0);
   const dueSoon = projects.filter((project) => {
     if (!project.metadata.deadline || project.status === "completed") return false;
-    const distance = new Date(project.metadata.deadline).getTime() - Date.now();
+    const distance = new Date(project.metadata.deadline).getTime() - dueSoonReferenceTime;
     return distance >= 0 && distance <= 7 * 24 * 60 * 60 * 1000;
   }).length;
 
