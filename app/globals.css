@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 31237)
+Total output lines: 1686
+
 @import "tailwindcss";
 
 :root {
@@ -648,50 +651,7 @@ footer p { margin: 0; text-align: right; }
 .auth-setup-note { margin-top: 20px; padding: 12px; border: 1px solid #e1c99e; border-radius: 8px; background: #fff8e9; }
 .auth-setup-note b { color: #755827; font-size: 8px; }
 .auth-setup-note p { margin: 5px 0 0; color: #806f50; font-size: 7px; line-height: 1.55; }
-.auth-message { margin-top: 12px; padding: 9px 10px; border-radius: 7px; background: #edf6f1; color: #3e665b; font-size: 8px; line-height: 1.5; }
-.auth-divider { position: relative; margin: 24px 0; border-top: 1px solid #e4e6eb; text-align: center; }
-.auth-divider span { position: relative; top: -6px; padding: 0 9px; background: white; color: #a1a6b0; font-size: 7px; }
-.guest-entry { padding: 12px 14px; display: flex; justify-content: space-between; border: 1px solid #d9dde5; border-radius: 9px; color: #323a4b; text-decoration: none; font-size: 9px; }
-.auth-legal { margin: 15px 0 0; color: #a0a5af; font-size: 7px; line-height: 1.6; text-align: center; }
-.email-support { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 18px; }
-.email-support span, .email-support b { padding: 4px 6px; border-radius: 4px; background: #f0f1f4; color: #7f8592; font-size: 6px; font-weight: 600; }
-.email-support span { background: transparent; }
-
-.student-app { --student-ink: #101526; --student-violet: #6c67e8; min-height: 100vh; display: grid; grid-template-columns: 215px 1fr; background: #f4f5f8; color: var(--student-ink); font-family: Inter, ui-sans-serif, "Microsoft YaHei", sans-serif; }
-.student-sidebar { position: sticky; top: 0; height: 100vh; padding: 25px 18px; display: flex; flex-direction: column; background: #111727; color: white; }
-.student-sidebar > nav { display: grid; gap: 4px; margin-top: 48px; }
-.student-sidebar > nav a, .student-sidebar-foot > a { padding: 11px 12px; display: flex; align-items: center; gap: 11px; border-radius: 8px; color: #8e98aa; text-decoration: none; font-size: 8px; }
-.student-sidebar > nav a i, .student-sidebar-foot > a i { width: 16px; color: #758095; font-size: 11px; font-style: normal; text-align: center; }
-.student-sidebar > nav a.active { background: #252d40; color: white; }
-.student-sidebar > nav a.active i { color: #70dfc5; }
-.student-sidebar-foot { margin-top: auto; }
-.student-sidebar-foot > a { margin-bottom: 10px; border-bottom: 1px solid #293145; border-radius: 0; }
-.student-sidebar-foot > div { padding: 9px; display: grid; grid-template-columns: 31px 1fr; align-items: center; gap: 9px; }
-.student-sidebar-foot > div > b { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 9px; background: #6c67e8; font-size: 8px; }
-.student-sidebar-foot p { min-width: 0; margin: 0; }
-.student-sidebar-foot p strong, .student-sidebar-foot p small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.student-sidebar-foot p strong { font-size: 8px; }
-.student-sidebar-foot p small { margin-top: 3px; color: #7d879a; font-size: 6px; }
-.student-main { min-width: 0; padding: 31px clamp(24px, 4vw, 58px) 60px; }
-.student-topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.student-topbar > div:first-child span { color: #9197a5; font: 700 7px/1 monospace; letter-spacing: .1em; }
-.student-topbar h1 { margin: 7px 0 0; font: 600 24px/1.2 Georgia, "Songti SC", serif; }
-.student-topbar > div:last-child { display: flex; align-items: center; gap: 8px; }
-.command-button { border: 1px solid #d9dce4; border-radius: 8px; padding: 9px 11px; background: white; color: #686f7d; font-size: 7px; }
-.account-button { width: 70px; height: 34px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; border: 0; border-radius: 9px; background: #101526; color: white; cursor: pointer; font-size: 7px; }
-.account-button span { color: #9ca6b8; }
-.dashboard-login { padding: 10px 13px; border-radius: 8px; background: #101526; color: white; text-decoration: none; font-size: 8px; }
-.guest-banner { margin-top: 24px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid #ded8f5; border-radius: 10px; background: #f0effd; }
-.guest-banner b { color: #4f4bad; font-size: 8px; }
-.guest-banner p { margin: 3px 0 0; color: #73718f; font-size: 7px; }
-.guest-banner a { flex: 0 0 auto; color: #514bb5; text-decoration: none; font-size: 8px; font-weight: 700; }
-.dashboard-hero { min-height: 300px; margin-top: 25px; display: grid; grid-template-columns: 1fr 260px; overflow: hidden; border-radius: 15px; background: linear-gradient(145deg, #6964e4, #5353c9); color: white; box-shadow: 0 20px 50px rgba(83,83,201,.18); }
-.dashboard-hero > div { padding: 35px; }
-.dashboard-hero > div > span, .dashboard-hero > aside > span, .dashboard-section-title span, .dashboard-lower article header span, .dashboard-lower > aside > span { color: #d7d5ff; font: 700 7px/1 monospace; letter-spacing: .12em; }
-.dashboard-hero h2 { margin: 28px 0 0; font: 500 clamp(27px, 3.2vw, 41px)/1.08 Georgia, "Songti SC", serif; }
-.dashboard-hero > div > p { max-width: 520px; margin: 15px 0 0; color: #dcddfa; font-size: 9px; line-height: 1.65; }
-.dashboard-hero > div > div { display: flex; gap: 8px; margin-top: 30px; }
-.dashboard-hero > div a, .dashboard-hero > div button { padding: 11px 13px; border: 1px solid rgba(255,255,255,.24); border-radius: 8px; background: transparent; color: white; text-decoration: none; font-size: 8px; }
+.auth-message { margin-top: 12px; padding: 9px 10px; border-radius: 7px; background: #edf6f1; color: #3e665b; f…1237 tokens truncated…rder-radius: 8px; background: transparent; color: white; text-decoration: none; font-size: 8px; }
 .dashboard-hero > div a { background: white; color: #4b48a7; }
 .dashboard-hero > div a b { margin-left: 18px; }
 .dashboard-hero > aside { padding: 29px 25px; border-left: 1px solid rgba(255,255,255,.16); background: rgba(22,27,60,.2); }
@@ -890,6 +850,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .auth-check-email > strong { display: block; margin-top: 8px; color: #5c57d2; font-size: 15px; overflow-wrap: anywhere; }
 .auth-check-email p { margin: 14px 0 0; color: #71798a; font-size: 13px; line-height: 1.7; }
 .auth-check-email button { margin-top: 20px; padding: 11px 15px; border: 1px solid #d7dbe3; border-radius: 9px; color: #283143; background: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+.auth-check-email button:disabled { cursor: wait; opacity: .66; }
+.auth-existing-account > span { color: #5c57d2; background: #eeedff; font-family: Georgia, serif; }
+.auth-existing-account .auth-primary-action { width: min(100%, 290px); border-color: #101526; color: white; background: #101526; }
+.auth-existing-account .auth-secondary-action { display: block; margin: 10px auto 0; border-color: transparent; color: #5e6472; background: transparent; }
 .auth-result-page { min-height: 100vh; padding: 30px; display: grid; place-items: center; color: #111827; background: #edf0f5; }
 .auth-result-page > section { width: min(520px, 100%); padding: 48px; border: 1px solid #dce1e8; border-radius: 22px; background: white; box-shadow: 0 28px 80px rgba(17, 24, 39, .12); text-align: center; }
 .auth-result-page > section > span { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border-radius: 15px; color: #70dfc5; background: #111827; font: 800 25px/1 Georgia, serif; }
@@ -1679,3 +1643,4 @@ footer { font-size: 12px; }
   .project-modal { padding: 0; align-items: end; }
   .project-modal > form { max-height: 92vh; border-radius: 20px 20px 0 0; }
 }
+

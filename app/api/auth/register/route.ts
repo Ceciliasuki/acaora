@@ -45,8 +45,22 @@ export async function POST(request: NextRequest) {
       setSessionCookies(response, payload as Parameters<typeof setSessionCookies>[1]);
       return response;
     }
+
+    // With email confirmation enabled, GoTrue deliberately returns an
+    // obfuscated 200 response for an already registered account. The empty
+    // identities array is the only signal available to the caller; no
+    // confirmation email is sent for this response.
+    if (payload.user && Array.isArray(payload.user.identities) && payload.user.identities.length === 0) {
+      return NextResponse.json({
+        signedIn: false,
+        confirmationRequired: false,
+        accountMayExist: true,
+        email: normalizedEmail,
+      });
+    }
     return NextResponse.json({ signedIn: false, confirmationRequired: true, email: normalizedEmail });
   } catch (error) {
     return authError(error);
   }
 }
+
