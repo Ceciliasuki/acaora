@@ -87,10 +87,10 @@ export default function AuthPage() {
         if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
         const normalizedEmail = email.trim().toLowerCase();
         if (mode === "recover") {
-          await browserRecover(normalizedEmail, new URL("/auth/reset", location.origin).toString());
+          await browserRecover(normalizedEmail, new URL("/reset", location.origin).toString());
           payload = {};
         } else if (mode === "register") {
-          const directPayload = await browserSignUp(normalizedEmail, password, displayName.trim(), new URL("/auth/callback", location.origin).toString());
+          const directPayload = await browserSignUp(normalizedEmail, password, displayName.trim(), new URL("/auth-callback", location.origin).toString());
           if (directPayload.access_token && directPayload.refresh_token) {
             saveBrowserSession(directPayload);
             router.push("/dashboard");
@@ -136,7 +136,7 @@ export default function AuthPage() {
         await siteAuthRequest("/api/auth/recover", { email });
       } catch (error) {
         if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
-        await browserRecover(email.trim().toLowerCase(), new URL("/auth/reset", location.origin).toString());
+        await browserRecover(email.trim().toLowerCase(), new URL("/reset", location.origin).toString());
       }
       setMailPurpose("recovery");
       setMode("check-email");

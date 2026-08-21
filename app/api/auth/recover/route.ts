@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
     // EdgeOne server functions may see an internal or short-lived deployment
     // host. Auth emails must always return to the stable public site instead.
-    const resetUrl = getSiteUrl("/auth/reset");
+    const resetUrl = getSiteUrl("/reset");
     const supabaseResponse = await supabaseAuth(`recover?redirect_to=${encodeURIComponent(resetUrl)}`, {
       method: "POST",
       body: JSON.stringify({ email: normalizedEmail }),
