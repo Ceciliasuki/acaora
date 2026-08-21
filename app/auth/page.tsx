@@ -6,6 +6,7 @@ import { FormEvent, useEffect, useState } from "react";
 
 type Mode = "login" | "register" | "recover" | "existing-account" | "check-email";
 type MailPurpose = "confirmation" | "recovery";
+type AuthAvailability = "checking" | "ready" | "not-configured" | "unreachable";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -14,16 +15,31 @@ export default function AuthPage() {
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [configured, setConfigured] = useState<boolean | null>(null);
+  const [authAvailability, setAuthAvailability] = useState<AuthAvailability>("checking");
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
   const [mailPurpose, setMailPurpose] = useState<MailPurpose>("confirmation");
 
   useEffect(() => {
-    void fetch("/api/auth/status")
-      .then((response) => response.json())
-      .then((payload: { configured?: boolean }) => setConfigured(Boolean(payload.configured)))
-      .catch(() => setConfigured(false));
+    let active = true;
+
+    async function checkAuthAvailability() {
+      try {
+        const response = await fetch(`/api/auth/status?fresh=${Date.now()}`, {
+          cache: "no-store",
+          credentials: "same-origin",
+          headers: { "Accept": "application/json" },
+        });
+        if (!response.ok) throw new Error(`AUTH_STATUS_${response.status}`);
+        const payload = await response.json() as { configured?: boolean };
+        if (active) setAuthAvailability(payload.configured === true ? "ready" : "not-configured");
+      } catch {
+        if (active) setAuthAvailability("unreachable");
+      }
+    }
+
+    void checkAuthAvailability();
+    return () => { active = false; };
   }, []);
 
   function switchMode(next: Mode) {
@@ -35,7 +51,7 @@ export default function AuthPage() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!configured || working) return;
+    if (working) return;
     if (mode === "register" && password !== confirmPassword) {
       setMessage("两次输入的密码不一致。");
       return;
@@ -74,7 +90,7 @@ export default function AuthPage() {
   }
 
   async function sendPasswordSetup() {
-    if (!configured || working) return;
+    if (working) return;
     setWorking(true);
     setMessage("");
     try {
@@ -120,7 +136,8 @@ export default function AuthPage() {
           <div className="auth-form-wrap">
             <div className="auth-form-head"><span>ACCOUNT</span><h2>{heading}</h2><p>{intro}</p></div>
 
-            {configured === false && <div className="auth-setup-note"><b>账户服务等待连接</b><p>Supabase 环境变量尚未配置，当前仍可使用匿名模式。</p></div>}
+            {authAvailability === "not-configured" && <div className="auth-setup-note"><b>账户服务等待连接</b><p>当前部署尚未配置账户服务。你仍可使用匿名模式，或联系网站管理员完成配置。</p></div>}
+            {authAvailability === "unreachable" && <div className="auth-message" role="status">账户状态检查暂时中断。你仍可继续登录或注册，提交时系统会再次连接。</div>}
 
             {mode === "check-email" ? <div className="auth-check-email">
               <span>✓</span><h3>{mailPurpose === "recovery" ? "密码设置链接已发送至" : "确认邮件已发送至"}</h3><strong>{email}</strong><p>{mailPurpose === "recovery" ? "请打开邮件中的链接设置新密码。设置完成后，即可使用邮箱和密码登录。" : "请打开邮件中的确认链接完成注册。完成后将自动返回 Acaora。"}</p><button type="button" onClick={() => switchMode("login")}>返回密码登录</button>
@@ -137,7 +154,7 @@ export default function AuthPage() {
                 {mode !== "recover" && <label htmlFor="account-password">密码<div className="password-field"><input id="account-password" type="password" required minLength={8} maxLength={72} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 8 位，含大小写字母和数字" /></div></label>}
                 {mode === "register" && <label htmlFor="confirm-password">确认密码<input className="auth-text-input" id="confirm-password" type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" /></label>}
                 {mode === "login" && <button className="auth-forgot" type="button" onClick={() => switchMode("recover")}>忘记密码？</button>}
-                <button className="auth-submit" type="submit" disabled={working || configured !== true}>{working ? "正在处理…" : mode === "login" ? "登录账户" : mode === "register" ? "创建账户" : "发送重置链接"}<span>→</span></button>
+                <button className="auth-submit" type="submit" disabled={working}>{working ? "正在处理…" : mode === "login" ? "登录账户" : mode === "register" ? "创建账户" : "发送重置链接"}<span>→</span></button>
               </form>
               {mode === "recover" && <button className="auth-return" type="button" onClick={() => switchMode("login")}>← 返回密码登录</button>}
             </>}
