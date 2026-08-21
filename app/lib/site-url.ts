@@ -43,8 +43,8 @@ export function getRequestSiteOrigin(request: Request) {
 export function getSiteUrl(pathname = "/", requestOrigin?: string) {
   const candidates = [
     process.env.SITE_URL,
-    process.env.NEXT_PUBLIC_SITE_URL,
     requestOrigin,
+    process.env.NEXT_PUBLIC_SITE_URL,
     process.env.NODE_ENV === "development" ? localDevelopmentUrl : undefined,
   ];
 
