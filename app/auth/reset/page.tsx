@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { browserUpdatePassword, getBrowserAuthConfig, saveBrowserSession } from "../../lib/browser-auth";
 
 export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
@@ -18,17 +19,28 @@ export default function ResetPasswordPage() {
       queueMicrotask(() => setMessage("重置链接无效或已经过期，请重新申请。"));
       return;
     }
+    saveBrowserSession({ access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn });
     void fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accessToken, refreshToken, expiresIn }),
     }).then(async (response) => {
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) throw new Error("SITE_AUTH_UNAVAILABLE");
       const payload = await response.json() as { error?: string };
       if (!response.ok) throw new Error(payload.error || "无法验证重置链接。");
       history.replaceState(null, "", "/auth/reset");
       setReady(true);
       setMessage("");
-    }).catch((cause) => setMessage(cause instanceof Error ? cause.message : "无法验证重置链接。"));
+    }).catch((cause) => {
+      if (cause instanceof Error && cause.message === "SITE_AUTH_UNAVAILABLE" && getBrowserAuthConfig()) {
+        history.replaceState(null, "", "/auth/reset");
+        setReady(true);
+        setMessage("");
+        return;
+      }
+      setMessage(cause instanceof Error ? cause.message : "无法验证重置链接。");
+    });
   }, []);
 
   async function updatePassword(event: FormEvent) {
@@ -40,9 +52,15 @@ export default function ResetPasswordPage() {
     setWorking(true);
     setMessage("");
     try {
-      const response = await fetch("/api/auth/password", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "密码更新失败。");
+      const response = await fetch("/api/auth/password", { method: "PUT", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ password }) });
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        if (!getBrowserAuthConfig()) throw new Error("密码更新接口暂时不可用。");
+        await browserUpdatePassword(password);
+      } else {
+        const payload = await response.json() as { error?: string };
+        if (!response.ok) throw new Error(payload.error || "密码更新失败。");
+      }
       setMessage("密码已更新，正在进入账户…");
       window.setTimeout(() => location.replace("/dashboard"), 700);
     } catch (cause) {

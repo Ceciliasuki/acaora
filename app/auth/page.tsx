@@ -3,10 +3,30 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { browserRecover, browserSignIn, browserSignUp, getBrowserAuthConfig, saveBrowserSession } from "../lib/browser-auth";
 
 type Mode = "login" | "register" | "recover" | "existing-account" | "check-email";
 type MailPurpose = "confirmation" | "recovery";
 type AuthAvailability = "checking" | "ready" | "not-configured" | "unreachable";
+
+class SiteAuthUnavailableError extends Error {}
+
+async function siteAuthRequest(endpoint: string, body: Record<string, string>) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  let payload: { error?: string; confirmationRequired?: boolean; accountMayExist?: boolean };
+  try {
+    payload = text ? JSON.parse(text) as typeof payload : {};
+  } catch {
+    throw new SiteAuthUnavailableError("站点认证接口被部署预览限制拦截。");
+  }
+  if (!response.ok) throw new Error(payload.error || "操作失败，请稍后重试。");
+  return payload;
+}
 
 export default function AuthPage() {
   const router = useRouter();
@@ -34,7 +54,7 @@ export default function AuthPage() {
         const payload = await response.json() as { configured?: boolean };
         if (active) setAuthAvailability(payload.configured === true ? "ready" : "not-configured");
       } catch {
-        if (active) setAuthAvailability("unreachable");
+        if (active) setAuthAvailability(getBrowserAuthConfig() ? "ready" : "unreachable");
       }
     }
 
@@ -60,13 +80,31 @@ export default function AuthPage() {
     setMessage("");
     try {
       const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, displayName }),
-      });
-      const payload = await response.json() as { error?: string; confirmationRequired?: boolean; accountMayExist?: boolean };
-      if (!response.ok) throw new Error(payload.error || "操作失败，请稍后重试。");
+      let payload: { confirmationRequired?: boolean; accountMayExist?: boolean };
+      try {
+        payload = await siteAuthRequest(endpoint, { email, password, displayName });
+      } catch (error) {
+        if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
+        const normalizedEmail = email.trim().toLowerCase();
+        if (mode === "recover") {
+          await browserRecover(normalizedEmail, new URL("/auth/reset", location.origin).toString());
+          payload = {};
+        } else if (mode === "register") {
+          const directPayload = await browserSignUp(normalizedEmail, password, displayName.trim(), new URL("/auth/callback", location.origin).toString());
+          if (directPayload.access_token && directPayload.refresh_token) {
+            saveBrowserSession(directPayload);
+            router.push("/dashboard");
+            return;
+          }
+          payload = directPayload.user && Array.isArray(directPayload.user.identities) && directPayload.user.identities.length === 0
+            ? { accountMayExist: true }
+            : { confirmationRequired: true };
+        } else {
+          await browserSignIn(normalizedEmail, password);
+          router.push("/dashboard");
+          return;
+        }
+      }
       if (payload.accountMayExist) {
         setMode("existing-account");
         return;
@@ -94,13 +132,12 @@ export default function AuthPage() {
     setWorking(true);
     setMessage("");
     try {
-      const response = await fetch("/api/auth/recover", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "密码设置邮件发送失败，请稍后重试。");
+      try {
+        await siteAuthRequest("/api/auth/recover", { email });
+      } catch (error) {
+        if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
+        await browserRecover(email.trim().toLowerCase(), new URL("/auth/reset", location.origin).toString());
+      }
       setMailPurpose("recovery");
       setMode("check-email");
     } catch (error) {
