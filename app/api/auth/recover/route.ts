@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteUrl } from "../../../lib/site-url";
 import { authError, supabaseAuth } from "../_shared";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -10,7 +11,9 @@ export async function POST(request: NextRequest) {
     if (!normalizedEmail || !emailPattern.test(normalizedEmail)) {
       return NextResponse.json({ error: "请输入有效的邮箱地址。" }, { status: 400 });
     }
-    const resetUrl = new URL("/auth/reset", request.nextUrl.origin).toString();
+    // EdgeOne server functions may see an internal or short-lived deployment
+    // host. Auth emails must always return to the stable public site instead.
+    const resetUrl = getSiteUrl("/auth/reset");
     const supabaseResponse = await supabaseAuth(`recover?redirect_to=${encodeURIComponent(resetUrl)}`, {
       method: "POST",
       body: JSON.stringify({ email: normalizedEmail }),

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import AuthHashRedirect from "./components/auth-hash-redirect";
+import { getSiteUrl } from "./lib/site-url";
 import "./globals.css";
 
 const title = "Acaora 学曦 · 大学生智能学习与研究平台";
 const description = "把课程、论文、数据分析与研究项目放进同一个可信、可追溯的智能学习工作台。";
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://acaora-dp12ulx0tbef.edgeone.dev";
+const siteUrl = getSiteUrl();
 const image = "/og-acaora.png";
 const publicSupabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
 const configuredSupabaseKey = process.env.SUPABASE_ANON_KEY;

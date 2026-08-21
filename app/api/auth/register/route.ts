@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSiteUrl } from "../../../lib/site-url";
 import { authError, setSessionCookies, supabaseAuth } from "../_shared";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "密码需为 8–72 位，并同时包含大写字母、小写字母和数字。" }, { status: 400 });
     }
 
-    const callbackUrl = new URL("/auth/callback", request.nextUrl.origin).toString();
+    const callbackUrl = getSiteUrl("/auth/callback");
     const supabaseResponse = await supabaseAuth(`signup?redirect_to=${encodeURIComponent(callbackUrl)}`, {
       method: "POST",
       body: JSON.stringify({
