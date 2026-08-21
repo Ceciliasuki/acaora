@@ -41,6 +41,15 @@ export default function AuthPage() {
   const [mailPurpose, setMailPurpose] = useState<MailPurpose>("confirmation");
 
   useEffect(() => {
+    const code = new URLSearchParams(location.search).get("auth_error");
+    if (!code) return;
+    setMessage(code === "otp_expired"
+      ? "这封邮件中的链接已经过期或已被使用，请重新申请一封新邮件。"
+      : "邮件链接无效，请重新申请。");
+    history.replaceState(null, "", "/auth");
+  }, []);
+
+  useEffect(() => {
     let active = true;
 
     async function checkAuthAvailability() {
