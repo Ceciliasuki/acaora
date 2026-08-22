@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { browserRecover, browserSignIn, browserSignUp, getBrowserAuthConfig, saveBrowserSession } from "../lib/browser-auth";
+import { bridgeBrowserSession, browserRecover, browserSignIn, browserSignUp, getBrowserAuthConfig, saveBrowserSession } from "../lib/browser-auth";
 
 type Mode = "login" | "register" | "recover" | "existing-account" | "check-email";
 type MailPurpose = "confirmation" | "recovery";
@@ -43,9 +43,9 @@ export default function AuthPage() {
   useEffect(() => {
     const code = new URLSearchParams(location.search).get("auth_error");
     if (!code) return;
-    setMessage(code === "otp_expired"
+    queueMicrotask(() => setMessage(code === "otp_expired"
       ? "这封邮件中的链接已经过期或已被使用，请重新申请一封新邮件。"
-      : "邮件链接无效，请重新申请。");
+      : "邮件链接无效，请重新申请。"));
     history.replaceState(null, "", "/auth");
   }, []);
 
@@ -88,12 +88,8 @@ export default function AuthPage() {
     setWorking(true);
     setMessage("");
     try {
-      const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
       let payload: { confirmationRequired?: boolean; accountMayExist?: boolean };
-      try {
-        payload = await siteAuthRequest(endpoint, { email, password, displayName });
-      } catch (error) {
-        if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
+      if (getBrowserAuthConfig()) {
         const normalizedEmail = email.trim().toLowerCase();
         if (mode === "recover") {
           await browserRecover(normalizedEmail, new URL("/reset", location.origin).toString());
@@ -102,7 +98,9 @@ export default function AuthPage() {
           const directPayload = await browserSignUp(normalizedEmail, password, displayName.trim(), new URL("/auth-callback", location.origin).toString());
           if (directPayload.access_token && directPayload.refresh_token) {
             saveBrowserSession(directPayload);
-            router.push("/dashboard");
+            await bridgeBrowserSession();
+            router.replace("/dashboard");
+            router.refresh();
             return;
           }
           payload = directPayload.user && Array.isArray(directPayload.user.identities) && directPayload.user.identities.length === 0
@@ -110,9 +108,14 @@ export default function AuthPage() {
             : { confirmationRequired: true };
         } else {
           await browserSignIn(normalizedEmail, password);
-          router.push("/dashboard");
+          await bridgeBrowserSession();
+          router.replace("/dashboard");
+          router.refresh();
           return;
         }
+      } else {
+        const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
+        payload = await siteAuthRequest(endpoint, { email, password, displayName });
       }
       if (payload.accountMayExist) {
         setMode("existing-account");
@@ -216,4 +219,5 @@ export default function AuthPage() {
     </main>
   );
 }
+
 

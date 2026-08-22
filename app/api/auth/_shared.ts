@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export type SupabaseUser = {
   id: string;
@@ -12,6 +12,12 @@ type AuthSession = {
   refresh_token: string;
   expires_in?: number;
   user: SupabaseUser;
+};
+
+export type RequestSession = {
+  accessToken: string;
+  user: SupabaseUser;
+  refreshed: AuthSession | null;
 };
 
 export const accessCookie = "acaora_access";
@@ -88,9 +94,34 @@ export async function refreshSession(refreshToken: string) {
   return response.json() as Promise<AuthSession>;
 }
 
+export function privateNoStore(response: NextResponse) {
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("Vary", "Cookie, Authorization");
+  return response;
+}
+
+function bearerToken(request: NextRequest) {
+  const authorization = request.headers.get("authorization")?.trim();
+  return authorization?.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : undefined;
+}
+
+export async function readRequestSession(request: NextRequest): Promise<RequestSession | null> {
+  const candidates = [bearerToken(request), request.cookies.get(accessCookie)?.value].filter(Boolean) as string[];
+  for (const accessToken of new Set(candidates)) {
+    const user = await readUser(accessToken);
+    if (user) return { accessToken, user, refreshed: null };
+  }
+
+  const refreshToken = request.cookies.get(refreshCookie)?.value;
+  if (!refreshToken) return null;
+  const refreshed = await refreshSession(refreshToken);
+  return refreshed ? { accessToken: refreshed.access_token, user: refreshed.user, refreshed } : null;
+}
+
 export function authError(error: unknown) {
   if (error instanceof Error && error.message === "AUTH_NOT_CONFIGURED") {
-    return NextResponse.json({ error: "邮箱登录服务正在等待安全连接，当前可继续使用匿名模式。", code: "not_configured" }, { status: 503 });
+    return privateNoStore(NextResponse.json({ error: "邮箱登录服务正在等待安全连接，当前可继续使用匿名模式。", code: "not_configured" }, { status: 503 }));
   }
-  return NextResponse.json({ error: "登录服务暂时不可用，请稍后重试。" }, { status: 503 });
+  return privateNoStore(NextResponse.json({ error: "登录服务暂时不可用，请稍后重试。" }, { status: 503 }));
 }
+

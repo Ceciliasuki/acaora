@@ -20,6 +20,8 @@ type StoredSession = {
 };
 
 const storageKey = "acaora_supabase_session";
+export const authChangeEvent = "acaora:auth-change";
+let refreshInFlight: Promise<StoredSession | null> | null = null;
 
 export function getBrowserAuthConfig() {
   if (typeof document === "undefined") return null;
@@ -62,6 +64,7 @@ export function saveBrowserSession(payload: BrowserAuthPayload) {
     user: payload.user,
   };
   localStorage.setItem(storageKey, JSON.stringify(session));
+  window.dispatchEvent(new Event(authChangeEvent));
   return true;
 }
 
@@ -76,8 +79,11 @@ function readBrowserSession() {
   }
 }
 
-function clearBrowserSession() {
-  if (typeof localStorage !== "undefined") localStorage.removeItem(storageKey);
+export function clearBrowserSession() {
+  if (typeof localStorage !== "undefined") {
+    localStorage.removeItem(storageKey);
+    window.dispatchEvent(new Event(authChangeEvent));
+  }
 }
 
 export async function browserSignUp(email: string, password: string, displayName: string, redirectTo: string) {
@@ -104,23 +110,35 @@ export async function browserRecover(email: string, redirectTo: string) {
 }
 
 async function refreshBrowserSession(session: StoredSession) {
-  try {
-    const payload = await authRequest<BrowserAuthPayload>("token?grant_type=refresh_token", {
-      method: "POST",
-      body: JSON.stringify({ refresh_token: session.refreshToken }),
-    });
-    if (!saveBrowserSession(payload)) return null;
-    return readBrowserSession();
-  } catch {
-    clearBrowserSession();
-    return null;
-  }
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const payload = await authRequest<BrowserAuthPayload>("token?grant_type=refresh_token", {
+        method: "POST",
+        body: JSON.stringify({ refresh_token: session.refreshToken }),
+      });
+      if (!saveBrowserSession(payload)) return null;
+      return readBrowserSession();
+    } catch {
+      clearBrowserSession();
+      return null;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
 }
 
-export async function getBrowserUser() {
+export async function getBrowserSession() {
   let session = readBrowserSession();
   if (!session) return null;
   if (session.expiresAt <= Date.now() + 60_000) session = await refreshBrowserSession(session);
+  if (!session) return null;
+  return session;
+}
+
+export async function getBrowserUser() {
+  const session = await getBrowserSession();
   if (!session) return null;
   try {
     const user = await authRequest<BrowserAuthUser>("user", { method: "GET" }, session.accessToken);
@@ -136,6 +154,33 @@ export async function getBrowserUser() {
       return null;
     }
   }
+}
+
+export async function bridgeBrowserSession() {
+  const session = await getBrowserSession();
+  if (!session) return false;
+  try {
+    const response = await fetch("/api/auth/session", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_token: session.accessToken,
+        refresh_token: session.refreshToken,
+        expires_in: Math.max(60, Math.floor((session.expiresAt - Date.now()) / 1000)),
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function browserAuthenticatedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
+  const session = await getBrowserSession();
+  const headers = new Headers(init.headers);
+  if (session) headers.set("Authorization", `Bearer ${session.accessToken}`);
+  return fetch(input, { ...init, credentials: "same-origin", headers });
 }
 
 export async function browserUpdatePassword(password: string) {
@@ -154,3 +199,4 @@ export async function browserSignOut() {
     clearBrowserSession();
   }
 }
+

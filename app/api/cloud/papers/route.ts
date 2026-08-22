@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accessCookie, authError, readUser, supabaseRest } from "../../auth/_shared";
+import { authError, readRequestSession, supabaseRest } from "../../auth/_shared";
 
 type CloudPaper = {
   id?: string;
@@ -12,16 +12,9 @@ type CloudPaper = {
   aiMemory?: Record<string, unknown>;
 };
 
-async function authenticate(request: NextRequest) {
-  const accessToken = request.cookies.get(accessCookie)?.value;
-  if (!accessToken) return null;
-  const user = await readUser(accessToken);
-  return user ? { accessToken, user } : null;
-}
-
 export async function GET(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录。" }, { status: 401 });
     const response = await supabaseRest("paper_memories?select=id,title,file_name,extracted_content,ai_memory,updated_at&order=updated_at.desc", session.accessToken);
     if (!response.ok) return NextResponse.json({ error: "云端论文库尚未初始化。" }, { status: 503 });
@@ -51,7 +44,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录。" }, { status: 401 });
     const paper = await request.json() as CloudPaper;
     if (!paper.id || !paper.title || !Array.isArray(paper.paragraphs)) {
@@ -81,7 +74,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "缺少论文编号。" }, { status: 400 });
@@ -92,3 +85,4 @@ export async function DELETE(request: NextRequest) {
     return authError(error);
   }
 }
+

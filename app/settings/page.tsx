@@ -5,6 +5,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
+import { bridgeBrowserSession, browserAuthenticatedFetch, browserSignOut, browserUpdatePassword, getBrowserUser } from "../lib/browser-auth";
 
 type Profile = {
   display_name: string;
@@ -15,6 +16,14 @@ type Profile = {
 };
 
 const emptyProfile: Profile = { display_name: "", university: "", major: "", graduation_year: "", preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" } };
+
+async function readJson(response: Response) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("账户服务返回了网页而不是数据，请刷新最新部署后重试。" );
+  }
+  return response.json();
+}
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -31,28 +40,46 @@ export default function SettingsPage() {
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
-    fetch("/api/profile", { cache: "no-store" })
-      .then(async (response) => {
-        if (response.status === 401) return null;
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "资料读取失败。" );
-        return payload;
-      })
-      .then((payload) => {
-        if (!payload) return;
+    let mounted = true;
+    async function loadProfile() {
+      try {
+        const user = await getBrowserUser();
+        if (user && mounted) {
+          setSignedIn(true);
+          setEmail(user.email || "");
+          setProfile((current) => ({
+            ...current,
+            display_name: String(user.user_metadata?.display_name || ""),
+          }));
+          void bridgeBrowserSession();
+        }
+
+        const response = await browserAuthenticatedFetch("/api/profile", { cache: "no-store" });
+        if (response.status === 401) {
+          if (!user && mounted) setSignedIn(false);
+          return;
+        }
+        const payload = await readJson(response);
+        if (!response.ok) throw new Error(payload.error || "云端资料读取失败。" );
+        if (!mounted) return;
         setSignedIn(true);
-        setEmail(payload.user?.email || "");
+        setEmail(payload.user?.email || user?.email || "");
         const next = payload.profile || {};
         setProfile({
-          display_name: next.display_name || "",
+          display_name: next.display_name || String(user?.user_metadata?.display_name || ""),
           university: next.university || "",
           major: next.major || "",
           graduation_year: next.graduation_year || "",
           preferences: { avatar: "", bio: "", interests: [], language: "zh-CN", ...(next.preferences || {}) },
         });
-      })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : "资料读取失败。" ))
-      .finally(() => setLoading(false));
+      } catch (cause) {
+        if (mounted) setError(cause instanceof Error ? cause.message : "资料读取失败。" );
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    void loadProfile();
+    return () => { mounted = false; };
   }, []);
 
   function updateField<Key extends keyof Omit<Profile, "preferences">>(key: Key, value: Profile[Key]) {
@@ -91,10 +118,11 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
-      const payload = await response.json();
+      const response = await browserAuthenticatedFetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
+      const payload = await readJson(response);
       if (!response.ok) throw new Error(payload.error || "保存失败。" );
       setMessage("个人资料已保存，并会显示在平台导航中。" );
+      window.dispatchEvent(new Event("acaora:profile-change"));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "保存失败。" );
     } finally {
@@ -112,8 +140,12 @@ export default function SettingsPage() {
   }
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
+    await Promise.allSettled([
+      fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }),
+      browserSignOut(),
+    ]);
+    router.replace("/");
+    router.refresh();
   }
 
   async function changePassword() {
@@ -125,9 +157,8 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const response = await fetch("/api/auth/password", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: newPassword }) });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "密码更新失败。" );
+      await browserUpdatePassword(newPassword);
+      await bridgeBrowserSession();
       setNewPassword("");
       setConfirmNewPassword("");
       setMessage("登录密码已更新。" );
@@ -142,12 +173,12 @@ export default function SettingsPage() {
     <AppSidebar active="settings" />
     <section className="workspace settings-main">
       <header className="topbar settings-topbar"><div><p className="eyebrow">ACCOUNT</p><h1>设置与隐私</h1><p>管理个人资料、数据边界与当前设备。</p></div><button type="button" disabled={!signedIn || saving} onClick={() => void saveProfile()}>{saving ? "正在保存…" : "保存更改"}</button></header>
-      {loading ? <div className="settings-state">正在读取账户资料…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>匿名模式仍可使用本地数据分析，但头像、昵称和课程信息不会同步。</p><a href="/auth">邮箱登录</a></div> : <>
-        {(message || error) && <div className={`settings-message ${error ? "error" : ""}`} role="status">{error || message}</div>}
+      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><a href="/auth">前往登录</a></div> : <>
+        {(message || error) && <div className={`settings-message ${error ? "error" : ""}`} role="status" aria-live="polite">{error || message}</div>}
         <div className="settings-grid">
           <section className="profile-card">
             <div className="settings-section-head"><span>01</span><div><p>PROFILE</p><h2>个人资料</h2></div></div>
-            <div className="avatar-editor">{profile.preferences.avatar ? <img src={profile.preferences.avatar} alt="当前头像" /> : <b>{(profile.display_name || email).slice(0, 2).toUpperCase()}</b>}<div><label>更换头像<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void chooseAvatar(event)} /></label>{profile.preferences.avatar && <button type="button" onClick={() => updatePreference("avatar", "")}>移除</button>}<small>自动裁剪并压缩为 256 × 256</small></div></div>
+            <div className="avatar-editor">{profile.preferences.avatar ? <img src={profile.preferences.avatar} width="256" height="256" alt="当前头像" /> : <b>{(profile.display_name || email).slice(0, 2).toUpperCase()}</b>}<div><label>更换头像<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void chooseAvatar(event)} /></label>{profile.preferences.avatar && <button type="button" onClick={() => updatePreference("avatar", "")}>移除</button>}<small>自动裁剪并压缩为 256 × 256</small></div></div>
             <div className="settings-form"><label>昵称<input value={profile.display_name} maxLength={40} onChange={(event) => updateField("display_name", event.target.value)} /></label><label>登录邮箱<input value={email} disabled /></label><label>学校<input value={profile.university} maxLength={80} placeholder="例如：××大学" onChange={(event) => updateField("university", event.target.value)} /></label><label>专业 / 双学位<input value={profile.major} maxLength={100} placeholder="应用统计学 · 国际经济与贸易" onChange={(event) => updateField("major", event.target.value)} /></label><label>预计毕业年份<input type="number" min={2000} max={2100} value={profile.graduation_year} onChange={(event) => updateField("graduation_year", event.target.value ? Number(event.target.value) : "")} /></label><label>界面语言<select value={profile.preferences.language} onChange={(event) => updatePreference("language", event.target.value)}><option value="zh-CN">简体中文</option><option value="en">English（预留）</option></select></label><label className="full">个人简介<textarea maxLength={240} value={profile.preferences.bio} placeholder="研究兴趣、学习目标或希望长期积累的方向" onChange={(event) => updatePreference("bio", event.target.value)} /></label></div>
             <div className="interest-editor"><span className="interest-label">学习与研究兴趣</span><div>{profile.preferences.interests.map((item) => <button type="button" key={item} onClick={() => updatePreference("interests", profile.preferences.interests.filter((current) => current !== item))}>{item} ×</button>)}</div><form onSubmit={(event) => { event.preventDefault(); addInterest(); }}><input aria-label="添加学习与研究兴趣" value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="如：计量经济学" /><button type="submit">添加</button></form></div>
           </section>
@@ -174,3 +205,4 @@ async function compressAvatar(file: File) {
   bitmap.close();
   return canvas.toDataURL("image/webp", .78);
 }
+

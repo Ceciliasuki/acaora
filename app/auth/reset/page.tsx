@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { browserUpdatePassword, getBrowserAuthConfig, saveBrowserSession } from "../../lib/browser-auth";
+import { bridgeBrowserSession, browserUpdatePassword, saveBrowserSession } from "../../lib/browser-auth";
 
 export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false);
@@ -20,26 +20,10 @@ export default function ResetPasswordPage() {
       return;
     }
     saveBrowserSession({ access_token: accessToken, refresh_token: refreshToken, expires_in: expiresIn });
-    void fetch("/api/auth/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accessToken, refreshToken, expiresIn }),
-    }).then(async (response) => {
-      const contentType = response.headers.get("content-type") ?? "";
-      if (!contentType.includes("application/json")) throw new Error("SITE_AUTH_UNAVAILABLE");
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "无法验证重置链接。");
+    void bridgeBrowserSession().then(async () => {
       history.replaceState(null, "", "/auth/reset");
       setReady(true);
       setMessage("");
-    }).catch((cause) => {
-      if (cause instanceof Error && cause.message === "SITE_AUTH_UNAVAILABLE" && getBrowserAuthConfig()) {
-        history.replaceState(null, "", "/auth/reset");
-        setReady(true);
-        setMessage("");
-        return;
-      }
-      setMessage(cause instanceof Error ? cause.message : "无法验证重置链接。");
     });
   }, []);
 
@@ -52,15 +36,8 @@ export default function ResetPasswordPage() {
     setWorking(true);
     setMessage("");
     try {
-      const response = await fetch("/api/auth/password", { method: "PUT", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ password }) });
-      const contentType = response.headers.get("content-type") ?? "";
-      if (!contentType.includes("application/json")) {
-        if (!getBrowserAuthConfig()) throw new Error("密码更新接口暂时不可用。");
-        await browserUpdatePassword(password);
-      } else {
-        const payload = await response.json() as { error?: string };
-        if (!response.ok) throw new Error(payload.error || "密码更新失败。");
-      }
+      await browserUpdatePassword(password);
+      await bridgeBrowserSession();
       setMessage("密码已更新，正在进入账户…");
       window.setTimeout(() => location.replace("/dashboard"), 700);
     } catch (cause) {
@@ -72,3 +49,4 @@ export default function ResetPasswordPage() {
 
   return <main className="auth-result-page"><section className="reset-card"><span>A</span><p className="eyebrow">ACCOUNT RECOVERY</p><h1>设置新密码</h1><p>新密码需至少 8 位，并同时包含大写字母、小写字母和数字。</p>{ready ? <form onSubmit={(event) => void updatePassword(event)}><label>新密码<input type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label><label>确认新密码<input type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></label><button type="submit" disabled={working}>{working ? "正在更新…" : "保存新密码"}</button></form> : <a href="/auth">返回账户页面</a>}{message && <div className="auth-message" role="status">{message}</div>}</section></main>;
 }
+

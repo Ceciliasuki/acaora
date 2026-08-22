@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accessCookie, authError, readUser, refreshCookie, refreshSession, setSessionCookies, supabaseRest } from "../auth/_shared";
+import { authError, privateNoStore, readRequestSession, setSessionCookies, supabaseRest } from "../auth/_shared";
 
 type ProfilePreferences = {
   avatar?: string;
@@ -16,21 +16,9 @@ type ProfilePayload = {
   preferences?: unknown;
 };
 
-async function currentSession(request: NextRequest) {
-  const accessToken = request.cookies.get(accessCookie)?.value;
-  if (accessToken) {
-    const user = await readUser(accessToken);
-    if (user) return { accessToken, user, refreshed: null };
-  }
-  const refreshToken = request.cookies.get(refreshCookie)?.value;
-  if (!refreshToken) return null;
-  const refreshed = await refreshSession(refreshToken);
-  return refreshed ? { accessToken: refreshed.access_token, user: refreshed.user, refreshed } : null;
-}
-
-function withRefresh(response: NextResponse, session: Awaited<ReturnType<typeof currentSession>>) {
+function withRefresh(response: NextResponse, session: Awaited<ReturnType<typeof readRequestSession>>) {
   if (session?.refreshed) setSessionCookies(response, session.refreshed);
-  return response;
+  return privateNoStore(response);
 }
 
 function normalizeString(value: unknown, max: number) {
@@ -54,10 +42,10 @@ function normalizePreferences(value: unknown): ProfilePreferences {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await currentSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录。" }, { status: 401 });
+    const session = await readRequestSession(request);
+    if (!session) return privateNoStore(NextResponse.json({ error: "请先登录。" }, { status: 401 }));
     const result = await supabaseRest(`profiles?id=eq.${encodeURIComponent(session.user.id)}&select=display_name,university,major,graduation_year,preferences,updated_at`, session.accessToken);
-    if (!result.ok) return NextResponse.json({ error: "暂时无法读取个人资料。" }, { status: 502 });
+    if (!result.ok) return privateNoStore(NextResponse.json({ error: "暂时无法读取个人资料。" }, { status: 502 }));
     const profiles = await result.json() as Array<Record<string, unknown>>;
     return withRefresh(NextResponse.json({ user: { id: session.user.id, email: session.user.email }, profile: profiles[0] ?? null }), session);
   } catch (error) {
@@ -67,8 +55,8 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await currentSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录。" }, { status: 401 });
+    const session = await readRequestSession(request);
+    if (!session) return privateNoStore(NextResponse.json({ error: "请先登录。" }, { status: 401 }));
     const body = await request.json() as ProfilePayload;
     const year = Number(body.graduation_year);
     const profile = {
@@ -88,12 +76,13 @@ export async function PUT(request: NextRequest) {
     if (!result.ok) {
       const detail = await result.text();
       console.error("Profile update failed", result.status, detail.slice(0, 500));
-      return NextResponse.json({ error: "资料保存失败，请确认 Supabase 已运行账户迁移。" }, { status: 502 });
+      return privateNoStore(NextResponse.json({ error: "资料保存失败，请确认 Supabase 已运行账户迁移。" }, { status: 502 }));
     }
     const profiles = await result.json() as Array<Record<string, unknown>>;
     return withRefresh(NextResponse.json({ profile: profiles[0] ?? profile }), session);
   } catch (error) {
-    if (error instanceof Error && error.message === "INVALID_AVATAR") return NextResponse.json({ error: "头像格式无效。" }, { status: 400 });
+    if (error instanceof Error && error.message === "INVALID_AVATAR") return privateNoStore(NextResponse.json({ error: "头像格式无效。" }, { status: 400 }));
     return authError(error);
   }
 }
+
