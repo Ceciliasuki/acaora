@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { accessCookie, authError, readUser, supabaseRest } from "../auth/_shared";
+import { authError, readRequestSession, supabaseRest } from "../auth/_shared";
 
 const projectKinds = new Set(["course", "paper", "data", "writing", "group", "career"]);
 const projectStatuses = new Set(["active", "paused", "completed"]);
@@ -11,13 +11,6 @@ type ProjectPayload = {
   status?: string;
   metadata?: Record<string, unknown>;
 };
-
-async function authenticate(request: NextRequest) {
-  const accessToken = request.cookies.get(accessCookie)?.value;
-  if (!accessToken) return null;
-  const user = await readUser(accessToken);
-  return user ? { accessToken, user } : null;
-}
 
 function validateProject(payload: ProjectPayload) {
   const title = payload.title?.trim();
@@ -33,7 +26,7 @@ function validateProject(payload: ProjectPayload) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录后使用项目工作台。" }, { status: 401 });
     const response = await supabaseRest(
       "learning_projects?select=id,title,kind,status,metadata,created_at,updated_at&order=updated_at.desc",
@@ -48,7 +41,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录后创建项目。" }, { status: 401 });
     const validated = validateProject(await request.json() as ProjectPayload);
     if ("error" in validated) return NextResponse.json({ error: validated.error }, { status: 400 });
@@ -73,7 +66,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录后更新项目。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "缺少项目编号。" }, { status: 400 });
@@ -101,7 +94,7 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await authenticate(request);
+    const session = await readRequestSession(request);
     if (!session) return NextResponse.json({ error: "请先登录后删除项目。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "缺少项目编号。" }, { status: 400 });

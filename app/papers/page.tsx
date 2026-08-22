@@ -7,6 +7,7 @@ import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
+import { browserAuthenticatedFetch } from "../lib/browser-auth";
 
 type TranslatorSession = {
   translate: (text: string) => Promise<string>;
@@ -57,10 +58,10 @@ export default function PaperLab() {
       try {
         const localRecords = await getPaperLibrary();
         let records = localRecords;
-        const sessionResponse = await fetch("/api/auth/session");
+        const sessionResponse = await browserAuthenticatedFetch("/api/auth/session");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
         if (session.user) {
-          const cloudResponse = await fetch("/api/cloud/papers");
+          const cloudResponse = await browserAuthenticatedFetch("/api/cloud/papers");
           if (cloudResponse.ok) {
             const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
             const byId = new Map<string, PaperRecord>();
@@ -106,7 +107,7 @@ export default function PaperLab() {
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
       });
       if (cloudState === "ready") {
-        void fetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+        void browserAuthenticatedFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
           .then((response) => { if (!response.ok) setCloudState("error"); })
           .catch(() => setCloudState("error"));
       }

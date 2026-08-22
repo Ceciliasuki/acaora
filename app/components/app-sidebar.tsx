@@ -1,8 +1,9 @@
 "use client";
 
-/* eslint-disable @next/next/no-html-link-for-pages */
+/* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
+import { authChangeEvent, browserAuthenticatedFetch, getBrowserUser } from "../lib/browser-auth";
 
 type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
 
@@ -33,23 +34,34 @@ export default function AppSidebar({
   const [profile, setProfile] = useState({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
 
   useEffect(() => {
-    let active = true;
-    fetch("/api/profile", { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => {
-        if (!active || !data?.profile) return;
-        const title = data.profile.display_name || data.user?.email || profileTitle;
-        const nextInitials = String(title).slice(0, 2).toUpperCase();
-        setProfile({
-          initials: nextInitials,
-          title,
-          subtitle: data.profile.major || data.profile.university || profileSubtitle,
-          avatarUrl: data.profile.preferences?.avatar || "",
-        });
-      })
-      .catch(() => undefined);
-    return () => { active = false; };
-  }, [profileSubtitle, profileTitle]);
+    let mounted = true;
+    async function loadProfile() {
+      const user = await getBrowserUser().catch(() => null);
+      const response = await browserAuthenticatedFetch("/api/profile", { cache: "no-store" }).catch(() => null);
+      const data = response?.ok ? await response.json().catch(() => null) : null;
+      if (!mounted) return;
+      if (!user && !data?.user) {
+        setProfile({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
+        return;
+      }
+      const title = data?.profile?.display_name || user?.user_metadata?.display_name || data?.user?.email || user?.email || profileTitle;
+      setProfile({
+        initials: String(title).slice(0, 2).toUpperCase(),
+        title: String(title),
+        subtitle: data?.profile?.major || data?.profile?.university || "云端同步已开启",
+        avatarUrl: data?.profile?.preferences?.avatar || "",
+      });
+    }
+    const reload = () => { void loadProfile(); };
+    void loadProfile();
+    window.addEventListener(authChangeEvent, reload);
+    window.addEventListener("acaora:profile-change", reload);
+    return () => {
+      mounted = false;
+      window.removeEventListener(authChangeEvent, reload);
+      window.removeEventListener("acaora:profile-change", reload);
+    };
+  }, [avatarUrl, initials, profileSubtitle, profileTitle]);
 
   return (
     <aside className="student-sidebar app-sidebar">
@@ -72,7 +84,7 @@ export default function AppSidebar({
       </nav>
       <div className="student-sidebar-foot">
         <a className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料">
-          {profile.avatarUrl ? <img src={profile.avatarUrl} alt="个人头像" /> : <b>{profile.initials}</b>}
+          {profile.avatarUrl ? <img src={profile.avatarUrl} width="72" height="72" alt="个人头像" /> : <b>{profile.initials}</b>}
           <p><strong>{profile.title}</strong><small>{profile.subtitle}</small></p>
         </a>
       </div>

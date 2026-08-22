@@ -3,6 +3,7 @@
 import AppSidebar from "../components/app-sidebar";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { browserAuthenticatedFetch } from "../lib/browser-auth";
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -64,13 +65,13 @@ export default function ProjectsPage() {
   }).length;
 
   useEffect(() => {
-    void fetch("/api/auth/session")
+    void browserAuthenticatedFetch("/api/auth/session")
       .then((response) => response.json())
       .then(async (payload: { user?: Viewer }) => {
         const user = payload.user ?? null;
         setViewer(user);
         if (!user) return;
-        const response = await fetch("/api/projects");
+        const response = await browserAuthenticatedFetch("/api/projects");
         const data = await response.json() as { projects?: Project[]; error?: string };
         if (!response.ok) throw new Error(data.error ?? "项目读取失败。");
         const nextProjects = data.projects ?? [];
@@ -93,7 +94,7 @@ export default function ProjectsPage() {
     setSaving(true);
     setMessage("");
     try {
-      const response = await fetch("/api/projects", {
+      const response = await browserAuthenticatedFetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
