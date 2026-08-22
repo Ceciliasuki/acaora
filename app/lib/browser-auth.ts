@@ -12,6 +12,23 @@ export type BrowserAuthPayload = {
   user?: BrowserAuthUser;
 };
 
+export type BrowserProfile = {
+  display_name: string;
+  university: string;
+  major: string;
+  graduation_year: number | "";
+  preferences: {
+    avatar: string;
+    bio: string;
+    interests: string[];
+    language: string;
+  };
+};
+
+type BrowserProfileInput = Partial<Omit<BrowserProfile, "preferences">> & {
+  preferences?: Partial<BrowserProfile["preferences"]> | null;
+};
+
 type StoredSession = {
   accessToken: string;
   refreshToken: string;
@@ -53,6 +70,97 @@ async function authRequest<T>(path: string, init: RequestInit = {}, accessToken?
     throw new Error(payload.msg || payload.message || payload.error_description || "账户操作失败，请稍后重试。");
   }
   return payload;
+}
+
+async function dataRequest<T>(path: string, init: RequestInit = {}) {
+  const config = getBrowserAuthConfig();
+  if (!config) throw new Error("账户连接信息不可用，请重新打开最新部署页面。");
+  const session = await getBrowserSession();
+  if (!session) throw new Error("登录状态已失效，请重新登录后继续。");
+  const response = await fetch(`${config.url}/rest/v1/${path}`, {
+    ...init,
+    headers: {
+      "apikey": config.key,
+      "Authorization": `Bearer ${session.accessToken}`,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      ...init.headers,
+    },
+  });
+  const text = await response.text();
+  let payload: T & { code?: string; message?: string; details?: string; hint?: string };
+  try {
+    payload = text ? JSON.parse(text) as typeof payload : {} as typeof payload;
+  } catch {
+    throw new Error("账户资料服务返回了无法识别的响应，请稍后重试。");
+  }
+  if (!response.ok) {
+    if (response.status === 401) throw new Error("登录状态已失效，请重新登录后继续。");
+    if (payload.code === "42P01" || payload.code === "PGRST205") {
+      throw new Error("账户资料表尚未启用，请先在 Supabase 执行项目迁移。");
+    }
+    if (payload.code === "42501") throw new Error("当前账户没有保存资料的权限，请检查 Supabase RLS 配置。");
+    throw new Error(payload.message || payload.details || "账户资料操作失败，请稍后重试。");
+  }
+  return payload;
+}
+
+function normalizeBrowserProfile(value?: BrowserProfileInput | null): BrowserProfile {
+  const preferences: Partial<BrowserProfile["preferences"]> = value?.preferences && typeof value.preferences === "object" ? value.preferences : {};
+  return {
+    display_name: typeof value?.display_name === "string" ? value.display_name : "",
+    university: typeof value?.university === "string" ? value.university : "",
+    major: typeof value?.major === "string" ? value.major : "",
+    graduation_year: typeof value?.graduation_year === "number" ? value.graduation_year : "",
+    preferences: {
+      avatar: typeof preferences.avatar === "string" ? preferences.avatar : "",
+      bio: typeof preferences.bio === "string" ? preferences.bio : "",
+      interests: Array.isArray(preferences.interests) ? preferences.interests.filter((item): item is string => typeof item === "string") : [],
+      language: typeof preferences.language === "string" ? preferences.language : "zh-CN",
+    },
+  };
+}
+
+export async function browserReadProfile(userId: string) {
+  const rows = await dataRequest<BrowserProfileInput[]>(
+    `profiles?id=eq.${encodeURIComponent(userId)}&select=display_name,university,major,graduation_year,preferences&limit=1`,
+    { method: "GET", cache: "no-store" },
+  );
+  return rows[0] ? normalizeBrowserProfile(rows[0]) : null;
+}
+
+export async function browserSaveProfile(userId: string, profile: BrowserProfile) {
+  const rows = await dataRequest<BrowserProfileInput[]>(
+    "profiles?on_conflict=id&select=display_name,university,major,graduation_year,preferences",
+    {
+      method: "POST",
+      headers: { "Prefer": "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify({
+        id: userId,
+        display_name: profile.display_name.trim().slice(0, 40) || null,
+        university: profile.university.trim().slice(0, 80) || null,
+        major: profile.major.trim().slice(0, 100) || null,
+        graduation_year: profile.graduation_year === "" ? null : profile.graduation_year,
+        preferences: profile.preferences,
+        updated_at: new Date().toISOString(),
+      }),
+    },
+  );
+  return normalizeBrowserProfile(rows[0] || profile);
+}
+
+export async function browserUpdateDisplayName(displayName: string) {
+  const session = await getBrowserSession();
+  if (!session) throw new Error("登录状态已失效，请重新登录后继续。");
+  const result = await authRequest<{ user?: BrowserAuthUser }>(
+    "user",
+    { method: "PUT", body: JSON.stringify({ data: { display_name: displayName.trim().slice(0, 40) } }) },
+    session.accessToken,
+  );
+  if (result.user && typeof localStorage !== "undefined") {
+    localStorage.setItem(storageKey, JSON.stringify({ ...session, user: result.user } satisfies StoredSession));
+  }
+  return result.user;
 }
 
 export function saveBrowserSession(payload: BrowserAuthPayload) {
