@@ -5,7 +5,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
-import { bridgeBrowserSession, browserAuthenticatedFetch, browserSignOut, browserUpdatePassword, getBrowserUser } from "../lib/browser-auth";
+import { bridgeBrowserSession, browserReadProfile, browserSaveProfile, browserSignOut, browserUpdateDisplayName, browserUpdatePassword, getBrowserUser } from "../lib/browser-auth";
 
 type Profile = {
   display_name: string;
@@ -16,14 +16,6 @@ type Profile = {
 };
 
 const emptyProfile: Profile = { display_name: "", university: "", major: "", graduation_year: "", preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" } };
-
-async function readJson(response: Response) {
-  const contentType = response.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    throw new Error("账户服务返回了网页而不是数据，请刷新最新部署后重试。" );
-  }
-  return response.json();
-}
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -54,23 +46,17 @@ export default function SettingsPage() {
           void bridgeBrowserSession();
         }
 
-        const response = await browserAuthenticatedFetch("/api/profile", { cache: "no-store" });
-        if (response.status === 401) {
-          if (!user && mounted) setSignedIn(false);
-          return;
-        }
-        const payload = await readJson(response);
-        if (!response.ok) throw new Error(payload.error || "云端资料读取失败。" );
+        if (!user) return;
+        const next = await browserReadProfile(user.id);
         if (!mounted) return;
         setSignedIn(true);
-        setEmail(payload.user?.email || user?.email || "");
-        const next = payload.profile || {};
+        setEmail(user.email || "");
         setProfile({
-          display_name: next.display_name || String(user?.user_metadata?.display_name || ""),
-          university: next.university || "",
-          major: next.major || "",
-          graduation_year: next.graduation_year || "",
-          preferences: { avatar: "", bio: "", interests: [], language: "zh-CN", ...(next.preferences || {}) },
+          display_name: next?.display_name || String(user.user_metadata?.display_name || ""),
+          university: next?.university || "",
+          major: next?.major || "",
+          graduation_year: next?.graduation_year || "",
+          preferences: { avatar: "", bio: "", interests: [], language: "zh-CN", ...(next?.preferences || {}) },
         });
       } catch (cause) {
         if (mounted) setError(cause instanceof Error ? cause.message : "资料读取失败。" );
@@ -118,9 +104,11 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const response = await browserAuthenticatedFetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
-      const payload = await readJson(response);
-      if (!response.ok) throw new Error(payload.error || "保存失败。" );
+      const user = await getBrowserUser();
+      if (!user) throw new Error("登录状态已失效，请重新登录后继续。");
+      const saved = await browserSaveProfile(user.id, profile);
+      setProfile(saved);
+      await browserUpdateDisplayName(saved.display_name).catch(() => null);
       setMessage("个人资料已保存，并会显示在平台导航中。" );
       window.dispatchEvent(new Event("acaora:profile-change"));
     } catch (cause) {
