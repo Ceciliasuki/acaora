@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import { authChangeEvent, browserAuthenticatedFetch, getBrowserUser } from "../lib/browser-auth";
+import { authChangeEvent, browserReadProfile, getBrowserUser } from "../lib/browser-auth";
 
 type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
 
@@ -37,19 +37,18 @@ export default function AppSidebar({
     let mounted = true;
     async function loadProfile() {
       const user = await getBrowserUser().catch(() => null);
-      const response = await browserAuthenticatedFetch("/api/profile", { cache: "no-store" }).catch(() => null);
-      const data = response?.ok ? await response.json().catch(() => null) : null;
+      const data = user ? await browserReadProfile(user.id).catch(() => null) : null;
       if (!mounted) return;
-      if (!user && !data?.user) {
+      if (!user) {
         setProfile({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
         return;
       }
-      const title = data?.profile?.display_name || user?.user_metadata?.display_name || data?.user?.email || user?.email || profileTitle;
+      const title = data?.display_name || user.user_metadata?.display_name || user.email || profileTitle;
       setProfile({
         initials: String(title).slice(0, 2).toUpperCase(),
         title: String(title),
-        subtitle: data?.profile?.major || data?.profile?.university || "云端同步已开启",
-        avatarUrl: data?.profile?.preferences?.avatar || "",
+        subtitle: data?.major || data?.university || "云端同步已开启",
+        avatarUrl: data?.preferences?.avatar || "",
       });
     }
     const reload = () => { void loadProfile(); };
