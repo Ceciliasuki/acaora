@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import { getServerAiKeySnapshot, readAiKey, subscribeAiKey } from "../lib/ai-settings";
 import type { AiMemory, AiSavedResult, PaperRecord, Paragraph } from "./paper-types";
 
 type AiAction = "paragraph" | "summary" | "audit" | "replication" | "translate" | "chat" | "search";
@@ -27,8 +29,7 @@ const actionMeta: Record<AiAction, { label: string; kicker: string; description:
 
 export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onSave, onTranslation, onSearchQuery }: Props) {
   const [action, setAction] = useState<AiAction>("paragraph");
-  const [apiKey, setApiKey] = useState("");
-  const [showKey, setShowKey] = useState(false);
+  const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
   const [question, setQuestion] = useState("这篇论文的统计方法是否足以支持其主要结论？");
   const [researchTopic, setResearchTopic] = useState(paper.title);
   const [translationStyle, setTranslationStyle] = useState("统计术语优先，表达自然");
@@ -36,12 +37,6 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
   const [error, setError] = useState("");
   const [usage, setUsage] = useState("");
   const [sessionResult, setSessionResult] = useState<AiSavedResult | null>(null);
-
-  useEffect(() => {
-    // Session storage is a browser-only external store, so it is read after hydration.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setApiKey(sessionStorage.getItem("statlab-deepseek-key") ?? "");
-  }, []);
 
   const savedResult = useMemo(() => {
     const memory = paper.aiMemory;
@@ -57,17 +52,10 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
 
   const result = sessionResult?.action === action ? sessionResult : savedResult;
 
-  function rememberKey(value: string) {
-    const normalized = value.trim();
-    setApiKey(normalized);
-    if (normalized) sessionStorage.setItem("statlab-deepseek-key", normalized);
-    else sessionStorage.removeItem("statlab-deepseek-key");
-  }
-
   async function runAction() {
     if (!activeParagraph && (action === "paragraph" || action === "translate")) return;
     if (!apiKey.trim()) {
-      setError("请先输入 DeepSeek API Key。密钥只保留到当前浏览器会话结束。" );
+      setError("请先前往“设置 → AI 与模型”配置 DeepSeek API Key。" );
       return;
     }
     setWorking(true);
@@ -122,11 +110,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
           <h2>AI 研究工作台</h2>
           <span>证据优先 · 段落可追溯 · 结果保存在当前设备</span>
         </div>
-        <div className="ai-key-box">
-          <label htmlFor="deepseek-key">你的 DeepSeek Key</label>
-          <div><input id="deepseek-key" type={showKey ? "text" : "password"} value={apiKey} placeholder="sk-…" autoComplete="off" spellCheck={false} onChange={(event) => rememberKey(event.target.value)} /><button type="button" onClick={() => setShowKey((value) => !value)}>{showKey ? "隐藏" : "显示"}</button></div>
-          <small>仅存于本次浏览器会话；请求经加密连接转发，不写入论文记忆。</small>
-        </div>
+        <div className="ai-key-box"><strong>{apiKey ? "当前会话已配置 DeepSeek Key" : "当前会话未配置 AI Key"}</strong><small>Key 只保存在当前浏览器会话；发起分析时会发送到 Acaora 服务端并转发给 DeepSeek，不写入账户数据库。</small><Link href="/settings#ai-models">管理 AI 与模型 →</Link></div>
       </div>
 
       <div className="ai-action-tabs" role="tablist" aria-label="AI 研究功能">

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { fetchWithTimeout } from "../../../lib/http";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -10,9 +11,9 @@ export async function GET(request: NextRequest) {
 
   try {
     const fields = "paperId,title,authors,year,abstract,citationCount,url,openAccessPdf,venue,externalIds";
-    const response = await fetch(`https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=${fields}`, {
-      headers: { "User-Agent": "StatLab-PaperLab/1.0" },
-    });
+    const response = await fetchWithTimeout(`https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=${fields}`, {
+      headers: { "User-Agent": "Acaora-PaperLab/1.0" },
+    }, 8_000);
     if (!response.ok) throw new Error(`Semantic Scholar ${response.status}`);
     const payload = await response.json() as { data?: UnknownRecord[] };
     const papers = (payload.data ?? []).map((item) => normalizeSemanticScholar(item));
@@ -20,9 +21,9 @@ export async function GET(request: NextRequest) {
   } catch {
     try {
       const select = "DOI,title,author,published,container-title,URL,abstract,is-referenced-by-count";
-      const response = await fetch(`https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(query)}&rows=10&select=${select}`, {
-        headers: { "User-Agent": "StatLab-PaperLab/1.0 (mailto:paperlab@example.com)" },
-      });
+      const response = await fetchWithTimeout(`https://api.crossref.org/works?query.bibliographic=${encodeURIComponent(query)}&rows=10&select=${select}`, {
+        headers: { "User-Agent": "Acaora-PaperLab/1.0" },
+      }, 8_000);
       if (!response.ok) throw new Error(`Crossref ${response.status}`);
       const payload = await response.json() as { message?: { items?: UnknownRecord[] } };
       const papers = (payload.message?.items ?? []).map((item) => normalizeCrossref(item));

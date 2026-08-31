@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { authFetch } from "../lib/auth-client";
+import { Dialog } from "../components/ui";
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -55,8 +56,14 @@ export default function ProjectsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [taskText, setTaskText] = useState("");
+  const [filter, setFilter] = useState<"all" | "active">("all");
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
-  const selected = projects.find((project) => project.id === selectedId) ?? null;
+  const filteredProjects = useMemo(() => filter === "active" ? projects.filter((project) => project.status === "active") : projects, [filter, projects]);
+  const visibleSelectedId = filteredProjects.some((project) => project.id === selectedId) ? selectedId : filteredProjects[0]?.id ?? "";
+  const selected = projects.find((project) => project.id === visibleSelectedId) ?? null;
+  const notes = selected ? noteDrafts[selected.id] ?? selected.metadata.notes ?? "" : "";
   const activeCount = projects.filter((project) => project.status === "active").length;
   const completedTasks = projects.reduce((total, project) => total + (project.metadata.tasks ?? []).filter((task) => task.done).length, 0);
   const dueSoon = projects.filter((project) => {
@@ -153,7 +160,7 @@ export default function ProjectsPage() {
   }
 
   async function deleteProject() {
-    if (!selected || !window.confirm(`确定删除“${selected.title}”吗？此操作无法撤销。`)) return;
+    if (!selected) return;
     setSaving(true);
     const response = await authFetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, { method: "DELETE" });
     const payload = await response.json() as { error?: string };
@@ -166,6 +173,7 @@ export default function ProjectsPage() {
     setProjects(remaining);
     setSelectedId(remaining[0]?.id ?? "");
     setSaving(false);
+    setDeleteOpen(false);
     setMessage("项目已删除。");
   }
 
@@ -195,24 +203,24 @@ export default function ProjectsPage() {
               <section className="project-workbench">
                 <aside className="project-library">
                   <header><div><span>MY PROJECTS</span><h2>进行中的空间</h2></div><button onClick={() => setShowCreate(true)} aria-label="新建项目">＋</button></header>
-                  <div className="project-filter"><button className="active">全部 {projects.length}</button><button>进行中 {activeCount}</button></div>
-                  <div className="project-list">{projects.map((project) => {
+                  <div className="project-filter"><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></div>
+                  <div className="project-list">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
                     const progress = projectProgress(project);
-                    return <button className={project.id === selectedId ? "active" : ""} key={project.id} onClick={() => setSelectedId(project.id)}><b>{kind.icon}</b><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><i><em style={{ width: `${progress}%` }} /></i><small>{progress}% · {(project.metadata.tasks ?? []).length} 项任务</small></div></button>;
-                  })}</div>
+                    return <button className={project.id === visibleSelectedId ? "active" : ""} key={project.id} onClick={() => setSelectedId(project.id)}><b>{kind.icon}</b><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><i><em style={{ width: `${progress}%` }} /></i><small>{progress}% · {(project.metadata.tasks ?? []).length} 项任务</small></div></button>;
+                  })}{!filteredProjects.length && <p className="project-filter-empty">没有进行中的项目。</p>}</div>
                   <section className="weekly-plan"><span>THIS WEEK</span><h3>下一步行动</h3>{weeklyPlan.length ? weeklyPlan.map((task) => <p key={task.id}><i /> <b>{task.text}</b><small>{task.projectTitle}</small></p>) : <p className="weekly-empty">暂无待办任务，给项目添加一个明确的下一步。</p>}</section>
                 </aside>
 
                 {selected && <article className="project-detail">
-                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => void deleteProject()} disabled={saving}>删除</button></div></header>
+                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => setDeleteOpen(true)} disabled={saving}>删除</button></div></header>
 
                   <section className="project-progress-card"><div><span>OVERALL PROGRESS</span><strong>{projectProgress(selected)}<small>%</small></strong></div><i><b style={{ width: `${projectProgress(selected)}%` }} /></i><p><span>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} 项完成</span><span>{selected.metadata.deadline ? `截止 ${selected.metadata.deadline}` : "未设置截止日期"}</span></p></section>
 
                   <div className="project-detail-grid">
                     <section className="project-task-card"><header><div><span>NEXT ACTIONS</span><h3>任务清单</h3></div><small>完成一项，就推进一步</small></header><form onSubmit={addTask}><input value={taskText} onChange={(event) => setTaskText(event.target.value)} placeholder="输入一个明确、可执行的任务" aria-label="新任务" /><button disabled={saving || !taskText.trim()}>添加</button></form><div className="project-tasks">{(selected.metadata.tasks ?? []).length ? (selected.metadata.tasks ?? []).map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" checked={task.done} onChange={() => toggleTask(task.id)} /><span>{task.text}</span></label>) : <p>暂无任务。建议从“查找 3 篇核心论文”或“完成数据质量检查”开始。</p>}</div></section>
 
-                    <section className="project-note-card"><header><span>PROJECT NOTES</span><h3>项目笔记</h3></header><textarea key={`${selected.id}-${selected.updated_at}`} defaultValue={selected.metadata.notes ?? ""} placeholder="记录研究思路、导师反馈、关键结论或下一次要解决的问题…" id="project-notes" /><button disabled={saving} onClick={() => { const notes = (document.getElementById("project-notes") as HTMLTextAreaElement | null)?.value ?? ""; void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。") }}>{saving ? "保存中…" : "保存笔记"}</button></section>
+                    <section className="project-note-card"><header><span>PROJECT NOTES</span><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈、关键结论或下一次要解决的问题…" id="project-notes" /><button disabled={saving} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</button></section>
                   </div>
 
                   <section className="project-resource-card"><header><div><span>CONNECTED TOOLS</span><h3>从项目继续工作</h3></div><p>在对应工作台继续处理论文与数据。</p></header><div><Link href="/papers"><b>文</b><span><strong>PaperLab</strong><small>检索、精读并分析相关论文</small></span><i>→</i></Link><Link href="/data"><b>Σ</b><span><strong>DataLab</strong><small>上传数据并完成统计分析</small></span><i>→</i></Link></div></section>
@@ -224,6 +232,7 @@ export default function ProjectsPage() {
       </section>
 
       {showCreate && viewer && <div className="project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title"><button className="project-modal-backdrop" onClick={() => setShowCreate(false)} aria-label="关闭新建项目窗口" /><form onSubmit={createProject}><header><div><span>NEW WORKSPACE</span><h2 id="create-project-title">建立一个项目空间</h2><p>先定义目标，后续再逐步加入论文、数据和任务。</p></div><button type="button" onClick={() => setShowCreate(false)} aria-label="关闭">×</button></header><label>项目名称<input name="title" required maxLength={120} placeholder="例如：大学生睡眠与学习成绩研究" /></label><label>项目类型<select name="kind" defaultValue="paper">{kindOptions.map((kind) => <option value={kind.value} key={kind.value}>{kind.label}</option>)}</select></label><label>希望完成什么？<textarea name="goal" rows={3} placeholder="用一句话描述你想得到的最终成果" /></label><label>计划截止日期<input name="deadline" type="date" /></label><footer><button type="button" onClick={() => setShowCreate(false)}>取消</button><button className="primary" disabled={saving}>{saving ? "正在创建…" : "创建项目空间"}</button></footer></form></div>}
+      <Dialog open={deleteOpen} title="删除这个项目？" description={selected ? `“${selected.title}”及其任务和笔记将被永久删除。` : undefined} confirmLabel={saving ? "正在删除…" : "确认删除"} destructive onConfirm={() => void deleteProject()} onClose={() => setDeleteOpen(false)} />
     </main>
   );
 }

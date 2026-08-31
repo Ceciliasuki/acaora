@@ -2,6 +2,7 @@
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
+import { Badge } from "../components/ui";
 import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
 import {
   categoricalColumns,
@@ -25,6 +26,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
   const [reading, setReading] = useState(false);
+  const [isSample, setIsSample] = useState(true);
   const [tab, setTab] = useState<AnalysisTab>("describe");
   const [xVariable, setXVariable] = useState("睡眠时长");
   const [yVariable, setYVariable] = useState("统计学成绩");
@@ -50,12 +52,22 @@ export default function Home() {
 
   async function loadFile(file?: File) {
     if (!file) return;
+    if (file.size === 0) {
+      setError("这个文件是空的，请选择包含表头和数据行的文件。");
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setError("文件超过 20 MB。请先抽样或拆分后再导入，以免浏览器失去响应。");
+      return;
+    }
     setReading(true);
     try {
       const parsed = await readDataFile(file);
       const parsedNumeric = numericColumns(parsed);
       const parsedCategorical = categoricalColumns(parsed);
+      if (!parsed.headers.length || !parsed.rows.length) throw new Error("文件中没有可分析的数据行。");
       setData(parsed);
+      setIsSample(false);
       setXVariable(parsedNumeric[0] ?? "");
       setYVariable(parsedNumeric[1] ?? parsedNumeric[0] ?? "");
       setTestVariable(parsedNumeric[0] ?? "");
@@ -81,6 +93,7 @@ export default function Home() {
 
   function restoreSample() {
     setData(sampleData);
+    setIsSample(true);
     setXVariable("睡眠时长");
     setYVariable("统计学成绩");
     setGroupVariable("性别");
@@ -95,14 +108,14 @@ export default function Home() {
       <section className="workspace data-main" id="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">当前数据集</p>
+            <p className="eyebrow">当前数据集 {isSample && <Badge tone="warning">示例数据</Badge>}</p>
             <h1>数据分析工作台</h1>
           </div>
           <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
         </header>
 
         <section className="data-context-strip" aria-label="数据处理状态">
-          <div><span>数据完整度</span><strong>{completeness.toFixed(1)}%</strong><i><b style={{ width: `${completeness}%` }} /></i></div>
+          <div><span>{isSample ? "示例数据完整度" : "数据完整度"}</span><strong>{completeness.toFixed(1)}%</strong><i><b style={{ width: `${completeness}%` }} /></i></div>
           <p><b>LOCAL FIRST</b> 数据在浏览器内处理，不会上传到服务器。</p>
         </section>
 
@@ -135,7 +148,7 @@ export default function Home() {
             </div>
             <div className="file-chip">
               <span className="csv-badge">{formatLabel(data.name)}</span>
-              <div><strong>{data.name}</strong><small>{data.rows.length} 行 × {data.headers.length} 列</small></div>
+              <div><strong title={data.name}>{data.name}</strong><small>{data.rows.length} 行 × {data.headers.length} 列{isSample ? " · 示例数据" : ""}</small></div>
               <span className="ready-dot">读取正常</span>
             </div>
           </div>
