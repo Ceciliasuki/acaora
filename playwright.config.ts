@@ -22,7 +22,9 @@ export default defineConfig({
     launchOptions: existsSync(windowsChrome) ? { executablePath: windowsChrome } : undefined,
   },
   webServer: {
-    command: "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3210",
+    command: process.env.CI
+      ? "node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3210"
+      : "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3210",
     url: "http://127.0.0.1:3210/api/version",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
