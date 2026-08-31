@@ -1,6 +1,6 @@
-export function getSupabaseConfig() {
-  const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
-  const key = process.env.SUPABASE_ANON_KEY;
+export function getSupabaseConfig(env: NodeJS.ProcessEnv = process.env) {
+  const url = env.SUPABASE_URL?.replace(/\/$/, "");
+  const key = env.SUPABASE_PUBLISHABLE_KEY?.trim() || env.SUPABASE_ANON_KEY?.trim();
   return url && key ? { url, key } : null;
 }
 

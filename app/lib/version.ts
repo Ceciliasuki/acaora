@@ -1,3 +1,5 @@
+import { BUILD_COMMIT, BUILD_ENVIRONMENT, BUILD_TIME } from "../generated/build-version";
+
 export type BuildVersion = {
   commit: string;
   buildTime: string;
@@ -6,12 +8,12 @@ export type BuildVersion = {
 
 export function getBuildVersion(): BuildVersion {
   return {
-    commit: process.env.ACAORA_COMMIT_SHA || "unknown",
-    buildTime: process.env.ACAORA_BUILD_TIME || "unknown",
-    environment: process.env.ACAORA_ENVIRONMENT || process.env.NODE_ENV || "unknown",
+    commit: BUILD_COMMIT,
+    buildTime: BUILD_TIME,
+    environment: BUILD_ENVIRONMENT,
   };
 }
 
 export function getShortCommit(commit: string) {
-  return commit === "unknown" ? commit : commit.slice(0, 7);
+  return commit.slice(0, 7);
 }

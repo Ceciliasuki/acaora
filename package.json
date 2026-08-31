@@ -4,23 +4,24 @@
   "private": true,
   "packageManager": "pnpm@10.26.1",
   "engines": {
-    "node": ">=20.9.0"
+    "node": "22.11.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "build:metadata": "node scripts/generate-build-version.mjs",
+    "dev": "node scripts/generate-build-version.mjs && next dev",
+    "build": "node scripts/generate-build-version.mjs && next build",
     "start": "next start",
-    "dev:sites": "vinext dev",
-    "build:sites": "vinext build",
+    "dev:sites": "node scripts/generate-build-version.mjs && vinext dev",
+    "build:sites": "node scripts/generate-build-version.mjs && vinext build",
     "start:sites": "vinext start",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node scripts/generate-build-version.mjs && tsc --noEmit",
     "test": "pnpm run test:unit && pnpm run test:e2e",
     "test:unit": "node --test tests/source-invariants.test.mjs",
-    "test:e2e": "playwright test --grep-invert \"@visual\"",
-    "test:visual": "playwright test --grep \"@visual\"",
-    "test:a11y": "playwright test --grep \"@a11y\"",
+    "test:e2e": "node scripts/generate-build-version.mjs && playwright test --grep-invert \"@visual\"",
+    "test:visual": "node scripts/generate-build-version.mjs && playwright test --grep \"@visual\"",
+    "test:a11y": "node scripts/generate-build-version.mjs && playwright test --grep \"@a11y\"",
     "test:lighthouse": "lhci autorun",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "lint": "node scripts/generate-build-version.mjs && eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
