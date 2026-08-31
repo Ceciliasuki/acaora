@@ -138,7 +138,7 @@ export default function Home() {
               <strong>{reading ? "正在识别并读取数据…" : dragging ? "松开即可读取文件" : "拖入文件，或点击选择"}</strong>
               <small>CSV · Excel · Stata · SPSS · SAS · R 数据文件</small>
             </button>
-            <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} onChange={onFileChange} />
+            <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} aria-label="选择数据文件" onChange={onFileChange} />
             {error && <p className="error-message" role="alert">{error}</p>}
             <div className="format-support" aria-label="支持的数据格式">
               <span>Excel <small>.xlsx .xls .ods</small></span>
@@ -195,9 +195,9 @@ export default function Home() {
           <div className="analysis-header">
             <div><p className="section-kicker">04 · 分析中心</p><h2>选择方法，查看结果</h2></div>
             <div className="analysis-tabs" role="tablist" aria-label="分析方法">
-              <button className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
-              <button className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
-              <button className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
+              <button role="tab" aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
+              <button role="tab" aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
+              <button role="tab" aria-selected={tab === "test"} className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
             </div>
           </div>
 

@@ -95,7 +95,7 @@ export default function CoursesPage() {
         <header className="topbar learning-topbar">
           <div><p className="eyebrow">LEARNING CENTER</p><h1>课程学习中心</h1><p>组织知识、导入资料，并按课程生成可追溯的练习。</p></div>
           <div className="track-tabs" role="tablist" aria-label="课程方向">
-            {(["全部", "统计学", "经济学"] as const).map((item) => <button type="button" key={item} className={track === item ? "active" : ""} onClick={() => setTrack(item)}>{item}</button>)}
+            {(["全部", "统计学", "经济学"] as const).map((item) => <button type="button" role="tab" aria-selected={track === item} key={item} className={track === item ? "active" : ""} onClick={() => setTrack(item)}>{item}</button>)}
           </div>
         </header>
 

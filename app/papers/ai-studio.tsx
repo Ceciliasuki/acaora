@@ -114,7 +114,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
       </div>
 
       <div className="ai-action-tabs" role="tablist" aria-label="AI 研究功能">
-        {(Object.keys(actionMeta) as AiAction[]).map((item) => <button key={item} className={action === item ? "active" : ""} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>{actionMeta[item].label}</button>)}
+        {(Object.keys(actionMeta) as AiAction[]).map((item) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "active" : ""} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>{actionMeta[item].label}</button>)}
       </div>
 
       <div className="ai-studio-body">

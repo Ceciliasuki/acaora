@@ -99,7 +99,7 @@ export default function DashboardPage() {
   return <main className="student-app">
     <AppSidebar active="dashboard" initials={initials} profileTitle={displayName} profileSubtitle={viewer ? "云端同步已开启" : "仅保存在当前设备"} />
     <section className="student-main">
-      <header className="student-topbar"><div><span>{dateFormatter.format(new Date())}</span><h1>你好，{displayName}。</h1></div><div>{viewer ? <Button className="account-button" variant="secondary" onClick={() => void signOut()}>{initials}<span>退出</span></Button> : <Link className="dashboard-login" href="/auth">登录同步</Link>}</div></header>
+      <header className="student-topbar"><div><span suppressHydrationWarning>{dateFormatter.format(new Date())}</span><h1>你好，{displayName}。</h1></div><div>{viewer ? <Button className="account-button" variant="secondary" onClick={() => void signOut()}>{initials}<span>退出</span></Button> : <Link className="dashboard-login" href="/auth">登录同步</Link>}</div></header>
 
       {state === "loading" && <div className="dashboard-loading" role="status" aria-live="polite">正在载入你的工作台…</div>}
       {state === "error" && <ErrorState description="账户已连接，但项目或论文数据暂时无法读取。" action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>} />}

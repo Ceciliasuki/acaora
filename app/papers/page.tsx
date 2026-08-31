@@ -281,7 +281,7 @@ export default function PaperLab() {
             <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
               <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
             </button>
-            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handlePdf} />
+            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
           </div>
         </div>
       </section>
@@ -289,7 +289,7 @@ export default function PaperLab() {
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
-        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
+        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
       <section className="paper-workbench">
