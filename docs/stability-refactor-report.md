@@ -5,7 +5,12 @@
 仓库：`Ceciliasuki/acaora`
 
 PR：`https://github.com/Ceciliasuki/acaora/pull/1`
-发布状态：代码已进入 open PR；本地测试已通过。GitHub CI 只有当前 PR HEAD 的远程 run 实际为绿色后才能标记通过。EdgeOne 生产绑定尚未在控制台确认，Supabase Production 项目当前为 `INACTIVE` / paused，因此尚未合并，也不能宣称 Production Account Service ready。
+发布状态：代码已进入 open PR；本地测试已通过，GitHub `CI` workflow 已完成远程绿色运行。后续提交仍必须以最新 PR HEAD 对应的 live workflow 结果为准。EdgeOne 生产绑定尚未在控制台确认，Supabase Production 项目当前为 `INACTIVE` / paused，因此尚未合并，也不能宣称 Production Account Service ready。
+
+### Release Gate 补全文件
+
+- 新增：`.github/workflows/ci.yml`、`.github/workflows/visual.yml`、`.github/workflows/lighthouse.yml`、`.nvmrc`、`scripts/generate-build-version.mjs`、`docs/production-auth-smoke.md`
+- 修改：`.env.example`、`.gitignore`、`README.md`、`package.json`、`next.config.ts`、`playwright.config.ts`、`app/lib/version.ts`、`app/lib/supabase/config.ts`、`tests/source-invariants.test.mjs`、`docs/stability-refactor-report.md`
 
 ## 1. 根因清单
 
@@ -69,8 +74,8 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 ## 7. 测试结果与证据等级
 
 - Tests exist：source invariants、build metadata generator test、Playwright、axe、视觉回归、Lighthouse 和 production Auth smoke checklist 均存在。
-- Local tests passed：上一轮 TypeScript、ESLint、Source invariants 5/5、mock Playwright 15/15、视觉回归 9/9、8 页 axe、23 路由 production build、本地 production smoke 和 Lighthouse baseline 均通过。本轮修改后必须重新运行并记录新结果。
-- GitHub CI passed：尚不能在本轮提交推送前声明。只有 `CI` workflow 对最新 PR HEAD 的远程 run 为绿色后才能改为通过。
+- Local tests passed：本轮 TypeScript、ESLint、Source invariants 7/7、mock Playwright 15/15（含 8 页 axe）、23 路由 production build、自动 `/api/version` SHA 和 tracked-file clean check 已重新通过。上一轮视觉回归 9/9 与 Lighthouse baseline 保留为本地证据；本轮没有因普通 PR 重跑这两个重任务。
+- GitHub CI passed：远程 `CI` workflow 已实际运行并成功完成 install、typecheck、lint、unit、production build、Playwright Chromium、15/15 deterministic mock E2E 和 tracked-file clean check。权威状态见 `https://github.com/Ceciliasuki/acaora/actions/workflows/ci.yml`，并始终以最新 PR HEAD 的 run 为准。
 - Mock 范围：AUTH-01..08、PROJECT-01..02、PAPER-01 和页面状态通过 `tests/e2e/helpers.ts` 拦截同源 `/api/*`，验证客户端契约与导航，不连接真实 Supabase。
 - 真实 Production integration：当前为 `NOT RUN`；必须在 Supabase 恢复且正式部署后执行 `docs/production-auth-smoke.md` 的 16 步受控测试。
 
@@ -108,3 +113,4 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 ## 10. Production commit SHA
 
 PR HEAD 必须以 GitHub PR API/页面显示的最新值为准；`b8e742dc076e35a8c66c1203e153ad4cd813301b` 只是较早代码提交，不是当前 PR HEAD。正式 Production 必须对应“PR 合并后的 GitHub `main` HEAD”，并由自动生成的 `/api/version.commit` 证明。只有 GitHub CI green、Supabase restored、真实 Auth smoke passed、EdgeOne Production 仓库/`main`/构建确认、稳定 `SITE_URL` 与 Supabase redirect allow-list 确认后才建议 merge。
+
