@@ -2,7 +2,7 @@
 
 面向大学生的开源智能学习与研究平台，把课程学习、论文研究、数据分析和项目管理放在同一个工作台中。
 
-[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build%3Aedgeone&output-directory=.next&env=SUPABASE_URL%2CSUPABASE_ANON_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL)
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build&output-directory=.next&env=SITE_URL%2CSUPABASE_URL%2CSUPABASE_ANON_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL%2CACAORA_COMMIT_SHA%2CACAORA_ENVIRONMENT)
 
 ## 主要功能
 
@@ -20,7 +20,7 @@
 - Supabase Auth 与 Postgres
 - DeepSeek API（可选，支持用户自带 Key）
 - Semantic Scholar 与 Crossref 公共论文索引
-- 双构建目标：OpenAI Sites / Cloudflare Worker 与 EdgeOne Makers
+- 生产唯一使用标准 Next.js 构建；OpenAI Sites 预览通过显式的 `*:sites` 命令隔离
 
 ## 本地运行
 
@@ -29,7 +29,7 @@
 ```bash
 pnpm install
 cp .env.example .env.local
-pnpm run dev:edgeone
+pnpm run dev
 ```
 
 打开 `http://localhost:3000`。未配置云端环境变量时，仍可使用匿名模式和设备本地功能。
@@ -42,6 +42,10 @@ pnpm run dev:edgeone
 | --- | --- | --- |
 | `SUPABASE_URL` | 登录功能需要 | Supabase 项目地址 |
 | `SUPABASE_ANON_KEY` | 登录功能需要 | Supabase 公共匿名密钥 |
+| `SITE_URL` | 生产必需 | 唯一稳定生产域名，用于元数据和认证邮件回调 |
+| `ACAORA_COMMIT_SHA` | 生产必需 | EdgeOne/CI 注入的完整 Git commit SHA |
+| `ACAORA_BUILD_TIME` | 可选 | CI 注入的 ISO 构建时间；未设置时使用构建开始时间 |
+| `ACAORA_ENVIRONMENT` | 生产必需 | `production`、`preview` 或 `development` |
 | `DEEPSEEK_API_KEY` | 可选 | 平台统一提供 AI 能力；留空时可使用用户自带 Key |
 | `DEEPSEEK_MODEL` | 可选 | DeepSeek 模型名，默认 `deepseek-v4-flash` |
 
@@ -50,10 +54,14 @@ pnpm run dev:edgeone
 1. 点击上方“使用 EdgeOne Pages 部署”。
 2. 授权 GitHub 并选择 `Ceciliasuki/acaora`。
 3. 确认安装命令为 `pnpm install --frozen-lockfile`。
-4. 确认构建命令为 `pnpm run build:edgeone`，输出目录为 `.next`。
-5. 在环境变量区域填写需要启用的 Supabase 和 DeepSeek 配置，然后开始部署。
+4. 确认构建命令为 `pnpm run build`，输出目录为 `.next`。
+5. 将生产分支设为 `main`；其他分支只生成预览。
+6. 配置稳定 `SITE_URL`、Supabase、AI 与构建身份变量后开始部署。
+7. 发布后访问 `/api/version`，确认 `commit` 等于本次 `main` 的完整 SHA。
 
 EdgeOne 会分配一个不含 `chatgpt` 的 `*.edgeone.app` 地址。后续每次推送到主分支，都可以自动重新部署。
+
+OpenAI Sites 仅用于独立预览：`pnpm run dev:sites` / `pnpm run build:sites`。这些命令不是 EdgeOne 生产入口。
 
 ## 数据库
 
