@@ -5,7 +5,7 @@
 仓库：`Ceciliasuki/acaora`
 
 PR：`https://github.com/Ceciliasuki/acaora/pull/1`
-发布状态：代码已完成并进入 PR；EdgeOne 生产绑定尚未在控制台确认，因此尚未合并或宣称线上发布成功。
+发布状态：代码已进入 open PR；本地测试已通过。GitHub CI 只有当前 PR HEAD 的远程 run 实际为绿色后才能标记通过。EdgeOne 生产绑定尚未在控制台确认，Supabase Production 项目当前为 `INACTIVE` / paused，因此尚未合并，也不能宣称 Production Account Service ready。
 
 ## 1. 根因清单
 
@@ -15,7 +15,7 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 - 登录回调和密码重置同时保留两套 URL，邮件回调来源也可能落到临时预览域名。
 - 表单、密码框、按钮、Tabs、Dialog、异步状态和错误状态缺少共享约束，交互与无障碍行为不一致。
 - Dashboard、Data 等页面把示例数据展示得过于像账户真实数据；Projects/Papers 的认证请求和异步状态不统一。
-- 缺少覆盖真实导航、认证、视觉回归、axe、Lighthouse 和生产构建的测试防线。
+- 仓库已有测试，但此前没有 GitHub Actions workflow，导致“tests exist / local passed”不能升级为“GitHub CI passed”。
 
 ## 2. 修改文件清单
 
@@ -64,24 +64,21 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 
 ### After
 
-仓库内默认链路统一为 `pnpm dev -> next dev`、`pnpm build -> next build`、`pnpm start -> next start`。Vinext 仅保留在显式 `*:sites` 命令中，不影响默认 EdgeOne/CI。`/api/version` 返回 CI 注入的 commit、buildTime、environment；Settings 页显示弱化 build 标识。EdgeOne 控制台仍须确认唯一仓库、`main` 与 Next.js 构建后方可合并 PR。
+仓库内默认链路统一为 `pnpm dev -> next dev`、`pnpm build -> build metadata generator -> next build`、`pnpm start -> next start`。Vinext 仅保留在显式 `*:sites` 命令中。EdgeOne 官方公开文档未提供可依赖的当前 Git SHA 内建变量，因此生成器使用部署 checkout 的 `git rev-parse HEAD`，在构建时固化 commit、buildTime、environment；无法得到合法 SHA 时构建失败，生产不再允许 `commit = unknown`。生成文件被 Git 忽略，不会提交随机时间戳。EdgeOne 控制台仍须确认唯一仓库、`main` 与 Next.js 构建后方可合并 PR。
 
-## 7. 测试结果
+## 7. 测试结果与证据等级
 
-- TypeScript `tsc --noEmit`：通过
-- ESLint：通过
-- Source invariants：5/5 通过
-- Playwright 功能 E2E：15/15 通过（AUTH-01..08、PROJECT-01..02、PAPER-01、UI-01..03）
-- Playwright 视觉回归：9/9 通过
-- axe：Home、Auth、Dashboard、Courses、Papers、Data、Projects、Settings 全部通过
-- Next.js production build：通过，23 条路由
-- 本地 production smoke：`/`、`/auth`、`/dashboard`、`/api/version`、`/api/auth/status` 全部 200；抽检 9 个静态资源全部 200；认证响应 cache headers 正确
-- Lighthouse：Home `0.90/1.00/1.00/1.00`，Auth `0.95/1.00/1.00/1.00`，Dashboard guest `0.94/0.95/1.00/1.00`（Performance/Accessibility/Best Practices/SEO）
+- Tests exist：source invariants、build metadata generator test、Playwright、axe、视觉回归、Lighthouse 和 production Auth smoke checklist 均存在。
+- Local tests passed：上一轮 TypeScript、ESLint、Source invariants 5/5、mock Playwright 15/15、视觉回归 9/9、8 页 axe、23 路由 production build、本地 production smoke 和 Lighthouse baseline 均通过。本轮修改后必须重新运行并记录新结果。
+- GitHub CI passed：尚不能在本轮提交推送前声明。只有 `CI` workflow 对最新 PR HEAD 的远程 run 为绿色后才能改为通过。
+- Mock 范围：AUTH-01..08、PROJECT-01..02、PAPER-01 和页面状态通过 `tests/e2e/helpers.ts` 拦截同源 `/api/*`，验证客户端契约与导航，不连接真实 Supabase。
+- 真实 Production integration：当前为 `NOT RUN`；必须在 Supabase 恢复且正式部署后执行 `docs/production-auth-smoke.md` 的 16 步受控测试。
 
 ## 8. 仍未解决的风险
 
 - 无 EdgeOne 控制台可信读取结果，无法确认 Production 当前绑定的仓库、分支、构建命令、域名与环境变量。
-- 无 Supabase 控制台权限，无法确认 Site URL、Redirect URL allow-list 与邮件模板中的回调域名。
+- Production Supabase project 当前实际状态为 `INACTIVE` / paused，组织为 Free Plan；恢复前不得声称 Production Account Service ready，也无法完成真实认证验证。
+- 项目恢复后必须重新验证 migrations、`public` tables、RLS、Security Advisors、Performance Advisors 和真实 Auth；同时确认 Site URL、Redirect URL allow-list 与邮件模板回调域名。
 - 未取得 China Telecom、China Unicom、China Mobile 三网真实测试条件；“中国大陆完全可用”仍是 Release Blocker，不能宣称已验证。
 - 真实登录、改密、邮件恢复和云同步需要生产 Supabase 环境与测试账号；当前 Playwright 通过确定性同源 API mock 验证客户端契约，服务端实现由类型检查、源约束和生产构建覆盖。
 - 头像仍需后续迁移至 Supabase Storage；本轮只阻止继续依赖 Base64 作为长期模型，不变更数据库 schema。
@@ -94,16 +91,20 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 2. Production branch 设为 `main`；其他分支只能生成 Preview。
 3. 安装命令设为 `pnpm install --frozen-lockfile`，构建命令设为 `pnpm build`，框架/运行时选择正式 Next.js；不要调用 `build:sites`。
 4. 配置稳定 HTTPS 正式域名，不把临时 Preview URL 作为身份域名。
-5. 注入 `ACAORA_COMMIT_SHA`（平台 Git SHA）、`ACAORA_BUILD_TIME`、`ACAORA_ENVIRONMENT=production`、`SITE_URL`、`NEXT_PUBLIC_SITE_URL` 和 Supabase 服务端环境变量。
-6. 完成部署后运行生产 smoke，并要求 `/api/version.commit == GitHub main HEAD`；否则部署失败。
+5. 配置 `ACAORA_ENVIRONMENT=production`、`SITE_URL`、`NEXT_PUBLIC_SITE_URL` 和 Supabase 服务端环境变量；不要人工维护 commit SHA 或 build timestamp。
+6. 确认部署 checkout 保留 Git metadata，使 `scripts/generate-build-version.mjs` 可执行 `git rev-parse HEAD`。若生成器失败，构建必须失败。
+7. 完成部署后运行 production smoke，并要求 `/api/version.commit == GitHub main HEAD`；否则部署失败。
 
 ### Supabase Auth
 
-1. Site URL 设为同一个稳定 HTTPS 正式域名。
-2. Redirect allow-list 仅保留正式 `https://<domain>/auth/callback`、`https://<domain>/auth/reset`，另加明确的本地开发地址；移除过期 Preview URL。
-3. 检查注册、恢复密码和改密邮件模板，确保 callback 指向 canonical URL。
-4. 不新增数据库 migration；确认现有 RLS 与服务端身份验证继续生效。
+1. 先恢复当前 `INACTIVE` / paused 的 Free Plan Production 项目。
+2. 恢复后复核 migrations、`public` tables、RLS、Security Advisors、Performance Advisors 和真实 Auth。
+3. 创建/确认 `SUPABASE_PUBLISHABLE_KEY` 并在 EdgeOne 使用它；`SUPABASE_ANON_KEY` 仅作为 legacy fallback。不得把 secret key 或 service_role 放进客户端或普通 session。
+4. Site URL 设为同一个稳定 HTTPS 正式域名。
+5. Redirect allow-list 仅保留正式 `https://<domain>/auth/callback`、`https://<domain>/auth/reset`，另加明确的本地开发地址；移除过期 Preview URL。
+6. 检查注册、恢复密码和改密邮件模板，确保 callback 指向 canonical URL。
+7. 按 `docs/production-auth-smoke.md` 完成真实集成测试。
 
 ## 10. Production commit SHA
 
-当前最后一个代码提交为 `b8e742dc076e35a8c66c1203e153ad4cd813301b`，其 production build 与 `/api/version` 已完成本地验证；PR 可能继续包含不影响运行时的报告提交。正式 Production 必须对应“PR 合并后的 GitHub `main` HEAD”，不得使用本报告中的临时分支 SHA 冒充线上版本。合并前必须先完成第 9 节控制台确认。
+PR HEAD 必须以 GitHub PR API/页面显示的最新值为准；`b8e742dc076e35a8c66c1203e153ad4cd813301b` 只是较早代码提交，不是当前 PR HEAD。正式 Production 必须对应“PR 合并后的 GitHub `main` HEAD”，并由自动生成的 `/api/version.commit` 证明。只有 GitHub CI green、Supabase restored、真实 Auth smoke passed、EdgeOne Production 仓库/`main`/构建确认、稳定 `SITE_URL` 与 Supabase redirect allow-list 确认后才建议 merge。

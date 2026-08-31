@@ -2,7 +2,7 @@
 
 面向大学生的开源智能学习与研究平台，把课程学习、论文研究、数据分析和项目管理放在同一个工作台中。
 
-[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build&output-directory=.next&env=SITE_URL%2CSUPABASE_URL%2CSUPABASE_ANON_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL%2CACAORA_COMMIT_SHA%2CACAORA_ENVIRONMENT)
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build&output-directory=.next&env=SITE_URL%2CSUPABASE_URL%2CSUPABASE_PUBLISHABLE_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL%2CACAORA_ENVIRONMENT)
 
 ## 主要功能
 
@@ -24,7 +24,7 @@
 
 ## 本地运行
 
-需要 Node.js 22 及 pnpm。
+需要 Node.js 22.11.0 及 pnpm 10.26.1，与 `package.json` 和 CI 完全一致。
 
 ```bash
 pnpm install
@@ -41,11 +41,10 @@ pnpm run dev
 | 变量 | 是否必需 | 用途 |
 | --- | --- | --- |
 | `SUPABASE_URL` | 登录功能需要 | Supabase 项目地址 |
-| `SUPABASE_ANON_KEY` | 登录功能需要 | Supabase 公共匿名密钥 |
+| `SUPABASE_PUBLISHABLE_KEY` | 登录功能需要，推荐 | Supabase 当前推荐的 publishable key；可安全用于受 RLS 保护的公开应用组件 |
+| `SUPABASE_ANON_KEY` | 仅旧项目兼容 | legacy anon key fallback；新部署优先迁移到 publishable key |
 | `SITE_URL` | 生产必需 | 唯一稳定生产域名，用于元数据和认证邮件回调 |
-| `ACAORA_COMMIT_SHA` | 生产必需 | EdgeOne/CI 注入的完整 Git commit SHA |
-| `ACAORA_BUILD_TIME` | 可选 | CI 注入的 ISO 构建时间；未设置时使用构建开始时间 |
-| `ACAORA_ENVIRONMENT` | 生产必需 | `production`、`preview` 或 `development` |
+| `ACAORA_ENVIRONMENT` | 可选 | `production`、`preview`、`ci` 或 `development`；未设置时由构建环境给出安全默认值 |
 | `DEEPSEEK_API_KEY` | 可选 | 平台统一提供 AI 能力；留空时可使用用户自带 Key |
 | `DEEPSEEK_MODEL` | 可选 | DeepSeek 模型名，默认 `deepseek-v4-flash` |
 
@@ -56,12 +55,22 @@ pnpm run dev
 3. 确认安装命令为 `pnpm install --frozen-lockfile`。
 4. 确认构建命令为 `pnpm run build`，输出目录为 `.next`。
 5. 将生产分支设为 `main`；其他分支只生成预览。
-6. 配置稳定 `SITE_URL`、Supabase、AI 与构建身份变量后开始部署。
+6. 配置稳定 `SITE_URL`、Supabase publishable key 与可选 AI 变量后开始部署。
 7. 发布后访问 `/api/version`，确认 `commit` 等于本次 `main` 的完整 SHA。
+
+EdgeOne Makers 当前公开 Build Guide 未文档化一个可依赖的内建 Git SHA 变量。因此 `pnpm build` 会先运行 `scripts/generate-build-version.mjs`，直接用部署工作区的 `git rev-parse HEAD` 生成忽略于 Git 的 `app/generated/build-version.ts`。commit、build time 和 environment 会被固化进构建产物；无法得到合法 Git SHA 时构建直接失败，不会发布 `commit = unknown`。
 
 EdgeOne 会分配一个不含 `chatgpt` 的 `*.edgeone.app` 地址。后续每次推送到主分支，都可以自动重新部署。
 
 OpenAI Sites 仅用于独立预览：`pnpm run dev:sites` / `pnpm run build:sites`。这些命令不是 EdgeOne 生产入口。
+
+## 质量门禁
+
+- Tests exist：source invariants、Playwright mock E2E、axe、视觉回归和 Lighthouse 配置均已纳入仓库。
+- Local tests passed：最近一次本地 typecheck、lint、unit、production build、mock E2E、视觉回归、axe 和 Lighthouse 结果记录在交付报告中。
+- GitHub CI passed：只有 [CI workflow](https://github.com/Ceciliasuki/acaora/actions/workflows/ci.yml) 对当前 PR HEAD 的远程 run 为绿色时才成立；工作流不存在、未运行、排队或失败均不算通过。
+
+普通 PR CI 只运行确定性 mock E2E，不需要生产 Supabase 密钥。视觉回归与 Lighthouse 是独立的手动 workflow，避免拖慢普通 PR。真实 Production Auth 验证使用 [`docs/production-auth-smoke.md`](docs/production-auth-smoke.md)，不能用 mock E2E 代替。
 
 ## 数据库
 
@@ -70,7 +79,8 @@ Supabase 初始化与安全策略位于 `supabase/migrations/`。请按编号顺
 ## 安全说明
 
 - `.env*`、构建产物和本地缓存已被 Git 忽略。
-- 服务端密钥不会写入前端代码或仓库。
+- publishable key 是低权限公开应用 key，仍必须配合 RLS；legacy anon key 只用于兼容。
+- Supabase secret key 和 legacy service_role 不会写入客户端、普通用户 session 或仓库。
 - 用户自带的 DeepSeek Key 只用于当前设备会话，不写入云端数据库。
 - 公开部署前应在 Supabase 中保留 RLS，并限制允许的重定向网址。
 
