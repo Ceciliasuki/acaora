@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authError, readRequestSession, supabaseRest } from "../auth/_shared";
+import { authError, privateNoStore, readRequestSession, supabaseRest } from "../auth/_shared";
 
 const projectKinds = new Set(["course", "paper", "data", "writing", "group", "career"]);
 const projectStatuses = new Set(["active", "paused", "completed"]);
@@ -11,6 +11,10 @@ type ProjectPayload = {
   status?: string;
   metadata?: Record<string, unknown>;
 };
+
+function json(data: unknown, init?: ResponseInit) {
+  return privateNoStore(NextResponse.json(data, init));
+}
 
 function validateProject(payload: ProjectPayload) {
   const title = payload.title?.trim();
@@ -24,16 +28,16 @@ function validateProject(payload: ProjectPayload) {
   return { title, kind, status, metadata };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await readRequestSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录后使用项目工作台。" }, { status: 401 });
+    const session = await readRequestSession();
+    if (!session) return json({ error: "请先登录后使用项目工作台。" }, { status: 401 });
     const response = await supabaseRest(
       "learning_projects?select=id,title,kind,status,metadata,created_at,updated_at&order=updated_at.desc",
       session.accessToken,
     );
-    if (!response.ok) return NextResponse.json({ error: "项目工作台暂时无法读取数据。" }, { status: 503 });
-    return NextResponse.json({ projects: await response.json() });
+    if (!response.ok) return json({ error: "项目工作台暂时无法读取数据。" }, { status: 503 });
+    return json({ projects: await response.json() });
   } catch (error) {
     return authError(error);
   }
@@ -41,10 +45,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await readRequestSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录后创建项目。" }, { status: 401 });
+    const session = await readRequestSession();
+    if (!session) return json({ error: "请先登录后创建项目。" }, { status: 401 });
     const validated = validateProject(await request.json() as ProjectPayload);
-    if ("error" in validated) return NextResponse.json({ error: validated.error }, { status: 400 });
+    if ("error" in validated) return json({ error: validated.error }, { status: 400 });
     const response = await supabaseRest("learning_projects", session.accessToken, {
       method: "POST",
       headers: { "Prefer": "return=representation" },
@@ -56,9 +60,9 @@ export async function POST(request: NextRequest) {
         metadata: validated.metadata,
       }),
     });
-    if (!response.ok) return NextResponse.json({ error: "创建项目失败，请稍后重试。" }, { status: 503 });
+    if (!response.ok) return json({ error: "创建项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
-    return NextResponse.json({ project: rows[0] }, { status: 201 });
+    return json({ project: rows[0] }, { status: 201 });
   } catch (error) {
     return authError(error);
   }
@@ -66,12 +70,12 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await readRequestSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录后更新项目。" }, { status: 401 });
+    const session = await readRequestSession();
+    if (!session) return json({ error: "请先登录后更新项目。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "缺少项目编号。" }, { status: 400 });
+    if (!id) return json({ error: "缺少项目编号。" }, { status: 400 });
     const validated = validateProject(await request.json() as ProjectPayload);
-    if ("error" in validated) return NextResponse.json({ error: validated.error }, { status: 400 });
+    if ("error" in validated) return json({ error: validated.error }, { status: 400 });
     const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}`, session.accessToken, {
       method: "PATCH",
       headers: { "Prefer": "return=representation" },
@@ -83,10 +87,10 @@ export async function PATCH(request: NextRequest) {
         updated_at: new Date().toISOString(),
       }),
     });
-    if (!response.ok) return NextResponse.json({ error: "保存项目失败，请稍后重试。" }, { status: 503 });
+    if (!response.ok) return json({ error: "保存项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
-    if (!rows[0]) return NextResponse.json({ error: "没有找到这个项目。" }, { status: 404 });
-    return NextResponse.json({ project: rows[0] });
+    if (!rows[0]) return json({ error: "没有找到这个项目。" }, { status: 404 });
+    return json({ project: rows[0] });
   } catch (error) {
     return authError(error);
   }
@@ -94,15 +98,15 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await readRequestSession(request);
-    if (!session) return NextResponse.json({ error: "请先登录后删除项目。" }, { status: 401 });
+    const session = await readRequestSession();
+    if (!session) return json({ error: "请先登录后删除项目。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "缺少项目编号。" }, { status: 400 });
+    if (!id) return json({ error: "缺少项目编号。" }, { status: 400 });
     const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}`, session.accessToken, {
       method: "DELETE",
     });
-    if (!response.ok) return NextResponse.json({ error: "删除项目失败，请稍后重试。" }, { status: 503 });
-    return NextResponse.json({ deleted: true });
+    if (!response.ok) return json({ error: "删除项目失败，请稍后重试。" }, { status: 503 });
+    return json({ deleted: true });
   } catch (error) {
     return authError(error);
   }

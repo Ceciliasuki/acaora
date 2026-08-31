@@ -7,7 +7,7 @@ import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
-import { browserAuthenticatedFetch } from "../lib/browser-auth";
+import { authFetch } from "../lib/auth-client";
 
 type TranslatorSession = {
   translate: (text: string) => Promise<string>;
@@ -58,10 +58,10 @@ export default function PaperLab() {
       try {
         const localRecords = await getPaperLibrary();
         let records = localRecords;
-        const sessionResponse = await browserAuthenticatedFetch("/api/auth/session");
+        const sessionResponse = await authFetch("/api/auth/session");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
         if (session.user) {
-          const cloudResponse = await browserAuthenticatedFetch("/api/cloud/papers");
+          const cloudResponse = await authFetch("/api/cloud/papers");
           if (cloudResponse.ok) {
             const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
             const byId = new Map<string, PaperRecord>();
@@ -107,7 +107,7 @@ export default function PaperLab() {
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
       });
       if (cloudState === "ready") {
-        void browserAuthenticatedFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+        void authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
           .then((response) => { if (!response.ok) setCloudState("error"); })
           .catch(() => setCloudState("error"));
       }
@@ -228,7 +228,7 @@ export default function PaperLab() {
   async function removeFromLibrary(record: PaperRecord) {
     if (!window.confirm(`从当前设备删除“${record.title}”的阅读记忆？`)) return;
     await deletePaper(record.id);
-    if (cloudState === "ready") void fetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
+    if (cloudState === "ready") void authFetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
     const remaining = library.filter((item) => item.id !== record.id);
     setLibrary(remaining);
     if (paper.id === record.id) setPaper(remaining[0] ?? samplePaper);

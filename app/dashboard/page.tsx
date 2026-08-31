@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
-import { bridgeBrowserSession, browserAuthenticatedFetch, browserSignOut, getBrowserAuthConfig, getBrowserUser } from "../lib/browser-auth";
+import { authFetch, signOut as signOutSession } from "../lib/auth-client";
 
 type Viewer = { id: string; email?: string } | null;
 
@@ -22,7 +22,7 @@ export default function DashboardPage() {
       let serverConfigured = false;
       let serverUser: Viewer = null;
       try {
-        const response = await browserAuthenticatedFetch("/api/auth/session", { cache: "no-store", headers: { "Accept": "application/json" } });
+        const response = await authFetch("/api/auth/session");
         if ((response.headers.get("content-type") ?? "").includes("application/json")) {
           const payload = await response.json() as { user?: Viewer; configured?: boolean };
           serverUser = payload.user ?? null;
@@ -31,20 +31,15 @@ export default function DashboardPage() {
       } catch {
         // The deployment preview may block dynamic routes; browser auth remains available.
       }
-      const browserUser = serverUser ? null : await getBrowserUser();
-      if (browserUser) void bridgeBrowserSession();
-      setViewer(serverUser ?? (browserUser ? { id: browserUser.id, email: browserUser.email } : null));
-      setConfigured(serverConfigured || Boolean(getBrowserAuthConfig()));
+      setViewer(serverUser);
+      setConfigured(serverConfigured);
       setLoaded(true);
     }
     void loadViewer();
   }, []);
 
   async function signOut() {
-    await Promise.allSettled([
-      fetch("/api/auth/logout", { method: "POST" }),
-      browserSignOut(),
-    ]);
+    await signOutSession().catch(() => undefined);
     setViewer(null);
   }
 

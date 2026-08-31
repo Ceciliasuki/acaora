@@ -3,13 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.26.1",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "workerd"
-    ]
-  },
   "engines": {
     "node": ">=20.9.0"
   },
@@ -27,6 +20,8 @@
   "dependencies": {
     "@e965/xlsx": "0.20.3",
     "@irbisadm/statfmt": "0.1.1",
+    "@supabase/ssr": "0.12.5",
+    "@supabase/supabase-js": "2.112.4",
     "drizzle-orm": "0.45.2",
     "next": "16.3.1",
     "pdfjs-dist": "^6.2.108",

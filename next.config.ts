@@ -20,6 +20,12 @@ const deploymentEnvironment =
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  async redirects() {
+    return [
+      { source: "/auth-callback", destination: "/auth/callback", permanent: true },
+      { source: "/reset", destination: "/auth/reset", permanent: true },
+    ];
+  },
   env: {
     ACAORA_BUILD_COMMIT: buildCommit,
     ACAORA_BUILD_TIME: buildTime,

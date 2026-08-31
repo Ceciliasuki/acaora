@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
 
 import { useEffect, useState } from "react";
-import { authChangeEvent, browserReadProfile, getBrowserUser } from "../lib/browser-auth";
+import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client";
 
 type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
 
@@ -36,14 +36,14 @@ export default function AppSidebar({
   useEffect(() => {
     let mounted = true;
     async function loadProfile() {
-      const user = await getBrowserUser().catch(() => null);
-      const data = user ? await browserReadProfile(user.id).catch(() => null) : null;
+      const user = await getCurrentUser().catch(() => null);
+      const data = user ? await getProfile().catch(() => null) : null;
       if (!mounted) return;
       if (!user) {
         setProfile({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
         return;
       }
-      const title = data?.display_name || user.user_metadata?.display_name || user.email || profileTitle;
+      const title = data?.display_name || user.email || profileTitle;
       setProfile({
         initials: String(title).slice(0, 2).toUpperCase(),
         title: String(title),
@@ -90,5 +90,4 @@ export default function AppSidebar({
     </aside>
   );
 }
-
 

@@ -3,7 +3,7 @@
 import AppSidebar from "../components/app-sidebar";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { browserAuthenticatedFetch } from "../lib/browser-auth";
+import { authFetch } from "../lib/auth-client";
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -65,13 +65,13 @@ export default function ProjectsPage() {
   }).length;
 
   useEffect(() => {
-    void browserAuthenticatedFetch("/api/auth/session")
+    void authFetch("/api/auth/session")
       .then((response) => response.json())
       .then(async (payload: { user?: Viewer }) => {
         const user = payload.user ?? null;
         setViewer(user);
         if (!user) return;
-        const response = await browserAuthenticatedFetch("/api/projects");
+        const response = await authFetch("/api/projects");
         const data = await response.json() as { projects?: Project[]; error?: string };
         if (!response.ok) throw new Error(data.error ?? "项目读取失败。");
         const nextProjects = data.projects ?? [];
@@ -94,7 +94,7 @@ export default function ProjectsPage() {
     setSaving(true);
     setMessage("");
     try {
-      const response = await browserAuthenticatedFetch("/api/projects", {
+      const response = await authFetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -121,7 +121,7 @@ export default function ProjectsPage() {
     setSaving(true);
     setMessage("");
     try {
-      const response = await fetch(`/api/projects?id=${encodeURIComponent(next.id)}`, {
+      const response = await authFetch(`/api/projects?id=${encodeURIComponent(next.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(next),
@@ -154,7 +154,7 @@ export default function ProjectsPage() {
   async function deleteProject() {
     if (!selected || !window.confirm(`确定删除“${selected.title}”吗？此操作无法撤销。`)) return;
     setSaving(true);
-    const response = await fetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, { method: "DELETE" });
+    const response = await authFetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, { method: "DELETE" });
     const payload = await response.json() as { error?: string };
     if (!response.ok) {
       setMessage(payload.error ?? "删除项目失败。");

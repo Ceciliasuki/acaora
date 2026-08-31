@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authError, privateNoStore, readRequestSession, setSessionCookies, supabaseRest } from "../auth/_shared";
+import { authError, privateNoStore, readRequestSession, supabaseRest } from "../auth/_shared";
 
 type ProfilePreferences = {
   avatar?: string;
@@ -16,11 +16,6 @@ type ProfilePayload = {
   preferences?: unknown;
 };
 
-function withRefresh(response: NextResponse, session: Awaited<ReturnType<typeof readRequestSession>>) {
-  if (session?.refreshed) setSessionCookies(response, session.refreshed);
-  return privateNoStore(response);
-}
-
 function normalizeString(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -36,18 +31,18 @@ function normalizePreferences(value: unknown): ProfilePreferences {
     avatar,
     bio: normalizeString(source.bio, 240),
     interests,
-    language: ["zh-CN", "en"].includes(String(source.language)) ? String(source.language) : "zh-CN",
+    language: "zh-CN",
   };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await readRequestSession(request);
+    const session = await readRequestSession();
     if (!session) return privateNoStore(NextResponse.json({ error: "请先登录。" }, { status: 401 }));
     const result = await supabaseRest(`profiles?id=eq.${encodeURIComponent(session.user.id)}&select=display_name,university,major,graduation_year,preferences,updated_at`, session.accessToken);
     if (!result.ok) return privateNoStore(NextResponse.json({ error: "暂时无法读取个人资料。" }, { status: 502 }));
     const profiles = await result.json() as Array<Record<string, unknown>>;
-    return withRefresh(NextResponse.json({ user: { id: session.user.id, email: session.user.email }, profile: profiles[0] ?? null }), session);
+    return privateNoStore(NextResponse.json({ user: { id: session.user.id, email: session.user.email }, profile: profiles[0] ?? null }));
   } catch (error) {
     return authError(error);
   }
@@ -55,7 +50,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await readRequestSession(request);
+    const session = await readRequestSession();
     if (!session) return privateNoStore(NextResponse.json({ error: "请先登录。" }, { status: 401 }));
     const body = await request.json() as ProfilePayload;
     const year = Number(body.graduation_year);
@@ -79,7 +74,7 @@ export async function PUT(request: NextRequest) {
       return privateNoStore(NextResponse.json({ error: "资料保存失败，请确认 Supabase 已运行账户迁移。" }, { status: 502 }));
     }
     const profiles = await result.json() as Array<Record<string, unknown>>;
-    return withRefresh(NextResponse.json({ profile: profiles[0] ?? profile }), session);
+    return privateNoStore(NextResponse.json({ profile: profiles[0] ?? profile }));
   } catch (error) {
     if (error instanceof Error && error.message === "INVALID_AVATAR") return privateNoStore(NextResponse.json({ error: "头像格式无效。" }, { status: 400 }));
     return authError(error);

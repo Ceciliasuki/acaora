@@ -24,6 +24,7 @@ export function getSiteUrl(pathname = "/") {
 
 export function requireSiteUrl(pathname = "/") {
   const configured = getConfiguredSiteUrl();
-  if (!configured) throw new Error("SITE_URL_NOT_CONFIGURED");
-  return new URL(pathname, configured).toString();
+  if (configured) return new URL(pathname, configured).toString();
+  if (process.env.NODE_ENV !== "production") return new URL(pathname, localDevelopmentUrl).toString();
+  throw new Error("SITE_URL_NOT_CONFIGURED");
 }

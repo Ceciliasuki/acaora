@@ -3,27 +3,24 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { bridgeBrowserSession, browserRecover, browserSignIn, browserSignUp, getBrowserAuthConfig, saveBrowserSession } from "../lib/browser-auth";
+import { authFetch, getAuthStatus, notifyAuthChanged } from "../lib/auth-client";
 
 type Mode = "login" | "register" | "recover" | "existing-account" | "check-email";
 type MailPurpose = "confirmation" | "recovery";
 type AuthAvailability = "checking" | "ready" | "not-configured" | "unreachable";
 
-class SiteAuthUnavailableError extends Error {}
-
 async function siteAuthRequest(endpoint: string, body: Record<string, string>) {
-  const response = await fetch(endpoint, {
+  const response = await authFetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Accept": "application/json" },
     body: JSON.stringify(body),
   });
-  const text = await response.text();
-  let payload: { error?: string; confirmationRequired?: boolean; accountMayExist?: boolean };
-  try {
-    payload = text ? JSON.parse(text) as typeof payload : {};
-  } catch {
-    throw new SiteAuthUnavailableError("站点认证接口被部署预览限制拦截。");
-  }
+  const payload = await response.json() as {
+    error?: string;
+    confirmationRequired?: boolean;
+    accountMayExist?: boolean;
+    signedIn?: boolean;
+  };
   if (!response.ok) throw new Error(payload.error || "操作失败，请稍后重试。");
   return payload;
 }
@@ -54,16 +51,10 @@ export default function AuthPage() {
 
     async function checkAuthAvailability() {
       try {
-        const response = await fetch(`/api/auth/status?fresh=${Date.now()}`, {
-          cache: "no-store",
-          credentials: "same-origin",
-          headers: { "Accept": "application/json" },
-        });
-        if (!response.ok) throw new Error(`AUTH_STATUS_${response.status}`);
-        const payload = await response.json() as { configured?: boolean };
-        if (active) setAuthAvailability(payload.configured === true ? "ready" : "not-configured");
+        const payload = await getAuthStatus();
+        if (active) setAuthAvailability(payload.configured ? "ready" : "not-configured");
       } catch {
-        if (active) setAuthAvailability(getBrowserAuthConfig() ? "ready" : "unreachable");
+        if (active) setAuthAvailability("unreachable");
       }
     }
 
@@ -88,35 +79,8 @@ export default function AuthPage() {
     setWorking(true);
     setMessage("");
     try {
-      let payload: { confirmationRequired?: boolean; accountMayExist?: boolean };
-      if (getBrowserAuthConfig()) {
-        const normalizedEmail = email.trim().toLowerCase();
-        if (mode === "recover") {
-          await browserRecover(normalizedEmail, new URL("/reset", location.origin).toString());
-          payload = {};
-        } else if (mode === "register") {
-          const directPayload = await browserSignUp(normalizedEmail, password, displayName.trim(), new URL("/auth-callback", location.origin).toString());
-          if (directPayload.access_token && directPayload.refresh_token) {
-            saveBrowserSession(directPayload);
-            await bridgeBrowserSession();
-            router.replace("/dashboard");
-            router.refresh();
-            return;
-          }
-          payload = directPayload.user && Array.isArray(directPayload.user.identities) && directPayload.user.identities.length === 0
-            ? { accountMayExist: true }
-            : { confirmationRequired: true };
-        } else {
-          await browserSignIn(normalizedEmail, password);
-          await bridgeBrowserSession();
-          router.replace("/dashboard");
-          router.refresh();
-          return;
-        }
-      } else {
-        const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
-        payload = await siteAuthRequest(endpoint, { email, password, displayName });
-      }
+      const endpoint = mode === "register" ? "/api/auth/register" : mode === "recover" ? "/api/auth/recover" : "/api/auth/login";
+      const payload = await siteAuthRequest(endpoint, { email, password, displayName });
       if (payload.accountMayExist) {
         setMode("existing-account");
         return;
@@ -131,7 +95,9 @@ export default function AuthPage() {
         setMode("check-email");
         return;
       }
-      router.push("/dashboard");
+      notifyAuthChanged();
+      router.replace("/dashboard");
+      router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "操作失败，请稍后重试。");
     } finally {
@@ -144,12 +110,7 @@ export default function AuthPage() {
     setWorking(true);
     setMessage("");
     try {
-      try {
-        await siteAuthRequest("/api/auth/recover", { email });
-      } catch (error) {
-        if (!(error instanceof SiteAuthUnavailableError) || !getBrowserAuthConfig()) throw error;
-        await browserRecover(email.trim().toLowerCase(), new URL("/reset", location.origin).toString());
-      }
+      await siteAuthRequest("/api/auth/recover", { email });
       setMailPurpose("recovery");
       setMode("check-email");
     } catch (error) {
@@ -210,7 +171,7 @@ export default function AuthPage() {
 
             {message && <div className="auth-message error" role="alert">{message}</div>}
             <div className="auth-divider"><span>或</span></div>
-            <a className="guest-entry" href="/dashboard?guest=1">先以匿名模式体验 <span>→</span></a>
+            <Link className="guest-entry" href="/dashboard?guest=1">先以匿名模式体验 <span>→</span></Link>
             <p className="auth-legal">注册即表示你同意平台按隐私说明处理账户与学习数据。密码只由认证服务验证，Acaora 不保存明文密码。</p>
             <div className="email-support"><span>支持</span><b>QQ 邮箱</b><b>163 / 126</b><b>Outlook</b><b>Gmail</b><b>学校邮箱</b></div>
           </div>

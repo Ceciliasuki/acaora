@@ -5,7 +5,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
-import { bridgeBrowserSession, browserReadProfile, browserSaveProfile, browserSignOut, browserUpdateDisplayName, browserUpdatePassword, getBrowserUser } from "../lib/browser-auth";
+import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword } from "../lib/auth-client";
 
 type Profile = {
   display_name: string;
@@ -35,24 +35,23 @@ export default function SettingsPage() {
     let mounted = true;
     async function loadProfile() {
       try {
-        const user = await getBrowserUser();
+        const user = await getCurrentUser();
         if (user && mounted) {
           setSignedIn(true);
           setEmail(user.email || "");
           setProfile((current) => ({
             ...current,
-            display_name: String(user.user_metadata?.display_name || ""),
+            display_name: "",
           }));
-          void bridgeBrowserSession();
         }
 
         if (!user) return;
-        const next = await browserReadProfile(user.id);
+        const next = await getProfile();
         if (!mounted) return;
         setSignedIn(true);
         setEmail(user.email || "");
         setProfile({
-          display_name: next?.display_name || String(user.user_metadata?.display_name || ""),
+          display_name: next?.display_name || "",
           university: next?.university || "",
           major: next?.major || "",
           graduation_year: next?.graduation_year || "",
@@ -104,11 +103,10 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const user = await getBrowserUser();
+      const user = await getCurrentUser();
       if (!user) throw new Error("登录状态已失效，请重新登录后继续。");
-      const saved = await browserSaveProfile(user.id, profile);
+      const saved = await saveAccountProfile(profile);
       setProfile(saved);
-      await browserUpdateDisplayName(saved.display_name).catch(() => null);
       setMessage("个人资料已保存，并会显示在平台导航中。" );
       window.dispatchEvent(new Event("acaora:profile-change"));
     } catch (cause) {
@@ -128,10 +126,7 @@ export default function SettingsPage() {
   }
 
   async function logout() {
-    await Promise.allSettled([
-      fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }),
-      browserSignOut(),
-    ]);
+    await signOut().catch(() => undefined);
     router.replace("/");
     router.refresh();
   }
@@ -145,8 +140,7 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      await browserUpdatePassword(newPassword);
-      await bridgeBrowserSession();
+      await updatePassword(newPassword);
       setNewPassword("");
       setConfirmNewPassword("");
       setMessage("登录密码已更新。" );
@@ -193,5 +187,4 @@ async function compressAvatar(file: File) {
   bitmap.close();
   return canvas.toDataURL("image/webp", .78);
 }
-
 
