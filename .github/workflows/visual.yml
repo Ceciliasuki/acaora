@@ -1,0 +1,40 @@
+name: Visual regression
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      ACAORA_ENVIRONMENT: ci-visual
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install chromium
+      - run: pnpm test:visual
+      - name: Ensure workflow did not modify tracked files
+        run: git diff --exit-code
+      - name: Upload visual diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diagnostics
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

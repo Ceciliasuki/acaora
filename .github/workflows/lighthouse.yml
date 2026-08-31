@@ -1,0 +1,40 @@
+name: Lighthouse baseline
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      ACAORA_ENVIRONMENT: ci-lighthouse
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test:lighthouse
+      - name: Ensure workflow did not modify tracked files
+        run: git diff --exit-code
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: test-results/lighthouse/
+          if-no-files-found: ignore
+          retention-days: 14
