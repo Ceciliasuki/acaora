@@ -27,9 +27,9 @@ const nextConfig: NextConfig = {
     ];
   },
   env: {
-    ACAORA_BUILD_COMMIT: buildCommit,
+    ACAORA_COMMIT_SHA: buildCommit,
     ACAORA_BUILD_TIME: buildTime,
-    ACAORA_BUILD_ENVIRONMENT: deploymentEnvironment,
+    ACAORA_ENVIRONMENT: deploymentEnvironment,
   },
 };
 

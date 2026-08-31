@@ -6,9 +6,9 @@ export type BuildVersion = {
 
 export function getBuildVersion(): BuildVersion {
   return {
-    commit: process.env.ACAORA_BUILD_COMMIT || "unknown",
+    commit: process.env.ACAORA_COMMIT_SHA || "unknown",
     buildTime: process.env.ACAORA_BUILD_TIME || "unknown",
-    environment: process.env.ACAORA_BUILD_ENVIRONMENT || process.env.NODE_ENV || "unknown",
+    environment: process.env.ACAORA_ENVIRONMENT || process.env.NODE_ENV || "unknown",
   };
 }
 
