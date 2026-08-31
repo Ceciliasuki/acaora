@@ -68,7 +68,7 @@ OpenAI Sites 仅用于独立预览：`pnpm run dev:sites` / `pnpm run build:site
 
 - Tests exist：source invariants、Playwright mock E2E、axe、视觉回归和 Lighthouse 配置均已纳入仓库。
 - Local tests passed：最近一次本地 typecheck、lint、unit、production build、mock E2E、视觉回归、axe 和 Lighthouse 结果记录在交付报告中。
-- GitHub CI passed：只有 [CI workflow](https://github.com/Ceciliasuki/acaora/actions/workflows/ci.yml) 对当前 PR HEAD 的远程 run 为绿色时才成立；工作流不存在、未运行、排队或失败均不算通过。
+- GitHub CI passed：[CI workflow](https://github.com/Ceciliasuki/acaora/actions/workflows/ci.yml) 已完成首次远程绿色运行；以后仍以该页面上最新 PR HEAD 的 run 为准，未运行、排队、取消或失败均不算通过。
 
 普通 PR CI 只运行确定性 mock E2E，不需要生产 Supabase 密钥。视觉回归与 Lighthouse 是独立的手动 workflow，避免拖慢普通 PR。真实 Production Auth 验证使用 [`docs/production-auth-smoke.md`](docs/production-auth-smoke.md)，不能用 mock E2E 代替。
 
