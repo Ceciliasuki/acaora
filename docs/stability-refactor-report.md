@@ -104,4 +104,4 @@ PR：`https://github.com/Ceciliasuki/acaora/pull/1`
 
 ## 10. Production commit SHA
 
-当前 PR 已验证代码提交为 `a6431e3849cb8818d9f913163fa8c026fd68f6f0`；分支另有一个不改变文件树的基线归并提交。正式 Production 应对应“PR 合并后的 GitHub `main` HEAD”，不得使用本报告中的临时分支 SHA 冒充线上版本。合并前必须先完成第 9 节控制台确认。
+当前最后一个代码提交为 `b8e742dc076e35a8c66c1203e153ad4cd813301b`，其 production build 与 `/api/version` 已完成本地验证；PR 可能继续包含不影响运行时的报告提交。正式 Production 必须对应“PR 合并后的 GitHub `main` HEAD”，不得使用本报告中的临时分支 SHA 冒充线上版本。合并前必须先完成第 9 节控制台确认。
