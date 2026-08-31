@@ -4,6 +4,7 @@
 
 import { ChangeEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import AppSidebar from "../components/app-sidebar";
 import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword } from "../lib/auth-client";
 
@@ -155,7 +156,7 @@ export default function SettingsPage() {
     <AppSidebar active="settings" />
     <section className="workspace settings-main">
       <header className="topbar settings-topbar"><div><p className="eyebrow">ACCOUNT</p><h1>设置与隐私</h1><p>管理个人资料、数据边界与当前设备。</p></div><button type="button" disabled={!signedIn || saving} onClick={() => void saveProfile()}>{saving ? "正在保存…" : "保存更改"}</button></header>
-      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><a href="/auth">前往登录</a></div> : <>
+      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
         {(message || error) && <div className={`settings-message ${error ? "error" : ""}`} role="status" aria-live="polite">{error || message}</div>}
         <div className="settings-grid">
           <section className="profile-card">
@@ -187,4 +188,3 @@ async function compressAvatar(file: File) {
   bitmap.close();
   return canvas.toDataURL("image/webp", .78);
 }
-

@@ -499,6 +499,9 @@ footer p { margin: 0; text-align: right; }
 .acaora-nav-links a, .acaora-nav-actions a { color: #646b7b; text-decoration: none; font-size: 10px; }
 .acaora-nav-links a:hover { color: var(--ac-ink); }
 .acaora-nav-actions { display: flex; align-items: center; gap: 11px; margin-left: auto; }
+.home-viewer { min-height: 44px; padding: 5px 10px 5px 6px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid #dfe2e9; border-radius: 999px; background: white; }
+.home-viewer > img, .home-viewer > span { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; object-fit: cover; background: #6c67e8; color: white; font-size: 11px; }
+.home-viewer > strong { max-width: 120px; overflow: hidden; color: #252b3a; text-overflow: ellipsis; white-space: nowrap; }
 .acaora-nav-actions .primary-link { padding: 11px 15px; border-radius: 9px; background: var(--ac-ink); color: white; box-shadow: 0 8px 24px rgba(16,21,38,.13); }
 .primary-link span { margin-left: 8px; color: #9df0d4; }
 .ghost-link { padding: 10px; }
@@ -532,7 +535,7 @@ footer p { margin: 0; text-align: right; }
 .hero-product article > header { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
 .hero-product header small { color: #9298a5; font: 700 7px/1 monospace; letter-spacing: .1em; }
 .hero-product header h2 { margin: 7px 0 0; font: 600 22px/1.2 Georgia, "Songti SC", serif; }
-.hero-product header button { border: 1px solid #dfe1e8; border-radius: 8px; padding: 9px 12px; background: white; color: #697080; font-size: 7px; }
+.hero-product header .demo-control { border: 1px solid #dfe1e8; border-radius: 8px; padding: 9px 12px; background: white; color: #697080; font-size: 7px; }
 .product-grid { display: grid; grid-template-columns: 1.4fr .8fr; gap: 12px; margin-top: 24px; }
 .product-grid section { min-width: 0; border: 1px solid #e0e2e8; border-radius: 12px; background: white; }
 .focus-card { padding: 23px; background: linear-gradient(145deg, #6d68e9, #5656cc) !important; color: white; }
@@ -542,8 +545,8 @@ footer p { margin: 0; text-align: right; }
 .focus-card > div { height: 4px; margin-top: 24px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.18); }
 .focus-card > div i { display: block; height: 100%; background: #9df0d4; }
 .focus-card small { display: block; margin-top: 7px; color: #d1d0f1; font-size: 7px; }
-.focus-card button { margin-top: 19px; border: 0; border-radius: 7px; padding: 9px 11px; background: white; color: #4545a3; font-size: 8px; }
-.focus-card button b { margin-left: 15px; }
+.focus-card > .demo-control { width: fit-content; display: block; margin-top: 19px; border-radius: 7px; padding: 9px 11px; background: white; color: #4545a3; font-size: 8px; }
+.focus-card > .demo-control b { margin-left: 15px; }
 .signal-card { position: relative; padding: 20px; overflow: hidden; }
 .signal-card > span { color: #7b8190; }
 .signal-card > strong { display: block; margin-top: 23px; font: 600 37px/1 Georgia, serif; }

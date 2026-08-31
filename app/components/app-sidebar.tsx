@@ -1,7 +1,8 @@
 "use client";
 
-/* eslint-disable @next/next/no-html-link-for-pages, @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client";
 
@@ -64,13 +65,13 @@ export default function AppSidebar({
 
   return (
     <aside className="student-sidebar app-sidebar">
-      <a className="acaora-brand light" href="/" aria-label="返回 Acaora 首页">
+      <Link className="acaora-brand light" href="/dashboard" aria-label="返回 Acaora 工作台">
         <span>A</span>
         <div><strong>Acaora</strong><small>学曦</small></div>
-      </a>
+      </Link>
       <nav aria-label="主要导航">
         {navigation.map((item) => (
-          <a
+          <Link
             aria-current={item.id === active ? "page" : undefined}
             aria-label={item.label}
             className={item.id === active ? "active" : ""}
@@ -78,16 +79,15 @@ export default function AppSidebar({
             key={item.id}
           >
             <i aria-hidden="true">{item.icon}</i><span>{item.label}</span>
-          </a>
+          </Link>
         ))}
       </nav>
       <div className="student-sidebar-foot">
-        <a className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料">
+        <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料">
           {profile.avatarUrl ? <img src={profile.avatarUrl} width="72" height="72" alt="个人头像" /> : <b>{profile.initials}</b>}
           <p><strong>{profile.title}</strong><small>{profile.subtitle}</small></p>
-        </a>
+        </Link>
       </div>
     </aside>
   );
 }
-

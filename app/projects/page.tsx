@@ -1,6 +1,7 @@
 "use client";
 
 import AppSidebar from "../components/app-sidebar";
+import Link from "next/link";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { authFetch } from "../lib/auth-client";
@@ -180,7 +181,7 @@ export default function ProjectsPage() {
         {message && <div className="project-message" role="status">{message}</div>}
 
         {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : !viewer ? (
-          <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><a href="/auth">注册或密码登录 <b>→</b></a></section>
+          <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><Link href="/auth">注册或密码登录 <b>→</b></Link></section>
         ) : (
           <>
             <section className="project-metrics">
@@ -214,7 +215,7 @@ export default function ProjectsPage() {
                     <section className="project-note-card"><header><span>PROJECT NOTES</span><h3>项目笔记</h3></header><textarea key={`${selected.id}-${selected.updated_at}`} defaultValue={selected.metadata.notes ?? ""} placeholder="记录研究思路、导师反馈、关键结论或下一次要解决的问题…" id="project-notes" /><button disabled={saving} onClick={() => { const notes = (document.getElementById("project-notes") as HTMLTextAreaElement | null)?.value ?? ""; void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。") }}>{saving ? "保存中…" : "保存笔记"}</button></section>
                   </div>
 
-                  <section className="project-resource-card"><header><div><span>CONNECTED TOOLS</span><h3>从项目继续工作</h3></div><p>工具产生的成果，下一版将可以直接挂载到当前项目。</p></header><div><a href="/papers"><b>文</b><span><strong>PaperLab</strong><small>检索、精读并分析相关论文</small></span><i>→</i></a><a href="/data"><b>Σ</b><span><strong>DataLab</strong><small>上传数据并完成统计分析</small></span><i>→</i></a></div></section>
+                  <section className="project-resource-card"><header><div><span>CONNECTED TOOLS</span><h3>从项目继续工作</h3></div><p>在对应工作台继续处理论文与数据。</p></header><div><Link href="/papers"><b>文</b><span><strong>PaperLab</strong><small>检索、精读并分析相关论文</small></span><i>→</i></Link><Link href="/data"><b>Σ</b><span><strong>DataLab</strong><small>上传数据并完成统计分析</small></span><i>→</i></Link></div></section>
                 </article>}
               </section>
             )}
