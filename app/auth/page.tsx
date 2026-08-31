@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { FormField, PasswordField } from "../components/ui";
 import { authFetch, getAuthStatus, notifyAuthChanged } from "../lib/auth-client";
 
 type Mode = "login" | "register" | "recover" | "existing-account" | "check-email";
@@ -161,8 +162,8 @@ export default function AuthPage() {
               <form onSubmit={(event) => void submit(event)}>
                 {mode === "register" && <label htmlFor="display-name">昵称<input className="auth-text-input" id="display-name" type="text" required maxLength={40} autoComplete="name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="你的昵称" /></label>}
                 <label htmlFor="account-email">邮箱地址<div className="email-field"><span>@</span><input id="account-email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@qq.com" /></div></label>
-                {mode !== "recover" && <label htmlFor="account-password">密码<div className="password-field"><input id="account-password" type="password" required minLength={8} maxLength={72} autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 8 位，含大小写字母和数字" /></div></label>}
-                {mode === "register" && <label htmlFor="confirm-password">确认密码<input className="auth-text-input" id="confirm-password" type="password" required minLength={8} maxLength={72} autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" /></label>}
+                {mode !== "recover" && <FormField label="密码" id="account-password" required><PasswordField autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 8 位，含大小写字母和数字" showPolicy={mode === "register"} /></FormField>}
+                {mode === "register" && <FormField label="确认密码" id="confirm-password" required error={confirmPassword && password !== confirmPassword ? "两次输入的密码不一致。" : undefined}><PasswordField autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" /></FormField>}
                 {mode === "login" && <button className="auth-forgot" type="button" onClick={() => switchMode("recover")}>忘记密码？</button>}
                 <button className="auth-submit" type="submit" disabled={working}>{working ? "正在处理…" : mode === "login" ? "登录账户" : mode === "register" ? "创建账户" : "发送重置链接"}<span>→</span></button>
               </form>
