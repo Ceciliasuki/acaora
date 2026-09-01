@@ -69,12 +69,18 @@ test("Supabase prefers publishable keys and keeps anon only as fallback", async 
   assert.doesNotMatch(config, /SERVICE_ROLE|SUPABASE_SECRET_KEY/i);
 });
 
-test("auth proxy stays SDK-free and delegates refresh to same-origin routes", async () => {
-  const proxy = await read("app/lib/supabase/proxy.ts");
-  assert.match(proxy, /request\.headers\.get\("cookie"\)/);
-  assert.match(proxy, /same-origin \/api\/auth\/\*/);
-  assert.doesNotMatch(proxy, /@supabase\/ssr|createServerClient|getClaims\(/);
-  assert.doesNotMatch(proxy, /request\.cookies|response\.cookies/);
+test("session refresh stays in supported same-origin route handlers", async () => {
+  await assert.rejects(access(new URL("proxy.ts", root)));
+  await assert.rejects(access(new URL("app/lib/supabase/proxy.ts", root)));
+
+  const shared = await read("app/api/auth/_shared.ts");
+  const server = await read("app/lib/supabase/server.ts");
+  assert.match(shared, /createSupabaseServerClient\(\)/);
+  assert.match(shared, /supabase\.auth\.getClaims\(\)/);
+  assert.match(shared, /supabase\.auth\.getSession\(\)/);
+  assert.match(server, /setAll\(cookiesToSet\)/);
+  assert.match(server, /httpOnly:\s*true/);
+  assert.match(server, /sameSite:\s*"lax"/);
 });
 
 test("public environment examples do not contain credentials", async () => {
