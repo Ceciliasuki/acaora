@@ -16,7 +16,7 @@
 /test-results/
 /.lighthouseci/
 /app/generated/build-version.ts
-/public/pdf.worker.min.mjs
+/public/pdf.worker.min.js
 
 # next.js
 /.next/

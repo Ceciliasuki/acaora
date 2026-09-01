@@ -25,7 +25,7 @@ test("PDF.js worker is prepared as a same-origin build asset", async (context) =
   const directory = await mkdtemp(join(tmpdir(), "acaora-pdf-worker-"));
   context.after(() => rm(directory, { recursive: true, force: true }));
   const sourcePath = join(directory, "source-worker.mjs");
-  const outputPath = join(directory, "public", "pdf.worker.min.mjs");
+  const outputPath = join(directory, "public", "pdf.worker.min.js");
   await writeFile(sourcePath, "export const worker = true;\n", "utf8");
   const result = await preparePdfWorker({ sourcePath, outputPath });
   assert.equal(result.bytes, 28);
@@ -33,10 +33,10 @@ test("PDF.js worker is prepared as a same-origin build asset", async (context) =
 
   const page = await read("app/papers/page.tsx");
   const packageJson = JSON.parse(await read("package.json"));
-  assert.match(page, /workerSrc\s*=\s*["']\/pdf\.worker\.min\.mjs["']/);
+  assert.match(page, /workerSrc\s*=\s*["']\/pdf\.worker\.min\.js["']/);
   assert.match(packageJson.scripts.build, /prepare-pdf-worker\.mjs/);
   assert.match(packageJson.scripts.dev, /prepare-pdf-worker\.mjs/);
-  assert.match(await read(".gitignore"), /public\/pdf\.worker\.min\.mjs/);
+  assert.match(await read(".gitignore"), /public\/pdf\.worker\.min\.js/);
 });
 
 test("authentication has one browser source of truth", async () => {

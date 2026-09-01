@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const defaultSource = fileURLToPath(new URL("../node_modules/pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url));
-const defaultOutput = fileURLToPath(new URL("../public/pdf.worker.min.mjs", import.meta.url));
+const defaultOutput = fileURLToPath(new URL("../public/pdf.worker.min.js", import.meta.url));
 
 export async function preparePdfWorker({ sourcePath = defaultSource, outputPath = defaultOutput } = {}) {
   const source = await stat(sourcePath);
