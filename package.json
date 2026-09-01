@@ -27,6 +27,7 @@
   "dependencies": {
     "@e965/xlsx": "0.20.3",
     "@irbisadm/statfmt": "0.1.1",
+    "@swc/helpers": "0.5.23",
     "@supabase/ssr": "0.12.5",
     "@supabase/supabase-js": "2.112.4",
     "drizzle-orm": "0.45.2",
