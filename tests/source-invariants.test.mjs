@@ -71,9 +71,10 @@ test("Supabase prefers publishable keys and keeps anon only as fallback", async 
 
 test("auth proxy stays SDK-free and delegates refresh to same-origin routes", async () => {
   const proxy = await read("app/lib/supabase/proxy.ts");
-  assert.match(proxy, /name\.includes\("-auth-token"\)/);
+  assert.match(proxy, /request\.headers\.get\("cookie"\)/);
   assert.match(proxy, /same-origin \/api\/auth\/\*/);
   assert.doesNotMatch(proxy, /@supabase\/ssr|createServerClient|getClaims\(/);
+  assert.doesNotMatch(proxy, /request\.cookies|response\.cookies/);
 });
 
 test("public environment examples do not contain credentials", async () => {

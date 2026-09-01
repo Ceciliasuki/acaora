@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export function refreshSupabaseSession(request: NextRequest) {
   const response = NextResponse.next({ request });
-  const hasAuthCookie = request.cookies.getAll().some(({ name }) => name.includes("-auth-token"));
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const hasAuthCookie = /(?:^|;\s*)[^=;]*-auth-token=/.test(cookieHeader);
   // Session refresh is performed by the same-origin /api/auth/* route handlers.
   // Keeping the global proxy SDK-free avoids loading Node-oriented dependencies
   // in EdgeOne's Edge Runtime before the request handler can run.
@@ -10,19 +11,17 @@ export function refreshSupabaseSession(request: NextRequest) {
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
     response.headers.append("Vary", "Cookie");
   }
-  return clearLegacyCookies(request, response);
+  return clearLegacyCookies(cookieHeader, response);
 }
 
-function clearLegacyCookies(request: NextRequest, response: NextResponse) {
+function clearLegacyCookies(cookieHeader: string, response: NextResponse) {
   for (const name of ["acaora_access", "acaora_refresh"]) {
-    if (request.cookies.has(name)) {
-      response.cookies.set(name, "", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 0,
-      });
+    if (new RegExp(`(?:^|;\\s*)${name}=`).test(cookieHeader)) {
+      const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+      response.headers.append(
+        "Set-Cookie",
+        `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}`,
+      );
     }
   }
   return response;
