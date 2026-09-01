@@ -405,10 +405,7 @@ function translationStatusDetail(state: TranslationState, modelProgress: number)
 
 async function extractPdf(file: File, onProgress: (progress: number) => void): Promise<PaperRecord> {
   const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
   const buffer = new Uint8Array(await file.arrayBuffer());
   const document = await pdfjs.getDocument({ data: buffer }).promise;
   const paragraphs: Paragraph[] = [];

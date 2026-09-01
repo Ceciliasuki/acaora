@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
-import { access, mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { generateBuildVersion, resolveBuildCommit } from "../scripts/generate-build-version.mjs";
+import { preparePdfWorker } from "../scripts/prepare-pdf-worker.mjs";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
@@ -12,12 +13,30 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 test("production uses the standard Next.js pipeline", async () => {
   const packageJson = JSON.parse(await read("package.json"));
   const pnpmConfig = await read(".npmrc");
-  assert.match(packageJson.scripts.dev, /generate-build-version\.mjs && next dev$/);
-  assert.match(packageJson.scripts.build, /generate-build-version\.mjs && next build$/);
+  assert.match(packageJson.scripts.dev, /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && next dev$/);
+  assert.match(packageJson.scripts.build, /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && next build$/);
   assert.equal(packageJson.scripts.start, "next start");
-  assert.match(packageJson.scripts["build:sites"], /generate-build-version\.mjs && vinext build$/);
+  assert.match(packageJson.scripts["build:sites"], /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && vinext build$/);
   assert.equal(packageJson.dependencies["@swc/helpers"], "0.5.23");
   assert.match(pnpmConfig, /^node-linker=hoisted$/m);
+});
+
+test("PDF.js worker is prepared as a same-origin build asset", async (context) => {
+  const directory = await mkdtemp(join(tmpdir(), "acaora-pdf-worker-"));
+  context.after(() => rm(directory, { recursive: true, force: true }));
+  const sourcePath = join(directory, "source-worker.mjs");
+  const outputPath = join(directory, "public", "pdf.worker.min.mjs");
+  await writeFile(sourcePath, "export const worker = true;\n", "utf8");
+  const result = await preparePdfWorker({ sourcePath, outputPath });
+  assert.equal(result.bytes, 28);
+  assert.equal(await readFile(outputPath, "utf8"), "export const worker = true;\n");
+
+  const page = await read("app/papers/page.tsx");
+  const packageJson = JSON.parse(await read("package.json"));
+  assert.match(page, /workerSrc\s*=\s*["']\/pdf\.worker\.min\.mjs["']/);
+  assert.match(packageJson.scripts.build, /prepare-pdf-worker\.mjs/);
+  assert.match(packageJson.scripts.dev, /prepare-pdf-worker\.mjs/);
+  assert.match(await read(".gitignore"), /public\/pdf\.worker\.min\.mjs/);
 });
 
 test("authentication has one browser source of truth", async () => {
