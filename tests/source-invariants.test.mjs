@@ -11,11 +11,13 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("production uses the standard Next.js pipeline", async () => {
   const packageJson = JSON.parse(await read("package.json"));
+  const pnpmConfig = await read(".npmrc");
   assert.match(packageJson.scripts.dev, /generate-build-version\.mjs && next dev$/);
   assert.match(packageJson.scripts.build, /generate-build-version\.mjs && next build$/);
   assert.equal(packageJson.scripts.start, "next start");
   assert.match(packageJson.scripts["build:sites"], /generate-build-version\.mjs && vinext build$/);
   assert.equal(packageJson.dependencies["@swc/helpers"], "0.5.23");
+  assert.match(pnpmConfig, /^node-linker=hoisted$/m);
 });
 
 test("authentication has one browser source of truth", async () => {
