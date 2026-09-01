@@ -8,6 +8,9 @@ export async function refreshSupabaseSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!config) return clearLegacyCookies(request, response);
 
+  const hasAuthCookie = request.cookies.getAll().some(({ name }) => name.includes("-auth-token"));
+  if (!hasAuthCookie) return clearLegacyCookies(request, response);
+
   const supabase = createServerClient(config.url, config.key, {
     cookieOptions: {
       httpOnly: true,
@@ -41,11 +44,8 @@ export async function refreshSupabaseSession(request: NextRequest) {
 
   await supabase.auth.getClaims();
 
-  const hasAuthCookie = request.cookies.getAll().some(({ name }) => name.includes("-auth-token"));
-  if (hasAuthCookie) {
-    response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    response.headers.append("Vary", "Cookie");
-  }
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.append("Vary", "Cookie");
   return clearLegacyCookies(request, response);
 }
 

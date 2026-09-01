@@ -69,6 +69,16 @@ test("Supabase prefers publishable keys and keeps anon only as fallback", async 
   assert.doesNotMatch(config, /SERVICE_ROLE|SUPABASE_SECRET_KEY/i);
 });
 
+test("anonymous proxy requests bypass Supabase session initialization", async () => {
+  const proxy = await read("app/lib/supabase/proxy.ts");
+  const cookieCheck = proxy.indexOf('name.includes("-auth-token")');
+  const clientCreation = proxy.indexOf("createServerClient(config.url, config.key");
+  assert.notEqual(cookieCheck, -1);
+  assert.notEqual(clientCreation, -1);
+  assert.ok(cookieCheck < clientCreation);
+  assert.match(proxy, /if \(!hasAuthCookie\) return clearLegacyCookies\(request, response\)/);
+});
+
 test("public environment examples do not contain credentials", async () => {
   const exampleEnv = await read(".env.example");
   assert.doesNotMatch(exampleEnv, /sk-[A-Za-z0-9_-]{12,}/);
