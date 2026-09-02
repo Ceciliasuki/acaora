@@ -11,6 +11,22 @@
 - 浏览器打开无痕窗口和 DevTools Network，启用 Preserve log，过滤 `supabase.co`、`/api/`、`callback`、`reset`。
 - 记录测试时间、正式域名、GitHub `main` SHA 和 `/api/version` 响应。
 
+### SSR 邮件模板
+
+邮件确认必须由 Acaora 同源回调使用 token hash 建立服务端会话，不能只依赖 Supabase 托管的 `ConfirmationURL`。Supabase `Confirm signup` 模板中的按钮链接应为：
+
+```html
+{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email
+```
+
+`Reset password` 的 `RedirectTo` 已包含 `next=/auth/reset`，按钮链接应为：
+
+```html
+{{ .RedirectTo }}&amp;token_hash={{ .TokenHash }}&amp;type=recovery
+```
+
+`.RedirectTo` 来自服务端 `signUp` / `resetPasswordForEmail` 调用，仍须命中 Supabase Redirect URL allow-list。
+
 ## 通过规则
 
 核心认证、Profile、Project 和 Paper cloud sync 的浏览器请求必须发往 Acaora 同源地址。若 Browser Network 出现任何直接访问 `*.supabase.co` 的核心账户请求，本轮 smoke 直接判定 `FAIL`。服务端从 Acaora 访问 Supabase 属于预期路径。
@@ -21,7 +37,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | 新注册测试账户 | 同源 `/api/auth/register` 接受请求并提示确认邮箱 |  |  |  |  |  |
 | 2 | 收到邮箱确认邮件 | 发件内容与链接使用正式稳定域名 |  |  |  |  |  |
-| 3 | 打开 `/auth/callback` | code exchange 成功，跳转工作台并设置安全 Cookie |  |  |  |  |  |
+| 3 | 打开 `/auth/callback` | `code` 或邮件 `token_hash` exchange 成功，跳转工作台并设置安全 Cookie |  |  |  |  |  |
 | 4 | 使用测试账户登录 | 同源 `/api/auth/login` 成功并进入 Dashboard |  |  |  |  |  |
 | 5 | 刷新 Dashboard | 用户仍保持登录，页面无闪退/循环跳转 |  |  |  |  |  |
 | 6 | Home / workspace 导航 | Home、Dashboard、Courses、Papers、Data、Projects、Settings 间 session 不丢失 |  |  |  |  |  |

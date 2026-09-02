@@ -68,6 +68,15 @@ test("deployment exposes traceable version metadata", async () => {
   assert.match(await read(".gitignore"), /app\/generated\/build-version\.ts/);
 });
 
+test("SSR email links exchange token hashes at the canonical callback", async () => {
+  const callback = await read("app/auth/callback/route.ts");
+  assert.match(callback, /searchParams\.get\("token_hash"\)/);
+  assert.match(callback, /safeEmailOtpType/);
+  assert.match(callback, /supabase\.auth\.verifyOtp\(\{ token_hash: tokenHash!, type: type! \}\)/);
+  assert.match(callback, /supabase\.auth\.exchangeCodeForSession\(code\)/);
+  assert.match(callback, /value\?\.startsWith\("\/"\) && !value\.startsWith\("\/\/"\)/);
+});
+
 test("build metadata generator writes immutable validated identity", async (context) => {
   const directory = await mkdtemp(join(tmpdir(), "acaora-build-version-"));
   context.after(() => rm(directory, { recursive: true, force: true }));
