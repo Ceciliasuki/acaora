@@ -2,12 +2,12 @@
 
 import AppSidebar from "../components/app-sidebar";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
-import { browserAuthenticatedFetch } from "../lib/browser-auth";
+import { authFetch } from "../lib/auth-client";
 
 type TranslatorSession = {
   translate: (text: string) => Promise<string>;
@@ -41,7 +41,8 @@ export default function PaperLab() {
   const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
-  const [cloudState, setCloudState] = useState<"checking" | "guest" | "ready" | "error">("checking");
+  const [cloudState, setCloudState] = useState<"checking" | "guest" | "syncing" | "offline" | "ready" | "error">("checking");
+  const cloudStateRef = useRef(cloudState);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
@@ -53,15 +54,20 @@ export default function PaperLab() {
   const insight = activeParagraph ? analyzeParagraph(activeParagraph) : null;
   const isEdge = typeof navigator !== "undefined" && /Edg\//.test(navigator.userAgent);
 
+  const setCloudStatus = useCallback((next: typeof cloudState) => {
+    cloudStateRef.current = next;
+    setCloudState(next);
+  }, []);
+
   useEffect(() => {
     void (async () => {
       try {
         const localRecords = await getPaperLibrary();
         let records = localRecords;
-        const sessionResponse = await browserAuthenticatedFetch("/api/auth/session");
+        const sessionResponse = await authFetch("/api/auth/session");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
         if (session.user) {
-          const cloudResponse = await browserAuthenticatedFetch("/api/cloud/papers");
+          const cloudResponse = await authFetch("/api/cloud/papers");
           if (cloudResponse.ok) {
             const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
             const byId = new Map<string, PaperRecord>();
@@ -71,21 +77,36 @@ export default function PaperLab() {
             });
             records = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
             await Promise.all((cloud.papers ?? []).map((record) => savePaper(record)));
-            setCloudState("ready");
-          } else setCloudState("error");
-        } else setCloudState("guest");
+            setCloudStatus("ready");
+          } else setCloudStatus(navigator.onLine ? "error" : "offline");
+        } else setCloudStatus("guest");
         setLibrary(records);
         if (records.length) {
           setPaper(records[0]);
           setSearchQuery(records[0].title);
         }
       } catch {
-        setCloudState("error");
+        setCloudStatus(navigator.onLine ? "error" : "offline");
       } finally {
         setHydrated(true);
       }
     })();
-  }, []);
+  }, [setCloudStatus]);
+
+  useEffect(() => {
+    const offline = () => {
+      if (["ready", "syncing"].includes(cloudStateRef.current)) setCloudStatus("offline");
+    };
+    const online = () => {
+      if (cloudStateRef.current === "offline") setCloudStatus("ready");
+    };
+    window.addEventListener("offline", offline);
+    window.addEventListener("online", online);
+    return () => {
+      window.removeEventListener("offline", offline);
+      window.removeEventListener("online", online);
+    };
+  }, [setCloudStatus]);
 
   useEffect(() => {
     const factory = getTranslatorFactory();
@@ -106,14 +127,15 @@ export default function PaperLab() {
       void savePaper(updated).then(() => {
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
       });
-      if (cloudState === "ready") {
-        void browserAuthenticatedFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
-          .then((response) => { if (!response.ok) setCloudState("error"); })
-          .catch(() => setCloudState("error"));
+      if (cloudStateRef.current === "ready") {
+        setCloudStatus("syncing");
+        void authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
+          .then((response) => setCloudStatus(response.ok ? "ready" : navigator.onLine ? "error" : "offline"))
+          .catch(() => setCloudStatus(navigator.onLine ? "error" : "offline"));
       }
     }, 450);
     return () => window.clearTimeout(handle);
-  }, [paper, hydrated, cloudState]);
+  }, [paper, hydrated, setCloudStatus]);
 
   function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
     setPaper((current) => updater(current));
@@ -228,7 +250,7 @@ export default function PaperLab() {
   async function removeFromLibrary(record: PaperRecord) {
     if (!window.confirm(`从当前设备删除“${record.title}”的阅读记忆？`)) return;
     await deletePaper(record.id);
-    if (cloudState === "ready") void fetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
+    if (cloudState === "ready" || cloudState === "syncing") void authFetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
     const remaining = library.filter((item) => item.id !== record.id);
     setLibrary(remaining);
     if (paper.id === record.id) setPaper(remaining[0] ?? samplePaper);
@@ -242,7 +264,7 @@ export default function PaperLab() {
 
   return (
     <main className="student-app paper-layout">
-      <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : "本地研究模式"} />
+      <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
       <section className="paper-shell paper-app paper-main">
       <section className="paper-commandbar">
         <div>
@@ -259,7 +281,7 @@ export default function PaperLab() {
             <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
               <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
             </button>
-            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handlePdf} />
+            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
           </div>
         </div>
       </section>
@@ -267,7 +289,7 @@ export default function PaperLab() {
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
-        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
+        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
       <section className="paper-workbench">
@@ -282,7 +304,7 @@ export default function PaperLab() {
               </article>;
             }) : <div className="library-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
           </div>
-          <div className="library-privacy"><strong>{cloudState === "ready" ? "云端记忆已同步" : cloudState === "checking" ? "正在检查账户" : cloudState === "error" ? "云同步暂不可用" : "设备端记忆"}</strong><p>{cloudState === "ready" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
+          <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
         <section className={`paper-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
@@ -383,10 +405,7 @@ function translationStatusDetail(state: TranslationState, modelProgress: number)
 
 async function extractPdf(file: File, onProgress: (progress: number) => void): Promise<PaperRecord> {
   const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-    "pdfjs-dist/build/pdf.worker.min.mjs",
-    import.meta.url,
-  ).toString();
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
   const buffer = new Uint8Array(await file.arrayBuffer());
   const document = await pdfjs.getDocument({ data: buffer }).promise;
   const paragraphs: Paragraph[] = [];
@@ -497,4 +516,3 @@ function analyzeParagraph(paragraph: Paragraph) {
         : ["这段支持哪个研究问题？", "作者引用了什么证据？", "关键概念是否有明确定义？"];
   return { role, explanation, terms, questions };
 }
-

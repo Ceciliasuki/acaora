@@ -32,6 +32,7 @@ export async function GET() {
     available: true,
     ownerKeyConfigured: Boolean(process.env.DEEPSEEK_API_KEY),
     mode: "byok",
+    model: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
   });
 }
 

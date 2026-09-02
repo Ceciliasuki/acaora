@@ -3,19 +3,21 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { ChangeEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
-import { bridgeBrowserSession, browserReadProfile, browserSaveProfile, browserSignOut, browserUpdateDisplayName, browserUpdatePassword, getBrowserUser } from "../lib/browser-auth";
+import { Button, FormField, Input, PageHeader, PasswordField, StatusMessage, Textarea } from "../components/ui";
+import { clearAiKey, readAiKey, saveAiKey } from "../lib/ai-settings";
+import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
+import { getShortCommit, type BuildVersion } from "../lib/version";
 
-type Profile = {
-  display_name: string;
-  university: string;
-  major: string;
-  graduation_year: number | "";
-  preferences: { avatar: string; bio: string; interests: string[]; language: string };
+const emptyProfile: Profile = {
+  display_name: "",
+  university: "",
+  major: "",
+  graduation_year: "",
+  preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" },
 };
-
-const emptyProfile: Profile = { display_name: "", university: "", major: "", graduation_year: "", preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" } };
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -30,41 +32,40 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
+  const [aiKey, setAiKey] = useState("");
+  const [aiModel, setAiModel] = useState("DeepSeek（服务器默认）");
+  const [version, setVersion] = useState<BuildVersion | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    async function loadProfile() {
-      try {
-        const user = await getBrowserUser();
-        if (user && mounted) {
-          setSignedIn(true);
-          setEmail(user.email || "");
-          setProfile((current) => ({
-            ...current,
-            display_name: String(user.user_metadata?.display_name || ""),
-          }));
-          void bridgeBrowserSession();
-        }
+    async function load() {
+      setAiKey(readAiKey());
+      const [versionResult, aiResult] = await Promise.allSettled([
+        fetch("/api/version", { cache: "no-store" }).then((response) => response.json() as Promise<BuildVersion>),
+        fetch("/api/papers/ai", { cache: "no-store" }).then((response) => response.json() as Promise<{ model?: string }>),
+      ]);
+      if (mounted && versionResult.status === "fulfilled") setVersion(versionResult.value);
+      if (mounted && aiResult.status === "fulfilled") setAiModel(aiResult.value.model || "DeepSeek（服务器默认）");
 
+      try {
+        const user = await getCurrentUser();
         if (!user) return;
-        const next = await browserReadProfile(user.id);
+        const next = await getProfile();
         if (!mounted) return;
         setSignedIn(true);
         setEmail(user.email || "");
         setProfile({
-          display_name: next?.display_name || String(user.user_metadata?.display_name || ""),
-          university: next?.university || "",
-          major: next?.major || "",
-          graduation_year: next?.graduation_year || "",
-          preferences: { avatar: "", bio: "", interests: [], language: "zh-CN", ...(next?.preferences || {}) },
+          ...emptyProfile,
+          ...(next || {}),
+          preferences: { ...emptyProfile.preferences, ...(next?.preferences || {}) },
         });
       } catch (cause) {
-        if (mounted) setError(cause instanceof Error ? cause.message : "资料读取失败。" );
+        if (mounted) setError(cause instanceof Error ? cause.message : "资料读取失败。");
       } finally {
         if (mounted) setLoading(false);
       }
     }
-    void loadProfile();
+    void load();
     return () => { mounted = false; };
   }, []);
 
@@ -80,15 +81,21 @@ export default function SettingsPage() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("请选择图片文件。" );
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      setError("请选择 PNG、JPEG 或 WebP 图片。");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("头像原图不能超过 5 MB。");
       return;
     }
     try {
-      updatePreference("avatar", await compressAvatar(file));
+      const avatar = await compressAvatar(file);
+      if (avatar.length > 260_000) throw new Error("AVATAR_TOO_LARGE");
+      updatePreference("avatar", avatar);
       setError("");
     } catch {
-      setError("头像处理失败，请换一张图片。" );
+      setError("头像处理后仍然过大，请换一张更简单的图片。");
     }
   }
 
@@ -104,18 +111,40 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      const user = await getBrowserUser();
-      if (!user) throw new Error("登录状态已失效，请重新登录后继续。");
-      const saved = await browserSaveProfile(user.id, profile);
+      const saved = await saveAccountProfile(profile);
       setProfile(saved);
-      await browserUpdateDisplayName(saved.display_name).catch(() => null);
-      setMessage("个人资料已保存，并会显示在平台导航中。" );
-      window.dispatchEvent(new Event("acaora:profile-change"));
+      setMessage("个人资料已保存。");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "保存失败。" );
+      setError(cause instanceof Error ? cause.message : "保存失败。");
     } finally {
       setSaving(false);
     }
+  }
+
+  async function changePassword() {
+    if (newPassword !== confirmNewPassword) {
+      setError("两次输入的新密码不一致。");
+      return;
+    }
+    setChangingPassword(true);
+    setError("");
+    setMessage("");
+    try {
+      await updatePassword(newPassword);
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setMessage("登录密码已更新。");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "密码更新失败。");
+    } finally {
+      setChangingPassword(false);
+    }
+  }
+
+  function saveAiSettings() {
+    saveAiKey(aiKey);
+    setAiKey(readAiKey());
+    setMessage(aiKey.trim() ? "AI Key 已保存到当前浏览器会话。" : "当前会话的 AI Key 已清除。");
   }
 
   function exportProfile() {
@@ -128,52 +157,49 @@ export default function SettingsPage() {
   }
 
   async function logout() {
-    await Promise.allSettled([
-      fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }),
-      browserSignOut(),
-    ]);
+    await signOut().catch(() => undefined);
     router.replace("/");
     router.refresh();
-  }
-
-  async function changePassword() {
-    if (newPassword !== confirmNewPassword) {
-      setError("两次输入的新密码不一致。" );
-      return;
-    }
-    setChangingPassword(true);
-    setError("");
-    setMessage("");
-    try {
-      await browserUpdatePassword(newPassword);
-      await bridgeBrowserSession();
-      setNewPassword("");
-      setConfirmNewPassword("");
-      setMessage("登录密码已更新。" );
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "密码更新失败。" );
-    } finally {
-      setChangingPassword(false);
-    }
   }
 
   return <main className="student-app settings-app">
     <AppSidebar active="settings" />
     <section className="workspace settings-main">
-      <header className="topbar settings-topbar"><div><p className="eyebrow">ACCOUNT</p><h1>设置与隐私</h1><p>管理个人资料、数据边界与当前设备。</p></div><button type="button" disabled={!signedIn || saving} onClick={() => void saveProfile()}>{saving ? "正在保存…" : "保存更改"}</button></header>
-      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><a href="/auth">前往登录</a></div> : <>
-        {(message || error) && <div className={`settings-message ${error ? "error" : ""}`} role="status" aria-live="polite">{error || message}</div>}
-        <div className="settings-grid">
-          <section className="profile-card">
+      <PageHeader eyebrow="ACCOUNT SETTINGS" title="设置" description="管理个人资料、账户安全、AI 模型与数据边界。" actions={<Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button>} />
+      <nav className="settings-nav" aria-label="设置分区"><a href="#profile">个人资料</a><a href="#security">账户与安全</a><a href="#ai-models">AI 与模型</a><a href="#privacy">隐私与数据</a><a href="#about">关于</a></nav>
+
+      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
+        {(message || error) && <StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage>}
+        <div className="settings-sections">
+          <section className="settings-panel" id="profile">
             <div className="settings-section-head"><span>01</span><div><p>PROFILE</p><h2>个人资料</h2></div></div>
-            <div className="avatar-editor">{profile.preferences.avatar ? <img src={profile.preferences.avatar} width="256" height="256" alt="当前头像" /> : <b>{(profile.display_name || email).slice(0, 2).toUpperCase()}</b>}<div><label>更换头像<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void chooseAvatar(event)} /></label>{profile.preferences.avatar && <button type="button" onClick={() => updatePreference("avatar", "")}>移除</button>}<small>自动裁剪并压缩为 256 × 256</small></div></div>
-            <div className="settings-form"><label>昵称<input value={profile.display_name} maxLength={40} onChange={(event) => updateField("display_name", event.target.value)} /></label><label>登录邮箱<input value={email} disabled /></label><label>学校<input value={profile.university} maxLength={80} placeholder="例如：××大学" onChange={(event) => updateField("university", event.target.value)} /></label><label>专业 / 双学位<input value={profile.major} maxLength={100} placeholder="应用统计学 · 国际经济与贸易" onChange={(event) => updateField("major", event.target.value)} /></label><label>预计毕业年份<input type="number" min={2000} max={2100} value={profile.graduation_year} onChange={(event) => updateField("graduation_year", event.target.value ? Number(event.target.value) : "")} /></label><label>界面语言<select value={profile.preferences.language} onChange={(event) => updatePreference("language", event.target.value)}><option value="zh-CN">简体中文</option><option value="en">English（预留）</option></select></label><label className="full">个人简介<textarea maxLength={240} value={profile.preferences.bio} placeholder="研究兴趣、学习目标或希望长期积累的方向" onChange={(event) => updatePreference("bio", event.target.value)} /></label></div>
-            <div className="interest-editor"><span className="interest-label">学习与研究兴趣</span><div>{profile.preferences.interests.map((item) => <button type="button" key={item} onClick={() => updatePreference("interests", profile.preferences.interests.filter((current) => current !== item))}>{item} ×</button>)}</div><form onSubmit={(event) => { event.preventDefault(); addInterest(); }}><input aria-label="添加学习与研究兴趣" value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="如：计量经济学" /><button type="submit">添加</button></form></div>
+            <div className="avatar-editor">{profile.preferences.avatar ? <img src={profile.preferences.avatar} width="256" height="256" alt="当前头像" /> : <b>{(profile.display_name || email).slice(0, 2).toUpperCase()}</b>}<div><label>更换头像<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void chooseAvatar(event)} /></label>{profile.preferences.avatar && <Button variant="secondary" size="sm" onClick={() => updatePreference("avatar", "")}>移除头像</Button>}<small>原图上限 5 MB；保存前压缩为 256 × 256 WebP。当前仍兼容 preferences 中的 base64，后续迁移到对象存储。</small></div></div>
+            <div className="settings-form"><FormField label="昵称" id="settings-name"><Input name="display_name" autoComplete="nickname" value={profile.display_name} maxLength={40} onChange={(event) => updateField("display_name", event.target.value)} /></FormField><FormField label="登录邮箱" id="settings-email"><Input name="email" type="email" autoComplete="email" value={email} disabled /></FormField><FormField label="学校" id="settings-university"><Input name="university" autoComplete="organization" value={profile.university} maxLength={80} onChange={(event) => updateField("university", event.target.value)} /></FormField><FormField label="专业 / 双学位" id="settings-major"><Input name="major" value={profile.major} maxLength={100} onChange={(event) => updateField("major", event.target.value)} /></FormField><FormField label="预计毕业年份" id="settings-year"><Input name="graduation_year" type="number" min={2000} max={2100} value={profile.graduation_year} onChange={(event) => updateField("graduation_year", event.target.value ? Number(event.target.value) : "")} /></FormField><FormField label="个人简介" id="settings-bio" className="full"><Textarea name="bio" maxLength={240} value={profile.preferences.bio} onChange={(event) => updatePreference("bio", event.target.value)} /></FormField></div>
+            <div className="interest-editor"><span className="interest-label">学习与研究兴趣</span><div>{profile.preferences.interests.map((item) => <button type="button" key={item} onClick={() => updatePreference("interests", profile.preferences.interests.filter((current) => current !== item))}>{item} ×</button>)}</div><form onSubmit={(event) => { event.preventDefault(); addInterest(); }}><Input aria-label="添加学习与研究兴趣" value={interestInput} onChange={(event) => setInterestInput(event.target.value)} placeholder="如：计量经济学" /><Button type="submit">添加</Button></form></div>
           </section>
-          <aside className="privacy-card">
-            <div className="settings-section-head"><span>02</span><div><p>PRIVACY</p><h2>数据与隐私</h2></div></div>
-            <article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户资料</b><p>昵称、头像和学校信息保存在你的 Supabase 用户记录中，并由用户级权限隔离。</p></article><article className="password-settings"><b>登录密码</b><p>修改后，下次可继续使用邮箱和新密码登录，不需要再次接收验证码。</p><label htmlFor="settings-new-password">新密码<input id="settings-new-password" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="含大小写字母和数字" /></label><label htmlFor="settings-confirm-password">确认新密码<input id="settings-confirm-password" type="password" minLength={8} maxLength={72} autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} /></label><button type="button" disabled={changingPassword || !newPassword || !confirmNewPassword} onClick={() => void changePassword()}>{changingPassword ? "正在更新…" : "更新密码"}</button></article><article><b>DeepSeek 密钥</b><p>研究工作台中的 Key 只放在当前浏览器会话；关闭会话后清除。</p><button type="button" onClick={() => { sessionStorage.removeItem("statlab-deepseek-key"); setMessage("已清除当前设备上的 DeepSeek 会话密钥。" ); }}>清除会话密钥</button></article><article><b>导出与退出</b><p>你可以随时导出当前个人资料，或结束此设备上的登录。</p><div><button type="button" onClick={exportProfile}>导出资料</button><button type="button" className="danger" onClick={() => void logout()}>退出登录</button></div></article>
-          </aside>
+
+          <section className="settings-panel" id="security">
+            <div className="settings-section-head"><span>02</span><div><p>ACCOUNT & SECURITY</p><h2>账户与安全</h2></div></div>
+            <p className="settings-panel-copy">Acaora 使用同源 HttpOnly Cookie 维持会话；浏览器脚本不能读取 access token 或 refresh token。</p>
+            <div className="settings-narrow-form"><FormField label="新密码" id="settings-new-password"><PasswordField autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} showPolicy /></FormField><FormField label="确认新密码" id="settings-confirm-password" error={confirmNewPassword && newPassword !== confirmNewPassword ? "两次输入的新密码不一致。" : undefined}><PasswordField autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} /></FormField><Button loading={changingPassword} disabled={!newPassword || !confirmNewPassword} onClick={() => void changePassword()}>更新密码</Button></div>
+          </section>
+
+          <section className="settings-panel" id="ai-models">
+            <div className="settings-section-head"><span>03</span><div><p>AI & MODELS</p><h2>AI 与模型</h2></div></div>
+            <p className="settings-panel-copy">当前模型：<strong>{aiModel}</strong>。Key 仅保存在当前浏览器会话；发起分析时，Key 和所选文本会发送到 Acaora 服务端并转发给 DeepSeek。Acaora 不把 Key 写入账户数据库。</p>
+            <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" hint="关闭浏览器会话后自动清除。"><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
+          </section>
+
+          <section className="settings-panel" id="privacy">
+            <div className="settings-section-head"><span>04</span><div><p>PRIVACY & DATA</p><h2>隐私与数据</h2></div></div>
+            <div className="settings-info-grid"><article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认只在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户同步</b><p>个人资料、项目、提取后的论文文本、译文与笔记按账户隔离同步；原始 PDF 不上传。</p></article><article><b>资料导出</b><p>导出当前个人资料的 JSON 副本，不包含密码和认证 token。</p><Button variant="secondary" onClick={exportProfile}>导出资料</Button></article><article><b>结束会话</b><p>退出会清除当前站点的服务端会话 Cookie。</p><Button variant="danger" onClick={() => void logout()}>退出登录</Button></article></div>
+          </section>
+
+          <section className="settings-panel settings-about" id="about">
+            <div className="settings-section-head"><span>05</span><div><p>ABOUT</p><h2>关于 Acaora</h2></div></div>
+            <p>大学生学习与研究工作台。生产构建可通过 <code>/api/version</code> 独立核验。</p>
+            <small>Build {version ? getShortCommit(version.commit) : "读取中"} · {version?.environment || "unknown"} · {version?.buildTime || "unknown"}</small>
+          </section>
         </div>
       </>}
     </section>
@@ -191,6 +217,5 @@ async function compressAvatar(file: File) {
   const crop = Math.min(bitmap.width, bitmap.height);
   context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, size, size);
   bitmap.close();
-  return canvas.toDataURL("image/webp", .78);
+  return canvas.toDataURL("image/webp", .72);
 }
-

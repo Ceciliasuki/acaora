@@ -1,12 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { accessCookie, clearSessionCookies, supabaseAuth } from "../_shared";
+import { NextResponse } from "next/server";
+import { createSupabaseServerClient } from "../../../lib/supabase/server";
+import { privateNoStore } from "../_shared";
 
-export async function POST(request: NextRequest) {
-  const accessToken = request.cookies.get(accessCookie)?.value;
-  if (accessToken) {
-    await supabaseAuth("logout", { method: "POST", headers: { Authorization: `Bearer ${accessToken}` } }).catch(() => undefined);
-  }
-  const response = NextResponse.json({ signedOut: true });
-  clearSessionCookies(response);
-  return response;
+export async function POST() {
+  const supabase = await createSupabaseServerClient().catch(() => null);
+  if (supabase) await supabase.auth.signOut().catch(() => undefined);
+  return privateNoStore(NextResponse.json({ signedOut: true }));
 }

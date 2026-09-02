@@ -1,7 +1,9 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import Link from "next/link";
+import { ChangeEvent, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import AppSidebar from "../components/app-sidebar";
+import { getServerAiKeySnapshot, readAiKey, subscribeAiKey } from "../lib/ai-settings";
 
 type Course = { code: string; name: string; track: "统计学" | "经济学"; stage: string; topics: string[] };
 type PracticeResult = {
@@ -25,12 +27,20 @@ export default function CoursesPage() {
   const [selected, setSelected] = useState(courses[0]);
   const [material, setMaterial] = useState("");
   const [materialName, setMaterialName] = useState("尚未添加资料");
-  const [apiKey, setApiKey] = useState("");
+  const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
+  const [model, setModel] = useState("DeepSeek（服务器默认）");
   const [count, setCount] = useState(5);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<PracticeResult | null>(null);
   const visibleCourses = useMemo(() => track === "全部" ? courses : courses.filter((course) => course.track === track), [track]);
+
+  useEffect(() => {
+    void fetch("/api/papers/ai", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: { model?: string }) => setModel(payload.model || "DeepSeek（服务器默认）"))
+      .catch(() => undefined);
+  }, []);
 
   async function readMaterial(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -52,7 +62,7 @@ export default function CoursesPage() {
       return;
     }
     if (!apiKey.trim()) {
-      setError("请输入 DeepSeek API Key；它只用于本次生成，不会写入课程资料。" );
+      setError("请先前往“设置 → AI 与模型”配置 DeepSeek API Key。" );
       return;
     }
     setWorking(true);
@@ -85,7 +95,7 @@ export default function CoursesPage() {
         <header className="topbar learning-topbar">
           <div><p className="eyebrow">LEARNING CENTER</p><h1>课程学习中心</h1><p>组织知识、导入资料，并按课程生成可追溯的练习。</p></div>
           <div className="track-tabs" role="tablist" aria-label="课程方向">
-            {(["全部", "统计学", "经济学"] as const).map((item) => <button type="button" key={item} className={track === item ? "active" : ""} onClick={() => setTrack(item)}>{item}</button>)}
+            {(["全部", "统计学", "经济学"] as const).map((item) => <button type="button" role="tab" aria-selected={track === item} key={item} className={track === item ? "active" : ""} onClick={() => setTrack(item)}>{item}</button>)}
           </div>
         </header>
 
@@ -112,7 +122,7 @@ export default function CoursesPage() {
           <div className="practice-grid">
             <div className="practice-config">
               <label>课程资料<textarea value={material} onChange={(event) => setMaterial(event.target.value)} placeholder="粘贴讲义、教材摘录或课堂笔记。之后你上传核心课程资料时，这里会升级为课程知识库。" /></label>
-              <div className="practice-controls"><label>题目数量<select value={count} onChange={(event) => setCount(Number(event.target.value))}><option value={3}>3 题</option><option value={5}>5 题</option><option value={8}>8 题</option></select></label><label>DeepSeek Key<input type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder="sk-…" autoComplete="off" /></label></div>
+              <div className="practice-controls"><label>题目数量<select value={count} onChange={(event) => setCount(Number(event.target.value))}><option value={3}>3 题</option><option value={5}>5 题</option><option value={8}>8 题</option></select></label><div className="course-model-status"><span>当前模型</span><strong>{model}</strong><small>{apiKey ? "当前会话已配置 Key" : "尚未配置 Key"}</small><Link href="/settings#ai-models">管理 AI 设置</Link></div></div>
               <button type="button" onClick={() => void generatePractice()} disabled={working}>{working ? "正在生成练习…" : "生成本节练习"}</button>
               {error && <p className="course-error" role="alert">{error}</p>}
             </div>

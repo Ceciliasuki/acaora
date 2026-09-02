@@ -3,31 +3,36 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.26.1",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "sharp",
-      "workerd"
-    ]
-  },
   "engines": {
-    "node": ">=20.9.0"
+    "node": "22.11.0"
   },
   "scripts": {
-    "dev": "vinext dev",
-    "build": "vinext build",
-    "start": "vinext start",
-    "dev:edgeone": "next dev",
-    "build:edgeone": "next build",
-    "start:edgeone": "next start",
-    "test": "pnpm run build && node --test tests/rendered-html.test.mjs",
-    "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
+    "build:metadata": "node scripts/generate-build-version.mjs",
+    "build:assets": "node scripts/prepare-pdf-worker.mjs",
+    "dev": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && next dev",
+    "build": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && next build",
+    "start": "next start",
+    "dev:sites": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && vinext dev",
+    "build:sites": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && vinext build",
+    "start:sites": "vinext start",
+    "typecheck": "node scripts/generate-build-version.mjs && tsc --noEmit",
+    "test": "pnpm run test:unit && pnpm run test:e2e",
+    "test:unit": "node --test tests/source-invariants.test.mjs",
+    "test:e2e": "node scripts/generate-build-version.mjs && playwright test --grep-invert \"@visual\"",
+    "test:visual": "node scripts/generate-build-version.mjs && playwright test --grep \"@visual\"",
+    "test:a11y": "node scripts/generate-build-version.mjs && playwright test --grep \"@a11y\"",
+    "test:lighthouse": "lhci autorun",
+    "lint": "node scripts/generate-build-version.mjs && eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@e965/xlsx": "0.20.3",
     "@irbisadm/statfmt": "0.1.1",
+    "@swc/helpers": "0.5.23",
+    "@supabase/ssr": "0.12.5",
+    "@supabase/supabase-js": "2.112.4",
     "drizzle-orm": "0.45.2",
+    "lucide-react": "1.37.0",
     "next": "16.3.1",
     "pdfjs-dist": "^6.2.108",
     "react": "19.2.6",
@@ -35,10 +40,13 @@
     "webr": "0.6.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@cloudflare/vite-plugin": "1.37.1",
     "@eslint/js": "9.39.4",
+    "@lhci/cli": "0.15.1",
     "@next/eslint-plugin-next": "16.3.1",
     "@openai/sites-vite-plugin": "0.1.0",
+    "@playwright/test": "1.62.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
