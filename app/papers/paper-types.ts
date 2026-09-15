@@ -27,6 +27,7 @@ export type AiMemory = {
 
 export type PaperRecord = {
   id: string;
+  ownerId?: string;
   fileName: string;
   title: string;
   addedAt: number;
@@ -35,6 +36,15 @@ export type PaperRecord = {
   paragraphs: Paragraph[];
   aiMemory?: AiMemory;
 };
+
+export type CloudDeletion = {
+  id: string;
+  deletedAt: number;
+};
+
+export type PaperSyncOperation =
+  | { id: string; ownerId?: string; type: "upsert"; updatedAt: number; paper: PaperRecord; attempts: number; nextAttemptAt: number; blockedReason?: "too-large" }
+  | { id: string; ownerId?: string; type: "delete"; updatedAt: number; attempts: number; nextAttemptAt: number };
 
 export type SearchPaper = {
   id: string;

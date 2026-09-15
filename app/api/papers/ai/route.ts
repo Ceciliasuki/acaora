@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestSession } from "../../auth/_shared";
 
 type AiAction = "paragraph" | "summary" | "audit" | "replication" | "translate" | "chat" | "search" | "practice";
 
@@ -53,6 +54,12 @@ export async function POST(request: NextRequest) {
   const apiKey = providedKey || process.env.DEEPSEEK_API_KEY;
   if (!apiKey || !apiKey.startsWith("sk-")) {
     return NextResponse.json({ error: "请先在 AI 研究工作台中输入有效的 DeepSeek API Key。" }, { status: 401 });
+  }
+  if (!providedKey) {
+    const session = await readRequestSession().catch(() => null);
+    if (!session) {
+      return NextResponse.json({ error: "请先登录后使用站方 AI 服务，或输入自己的 DeepSeek API Key。" }, { status: 401 });
+    }
   }
 
   const text = (body.text ?? "").slice(0, 90000);

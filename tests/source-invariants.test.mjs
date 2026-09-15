@@ -119,3 +119,42 @@ test("public environment examples do not contain credentials", async () => {
   assert.doesNotMatch(exampleEnv, /sk-[A-Za-z0-9_-]{12,}/);
   assert.match(exampleEnv, /your-project\.supabase\.co/);
 });
+
+test("owner-funded AI access requires a signed-in session while BYOK remains available", async () => {
+  const route = await read("app/api/papers/ai/route.ts");
+  assert.match(route, /import \{ readRequestSession \} from ["']\.\.\/\.\.\/auth\/_shared["']/);
+  assert.match(route, /if \(!providedKey\) \{[\s\S]*await readRequestSession\(\)[\s\S]*status: 401[\s\S]*\}/);
+  assert.match(route, /const apiKey = providedKey \|\| process\.env\.DEEPSEEK_API_KEY/);
+});
+
+test("generated PDF worker is excluded from ESLint", async () => {
+  const { ESLint } = await import("eslint");
+  const eslint = new ESLint({ cwd: fileURLToPath(root) });
+  const workerPath = fileURLToPath(new URL("public/pdf.worker.min.js", root));
+  assert.equal(await eslint.isPathIgnored(workerPath), true);
+});
+
+test("paper sync migration uses authenticated atomic writes and content-clearing tombstones", async () => {
+  const migration = await read("supabase/migrations/0005_paper_sync_tombstones.sql");
+  assert.match(migration, /add column if not exists deleted_at timestamptz/);
+  assert.match(migration, /create or replace function public\.sync_paper_memory/);
+  assert.match(migration, /create or replace function public\.delete_paper_memory/);
+  assert.match(migration, /auth\.uid\(\)/);
+  assert.match(migration, /extracted_content\s*=\s*'\{\}'::jsonb/);
+  assert.match(migration, /ai_memory\s*=\s*'\{\}'::jsonb/);
+  assert.match(migration, /updated_at\s*<\s*excluded\.updated_at/);
+  assert.match(migration, /where public\.paper_memories\.deleted_at is null\s+returning deleted_at into effective_deletion_time/);
+  assert.match(migration, /revoke execute[\s\S]*from public, anon/);
+  assert.match(migration, /grant execute[\s\S]*to authenticated/);
+});
+
+test("paper cloud API exposes tombstones and uses atomic authenticated RPCs", async () => {
+  const route = await read("app/api/cloud/papers/route.ts");
+  assert.match(route, /deleted_at/);
+  assert.match(route, /deletions/);
+  assert.match(route, /rpc\/sync_paper_memory/);
+  assert.match(route, /rpc\/delete_paper_memory/);
+  assert.match(route, /stale_write/);
+  assert.match(route, /status:\s*409/);
+  assert.match(route, /privateNoStore\(NextResponse\.json/);
+});

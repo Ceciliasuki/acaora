@@ -3,11 +3,13 @@
 import AppSidebar from "../components/app-sidebar";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
+import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import AiStudio from "./ai-studio";
-import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
+import type { AiMemory, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
 import { authFetch } from "../lib/auth-client";
+import { flushPaperSyncQueue, reconcileSnapshot } from "./paper-sync.mjs";
+import type { RetryDecision } from "./paper-sync.mjs";
 
 type TranslatorSession = {
   translate: (text: string) => Promise<string>;
@@ -43,6 +45,12 @@ export default function PaperLab() {
   const [searchMessage, setSearchMessage] = useState("");
   const [cloudState, setCloudState] = useState<"checking" | "guest" | "syncing" | "offline" | "ready" | "error">("checking");
   const cloudStateRef = useRef(cloudState);
+  const signedInRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
+  const retryTimerRef = useRef<number | null>(null);
+  const syncNowRef = useRef<() => void>(() => undefined);
+  const skipPersistRef = useRef(false);
+  const dirtyRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
@@ -59,29 +67,117 @@ export default function PaperLab() {
     setCloudState(next);
   }, []);
 
+  const refreshCloud = useCallback(async () => {
+    const userId = userIdRef.current;
+    if (!userId) throw new Error("账户尚未就绪。");
+    const response = await authFetch("/api/cloud/papers");
+    if (!response.ok) throw new Error("无法获取云端论文记忆。");
+    if (userIdRef.current !== userId) throw new Error("账户已切换。");
+    const cloud = await response.json() as { papers?: PaperRecord[]; deletions?: Array<{ id: string; deletedAt: number }> };
+    const result = reconcileSnapshot({
+      localPapers: await getPaperLibrary(userId),
+      cloudPapers: (cloud.papers ?? []).map((paper) => ({ ...paper, ownerId: userId })),
+      deletions: cloud.deletions ?? [],
+      pending: await getPaperSyncOperations(userId),
+    });
+    await applyPaperSyncSnapshot(userId, result.papers, result.pending);
+    setLibrary(result.papers);
+    setPaper((current) => {
+      const next = result.papers.find((item) => item.id === current.id) ?? result.papers[0] ?? samplePaper;
+      if (next !== current) skipPersistRef.current = true;
+      return next;
+    });
+    return result.papers;
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    const userId = userIdRef.current;
+    if (!userId) return;
+    if (retryTimerRef.current !== null) window.clearTimeout(retryTimerRef.current);
+    setCloudStatus(navigator.onLine ? "syncing" : "offline");
+    try {
+      await flushPaperSyncQueue({
+        online: () => navigator.onLine,
+        now: () => Date.now(),
+        list: () => getPaperSyncOperations(userId),
+        send: async (operation: PaperSyncOperation) => {
+          try {
+            if (userIdRef.current !== userId) return { status: 401 };
+            const sessionResponse = await authFetch("/api/auth/session");
+            if (!sessionResponse.ok) return { status: 401 };
+            const session = await sessionResponse.json() as { user?: { id: string } | null };
+            if (session.user?.id !== userId) return { status: 401 };
+            const cloudPaper = operation.type === "upsert" ? { ...operation.paper } : null;
+            if (cloudPaper) delete cloudPaper.ownerId;
+            const response = operation.type === "delete"
+              ? await authFetch(`/api/cloud/papers?id=${encodeURIComponent(operation.id)}`, { method: "DELETE" })
+              : await authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cloudPaper) });
+            return { status: response.status };
+          } catch { return { status: 503 }; }
+        },
+        acknowledge: async (_id: string, operation: PaperSyncOperation) => { await acknowledgePaperSyncOperation(operation); },
+        reschedule: async (next: PaperSyncOperation, sent: PaperSyncOperation) => { await reschedulePaperSyncOperation(sent, next); },
+        refreshCloud: async (conflicted: PaperSyncOperation) => {
+          if (userIdRef.current !== userId) return;
+          await refreshCloud();
+          const stillPending = (await getPaperSyncOperations(userId)).some((operation) =>
+            operation.id === conflicted.id && operation.type === conflicted.type && operation.updatedAt === conflicted.updatedAt);
+          if (stillPending) setCloudStatus("error");
+        },
+        onState: (decision: RetryDecision) => {
+          if (userIdRef.current !== userId) return;
+          if (decision === "pause-offline") setCloudStatus("offline");
+          else if (decision === "pause-auth" || decision === "non-retryable") setCloudStatus("error");
+        },
+      });
+      if (userIdRef.current !== userId) return;
+      const pending = await getPaperSyncOperations(userId);
+      const retryable = pending.filter((operation) => operation.type === "delete" || !operation.blockedReason);
+      if (!pending.length && !dirtyRef.current) setCloudStatus("ready");
+      else if (!pending.length) setCloudStatus("syncing");
+      else if (!navigator.onLine) setCloudStatus("offline");
+      else if (!retryable.length) setCloudStatus("error");
+      else {
+        const nextAttemptAt = Math.min(...retryable.map((operation) => operation.nextAttemptAt));
+        if (nextAttemptAt > Date.now()) {
+          setCloudStatus("error");
+          retryTimerRef.current = window.setTimeout(() => syncNowRef.current(), Math.min(nextAttemptAt - Date.now(), 60_000));
+        } else if (cloudStateRef.current !== "error") {
+          setCloudStatus("syncing");
+          retryTimerRef.current = window.setTimeout(() => syncNowRef.current(), 0);
+        }
+      }
+    } catch {
+      if (userIdRef.current === userId) setCloudStatus(navigator.onLine ? "error" : "offline");
+    }
+  }, [refreshCloud, setCloudStatus]);
+
+  useEffect(() => {
+    syncNowRef.current = () => { void syncNow(); };
+  }, [syncNow]);
+
   useEffect(() => {
     void (async () => {
       try {
-        const localRecords = await getPaperLibrary();
-        let records = localRecords;
         const sessionResponse = await authFetch("/api/auth/session");
+        if (!sessionResponse.ok) throw new Error("账户状态不可用。");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
+        signedInRef.current = Boolean(session.user);
+        userIdRef.current = session.user?.id ?? null;
+        let records = await getPaperLibrary(userIdRef.current);
         if (session.user) {
-          const cloudResponse = await authFetch("/api/cloud/papers");
-          if (cloudResponse.ok) {
-            const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
-            const byId = new Map<string, PaperRecord>();
-            [...localRecords, ...(cloud.papers ?? [])].forEach((record) => {
-              const existing = byId.get(record.id);
-              if (!existing || record.updatedAt > existing.updatedAt) byId.set(record.id, record);
-            });
-            records = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
-            await Promise.all((cloud.papers ?? []).map((record) => savePaper(record)));
-            setCloudStatus("ready");
-          } else setCloudStatus(navigator.onLine ? "error" : "offline");
-        } else setCloudStatus("guest");
+          records = await refreshCloud();
+          void syncNow();
+        } else {
+          const guestRecords = await getPaperLibrary();
+          setLibrary(guestRecords);
+          skipPersistRef.current = true;
+          setPaper(guestRecords[0] ?? samplePaper);
+          setCloudStatus("guest");
+        }
         setLibrary(records);
         if (records.length) {
+          skipPersistRef.current = true;
           setPaper(records[0]);
           setSearchQuery(records[0].title);
         }
@@ -91,22 +187,38 @@ export default function PaperLab() {
         setHydrated(true);
       }
     })();
-  }, [setCloudStatus]);
+  }, [refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
     const offline = () => {
       if (["ready", "syncing"].includes(cloudStateRef.current)) setCloudStatus("offline");
     };
     const online = () => {
-      if (cloudStateRef.current === "offline") setCloudStatus("ready");
+      void syncNow();
+    };
+    const authChanged = () => {
+      void authFetch("/api/auth/session").then(async (response) => {
+        if (!response.ok) return;
+        const session = await response.json() as { user?: { id: string } | null };
+        signedInRef.current = Boolean(session.user);
+        userIdRef.current = session.user?.id ?? null;
+        dirtyRef.current = false;
+        if (session.user) {
+          await refreshCloud();
+          void syncNow();
+        } else setCloudStatus("guest");
+      }).catch(() => setCloudStatus("error"));
     };
     window.addEventListener("offline", offline);
     window.addEventListener("online", online);
+    window.addEventListener("acaora:auth-change", authChanged);
     return () => {
       window.removeEventListener("offline", offline);
       window.removeEventListener("online", online);
+      window.removeEventListener("acaora:auth-change", authChanged);
+      if (retryTimerRef.current !== null) window.clearTimeout(retryTimerRef.current);
     };
-  }, [setCloudStatus]);
+  }, [refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
     const factory = getTranslatorFactory();
@@ -122,22 +234,28 @@ export default function PaperLab() {
 
   useEffect(() => {
     if (!hydrated || paper.id === samplePaper.id) return;
+    if ((paper.ownerId ?? null) !== userIdRef.current) return;
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
     const handle = window.setTimeout(() => {
-      const updated = { ...paper, updatedAt: Date.now() };
-      void savePaper(updated).then(() => {
+      const updated = { ...paper, ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
+      const persist = signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated);
+      void persist.then(() => {
+        dirtyRef.current = false;
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
-      });
-      if (cloudStateRef.current === "ready") {
-        setCloudStatus("syncing");
-        void authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
-          .then((response) => setCloudStatus(response.ok ? "ready" : navigator.onLine ? "error" : "offline"))
-          .catch(() => setCloudStatus(navigator.onLine ? "error" : "offline"));
-      }
+        if (signedInRef.current) void syncNow();
+      }).catch(() => setCloudStatus("error"));
     }, 450);
     return () => window.clearTimeout(handle);
-  }, [paper, hydrated, setCloudStatus]);
+  }, [paper, hydrated, setCloudStatus, syncNow]);
 
   function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
+    if (userIdRef.current) {
+      dirtyRef.current = true;
+      setCloudStatus("syncing");
+    }
     setPaper((current) => updater(current));
   }
 
@@ -161,12 +279,18 @@ export default function PaperLab() {
     setMessage("正在设备本地解析论文……");
     try {
       const extracted = await extractPdf(file, setExtractProgress);
+      skipPersistRef.current = true;
       setPaper(extracted);
       setSearchQuery(extracted.title);
-      await savePaper(extracted);
+      if (signedInRef.current) {
+        extracted.ownerId = userIdRef.current ?? undefined;
+        await savePaperAndQueue(extracted);
+      }
+      else await savePaper(extracted);
       setLibrary((current) => [extracted, ...current.filter((item) => item.id !== extracted.id)]);
       setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。`);
       setMobilePanel("reader");
+      if (signedInRef.current) void syncNow();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "PDF 解析失败。" );
     } finally {
@@ -248,12 +372,24 @@ export default function PaperLab() {
   }
 
   async function removeFromLibrary(record: PaperRecord) {
-    if (!window.confirm(`从当前设备删除“${record.title}”的阅读记忆？`)) return;
-    await deletePaper(record.id);
-    if (cloudState === "ready" || cloudState === "syncing") void authFetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
-    const remaining = library.filter((item) => item.id !== record.id);
-    setLibrary(remaining);
-    if (paper.id === record.id) setPaper(remaining[0] ?? samplePaper);
+    const confirmation = signedInRef.current
+      ? `从所有设备删除“${record.title}”的论文记忆？原始 PDF 不受影响；提取文本、翻译、笔记、阅读进度和 AI 结果将被删除。`
+      : `从当前设备删除“${record.title}”的论文记忆？原始 PDF 不受影响。`;
+    if (!window.confirm(confirmation)) return;
+    try {
+      if (signedInRef.current && userIdRef.current) await deletePaperAndQueue(record.id, Date.now(), userIdRef.current);
+      else await deletePaper(record.id);
+      const remaining = library.filter((item) => item.id !== record.id);
+      setLibrary(remaining);
+      if (paper.id === record.id) {
+        skipPersistRef.current = true;
+        setPaper(remaining[0] ?? samplePaper);
+      }
+      if (signedInRef.current) {
+        setMessage(navigator.onLine ? "论文记忆已从当前设备删除，云端删除正在同步。" : "论文记忆已从当前设备删除，云端删除等待同步。");
+        void syncNow();
+      }
+    } catch { setMessage("删除未完成，请重试。" ); }
   }
 
   function openPaper(record: PaperRecord) {
