@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { getSiteUrl } from "./lib/site-url";
 import "./globals.css";
 
@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: { title, description, images: [{ url: image, width: 1731, height: 909, alt: title }] },
   twitter: { card: "summary_large_image", title, description, images: [image] },
+};
+
+/* Matches --bg-app so the mobile browser chrome stays continuous with the
+   app background instead of cutting to a white surface. */
+export const viewport: Viewport = {
+  themeColor: "#f5f6f9",
 };
 
 export default function RootLayout({

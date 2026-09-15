@@ -1,12 +1,102 @@
+/* ==========================================================================
+   Acaora design system - Phase 1A
+   Layer 1: semantic tokens (source of truth for all new work)
+   Layer 2: legacy aliases (existing selectors adopt the new palette without
+            being edited; this is what makes the reskin safe and reviewable)
+   Contrast values in the comments are measured WCAG ratios, not estimates.
+   ========================================================================== */
 :root {
-  --ink: #102d2b;
-  --navy: #0d2928;
-  --paper: #f3f1e9;
-  --card: #fffefa;
-  --line: #d8d7cd;
-  --muted: #687471;
-  --lime: #c9f46b;
-  --orange: #ff8356;
+  color-scheme: light;
+
+  /* surfaces */
+  --bg-app: #f5f6f9;
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+  --surface-inverse: #121828;
+  --surface-inverse-2: #1b2334;
+
+  /* borders */
+  --border: #e3e6ec;
+  --border-strong: #ced4e0;
+  --border-control: #7d8899;          /* 3.59:1 on surface, 3.32:1 on app bg (WCAG 1.4.11) */
+  --border-inverse: #2b3448;
+
+  /* text */
+  --text: #131a2b;                    /* 17.35:1 on surface */
+  --text-2: #626978;                  /* 5.51:1 on surface, 5.10:1 on app bg */
+  --text-3: #8a92a2;                  /* 3.13:1 - large text or decorative only */
+  --text-inverse: #eef1f6;            /* 15.63:1 on inverse */
+  --text-inverse-2: #96a0b3;          /* 6.72:1 on inverse */
+
+  /* brand - the single accent for the whole product */
+  --brand: #2f5ad4;                   /* 5.94:1 on surface, 5.94:1 white-on-brand */
+  --brand-hover: #2648ab;
+  --brand-subtle: #eaefff;
+  --brand-on-subtle: #1f3f9e;         /* 8.08:1 on brand-subtle */
+  --brand-on-dark: #93b1fb;           /* 8.36:1 on inverse; --brand itself is only 2.98:1 */
+
+  /* ai - reserved for AI-semantic regions, never a generic second series color */
+  --ai: #0b6f66;                      /* 6.03:1 on surface */
+  --ai-subtle: #e4f6f3;
+  --ai-vivid: #14b8a6;
+  --ai-on-dark: #5fe3cd;              /* 11.25:1 on inverse */
+  --ai-ink-on-vivid: #0c2f2b;         /* 5.79:1 on ai-vivid */
+
+  /* semantic - "info" intentionally reuses --brand (one accent per project) */
+  --success: #1a7a5a;
+  --success-subtle: #e6f5ef;
+  --warning: #7a4e0f;
+  --warning-subtle: #fdf4e4;
+  --danger: #b3352b;
+  --danger-subtle: #fdecea;
+
+  /* typography - px (not rem) so the scale never depends on the root font-size */
+  --font-sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --fs-display: 30px;  --lh-display: 36px;
+  --fs-page: 24px;     --lh-page: 32px;
+  --fs-section: 18px;  --lh-section: 26px;
+  --fs-card: 15px;     --lh-card: 22px;
+  --fs-body: 15px;     --lh-body: 24px;
+  --fs-sm: 13px;       --lh-sm: 20px;
+  --fs-caption: 12px;  --lh-caption: 16px;
+  --fs-label: 11px;    --lh-label: 14px;
+  --fs-metric: 28px;   --lh-metric: 32px;
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+
+  /* spacing */
+  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+
+  /* radius */
+  --r-xs: 6px; --r-sm: 8px; --r-md: 10px; --r-lg: 14px; --r-xl: 18px; --r-full: 999px;
+
+  /* shadow - cool tinted; the violet rgba(83,83,201,...) family is retired */
+  --shadow-1: 0 1px 2px rgba(19, 26, 43, .05);
+  --shadow-2: 0 8px 24px rgba(19, 26, 43, .06);
+  --shadow-3: 0 24px 70px rgba(10, 16, 32, .18);
+
+  /* motion */
+  --dur-1: 120ms; --dur-2: 160ms; --dur-3: 200ms;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+
+  /* z-index scale */
+  --z-sticky: 10; --z-sidebar: 20; --z-drawer: 44; --z-dialog: 50; --z-toast: 100;
+
+  /* --- Layer 2: legacy aliases -------------------------------------------------
+     Every pre-existing selector keeps working and picks up the new palette.
+     Dark-context overrides for --lime live in the Phase 1A section at the end of
+     this file, because --lime serves both light and dark surfaces. */
+  --ink: var(--text);
+  --navy: var(--surface-inverse);
+  --paper: var(--bg-app);
+  --card: var(--surface);
+  --line: var(--border);
+  --muted: var(--text-2);
+  --lime: var(--brand);
+  --orange: var(--brand);
+  --student-ink: var(--text);
+  --student-violet: var(--brand);
 }
 
 * { box-sizing: border-box; }
@@ -1905,4 +1995,267 @@ footer { font-size: 12px; }
   .app-sidebar .student-sidebar-foot > a { display: flex; min-height: 56px; }
   .app-sidebar .student-sidebar-foot p { display: block; }
   .student-main, .data-main, .paper-main, .workspace { padding-top: 78px; }
+}
+
+/* ==========================================================================
+   Phase 1A - token application (append-only)
+   These rules come later in source order, so at equal specificity they win
+   without needing !important. Only paint properties change here: no display,
+   position, grid-template, flex, width/height, page padding/margin/gap,
+   overflow or transform. Every historical selector above is preserved so the
+   diff stays reviewable and reverting is a single-block revert.
+   ========================================================================== */
+
+/* --- 1. Data visualisation: retire the second series accent ----------------
+   One accent plus neutrals. The nth-child(5) rules are re-pointed to the same
+   neutral as their siblings rather than deleted, so no selector disappears. */
+.mini-chart i:nth-child(5) { background: var(--ink); }
+.histogram-column:nth-child(5) i { background: var(--ink); }
+
+/* --- 2. Dark-surface contrast exceptions ----------------------------------
+   --lime serves both light and dark surfaces, so its dark usages are
+   re-pointed explicitly. Brand blue on a dark panel measures only 2.98:1,
+   which is why --brand-on-dark (8.36:1) exists. */
+.brand-mark { background: var(--brand); color: var(--text-inverse); }
+.nav-item.active { box-shadow: inset 3px 0 var(--brand-on-dark); }
+.note-label { color: var(--brand-on-dark); }
+.progress-track i { background: var(--brand-on-dark); }
+.test-stat-line strong { color: var(--brand-on-dark); }
+
+/* .library-title p shares one rule with two light-surface selectors, so it is
+   split out here rather than editing the original shorthand. */
+.library-title p { color: var(--brand-on-dark); }
+.library-title > span { color: var(--brand-on-dark); }
+.library-list article.active { box-shadow: inset 3px 0 var(--brand-on-dark); }
+.library-privacy strong { color: var(--brand-on-dark); }
+.term-list b { color: var(--brand-on-dark); }
+.paper-brand span { color: var(--brand-on-dark); }
+.paper-upload span { color: var(--brand-on-dark); }
+.reader-preview aside p { color: var(--brand-on-dark); }
+
+/* AI-semantic regions use the teal accent; brand blue stays for everything else. */
+.ai-studio-head p { color: var(--ai-on-dark); }
+.ai-task-card > p { color: var(--ai-on-dark); }
+.ai-key-box button { color: var(--ai-on-dark); }
+.ai-empty-result b { color: var(--ai-on-dark); }
+.ai-action-tabs button.active {
+  border-color: var(--ai-vivid);
+  background: var(--ai-vivid);
+  color: var(--ai-ink-on-vivid);
+}
+.ai-run { background: var(--ai-vivid); color: var(--ai-ink-on-vivid); }
+
+/* --- 3. Previously one shared accent used for several meanings ------------- */
+.dropzone.dragging { border-color: var(--brand); }
+.scatterplot i { background: var(--brand); }
+.search-empty span { color: var(--brand); }
+.translator-status.state-unsupported i,
+.translator-status.state-error i { background: var(--warning); }
+.paper-delete:hover { color: var(--danger); }
+
+/* --- 4. Inverse surfaces -------------------------------------------------- */
+.paper-library { background: var(--surface-inverse); }
+.ai-studio { background: var(--surface-inverse); }
+
+/* --- 5. Per-page variable overrides now resolve to the same tokens --------
+   This block previously hardcoded a mint accent for PaperLab and DataLab,
+   which is why those two surfaces looked like a different product. */
+.data-app,
+.paper-layout {
+  --ink: var(--text);
+  --navy: var(--surface-inverse);
+  --paper: var(--bg-app);
+  --card: var(--surface);
+  --line: var(--border);
+  --muted: var(--text-2);
+  --lime: var(--brand);
+  --orange: var(--brand);
+  color: var(--text);
+}
+
+/* --- 6. Typography foundation ---------------------------------------------
+   Page-level titles drop Georgia for the system sans stack. Section and panel
+   titles inside individual pages keep their font until their own phase, so
+   this phase's diff stays attributable. */
+body {
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--bg-app);
+}
+.student-topbar h1 { font-family: var(--font-sans); }
+
+/* --- 7. Application shell ------------------------------------------------- */
+.student-app { background: var(--bg-app); color: var(--text); }
+.app-sidebar,
+.student-sidebar { background: var(--surface-inverse); color: var(--text-inverse); }
+.student-main,
+.data-main,
+.paper-main { background: var(--bg-app); }
+
+/* --- 8. Sidebar ----------------------------------------------------------- */
+.acaora-brand.light { color: var(--text-inverse); }
+.acaora-brand.light > div > small { color: var(--text-inverse-2); }
+.acaora-brand.light > span { background: var(--brand); color: var(--text-inverse); }
+.app-sidebar > nav a { color: var(--text-inverse-2); }
+.app-sidebar > nav a svg { color: var(--text-inverse-2); }
+.app-sidebar > nav a:hover { background: var(--surface-inverse-2); color: var(--text-inverse); }
+.app-sidebar > nav a.active { background: var(--surface-inverse-2); color: var(--text-inverse); }
+.app-sidebar > nav a.active svg { color: var(--brand-on-dark); }
+.app-sidebar a:focus-visible { outline-color: var(--brand-on-dark); }
+.sidebar-profile-link:hover { background: var(--surface-inverse-2); }
+.sidebar-profile-link > b { background: var(--brand); color: var(--text-inverse); }
+.student-sidebar-foot > a { border-bottom-color: var(--border-inverse); }
+.student-sidebar-foot p small { color: var(--text-inverse-2); }
+.sidebar-close-button { color: var(--text-inverse); }
+
+/* --- 9. Shared UI primitives --------------------------------------------- */
+:where(a, button, input, select, textarea, summary):focus-visible { outline-color: var(--brand); }
+
+.ui-button {
+  font-family: var(--font-sans);
+  border-radius: var(--r-md);
+  transition:
+    background-color var(--dur-2) var(--ease-out),
+    border-color var(--dur-2) var(--ease-out),
+    color var(--dur-2) var(--ease-out);
+}
+.ui-button:active:not(:disabled) { transform: scale(.985); }
+.ui-button--primary { background: var(--brand); color: var(--text-inverse); }
+.ui-button--primary:hover:not(:disabled) { background: var(--brand-hover); }
+.ui-button--secondary { border-color: var(--border-control); background: var(--surface); color: var(--text); }
+.ui-button--secondary:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); }
+.ui-button--ghost { color: var(--text-2); }
+.ui-button--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
+.ui-button--danger { background: var(--danger); color: var(--text-inverse); }
+.ui-button.account-button {
+  border-color: var(--surface-inverse);
+  background: var(--surface-inverse);
+  color: var(--text-inverse);
+}
+
+.ui-form-field > label { color: var(--text); }
+.ui-input,
+.ui-textarea,
+.ui-select {
+  font-family: var(--font-sans);
+  border-color: var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+.ui-input::placeholder,
+.ui-textarea::placeholder { color: var(--text-2); }
+.ui-input[aria-invalid="true"],
+.ui-textarea[aria-invalid="true"],
+.ui-select[aria-invalid="true"] { border-color: var(--danger); }
+.ui-field-hint { color: var(--text-2); }
+.ui-field-error { color: var(--danger); }
+.ui-password-policy { color: var(--text-2); }
+.ui-password-toggle { color: var(--text-2); }
+
+.ui-card {
+  border-color: var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.ui-badge { background: var(--surface-2); color: var(--text-2); }
+.ui-badge--info { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.ui-badge--success { background: var(--success-subtle); color: var(--success); }
+.ui-badge--warning { background: var(--warning-subtle); color: var(--warning); }
+.ui-badge--danger { background: var(--danger-subtle); color: var(--danger); }
+
+.ui-tabs { background: var(--surface-2); border-radius: var(--r-md); }
+.ui-tabs button { border-radius: var(--r-sm); color: var(--text-2); }
+.ui-tabs button.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-1); }
+
+.ui-status { border-color: var(--border); background: var(--surface-2); color: var(--text-2); }
+.ui-status--success { border-color: var(--success-subtle); background: var(--success-subtle); color: var(--success); }
+.ui-status--warning { border-color: var(--warning-subtle); background: var(--warning-subtle); color: var(--warning); }
+.ui-status--error { border-color: var(--danger-subtle); background: var(--danger-subtle); color: var(--danger); }
+.ui-toast { box-shadow: var(--shadow-3); }
+
+.ui-state {
+  border-color: var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+.ui-state h2 { color: var(--text); }
+.ui-state--error { background: var(--danger-subtle); color: var(--danger); }
+
+.ui-dialog { border-radius: var(--r-xl); background: var(--surface); color: var(--text); box-shadow: var(--shadow-3); }
+.ui-dialog > header { border-bottom-color: var(--border); }
+.ui-dialog header p { color: var(--text-2); }
+
+.ui-page-header p { color: var(--brand); }
+.ui-page-header h1 { font-family: var(--font-sans); }
+.ui-page-header span { color: var(--text-2); }
+
+/* --- 10. Dev-only UI kit playground --------------------------------------
+   Namespaced .ui-kit-* rules. app/dev/ui-kit 404s outside development, so
+   these never reach a production surface. Swatch fills are bound to tokens in
+   markup (style={{ background: "var(--token)" }}) so the page shows the real
+   token values rather than a copy. */
+.ui-kit-group { margin-top: 18px; }
+.ui-kit-group > h3 { margin: 0 0 10px; color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-bold); letter-spacing: .06em; text-transform: uppercase; }
+.ui-kit-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--s-2); }
+.ui-kit-swatch { min-width: 0; padding: var(--s-2); border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.ui-kit-swatch > i { display: block; height: 42px; margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--r-xs); }
+.ui-kit-swatch > code { display: block; color: var(--text); font: 600 var(--fs-caption)/1.4 var(--font-mono); overflow-wrap: anywhere; }
+.ui-kit-swatch > small { display: block; margin-top: 3px; color: var(--text-2); font-size: var(--fs-caption); line-height: 1.5; }
+.ui-kit-scales { display: grid; gap: 6px; }
+.ui-kit-scales > div { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: var(--s-3); }
+.ui-kit-scales code { color: var(--text-2); font: 600 var(--fs-caption)/1 var(--font-mono); }
+.ui-kit-scales i { display: block; height: 16px; border-radius: 3px; background: var(--brand); }
+.ui-kit-radius i { height: 46px; background: var(--brand-subtle); border: 1px solid var(--brand); }
+.ui-kit-shadow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--s-4); padding: var(--s-2) 0; }
+.ui-kit-shadow-grid > div { padding: var(--s-4); border-radius: var(--r-md); background: var(--surface); }
+.ui-kit-shadow-grid code { display: block; margin-top: 10px; color: var(--text-2); font: 600 var(--fs-caption)/1 var(--font-mono); }
+.ui-kit-panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-4); }
+.ui-kit-panel-dark { padding: var(--s-5); border-radius: var(--r-lg); background: var(--surface-inverse); }
+.ui-kit-panel-dark > h4 { margin: 0 0 var(--s-3); color: var(--text-inverse); font-size: var(--fs-card); font-weight: var(--fw-semibold); }
+.ui-kit-panel-dark p { margin: 0 0 var(--s-2); font-size: var(--fs-sm); }
+.ui-kit-type-scale { display: grid; gap: var(--s-2); }
+.ui-kit-type-scale > div { display: grid; grid-template-columns: 132px 1fr; align-items: baseline; gap: var(--s-3); }
+.ui-kit-type-scale code { color: var(--text-2); font: 600 var(--fs-caption)/1.5 var(--font-mono); }
+.ui-kit-numbers { font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) {
+  .ui-kit-scales > div,
+  .ui-kit-type-scale > div { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* --- 11. Shared form control contract (Phase 1A.1) -------------------------
+   The design system must actually deliver --border-control and a single brand
+   focus language on its own controls. A plain `.ui-input` (0,1,0) is outranked
+   by page-scoped element selectors such as `.settings-form input` (0,1,1),
+   `.project-task-card form input` (0,1,2) and `.auth-form-wrap form > label >
+   input` (0,1,3), so specificity is raised with :not() instead of !important,
+   and no page-private selector or page JSX is modified.
+
+   :focus is used rather than only :focus-visible on purpose. :focus is a strict
+   superset for these elements, so it also covers the pointer-focus path, which
+   is exactly where the page-private violet :focus borders used to appear.
+
+   The outline is declared here rather than inherited from the global
+   :focus-visible rule because page-scoped selectors such as
+   `.settings-form input { outline: 0 }` (0,1,1) outrank that global fallback
+   (0,1,0) and would leave the shared control with no ring at all. The global
+   rule is deliberately left in place as the fallback for everything else.
+
+   The :not([aria-invalid="true"]) guard exists so the existing danger border for
+   invalid fields stays authoritative instead of being repainted by these rules. */
+input.ui-input:not([aria-invalid="true"]),
+select.ui-select:not([aria-invalid="true"]),
+textarea.ui-textarea:not([aria-invalid="true"]) {
+  border-color: var(--border-control);
+}
+
+input.ui-input:focus:not([aria-invalid="true"]),
+select.ui-select:focus:not([aria-invalid="true"]),
+textarea.ui-textarea:focus:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-subtle);
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
 }
