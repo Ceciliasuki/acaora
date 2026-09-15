@@ -1,0 +1,346 @@
+---
+name: Acaora 学曦
+description: Modern AI Workspace × Academic Productivity. Cool-neutral light workspace, one brand blue for product actions, one teal reserved for AI.
+colors:
+  brand-blue: "#2f5ad4"
+  brand-blue-hover: "#2648ab"
+  brand-tint: "#eaefff"
+  brand-ink-on-tint: "#1f3f9e"
+  brand-on-dark: "#93b1fb"
+  ai-ink: "#0b6f66"
+  ai-tint: "#e4f6f3"
+  ai-teal: "#14b8a6"
+  ai-on-dark: "#5fe3cd"
+  ai-ink-on-teal: "#0c2f2b"
+  app-background: "#f5f6f9"
+  surface-white: "#ffffff"
+  surface-subtle: "#f8f9fb"
+  deep-navy: "#121828"
+  deep-navy-raised: "#1b2334"
+  ink-primary: "#131a2b"
+  ink-secondary: "#626978"
+  ink-faint: "#8a92a2"
+  ink-inverse: "#eef1f6"
+  ink-inverse-secondary: "#96a0b3"
+  line-soft: "#e3e6ec"
+  line-strong: "#ced4e0"
+  line-control: "#7d8899"
+  line-inverse: "#2b3448"
+  success: "#1a7a5a"
+  success-tint: "#e6f5ef"
+  warning: "#7a4e0f"
+  warning-tint: "#fdf4e4"
+  danger: "#b3352b"
+  danger-tint: "#fdecea"
+typography:
+  display:
+    fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: "36px"
+    letterSpacing: "-0.02em"
+  headline:
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: "32px"
+    letterSpacing: "-0.015em"
+  title:
+    fontSize: "18px"
+    fontWeight: 600
+    lineHeight: "26px"
+  body:
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "24px"
+  label:
+    fontSize: "12px"
+    fontWeight: 700
+    lineHeight: "16px"
+    letterSpacing: "0.06em"
+rounded:
+  xs: "6px"
+  sm: "8px"
+  md: "10px"
+  lg: "14px"
+  xl: "18px"
+  full: "999px"
+spacing:
+  s1: "4px"
+  s2: "8px"
+  s3: "12px"
+  s4: "16px"
+  s5: "24px"
+  s6: "32px"
+  s7: "48px"
+  s8: "64px"
+components:
+  button-primary:
+    backgroundColor: "{colors.brand-blue}"
+    textColor: "{colors.ink-inverse}"
+    rounded: "{rounded.md}"
+    padding: "0 16px"
+    height: "44px"
+    fontSize: "14px"
+    fontWeight: 700
+  button-primary-hover:
+    backgroundColor: "{colors.brand-blue-hover}"
+  button-secondary:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.ink-primary}"
+    borderColor: "{colors.line-control}"
+    rounded: "{rounded.md}"
+    height: "44px"
+  button-ghost:
+    textColor: "{colors.ink-secondary}"
+    rounded: "{rounded.md}"
+    height: "44px"
+  button-danger:
+    backgroundColor: "{colors.danger}"
+    textColor: "{colors.ink-inverse}"
+    rounded: "{rounded.md}"
+    height: "44px"
+  field-default:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.ink-primary}"
+    borderColor: "{colors.line-control}"
+    rounded: "{rounded.sm}"
+    padding: "11px 13px"
+    height: "48px"
+    fontSize: "15px"
+  field-focus:
+    borderColor: "{colors.brand-blue}"
+  card:
+    backgroundColor: "{colors.surface-white}"
+    borderColor: "{colors.line-soft}"
+    rounded: "{rounded.lg}"
+    padding: "24px"
+  badge-info:
+    backgroundColor: "{colors.brand-tint}"
+    textColor: "{colors.brand-ink-on-tint}"
+  badge-success:
+    backgroundColor: "{colors.success-tint}"
+    textColor: "{colors.success}"
+  badge-warning:
+    backgroundColor: "{colors.warning-tint}"
+    textColor: "{colors.warning}"
+  badge-danger:
+    backgroundColor: "{colors.danger-tint}"
+    textColor: "{colors.danger}"
+  tab-active:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.ink-primary}"
+    rounded: "{rounded.sm}"
+---
+
+# Design System: Acaora 学曦
+
+## Overview
+
+**Creative North Star: "The Study Workbench" (学习工作台)**
+
+Approved as the internal design north star. It is taken from the product's own vocabulary (总览 / 论文工作台 / 数据工作台 / 项目工作台) rather than invented for this document. It exists to keep design decisions pointed at one idea, and it is not a marketing slogan, not user-facing copy, and not a line that appears in the interface.
+
+Acaora is a workbench, not a stage. The surface is a cool, near-white working field with one saturated blue reserved for the actions a student actually takes, and a deep navy rail on the left that holds navigation and the paper library. Nothing on screen competes with the material being studied: the paper text, the table, the task list. The interface is designed to be looked at for two hours, not to be looked at once.
+
+The product carries two visual registers that must never blur. Ordinary product surfaces (courses, projects, data, settings, navigation, primary actions) speak in brand blue on cool neutrals. AI-semantic surfaces (the AI studio, AI-generated results, AI processing state) speak in teal on tinted or inverse grounds. Teal is not a second brand colour and must not be used to decorate ordinary business actions.
+
+Density is deliberately uneven between surfaces. A reading tool and a statistics tool are allowed to be far denser than a settings page. What is unified is the design language: the same neutrals, the same type scale, the same radius and elevation logic, the same focus treatment. Page structure is not unified, and forcing it to be would damage the two tools that need density.
+
+**Key Characteristics:**
+- Light, cool, near-white workspace; deep navy for navigation and inverse panels.
+- One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).
+- System sans throughout; Georgia has been removed from page-level titles.
+- Borders plus the lightest shadow carry structure; surfaces are not floating cards.
+- Motion is restrained and always explains a state change.
+- Long-session legibility beats first-impression impact.
+
+## Colors
+
+A tight cool-neutral ramp with a single saturated blue and a single reserved teal; the palette is intentionally narrow so that the one accent that appears always means something.
+
+### Primary
+- **Acaora Blue** (`#2f5ad4`, token `--brand`): the single product accent. Primary button fill, links, active and selected states, progress fill, current navigation marker, focus ring. Measures 5.94:1 as text on white. As a fill it carries the inverse label colour rather than pure white, and that actual pair (Ink Inverse on Acaora Blue) measures 5.25:1, still comfortably above the 4.5:1 body-text requirement.
+- **Acaora Blue Deep** (`#2648ab`, `--brand-hover`): hover and pressed state for blue-filled controls only.
+- **Acaora Blue Wash** (`#eaefff`, `--brand-subtle`): the selected background and the soft focus halo behind a focused control.
+- **Blue Ink on Wash** (`#1f3f9e`, `--brand-on-subtle`): text placed on the wash. 8.08:1.
+- **Blue on Deep Navy** (`#93b1fb`, `--brand-on-dark`): the brand accent as it appears inside the navy rail. Required because the main blue measures only 2.98:1 against deep navy and cannot be used there.
+
+### Secondary
+- **AI Ink** (`#0b6f66`, `--ai`): the AI-semantic ink colour for text and icons in AI regions on light grounds. 6.03:1 on white.
+- **AI Wash** (`#e4f6f3`, `--ai-subtle`): the light ground behind AI entry points and AI result panels.
+- **AI Teal** (`#14b8a6`, `--ai-vivid`): the solid fill for AI actions, such as the run button in the AI studio. Always paired with AI Ink on Teal as its label colour.
+- **AI on Deep Navy** (`#5fe3cd`, `--ai-on-dark`): AI marks and labels inside the navy AI studio panel. 11.25:1 on deep navy.
+- **AI Ink on Teal** (`#0c2f2b`, `--ai-ink-on-vivid`): the label colour on a solid teal fill. 5.79:1.
+
+### Neutral
+- **App Field** (`#f5f6f9`, `--bg-app`): the page background for every workspace surface, and the mobile browser theme colour. Not pure white, so white surfaces can sit on it.
+- **Surface White** (`#ffffff`, `--surface`): cards, panels, inputs, dialogs.
+- **Surface Subtle** (`#f8f9fb`, `--surface-2`): inset areas, table headers, secondary panels, segmented control troughs.
+- **Deep Navy** (`#121828`, `--surface-inverse`): the left rail, the paper library, the AI studio panel, and any inverse panel. One value, not several near-blacks.
+- **Deep Navy Raised** (`#1b2334`, `--surface-inverse-2`): selected rows and secondary blocks inside an inverse surface.
+- **Ink Primary** (`#131a2b`, `--text`): body and headings. 17.35:1 on white.
+- **Ink Secondary** (`#626978`, `--text-2`): metadata, captions, secondary prose. 5.51:1 on white, 5.10:1 on the app field.
+- **Ink Faint** (`#8a92a2`, `--text-3`): large or decorative text only, 3.13:1, never body copy.
+- **Ink Inverse** (`#eef1f6`, `--text-inverse`) and **Ink Inverse Secondary** (`#96a0b3`, `--text-inverse-2`): text on deep navy, at 15.63:1 and 6.72:1.
+- **Line Soft** (`#e3e6ec`, `--border`) and **Line Strong** (`#ced4e0`, `--border-strong`): decorative card and divider borders, and their hover/active step.
+- **Line Control** (`#7d8899`, `--border-control`): the border of an actual control (input, select, textarea, secondary button). Deliberately darker than Line Soft because a control boundary is a non-text UI element and must reach 3:1: it measures 3.59:1 on white and 3.32:1 on the app field.
+- **Line Inverse** (`#2b3448`, `--border-inverse`): structure inside a navy panel.
+- **Success** (`#1a7a5a`), **Warning** (`#7a4e0f`), **Danger** (`#b3352b`) with washes (`#e6f5ef`, `#fdf4e4`, `#fdecea`): sync-complete, waiting/example-data, and delete/error states. There is deliberately no separate information colour; information reuses brand blue.
+
+### Named Rules
+**The One Accent Rule.** Brand blue is the only product accent. No second decorative accent may be introduced for cards, emphasis, or decoration, and a single-series chart is blue or neutral, never a rainbow. One explicit exception: a multi-series data visualisation may need several encoding colours to distinguish real data series. Such a palette is not a second brand colour, is not governed by this rule, and must be designed and approved separately during the DataLab phase. AI teal must never be borrowed as an ordinary chart's second series.
+
+**The AI Teal Containment Rule.** Teal appears only where the surface is about AI: the AI studio, AI-generated results, AI processing state. It never fills a normal business action, a course card, a project control, or a chart series.
+
+**The Two Blues on Navy Rule.** Against deep navy, never use the main brand blue for text or marks (2.98:1). Use Blue on Deep Navy, or AI on Deep Navy inside AI regions.
+
+**The Light-Only Rule.** The product is light-mode only; there is no dark theme and none is planned. `color-scheme: light` is declared so browser chrome, form controls, and scrollbars do not invert on their own.
+
+## Typography
+
+**Display Font:** Segoe UI (with PingFang SC, Microsoft YaHei, Arial, sans-serif fallbacks)
+**Body Font:** the same system sans stack
+**Label/Mono Font:** ui-monospace, SFMono-Regular, Menlo, Consolas, monospace, reserved for identifiers, counts, and version strings
+
+**Character:** One neutral, highly legible system sans carrying both Chinese and Latin text, so a Chinese heading and an English paper title sit in the same voice. No web font is loaded and no Latin-only serif is used for Chinese headings.
+
+### Hierarchy
+- **Display** (600, 30px/36px, -0.02em): the largest token step. Reserve for a single moment per screen.
+- **Headline** (600, 24px/32px, -0.015em): the page title.
+- **Title** (600, 18px/26px): panel and section titles.
+- **Body** (400, 15px/24px): default text. Chinese body copy needs the generous 1.6 line ratio this encodes; long prose should be constrained to roughly 65 characters.
+- **Label** (700, 12px/16px, +0.06em): the only role permitted to be uppercase, and the floor for interface text. It shares its size with the caption step and is separated from it by weight, tracking, and case rather than by size.
+
+Supporting steps in the same scale: card title (600, 15px/22px), secondary (400, 13px/20px), caption (400, 12px/16px), metric (600, 28px/32px). Weights available are 400 / 500 / 600 / 700; the old regular-and-bold-only pairing is gone.
+
+### Named Rules
+**The 12px Floor Rule.** No body or interface text is set below 12px. The 6px to 9px labels inherited from earlier layers are a defect to be removed as each page is redesigned, not a style.
+
+**The Tabular Numbers Rule.** Any number that changes while the user watches (counts, percentages, progress, statistics, timers) uses tabular figures so the layout does not shift.
+
+**The No Serif For Chinese Rule.** Georgia must not return as a product UI heading font. Latin-only serif faces fall back to an unpredictable Chinese serif and change weight and rhythm across platforms.
+
+Known migration gaps, stated rather than hidden so this record does not read as if it already matched the code:
+
+- Some legacy page selectors still set their own clamp-based title sizes (for example page headers between 32px and 48px). The token scale above is the target; each page adopts it during its own redesign phase.
+- The label step is 11px with a 14px line height in CSS today. This record sets it at 12px/16px so the 12px floor actually holds; the token must be raised to match before the floor can be claimed as met.
+
+## Layout
+
+The shell is a two-column workspace: a fixed 248px navigation rail and a fluid working column. Below 1100px the rail collapses to an 88px icon rail, and below 760px it becomes an off-canvas drawer with a fixed trigger. The rail is the only persistent navigation; there is no top navigation bar in the workspace.
+
+Content width is capped per surface rather than globally: 1240px for overview-style pages (dashboard, courses, projects, settings) and 1680px for the two tool surfaces, PaperLab and DataLab, which must be allowed to use the full width of a laptop screen. Reading columns inside PaperLab are capped near 72 characters per column so bilingual text does not stretch to unreadable line lengths.
+
+Spacing is a single 8-step scale (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64). Control padding uses the first steps, panel padding uses 24px, section separation uses 32px, and page padding is smaller at the top than at the bottom so content does not appear to float.
+
+Density is deliberately per-surface, not global: Dashboard 5, Courses 5, Projects 5 to 6, PaperLab 6 to 7, DataLab 6 to 7, Settings 3 to 4, Auth 3.
+
+Responsive behaviour: desktop is the primary environment and must not be compromised for mobile. On tablet the navigation rail may narrow to an icon rail and PaperLab drops from three columns to two. On mobile the three-column workbench must never simply be stacked vertically: PaperLab keeps its panel switcher, DataLab keeps appropriate horizontal scrolling for its tables rather than reflowing them into cards, navigation uses a drawer and progressive disclosure instead of a compressed toolbar, and each surface promotes one primary action rather than presenting its whole toolbar at once. Precise breakpoint values are deliberately not part of this record yet: consolidating them is deferred to the responsive phase, and no existing breakpoint is changed before then.
+
+### Named Rules
+**The Uneven Density Rule.** Unified language, not unified structure. Do not raise DataLab or PaperLab to a card-based layout in the name of consistency, and do not push Dashboard density up to tool level.
+
+**The Two Tool Widths Rule.** Tool surfaces may use 1680px; overview surfaces stop at 1240px. A tool that has been narrowed to overview width has been damaged.
+
+## Elevation & Depth
+
+The system is hybrid but border-led: structure comes from a 1px border, and shadow is a supporting cue rather than the primary signal. Surfaces are not floating cards. Panels sit flat at rest with a border and the lightest shadow; shadow increases only with real elevation, so the appearance of depth always corresponds to something actually being above the page. All three shadow values are tinted cool (towards the navy ink) rather than neutral black. The violet-tinted shadow family inherited from an earlier layer is retired and must not return.
+
+### Shadow Vocabulary
+- **Resting structure** (`--shadow-1`, `0 1px 2px rgba(19, 26, 43, .05)`): controls, cards, and panels at rest, always alongside a border.
+- **Raised** (`--shadow-2`, `0 8px 24px rgba(19, 26, 43, .06)`): genuinely floating elements such as menus, popovers, and a selected card.
+- **Overlay** (`--shadow-3`, `0 24px 70px rgba(10, 16, 32, .18)`): dialogs, drawers, and toasts only.
+
+### Named Rules
+**The Border First Rule.** A surface earns separation from a border and spacing before it earns a shadow. If removing a shadow would make the element unreadable, the border is wrong.
+
+**The Inverse Border Rule.** Inside deep navy, depth is carried by a low-opacity light border, not by a shadow. Shadows on inverse surfaces are not used.
+
+## Shapes
+
+Form language is soft-rectangular and consistent. Controls use the tighter radii and containers the softer ones: 6px for small marks, 8px for inputs and list rows, 10px for standard buttons and segmented controls, 14px for cards and panels, 18px for large workbench containers and dialogs. The rail and the workbench are the only large-radius containers; nested elements inside a panel step down rather than repeating the container radius.
+
+The full radius (999px) is restricted to avatars, status dots, progress tracks, and status pills. It is not used for primary buttons: pill-shaped actions read as consumer marketing and conflict with the restrained interaction language.
+
+Borders are 1px and single-sided where possible. Table rows use a bottom border only; a table with rules above and below every row is not part of this system.
+
+### Named Rules
+**The Nested Radius Rule.** An inner element's radius is smaller than its container's. Repeating the outer radius on a nested element is a defect.
+
+**The No Pill Buttons Rule.** Full rounding is reserved for avatars, dots, progress, and status pills. Primary and secondary buttons use the 10px control radius.
+
+## Components
+
+### Buttons
+- **Shape:** 10px radius (`--r-md`), 44px minimum height, 16px horizontal padding.
+- **Primary:** Acaora Blue fill with Ink Inverse label (measured 5.25:1). Avoid placing two competing primary actions in the same action group or local context. A larger workspace may legitimately carry different primary actions in separate functional regions, and that is not a violation.
+- **Secondary:** Surface White fill, Line Control border, Ink Primary label. The standard button in a workspace toolbar.
+- **Ghost:** no fill, Ink Secondary label, used for low-emphasis and icon-only actions.
+- **Danger:** Danger red fill, reserved for destructive confirmation.
+- **Hover / Focus:** background, border, and colour transitions at 160ms with an ease-out curve. Pressed state compresses to `scale(.985)`, a deliberately restrained value chosen for a desktop productivity tool rather than the stronger compression used in consumer UI. Keyboard focus always shows a visible ring in brand blue.
+- **Disabled:** reduced opacity with the native disabled attribute, never a look-alike button that still responds.
+
+### Chips
+- **Style:** used for section navigation, filters, knowledge tags, and interest tags. Line Soft border on transparent for navigation chips; brand wash with Blue Ink on Wash for a selected filter; small dark tokens for term tags.
+- **State:** selected state is always a fill change plus a text/weight change, never colour alone.
+
+### Cards / Containers
+- **Corner Style:** 14px (`--r-lg`) for cards and panels, 18px (`--r-xl`) for workbench containers and dialogs.
+- **Background:** Surface White on the app field; Surface Subtle for inset rows and table headers; Deep Navy for the rail, paper library, and AI studio.
+- **Shadow Strategy:** resting structure plus border (see Elevation).
+- **Border:** Line Soft, tested against a cool background. Border colour is always cool-tinted; a warm or pure-black border is not part of this system.
+- **Internal Padding:** 24px as the default panel padding, 16px for dense data panels. (The card primitive currently ships 22px; that value is neither on the spacing scale nor part of this record, and must be aligned to 24px during the phase that next touches it.)
+
+### Inputs / Fields
+- **Style:** Surface White fill, Line Control border at 3.59:1, 8px radius, 48px minimum height, 15px label-sized text inside.
+- **Focus:** border turns brand blue, a soft brand wash halo appears, and a 2px brand ring is drawn just outside the control. Because a shared control's own focus treatment must survive page-scoped styling, the primitive declares this ring itself rather than relying on a global outline rule.
+- **Error / Disabled:** invalid fields keep the Danger border and pair it with inline error text below the field; the error state is never signalled by colour alone. Disabled fields use a muted surface and reduced text emphasis. Labels sit above the field, and helper or error text sits below it; a placeholder is never used as the label.
+
+### Navigation
+- **Style:** the left rail is a single 248px deep-navy column with a 44px brand mark, six destinations (总览, 课程中心, 论文研究, 数据分析, 项目空间, 设置与隐私), and an account block pinned to the bottom. Items are 48px tall with a 20px icon and a 14px label.
+- **States:** inactive text is Ink Inverse Secondary; hover and current use the raised navy with Ink Inverse text; the current item is additionally marked by a brand-on-navy icon. The current item is exposed through `aria-current="page"`, so the state is not colour-only.
+- **Mobile treatment:** off-canvas drawer with a fixed trigger, a backdrop, and a body scroll lock that is released on close.
+
+### Icons
+- **Library:** Lucide, one family across the whole product. Do not migrate to another icon library, and do not mix families on one surface.
+- **Stroke:** approximately 1.75 to 2, chosen per icon from its rendered size, the optical weight of the text beside it, and balance, rather than one global number applied everywhere.
+- **States:** one icon recoloured per state through `currentColor`; outline is the default and fill marks an active state. Decorative icons beside visible text are hidden from assistive technology, and a meaningful standalone icon carries a text alternative.
+- **Legacy glyphs:** text characters used as icons in the older layers are a defect. They are replaced with the icon family as each page is redesigned, not left in place for consistency.
+
+### Feedback and Dialogs
+- **Shape:** status messages are 10px-radius tinted bands; modals are 18px radius with the overlay shadow and a dimmed backdrop.
+- **Colour:** the four tones map to success, warning, danger, and information (which reuses brand blue). Each carries an icon in addition to its tint.
+- **Behaviour contract:** any modal must contain focus while it is open, place initial focus somewhere sensible, close on Escape where that is appropriate to the context, restore focus to the control that opened it on close, and expose a correct accessible name and description. Opening or closing must never silently change important state. Status and error regions announce themselves to assistive technology rather than repainting silently. What is fixed here is the contract, not a particular element or API: a native modal dialog satisfies it today, but this document does not lock the implementation.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** apply the locked system as already approved. Brand blue `#2f5ad4`, AI teal family, deep-navy rail, cool neutrals, system sans, and the shared focus contract are settled decisions, not open questions.
+- **Do** keep one accent. If a surface seems to need a second colour for emphasis, the hierarchy is wrong, not the palette.
+- **Do** gate every control boundary at 3:1 and every body text pair at 4.5:1, and record the measured ratio when adding a pair.
+- **Do** keep keyboard focus visible on every interactive element, and keep the shared primitive focus treatment working even where page-scoped styles are more specific.
+- **Do** keep `aria-current`, `aria-expanded`, `aria-invalid`, `aria-describedby`, and `aria-live` intact through any visual change, and keep the modal accessibility behaviour intact: focus containment while open, a sensible initial focus, Escape to close where appropriate, focus restoration on close, and a correct accessible name and description.
+- **Do** let PaperLab stay a dense three-column research workspace and DataLab stay a dense analytical one. Preserve their structure; the visual language is what unifies them.
+- **Do** use borders and the single lightest shadow for structure, and step shadow up only for real elevation.
+- **Do** treat desktop as the primary environment and keep tools at their full width on it.
+- **Do** use tabular figures for changing numbers, and keep every value on the type scale with a 12px floor.
+- **Do** resolve skill or tooling conflicts in this order: product correctness, data safety, sync and auth correctness, passing tests and accessibility contracts, this design system, the current phase scope, then any skill's advice. When a skill conflicts with a settled decision, the settled decision wins.
+- **Do** follow the phase workflow: audit, proposal, approval, implementation, functional tests, visual review, accessibility review, commit. One phase at a time.
+
+### Don't:
+- **Don't** introduce purple or violet, or any AI-purple gradient, anywhere. It is the most recognisable AI-slop signature and it was explicitly removed.
+- **Don't** use AI teal as a general second accent, and don't colour ordinary business actions with it.
+- **Don't** use full-screen glow, blurred background blobs, or heavy glassmorphism.
+- **Don't** put every section in a card, nest a card inside a card, or turn a data table into a stack of cards.
+- **Don't** make every control pill-shaped, or use a giant marketing hero inside the workspace.
+- **Don't** build decorative dots, ambient gradients, or shadows that carry no meaning.
+- **Don't** move elements on hover. Hover changes colour, border, and background only; floating and `translateY` lifts are not part of this system.
+- **Don't** add animation that does not explain a state change, and never remove the reduced-motion handling.
+- **Don't** fake capability in the interface. No placeholder search box, no decorative command palette, no `⌘K` affordance, no AI input that does not work.
+- **Don't** fabricate metrics, testimonials, customer logos, benchmarks, or product screenshots. The repository has no such evidence; see PRODUCT.md.
+- **Don't** make any AI surface dominate the ordinary study workflow, and don't let AI output look like original paper text or like the student's own notes.
+- **Don't** migrate to Tailwind utilities or introduce a component library during this redesign. The project uses handwritten CSS with semantic tokens, and a styling-architecture migration is a separate engineering task.
+- **Don't** add a hex value that is not in this document. A new colour requires an explicit decision first.
+- **Don't** create a primitive for a single use. Shared primitives are for genuinely cross-surface patterns only.
+- **Don't** update visual baselines to make a test pass. Baselines change only after a human has reviewed the diff and approved the new design.
+- **Don't** allow the Impeccable launcher or its hook to execute a downloaded binary in this project, and don't commit platform executables.
