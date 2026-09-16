@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch } from "../lib/auth-client";
-import { Dialog } from "../components/ui";
+import { Button, Dialog, ErrorState } from "../components/ui";
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -59,6 +59,10 @@ export default function ProjectsPage() {
   const [filter, setFilter] = useState<"all" | "active">("all");
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
+  /* A failed load is its own state: without it the page rendered a zeroed register
+     and the "create your first project" empty state, i.e. it read "we could not
+     fetch your data" as "you have no data". */
+  const [loadError, setLoadError] = useState("");
 
   const filteredProjects = useMemo(() => filter === "active" ? projects.filter((project) => project.status === "active") : projects, [filter, projects]);
   const visibleSelectedId = filteredProjects.some((project) => project.id === selectedId) ? selectedId : filteredProjects[0]?.id ?? "";
@@ -87,7 +91,7 @@ export default function ProjectsPage() {
         setSelectedId(nextProjects[0]?.id ?? "");
         if (new URLSearchParams(window.location.search).get("new") === "1" || !nextProjects.length) setShowCreate(true);
       })
-      .catch((error: unknown) => setMessage(error instanceof Error ? error.message : "项目读取失败。"))
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "项目读取失败。"))
       .finally(() => setLoaded(true));
   }, []);
 
@@ -209,7 +213,12 @@ export default function ProjectsPage() {
         <div className="page-body">
         {message && <div className="project-message" role="status">{message}</div>}
 
-        {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : !viewer ? (
+        {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : loadError ? (
+          <ErrorState
+            description={loadError}
+            action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
+          />
+        ) : !viewer ? (
           <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><Link href="/auth">注册或密码登录 <b>→</b></Link></section>
         ) : (
           <>

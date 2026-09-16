@@ -32,7 +32,11 @@ export default function CoursesPage() {
   const [material, setMaterial] = useState("");
   const [materialName, setMaterialName] = useState("尚未添加资料");
   const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
-  const [model, setModel] = useState("DeepSeek（服务器默认）");
+  /* Three outcomes, kept apart: a declared model, a server that declared nothing
+     (so we fall back), and a request that failed. Only the first is a confirmed
+     configuration. */
+  const [model, setModel] = useState("");
+  const [modelState, setModelState] = useState<"loading" | "ready" | "fallback" | "error">("loading");
   const [count, setCount] = useState(5);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
@@ -41,9 +45,19 @@ export default function CoursesPage() {
 
   useEffect(() => {
     void fetch("/api/papers/ai", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((payload: { model?: string }) => setModel(payload.model || "DeepSeek（服务器默认）"))
-      .catch(() => undefined);
+      .then((response) => {
+        if (!response.ok) throw new Error("MODEL_CONFIG_UNREACHABLE");
+        return response.json() as Promise<{ model?: string }>;
+      })
+      .then((payload) => {
+        const declared = (payload.model ?? "").trim();
+        setModel(declared);
+        setModelState(declared ? "ready" : "fallback");
+      })
+      .catch(() => {
+        setModel("");
+        setModelState("error");
+      });
   }, []);
 
   async function readMaterial(event: ChangeEvent<HTMLInputElement>) {
@@ -101,7 +115,22 @@ export default function CoursesPage() {
     { label: "课程", value: String(courses.length), note: "统计学 · 经济学 两个方向", numeric: true },
     { label: "当前课程", value: selected.name, note: selected.code, numeric: false },
     { label: "当前资料", value: materialName, note: "TXT / MD / CSV，本地解析", numeric: false },
-    { label: "当前模型", value: model, note: apiKey ? "当前会话已配置 Key" : "尚未配置 Key", numeric: false, href: "/settings#ai-models", hrefLabel: "管理 AI 设置" },
+    {
+      label: "当前模型",
+      /* The ready path is deliberately unchanged, including its note, so no
+         approved baseline moves; only the two non-confirmed states are new. */
+      value: modelState === "ready" ? model : modelState === "fallback" ? "未声明" : modelState === "error" ? "未获取" : "读取中",
+      note: modelState === "ready"
+        ? (apiKey ? "当前会话已配置 Key" : "尚未配置 Key")
+        : modelState === "fallback"
+          ? "服务端未返回模型名，按服务端默认运行"
+          : modelState === "error"
+            ? "配置请求失败，未能确认当前模型"
+            : "正在读取服务端配置",
+      numeric: false,
+      href: "/settings#ai-models",
+      hrefLabel: "管理 AI 设置",
+    },
     { label: "本次练习", value: questionCount ? `${questionCount} 题` : "尚未生成", note: "每题含答案、解析与常见误区", numeric: Boolean(questionCount) },
   ];
 

@@ -29,27 +29,53 @@ export default function SettingsPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [signedIn, setSignedIn] = useState(false);
+  /* A failed request is its own state. Reporting it as "not signed in" tells the
+     student something false about their account, which is the defect this fixes. */
+  const [sessionError, setSessionError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+  /* The model name is only trustworthy when the request succeeded AND the server
+     declared one; a built-in default is not a confirmed configuration. */
+  const [aiModelState, setAiModelState] = useState<"loading" | "ready" | "fallback" | "error">("loading");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [aiKey, setAiKey] = useState("");
-  const [aiModel, setAiModel] = useState("DeepSeek（服务器默认）");
+  const [aiModel, setAiModel] = useState("");
   const [version, setVersion] = useState<BuildVersion | null>(null);
+  const [versionState, setVersionState] = useState<"loading" | "ready" | "error">("loading");
 
   useEffect(() => {
     let mounted = true;
     async function load() {
+      setLoading(true);
+      setSessionError("");
       setAiKey(readAiKey());
       const [versionResult, aiResult] = await Promise.allSettled([
         fetch("/api/version", { cache: "no-store" }).then((response) => response.json() as Promise<BuildVersion>),
         fetch("/api/papers/ai", { cache: "no-store" }).then((response) => response.json() as Promise<{ model?: string }>),
       ]);
-      if (mounted && versionResult.status === "fulfilled") setVersion(versionResult.value);
-      if (mounted && aiResult.status === "fulfilled") setAiModel(aiResult.value.model || "DeepSeek（服务器默认）");
+      if (mounted) {
+        if (versionResult.status === "fulfilled") {
+          setVersion(versionResult.value);
+          setVersionState("ready");
+        } else {
+          setVersionState("error");
+        }
+      }
+      if (mounted) {
+        const declared = aiResult.status === "fulfilled" ? (aiResult.value.model ?? "").trim() : "";
+        setAiModel(declared);
+        setAiModelState(aiResult.status !== "fulfilled" ? "error" : declared ? "ready" : "fallback");
+      }
 
       try {
         const user = await getCurrentUser();
-        if (!user) return;
+        if (!mounted) return;
+        /* null user = genuinely signed out; a throw = the request failed. */
+        if (!user) {
+          setSignedIn(false);
+          return;
+        }
         const next = await getProfile();
         if (!mounted) return;
         setSignedIn(true);
@@ -60,14 +86,17 @@ export default function SettingsPage() {
           preferences: { ...emptyProfile.preferences, ...(next?.preferences || {}) },
         });
       } catch (cause) {
-        if (mounted) setError(cause instanceof Error ? cause.message : "资料读取失败。");
+        if (mounted) {
+          setSignedIn(false);
+          setSessionError(cause instanceof Error ? cause.message : "账户状态读取失败。");
+        }
       } finally {
         if (mounted) setLoading(false);
       }
     }
     void load();
     return () => { mounted = false; };
-  }, []);
+  }, [reloadKey]);
 
   function updateField<Key extends keyof Omit<Profile, "preferences">>(key: Key, value: Profile[Key]) {
     setProfile((current) => ({ ...current, [key]: value }));
@@ -178,10 +207,22 @@ export default function SettingsPage() {
         {/* Every cell reports something the page actually knows. */}
         <div className="metric-register">
           {[
-            { label: "账号", value: signedIn ? (email || "已登录") : "未登录", note: signedIn ? "云端同步已开启" : "当前设备没有可用的登录会话" },
+            {
+              label: "账号",
+              value: signedIn ? (email || "已登录") : sessionError ? "未获取" : "未登录",
+              note: signedIn ? "云端同步已开启" : sessionError ? "账户状态请求失败，未知" : "当前设备没有可用的登录会话",
+            },
             { label: "AI 密钥", value: aiKey.trim() ? "已配置" : "未配置", note: "仅保存在当前浏览器会话" },
-            { label: "兴趣标签", value: profile.preferences.interests.length ? String(profile.preferences.interests.length) : "尚未添加", note: "上限 12 个" },
-            { label: "构建版本", value: version ? getShortCommit(version.commit) : "读取中", note: version?.environment || "读取中" },
+            {
+              label: "兴趣标签",
+              value: loading ? "读取中" : sessionError ? "未获取" : profile.preferences.interests.length ? String(profile.preferences.interests.length) : "尚未添加",
+              note: "上限 12 个",
+            },
+            {
+              label: "构建版本",
+              value: versionState === "ready" && version ? getShortCommit(version.commit) : versionState === "error" ? "未获取" : "读取中",
+              note: versionState === "ready" && version ? (version.environment || "读取中") : versionState === "error" ? "版本请求失败" : "读取中",
+            },
             { label: "数据边界", value: "本地优先", note: "原始文件不上传" },
           ].map((cell) => <div className="metric-register-cell" key={cell.label}>
             <b>{cell.label}</b>
@@ -192,7 +233,7 @@ export default function SettingsPage() {
 
       <nav className="settings-nav" aria-label="设置分区"><a href="#profile">个人资料</a><a href="#security">账户与安全</a><a href="#ai-models">AI 与模型</a><a href="#privacy">隐私与数据</a><a href="#about">关于</a></nav>
 
-      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
+      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : sessionError ? <div className="settings-state" role="alert"><span>ACCOUNT UNREACHABLE</span><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
         {(message || error) && <StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage>}
         <div className="settings-sections">
           <section className="settings-panel" id="profile">
@@ -210,7 +251,7 @@ export default function SettingsPage() {
 
           <section className="settings-panel" id="ai-models">
             <div className="settings-section-head"><h2>AI 与模型</h2></div>
-            <p className="settings-panel-copy">当前模型：<strong>{aiModel}</strong>。Key 仅保存在当前浏览器会话；发起分析时，Key 和所选文本会发送到 Acaora 服务端并转发给 DeepSeek。Acaora 不把 Key 写入账户数据库。</p>
+            <p className="settings-panel-copy">{aiModelState === "ready" ? <>当前模型：<strong>{aiModel}</strong>。</> : aiModelState === "fallback" ? <>服务端未声明模型名，实际按服务端默认模型运行。</> : aiModelState === "error" ? <>暂时无法确认当前模型：配置请求失败。</> : <>正在读取服务端模型配置…</>}Key 仅保存在当前浏览器会话；发起分析时，Key 和所选文本会发送到 Acaora 服务端并转发给 DeepSeek。Acaora 不把 Key 写入账户数据库。</p>
             <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" hint="关闭浏览器会话后自动清除。"><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
           </section>
 
@@ -222,7 +263,7 @@ export default function SettingsPage() {
           <section className="settings-panel settings-about" id="about">
             <div className="settings-section-head"><h2>关于 Acaora</h2></div>
             <p>大学生学习与研究工作台。生产构建可通过 <code>/api/version</code> 独立核验。</p>
-            <small>Build {version ? getShortCommit(version.commit) : "读取中"} · {version?.environment || "unknown"} · {version?.buildTime || "unknown"}</small>
+            <small>{versionState === "error" ? "Build 未获取 ·版本信息请求失败" : versionState === "ready" && version ? `Build ${getShortCommit(version.commit)} · ${version.environment || "unknown"} · ${version.buildTime || "unknown"}` : "Build 读取中 ·读取中 ·读取中"}</small>
           </section>
         </div>
       </>}
@@ -232,8 +273,8 @@ export default function SettingsPage() {
         <div className="status-bezel-inner">
           <span>本地优先</span>
           <span>原始文件不上传</span>
-          <span>{signedIn ? "云端同步已开启" : "仅保存在当前设备"}</span>
-          <span className="status-bezel-account">{signedIn ? email : "未登录"}</span>
+          <span>{signedIn ? "云端同步已开启" : sessionError ? "账户状态未知" : "仅保存在当前设备"}</span>
+          <span className="status-bezel-account">{signedIn ? email : sessionError ? "未获取" : "未登录"}</span>
         </div>
       </div>
     </section>
