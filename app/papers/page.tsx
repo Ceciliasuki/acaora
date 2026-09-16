@@ -401,13 +401,12 @@ export default function PaperLab() {
   return (
     <main className="student-app paper-layout">
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section className="paper-shell paper-app paper-main">
-      <section className="paper-commandbar">
-        <div>
-          <p className="section-kicker">论文工作台</p>
+      <section className="paper-shell paper-app paper-main papers-shell">
+      <div className="page-bar">
+        <div className="page-bar-inner page-bar-inner--wide">
           <h1>论文阅读与分析</h1>
-        </div>
-        <div className="paper-commandbar-actions">
+          <span className="page-bar-spacer" />
+          <div className="paper-commandbar-actions">
           <div className={`translator-status state-${translationState}`}>
             <i />
             <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
@@ -419,8 +418,25 @@ export default function PaperLab() {
             </button>
             <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
           </div>
+          </div>
         </div>
-      </section>
+      </div>
+
+      <div className="page-body page-body--wide">
+      {/* Only values that are not already printed elsewhere on the page, so nothing
+          a test matches by exact text can start resolving to two elements. */}
+      <div className="metric-register metric-register--4">
+        {[
+          { label: "论文库", value: String(library.length), note: "篇保存在本机" },
+          { label: "当前论文段落", value: String(paper.paragraphs.length), note: "由 PDF 提取" },
+          { label: "阅读进度", value: `${completion}%`, note: "记录在本机并按账户同步" },
+          { label: "原文件", value: "不上传", note: "解析在浏览器内完成" },
+        ].map((cell) => <div className="metric-register-cell" key={cell.label}>
+          <b>{cell.label}</b>
+          <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
+          <small>{cell.note}</small>
+        </div>)}
+      </div>
 
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
@@ -512,6 +528,16 @@ export default function PaperLab() {
           </div>
         </section>
       </section>
+      </div>
+
+      <div className="status-bezel">
+        <div className="status-bezel-inner">
+          <span>本地优先</span>
+          <span>原文不上传</span>
+          <span>文件在浏览器内解析</span>
+          <span className="status-bezel-account">{library.length} 篇在本机</span>
+        </div>
+      </div>
       </section>
     </main>
   );

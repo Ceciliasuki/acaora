@@ -105,24 +105,37 @@ export default function Home() {
     <main className="student-app data-app">
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
-      <section className="workspace data-main" id="workspace">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">当前数据集 {isSample && <Badge tone="warning">示例数据</Badge>}</p>
+      <section className="workspace data-main data-shell" id="workspace">
+        <div className="page-bar">
+          <div className="page-bar-inner">
             <h1>数据分析工作台</h1>
+            {isSample && <Badge tone="warning">示例数据</Badge>}
+            <span className="page-bar-spacer" />
+            <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
           </div>
-          <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
-        </header>
+        </div>
 
-        <section className="data-context-strip" aria-label="数据处理状态">
-          <div><span>{isSample ? "示例数据完整度" : "数据完整度"}</span><strong>{completeness.toFixed(1)}%</strong><i><b style={{ width: `${completeness}%` }} /></i></div>
-          <p><b>LOCAL FIRST</b> 数据在浏览器内处理，不会上传到服务器。</p>
-        </section>
+        <div className="page-body page-body--wide">
+        {/* The register replaces the old context strip: the same real numbers, in
+            the shared band, with the dataset's own facts beside them. */}
+        <div className="metric-register">
+          {[
+            { label: "数据集", value: data.name, note: `${formatLabel(data.name)} · ${data.rows.length} 行 × ${data.headers.length} 列` },
+            { label: "观测数", value: String(data.rows.length), note: "来自本机文件" },
+            { label: "变量数", value: String(data.headers.length), note: `数值 ${numeric.length} · 分类 ${Math.max(0, data.headers.length - numeric.length)}` },
+            { label: "缺失值", value: String(missingCount), note: `${(100 - completeness).toFixed(2)}% 的单元格为空` },
+            { label: "完整度", value: `${completeness.toFixed(1)}%`, note: "仅本地处理" },
+          ].map((cell) => <div className="metric-register-cell" key={cell.label}>
+            <b>{cell.label}</b>
+            <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
+            <small>{cell.note}</small>
+          </div>)}
+        </div>
 
         <section className="hero-grid">
           <div className="upload-panel">
             <div className="panel-heading">
-              <div><p className="section-kicker">01 · 导入数据</p><h2>读取常用数据文件</h2></div>
+              <div><h2>读取常用数据文件</h2></div>
               <span className="privacy-pill">● 仅本地处理</span>
             </div>
             <button
@@ -140,7 +153,7 @@ export default function Home() {
             </button>
             <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} aria-label="选择数据文件" onChange={onFileChange} />
             {error && <p className="error-message" role="alert">{error}</p>}
-            <div className="format-support" aria-label="支持的数据格式">
+            <div className="format-support" role="group" aria-label="支持的数据格式">
               <span>Excel <small>.xlsx .xls .ods</small></span>
               <span>Stata <small>.dta</small></span>
               <span>SPSS / SAS <small>.sav .xpt</small></span>
@@ -155,7 +168,7 @@ export default function Home() {
 
           <div className="overview-panel">
             <div className="panel-heading compact">
-              <div><p className="section-kicker">02 · 数据速览</p><h2>样本概况</h2></div>
+              <div><h2>样本概况</h2></div>
               <span className="updated-label">实时更新</span>
             </div>
             <div className="metric-grid">
@@ -173,7 +186,7 @@ export default function Home() {
 
         <section className="quality-panel" id="quality">
           <div className="panel-heading compact">
-            <div><p className="section-kicker">03 · 数据质量</p><h2>变量检查</h2></div>
+            <div><h2>变量检查</h2></div>
             <span className="quality-score">完整度 {completeness.toFixed(1)}%</span>
           </div>
           <div className="variable-strip">
@@ -210,7 +223,7 @@ export default function Home() {
                   <div><p>分布直方图</p><h3>{activeX}</h3></div>
                   <label>分析变量<select value={activeX} onChange={(event) => setXVariable(event.target.value)}>{numeric.map((item) => <option key={item}>{item}</option>)}</select></label>
                 </div>
-                <div className="histogram" aria-label={`${activeX}的直方图`}>
+                <div className="histogram" role="img" aria-label={`${activeX}的直方图`}>
                   {distribution.map((bin, index) => (
                     <div className="histogram-column" key={index}>
                       <span>{bin.count || ""}</span>
@@ -309,6 +322,16 @@ export default function Home() {
         </section>
 
         <footer><span>Acaora · DataLab</span><p>用于探索性学习与课程项目；正式研究请结合研究设计与专业判断。</p></footer>
+        </div>
+
+        <div className="status-bezel">
+          <div className="status-bezel-inner">
+            <span>本地优先</span>
+            <span>数据在浏览器内处理</span>
+            <span>不上传到服务器</span>
+            <span className="status-bezel-account">{isSample ? "示例数据" : data.name}</span>
+          </div>
+        </div>
       </section>
     </main>
   );
@@ -324,7 +347,7 @@ function ScatterPlot({ pairs, xLabel, yLabel }: { pairs: [number, number][]; xLa
   return (
     <div className="scatter-wrap">
       <span className="y-axis-title">{yLabel}</span>
-      <div className="scatterplot" aria-label={`${xLabel}和${yLabel}的散点图`}>
+      <div className="scatterplot" role="img" aria-label={`${xLabel}和${yLabel}的散点图`}>
         {pairs.map(([x, y], index) => <i key={index} style={{ left: `${8 + ((x - minX) / (maxX - minX || 1)) * 84}%`, bottom: `${8 + ((y - minY) / (maxY - minY || 1)) * 84}%` }} />)}
       </div>
       <div className="axis-labels"><span>{formatNumber(minX, 1)}</span><strong>{xLabel}</strong><span>{formatNumber(maxX, 1)}</span></div>

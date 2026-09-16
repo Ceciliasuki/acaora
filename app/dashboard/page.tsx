@@ -1,10 +1,17 @@
 "use client";
 
-import { BarChart3, FileSearch, FolderKanban } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowRight,
+  BarChart3,
+  BookOpen,
+  FileSearch,
+  FolderKanban,
+  type LucideIcon,
+} from "lucide-react";
 import AppSidebar from "../components/app-sidebar";
-import { Badge, Button, EmptyState, ErrorState } from "../components/ui";
+import { Badge, Button, ErrorState } from "../components/ui";
 import { authFetch, signOut as signOutSession } from "../lib/auth-client";
 
 type Viewer = { id: string; email?: string } | null;
@@ -12,11 +19,34 @@ type Project = { id: string; title: string; kind?: string; status?: string; upda
 type Paper = { id: string; title: string; updatedAt?: number; activeParagraph?: number; paragraphs?: unknown[] };
 type LoadState = "loading" | "guest" | "empty" | "ready" | "error";
 
-const moduleCards = [
-  { label: "PAPERS", title: "继续精读论文", copy: "双语阅读、AI 拆解与统计审查", href: "/papers", icon: FileSearch, tone: "violet" },
-  { label: "DATA", title: "打开数据工作台", copy: "清洗、检验、回归与可视化", href: "/data", icon: BarChart3, tone: "mint" },
-  { label: "PROJECTS", title: "推进学习项目", copy: "目标、任务、笔记与研究成果", href: "/projects", icon: FolderKanban, tone: "blue" },
-];
+type ActivityItem = {
+  id: string;
+  title: string;
+  /* A real derived value only: the paper's own paragraph count. Projects carry
+     no equivalent number, so that cell stays empty rather than showing a zero. */
+  paragraphs?: number;
+  updatedAt: number;
+  /* Project state as it is already stored; the tone only picks between badges
+     the system already ships. Papers have no status concept. */
+  status?: { label: string; tone: "info" | "success" | "warning" };
+  href: "/papers" | "/projects";
+};
+
+/* The four real areas, in navigation order. The icon is the same Lucide mark the
+   rail uses, so a row here is recognisably the place it names. */
+const workspaces = [
+  { id: "courses", name: "课程中心", icon: BookOpen, fact: "本地导入材料", meta: "TXT · Markdown · CSV" },
+  { id: "papers", name: "论文研究", icon: FileSearch, fact: "原文不上传", meta: "双语阅读 · 段落导引" },
+  { id: "data", name: "数据分析", icon: BarChart3, fact: "导入 CSV / XLSX", meta: "描述统计 · 检验 · 回归" },
+  { id: "projects", name: "项目空间", icon: FolderKanban, fact: "状态 · 任务 · 笔记", meta: "目标 · 截止 · 资料" },
+] as const;
+
+/* Only these two areas carry records, so this mapping is exhaustive rather than
+   carrying a fallback branch that could never be reached. */
+const recordAreas: Record<ActivityItem["href"], { name: string; icon: LucideIcon }> = {
+  "/papers": { name: "论文研究", icon: FileSearch },
+  "/projects": { name: "项目空间", icon: FolderKanban },
+};
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
   year: "numeric",
@@ -24,11 +54,14 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
   day: "numeric",
   weekday: "long",
 });
-const shortDateFormatter = new Intl.DateTimeFormat("zh-CN", { month: "short", day: "numeric" });
+const recordDateFormatter = new Intl.DateTimeFormat("zh-CN", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
 export default function DashboardPage() {
   const [viewer, setViewer] = useState<Viewer>(null);
-  const [configured, setConfigured] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [papers, setPapers] = useState<Paper[]>([]);
   const [state, setState] = useState<LoadState>("loading");
@@ -40,7 +73,6 @@ export default function DashboardPage() {
         const sessionResponse = await authFetch("/api/auth/session");
         const session = await sessionResponse.json() as { user?: Viewer; configured?: boolean };
         if (!active) return;
-        setConfigured(Boolean(session.configured));
         setViewer(session.user ?? null);
         if (!session.user) {
           setState("guest");
@@ -68,20 +100,20 @@ export default function DashboardPage() {
     return () => { active = false; };
   }, []);
 
-  const activity = useMemo(() => [
+  const activity = useMemo<ActivityItem[]>(() => [
     ...papers.map((paper) => ({
       id: `paper-${paper.id}`,
       title: paper.title,
-      meta: `PaperLab · ${paper.paragraphs?.length ?? 0} 个段落`,
+      paragraphs: paper.paragraphs?.length ?? 0,
       updatedAt: paper.updatedAt ?? 0,
-      type: "PDF",
+      href: "/papers" as const,
     })),
     ...projects.map((project) => ({
       id: `project-${project.id}`,
       title: project.title,
-      meta: `项目空间 · ${statusLabel(project.status)}`,
       updatedAt: project.updated_at ? Date.parse(project.updated_at) : 0,
-      type: "项目",
+      status: projectState(project.status),
+      href: "/projects" as const,
     })),
   ].sort((left, right) => right.updatedAt - left.updatedAt).slice(0, 4), [papers, projects]);
 
@@ -95,46 +127,202 @@ export default function DashboardPage() {
 
   const initials = viewer?.email?.slice(0, 2).toUpperCase() ?? "GU";
   const displayName = viewer?.email?.split("@")[0] ?? "同学";
+  const signedIn = Boolean(viewer);
+  /* The lead entry is the first record of the same list, so it is rendered once
+     as the work in hand and the remainder as the log. Nothing appears twice. */
+  const [lead, ...rest] = activity;
+
+  /* Every cell is a real value or an honest absence. Courses and datasets have no
+     count concept anywhere in the product, so those cells report a fact instead of
+     a number, and an unfetched list shows an empty value rather than a zero. */
+  const register = [
+    { label: "论文", value: signedIn ? String(papers.length) : "—", note: signedIn ? newestNote(papers.map((paper) => paper.updatedAt ?? 0)) : "", numeric: true },
+    { label: "项目", value: signedIn ? String(projects.length) : "—", note: signedIn ? newestNote(projects.map((project) => (project.updated_at ? Date.parse(project.updated_at) : 0))) : "", numeric: true },
+    { label: "课程", value: "本地导入", note: "TXT / MD / CSV", numeric: false },
+    { label: "数据集", value: "本地导入", note: "CSV / XLSX", numeric: false },
+    { label: "账号", value: viewer ? "云端同步已开启" : "未登录", note: viewer?.email ?? "匿名记录仅保存在本机", numeric: false },
+  ];
 
   return <main className="student-app">
     <AppSidebar active="dashboard" initials={initials} profileTitle={displayName} profileSubtitle={viewer ? "云端同步已开启" : "仅保存在当前设备"} />
-    <section className="student-main">
-      <header className="student-topbar"><div><span suppressHydrationWarning>{dateFormatter.format(new Date())}</span><h1>你好，{displayName}。</h1></div><div>{viewer ? <Button className="account-button" variant="secondary" onClick={() => void signOut()}>{initials}<span>退出</span></Button> : <Link className="dashboard-login" href="/auth">登录同步</Link>}</div></header>
+    <section className="student-main dashboard-shell">
+      <div className="dashboard-page">
+        {/* A control band rather than a masthead: the page opens on the facts. */}
+        <div className="page-bar">
+          <div className="page-bar-inner">
+            <h1>你好，{displayName}。</h1>
+            <span className="page-bar-spacer" />
+            <span className="page-bar-date dashboard-tabular" suppressHydrationWarning>{dateFormatter.format(new Date())}</span>
+            {viewer
+              ? <Button className="account-button" variant="ghost" onClick={() => void signOut()}>退出</Button>
+              : <Link className="dashboard-login" href="/auth">登录同步</Link>}
+          </div>
+        </div>
 
-      {state === "loading" && <div className="dashboard-loading" role="status" aria-live="polite">正在载入你的工作台…</div>}
-      {state === "error" && <ErrorState description="账户已连接，但项目或论文数据暂时无法读取。" action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>} />}
-      {state === "guest" && <GuestDashboard configured={configured} />}
-      {state === "empty" && <SignedInEmpty />}
-      {state === "ready" && <>
-        <section className="dashboard-hero"><div><Badge tone="success">真实账户数据</Badge><h2>{papers[0] ? "继续上次的论文阅读。" : "推进最重要的项目。"}</h2><p>{papers[0]?.title || projects[0]?.title}</p><div><Link href={papers[0] ? "/papers" : "/projects"}>继续工作 <b>→</b></Link></div></div><aside><span>当前工作区</span><strong>{projects.length + papers.length}</strong><p>{projects.length} 个项目 · {papers.length} 篇论文</p></aside></section>
-        <WorkspaceCards />
-        <section className="dashboard-lower"><article><header><div><span>RECENT ACTIVITY</span><h2>最近更新</h2></div><Link href="/projects">查看项目</Link></header><ul>{activity.map((item) => <li key={item.id}><b className={item.type === "PDF" ? "file-pdf" : "file-course"}>{item.type}</b><p><strong>{item.title}</strong><small>{item.meta}</small></p><em>{item.updatedAt ? shortDateFormatter.format(item.updatedAt) : "未记录"}</em></li>)}</ul></article><aside><span>LEARNING CENTER</span><h2>课程空间</h2><p>导入 TXT、Markdown 或 CSV 课程资料，生成可复核的练习。</p><Link href="/courses">进入课程中心</Link></aside></section>
-      </>}
+        {state === "loading" && <DashboardSkeleton />}
+        {state === "error" && <ErrorState description="账户已连接，但项目或论文数据暂时无法读取。" action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>} />}
+
+        {(state === "guest" || state === "empty" || state === "ready") && <>
+          <div className="page-body">
+            <div className="metric-register">
+              {register.map((cell) => <div className="metric-register-cell" key={cell.label}>
+                <b>{cell.label}</b>
+                <strong className={cell.numeric ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
+                {cell.note ? <small>{cell.note}</small> : null}
+              </div>)}
+            </div>
+
+            <div className={rest.length > 0 ? "ruled-split" : "ruled-split ruled-split--single"}>
+              <div className="ruled-main">
+                {rest.length > 0 && <>
+                  <h2 className="ruled-heading">最近记录<span>按更新时间</span></h2>
+                  <div className="ruled-table-wrap">
+                    <table className="ruled-table">
+                      <thead><tr>
+                        <th scope="col">日期</th>
+                        <th scope="col" className="ruled-col--area">区域</th>
+                        <th scope="col">标题</th>
+                        <th scope="col" className="ruled-col--num">段落</th>
+                        <th scope="col">状态</th>
+                      </tr></thead>
+                      <tbody>
+                        {rest.map((item) => <tr key={item.id}>
+                          <td className="dashboard-tabular">{item.updatedAt ? recordDateFormatter.format(item.updatedAt) : "未记录"}</td>
+                          <td className="ruled-col--area"><AreaLabel href={item.href} /></td>
+                          <td className="ruled-title">{item.title}</td>
+                          <td className="ruled-col--num dashboard-tabular">{item.paragraphs ?? "—"}</td>
+                          <td>{item.status
+                            ? <Badge tone={item.status.tone}>{item.status.label}</Badge>
+                            : <span className="ruled-kind">论文</span>}</td>
+                        </tr>)}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="ruled-note">计数只有两处是真实数组长度：论文与项目。课程与数据集没有计数概念，所以登记条里报的是「本地导入」而不是数字。</p>
+                </>}
+
+                {rest.length === 0 && <div className="state-note">
+                  {state === "empty" && <>
+                    <h2 className="state-note-title">工作台还是空的</h2>
+                    <p className="state-note-copy">你的账户已经连接。创建第一个项目或导入一篇论文后，真实记录会出现在这里。</p>
+                    <div className="state-note-actions">
+                      <Link className="ui-button ui-button--primary" href="/projects?new=1">新建项目</Link>
+                      <Link className="ui-button ui-button--secondary" href="/papers">导入论文</Link>
+                    </div>
+                  </>}
+                  {state === "guest" && <>
+                    <h2 className="state-note-title">匿名体验 · 未登录</h2>
+                    <p className="state-note-copy">四个工作区都可以直接使用，入口在主导航里。登录后才会显示你的论文、项目与学习记录。</p>
+                  </>}
+                </div>}
+              </div>
+
+              {lead && <aside className="current-work">
+                <h2 className="ruled-heading">正在进行</h2>
+                <div className="current-work-head">
+                  <span className="current-work-mark">{(() => { const Icon = recordAreas[lead.href].icon; return <Icon size={18} strokeWidth={1.9} aria-hidden="true" />; })()}</span>
+                  <span className="current-work-title">{lead.title}</span>
+                </div>
+                <div className="current-work-meta">
+                  <span>{recordAreas[lead.href].name}</span>
+                  {lead.status && <Badge tone={lead.status.tone}>{lead.status.label}</Badge>}
+                  {lead.paragraphs !== undefined && <span>{lead.paragraphs} 个段落</span>}
+                  {lead.updatedAt ? <span className="dashboard-tabular">{recordDateFormatter.format(lead.updatedAt)}</span> : null}
+                </div>
+                <Link className="ui-button ui-button--primary current-work-action" href={lead.href}>
+                  进入{recordAreas[lead.href].name}
+                  <ArrowRight size={16} strokeWidth={1.9} aria-hidden="true" />
+                </Link>
+              </aside>}
+            </div>
+
+            {/* The four areas as one ruled strip. Two of them report their real
+                count; the other two report what they take in, because they have
+                no count to report. */}
+            <h2 className="ruled-heading ruled-heading--section">四个工作区<span>各有各的密度，共用同一套语言</span></h2>
+            <div className="area-strip">
+              {workspaces.map((workspace) => {
+                const count = workspace.id === "papers"
+                  ? (signedIn ? papers.length : null)
+                  : workspace.id === "projects"
+                    ? (signedIn ? projects.length : null)
+                    : null;
+                const Icon = workspace.icon;
+                return <div className="area-strip-cell" key={workspace.id}>
+                  <span className="area-strip-head"><Icon size={16} strokeWidth={1.9} aria-hidden="true" />{workspace.name}</span>
+                  <strong className={count === null ? undefined : "dashboard-tabular"}>
+                    {count === null ? workspace.fact : `${count} ${workspace.id === "papers" ? "篇" : "个项目"}`}
+                  </strong>
+                  <small>{workspace.meta}</small>
+                </div>;
+              })}
+            </div>
+          </div>
+        </>}
+      </div>
+
+      {/* The instrument's own device: a bezel of real product facts, which is what
+          a dense surface uses where an airy one would simply leave space. */}
+      <div className="status-bezel">
+        <div className="status-bezel-inner">
+          <span>本地优先</span>
+          <span>原文不上传</span>
+          <span>{viewer ? "云端同步已开启" : "仅保存在当前设备"}</span>
+          <span className="status-bezel-account">{viewer?.email ?? "未登录 · 匿名模式"}</span>
+        </div>
+      </div>
     </section>
   </main>;
 }
 
-function GuestDashboard({ configured }: { configured: boolean }) {
-  return <>
-    <div className="guest-banner"><div><b>匿名体验 · 示例内容</b><p>下面的内容仅用于展示界面，不代表你的学习记录。登录后才会显示账户数据。</p></div><Link href="/auth">{configured ? "登录账户" : "查看账户状态"} →</Link></div>
-    <section className="dashboard-hero dashboard-demo"><div><Badge tone="warning">示例数据</Badge><h2>从论文、数据或项目开始。</h2><p>匿名模式下，原始文件与临时内容只保存在当前设备。</p><div><Link href="/papers">体验论文工作台 <b>→</b></Link><Link href="/data">体验数据分析</Link></div></div><aside><span>DEMO</span><strong>3</strong><p>三个可体验的工作区</p></aside></section>
-    <WorkspaceCards />
-  </>;
+/* The newest real timestamp in a collection, or nothing when there is none. */
+function newestNote(times: number[]) {
+  const newest = times.filter((time) => time > 0).sort((left, right) => right - left)[0];
+  return newest ? `最近更新 ${recordDateFormatter.format(newest)}` : "尚无记录";
 }
 
-function SignedInEmpty() {
-  return <EmptyState title="工作台还是空的" description="你的账户已经连接。创建第一个项目或导入一篇论文后，真实进度会显示在这里。" action={<div className="dashboard-empty-actions"><Link className="hero-main" href="/projects?new=1">新建项目</Link><Link className="hero-demo" href="/papers">导入论文</Link></div>} />;
+/* Where a record lives: the rail's own mark plus its name. */
+function AreaLabel({ href }: { href: ActivityItem["href"] }) {
+  const { icon: Icon, name } = recordAreas[href];
+  return <span className="ruled-area"><Icon size={16} strokeWidth={1.9} aria-hidden="true" />{name}</span>;
 }
 
-function WorkspaceCards() {
-  return <><div className="dashboard-section-title"><div><span>WORKSPACES</span><h2>选择工作区</h2></div><Link href="/projects?new=1">＋ 新建项目</Link></div><section className="dashboard-modules">{moduleCards.map((module) => {
-    const Icon = module.icon;
-    return <Link className={module.tone} href={module.href} key={module.label}><div><b><Icon size={20} aria-hidden="true" /></b><span>{module.label}</span><i>↗</i></div><h3>{module.title}</h3><p>{module.copy}</p></Link>;
-  })}</section></>;
+/* Static placeholder in the same geometry, so nothing shifts when data lands.
+   A skeleton rather than a spinner: the layout is the progress signal. */
+function DashboardSkeleton() {
+  return <div className="dashboard-loading" role="status" aria-live="polite" aria-busy="true">
+    <span className="sr-only">正在载入你的工作台…</span>
+    <div className="page-body" aria-hidden="true">
+      <div className="metric-register">
+        {["论文", "项目", "课程", "数据集", "账号"].map((label) => <div className="metric-register-cell" key={label}>
+          <b>{label}</b>
+          <span className="skeleton-bar skeleton-bar--value" />
+          <span className="skeleton-bar skeleton-bar--note" />
+        </div>)}
+      </div>
+      <div className="ruled-split">
+        <div className="ruled-main">
+          <span className="skeleton-bar skeleton-bar--heading" />
+          {[0, 1, 2, 3].map((row) => <span className="skeleton-bar" key={row} />)}
+        </div>
+        <div className="current-work">
+          <span className="skeleton-bar skeleton-bar--heading" />
+          <span className="skeleton-bar" />
+          <span className="skeleton-bar skeleton-bar--action" />
+        </div>
+      </div>
+      <div className="area-strip">
+        {["课程中心", "论文研究", "数据分析", "项目空间"].map((name) => <div className="area-strip-cell" key={name}>
+          <span className="area-strip-head">{name}</span>
+          <span className="skeleton-bar" />
+        </div>)}
+      </div>
+    </div>
+  </div>;
 }
 
-function statusLabel(status?: string) {
-  if (status === "completed") return "已完成";
-  if (status === "paused") return "已暂停";
-  return "进行中";
+function projectState(status?: string): { label: string; tone: "info" | "success" | "warning" } {
+  if (status === "completed") return { label: "已完成", tone: "success" };
+  if (status === "paused") return { label: "已暂停", tone: "warning" };
+  return { label: "进行中", tone: "info" };
 }

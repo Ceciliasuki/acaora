@@ -130,6 +130,27 @@ components:
     backgroundColor: "{colors.surface-white}"
     textColor: "{colors.ink-primary}"
     rounded: "{rounded.sm}"
+  control-band:
+    backgroundColor: "{colors.surface-white}"
+    borderColor: "{colors.line-soft}"
+    textColor: "{colors.ink-primary}"
+  segmented-filter-active:
+    backgroundColor: "{colors.brand-tint}"
+    textColor: "{colors.brand-ink-on-tint}"
+    rounded: "{rounded.xs}"
+  register-cell:
+    borderColor: "{colors.line-soft}"
+    textColor: "{colors.ink-primary}"
+    fontSize: "28px"
+  ruled-row:
+    borderColor: "{colors.line-soft}"
+    textColor: "{colors.ink-primary}"
+  status-bezel:
+    backgroundColor: "{colors.surface-white}"
+    borderColor: "{colors.line-soft}"
+    textColor: "{colors.ink-secondary}"
+  state-note:
+    textColor: "{colors.ink-secondary}"
 ---
 
 # Design System: Acaora 学曦
@@ -142,6 +163,8 @@ Approved as the internal design north star. It is taken from the product's own v
 
 Acaora is a workbench, not a stage. The surface is a cool, near-white working field with one saturated blue reserved for the actions a student actually takes, and a deep navy rail on the left that holds navigation and the paper library. Nothing on screen competes with the material being studied: the paper text, the table, the task list. The interface is designed to be looked at for two hours, not to be looked at once.
 
+The page language is the **working band** (仪表). A surface opens on a rule-separated control band, states its real numbers in a register, arranges its content in ruled rows and columns rather than in cards, and closes on a bezel of the facts that hold everywhere. The two dense tools, PaperLab and DataLab, keep their own three-column workbenches inside that frame: the frame is what unifies the product, not a shared card.
+
 The product carries two visual registers that must never blur. Ordinary product surfaces (courses, projects, data, settings, navigation, primary actions) speak in brand blue on cool neutrals. AI-semantic surfaces (the AI studio, AI-generated results, AI processing state) speak in teal on tinted or inverse grounds. Teal is not a second brand colour and must not be used to decorate ordinary business actions.
 
 Density is deliberately uneven between surfaces. A reading tool and a statistics tool are allowed to be far denser than a settings page. What is unified is the design language: the same neutrals, the same type scale, the same radius and elevation logic, the same focus treatment. Page structure is not unified, and forcing it to be would damage the two tools that need density.
@@ -150,7 +173,9 @@ Density is deliberately uneven between surfaces. A reading tool and a statistics
 - Light, cool, near-white workspace; deep navy for navigation and inverse panels.
 - One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).
 - System sans throughout; Georgia has been removed from page-level titles.
-- Borders plus the lightest shadow carry structure; surfaces are not floating cards.
+- Page structure carries no elevation at all: full-bleed rule-separated bands hold the chrome, and the capped measure sits inside them.
+- Borders plus the lightest shadow carry structure for controls and genuinely raised content; a page is never a stack of floating cards.
+- A numeric register reports the page's real state, and the dense tool surfaces are allowed to look like instruments rather than like marketing panels.
 - Motion is restrained and always explains a state change.
 - Long-session legibility beats first-impression impact.
 
@@ -213,6 +238,8 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 
 Supporting steps in the same scale: card title (600, 15px/22px), secondary (400, 13px/20px), caption (400, 12px/16px), metric (600, 28px/32px). Weights available are 400 / 500 / 600 / 700; the old regular-and-bold-only pairing is gone.
 
+**The working-band title step.** A page's own title is set at the section step (600, 18px/26px) inside the control band, not at the page step: the band is chrome, and a 24px title turns it into a masthead. The page step and the display step are then reserved for content-level moments inside the page — an empty-state headline, the record the page is about.
+
 ### Named Rules
 **The 12px Floor Rule.** No body or interface text is set below 12px. The 6px to 9px labels inherited from earlier layers are a defect to be removed as each page is redesigned, not a style.
 
@@ -222,16 +249,18 @@ Supporting steps in the same scale: card title (600, 15px/22px), secondary (400,
 
 Known migration gaps, stated rather than hidden so this record does not read as if it already matched the code:
 
-- Some legacy page selectors still set their own clamp-based title sizes (for example page headers between 32px and 48px). The token scale above is the target; each page adopts it during its own redesign phase.
-- The label step is 11px with a 14px line height in CSS today. This record sets it at 12px/16px so the 12px floor actually holds; the token must be raised to match before the floor can be claimed as met.
+- Some legacy page selectors still set their own clamp-based title sizes (the public landing page and the authentication pages, between 32px and 58px). The token scale above is the target; each page adopts it during its own redesign phase.
+- The label step now ships at 12px/16px, matching this record, so the 12px floor holds across the workspace pages that have been redesigned. The shell, the authentication pages and the public landing page still carry 7px to 11px values inherited from earlier layers; each is removed in its own phase, and until then the floor holds per surface rather than product-wide.
 
 ## Layout
 
 The shell is a two-column workspace: a fixed 248px navigation rail and a fluid working column. Below 1100px the rail collapses to an 88px icon rail, and below 760px it becomes an off-canvas drawer with a fixed trigger. The rail is the only persistent navigation; there is no top navigation bar in the workspace.
 
-Content width is capped per surface rather than globally: 1240px for overview-style pages (dashboard, courses, projects, settings) and 1680px for the two tool surfaces, PaperLab and DataLab, which must be allowed to use the full width of a laptop screen. Reading columns inside PaperLab are capped near 72 characters per column so bilingual text does not stretch to unreadable line lengths.
+Content width is capped per surface rather than globally: 1240px for overview-style pages (dashboard, courses, projects, settings) and 1680px for the two tool surfaces, PaperLab and DataLab, which must be allowed to use the full width of a laptop screen. The cap applies to the measure inside the bands; the band chrome itself always spans the full content column. Reading columns inside PaperLab are capped near 72 characters per column so bilingual text does not stretch to unreadable line lengths.
 
 Spacing is a single 8-step scale (4 / 8 / 12 / 16 / 24 / 32 / 48 / 64). Control padding uses the first steps, panel padding uses 24px, section separation uses 32px, and page padding is smaller at the top than at the bottom so content does not appear to float.
+
+A workspace page is assembled from working bands in this order: the control band (page title, the surface's one filter, its one primary action), the numeric register (four or five cells of real state), the content region (ruled rows, a ruled table, or the surface's own workbench), the four-area strip where the surface needs it, and the status bezel. Bands are full-bleed and the measure is capped inside them.
 
 Density is deliberately per-surface, not global: Dashboard 5, Courses 5, Projects 5 to 6, PaperLab 6 to 7, DataLab 6 to 7, Settings 3 to 4, Auth 3.
 
@@ -241,6 +270,12 @@ Responsive behaviour: desktop is the primary environment and must not be comprom
 **The Uneven Density Rule.** Unified language, not unified structure. Do not raise DataLab or PaperLab to a card-based layout in the name of consistency, and do not push Dashboard density up to tool level.
 
 **The Two Tool Widths Rule.** Tool surfaces may use 1680px; overview surfaces stop at 1240px. A tool that has been narrowed to overview width has been damaged.
+
+**The Full-Bleed Chrome Rule.** The control band and the status bezel span the whole content column and carry the capped measure inside them. A band that itself stops at the measure turns the page back into a floating panel.
+
+### Migration status
+
+The working bands and the token layer are in place on the dashboard, the course centre, the project workspace, settings, DataLab and PaperLab. They are not yet on the shell, the authentication pages or the public landing page, and those surfaces therefore still read as an earlier era. The landing page additionally ships three things this record's own Don'ts forbid — a mock product preview standing in for a screenshot, a decorative command-key control that performs nothing, and a fabricated progress figure with a sparkline — and its hero is to be replaced by a real product screenshot once the owner selects one. This gap is recorded so it is not mistaken for a decision.
 
 ## Elevation & Depth
 
@@ -256,6 +291,8 @@ The system is hybrid but border-led: structure comes from a 1px border, and shad
 
 **The Inverse Border Rule.** Inside deep navy, depth is carried by a low-opacity light border, not by a shadow. Shadows on inverse surfaces are not used.
 
+**The Structural Elevation Rule.** Page structure carries no elevation. Bands, registers, ruled rows, strips and the bezel are separated by a 1px border and by spacing alone; a shadow is reserved for a control at rest, a genuinely floating element, and an overlay. A page whose every section sits on a raised card has mixed the two vocabularies and lost the distinction the shadow was there to make.
+
 ## Shapes
 
 Form language is soft-rectangular and consistent. Controls use the tighter radii and containers the softer ones: 6px for small marks, 8px for inputs and list rows, 10px for standard buttons and segmented controls, 14px for cards and panels, 18px for large workbench containers and dialogs. The rail and the workbench are the only large-radius containers; nested elements inside a panel step down rather than repeating the container radius.
@@ -268,6 +305,8 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 **The Nested Radius Rule.** An inner element's radius is smaller than its container's. Repeating the outer radius on a nested element is a defect.
 
 **The No Pill Buttons Rule.** Full rounding is reserved for avatars, dots, progress, and status pills. Primary and secondary buttons use the 10px control radius.
+
+**The Rule-Only Surface Rule.** A surface may be built from rules alone, with no corner radius and no container: a ruled table, a ruled row list, a register cell and a full-width band are each a complete surface. Radius belongs to controls and to genuinely raised panels, not to page structure.
 
 ## Components
 
@@ -290,6 +329,15 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Shadow Strategy:** resting structure plus border (see Elevation).
 - **Border:** Line Soft, tested against a cool background. Border colour is always cool-tinted; a warm or pure-black border is not part of this system.
 - **Internal Padding:** 24px as the default panel padding, 16px for dense data panels. (The card primitive currently ships 22px; that value is neither on the spacing scale nor part of this record, and must be aligned to 24px during the phase that next touches it.)
+
+### Working bands
+- **Control band:** Surface White ground closed by a 1px Line Soft border, 56px minimum height, its contents capped to the surface's measure. The page title, the surface's single filter and its single primary action live here. Nothing sits above it.
+- **Segmented filter:** a Surface Subtle trough at the 6px radius; the pressed segment is Brand Wash with Blue Ink on Wash and a semibold label. A filter that narrows a list is a labelled group of `aria-pressed` buttons, not a tablist — it switches no panel, and calling it one misleads assistive technology.
+- **Numeric register:** four or five equal cells divided by 1px vertical rules, each a 12px Line Soft label, a 28px tabular value and a one-line caption. A cell that reports a fact rather than a number drops to the card step (15px), so a phrase never has to pretend to be a metric. Every value is a real array length, a real stored status, or an honest absence.
+- **Ruled table and ruled row list:** a Surface Subtle header row over 1px Line Soft row rules, with tabular figures in the numeric columns. Where the rows are actions they stay real buttons carrying their own hover, focus and current state.
+- **Four-area strip:** the product's four areas as one full-width four-cell ruled band, each cell carrying the same mark the rail uses for that destination. A cell reports a count only where a count exists.
+- **Status bezel:** a 34px band that closes the page with the facts that hold everywhere — local-first, what is not uploaded, the account or surface state. It holds the bottom of a short page, which is what a dense surface uses where an airy one would leave the space empty.
+- **State note:** the empty and guest message lives in the content region as a heading, one paragraph, and buttons where the surface has real actions. It is never a dashed dropzone, and it never states a fact that a failed request did not establish — an unread list is unknown, not zero.
 
 ### Inputs / Fields
 - **Style:** Surface White fill, Line Control border at 3.59:1, 8px radius, 48px minimum height, 15px label-sized text inside.
@@ -321,6 +369,8 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Do** keep keyboard focus visible on every interactive element, and keep the shared primitive focus treatment working even where page-scoped styles are more specific.
 - **Do** keep `aria-current`, `aria-expanded`, `aria-invalid`, `aria-describedby`, and `aria-live` intact through any visual change, and keep the modal accessibility behaviour intact: focus containment while open, a sensible initial focus, Escape to close where appropriate, focus restoration on close, and a correct accessible name and description.
 - **Do** let PaperLab stay a dense three-column research workspace and DataLab stay a dense analytical one. Preserve their structure; the visual language is what unifies them.
+- **Do** build a workspace page from the working bands, with full-bleed chrome and the capped measure inside it.
+- **Do** keep every register cell, strip cell and count to something the product actually stores, and let a cell report a fact where no number exists.
 - **Do** use borders and the single lightest shadow for structure, and step shadow up only for real elevation.
 - **Do** treat desktop as the primary environment and keep tools at their full width on it.
 - **Do** use tabular figures for changing numbers, and keep every value on the type scale with a 12px floor.
@@ -334,6 +384,11 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Don't** put every section in a card, nest a card inside a card, or turn a data table into a stack of cards.
 - **Don't** make every control pill-shaped, or use a giant marketing hero inside the workspace.
 - **Don't** build decorative dots, ambient gradients, or shadows that carry no meaning.
+- **Don't** put a kicker or an eyebrow above a heading. The heading carries its own weight: delete the label and let the heading speak. If a region needs a name, give the region a heading.
+- **Don't** number sections (01 / 02 / 03) unless the sequence itself carries information the reader needs.
+- **Don't** use a card container for page structure. Cards are for genuinely raised content; page structure is bands, rules and spacing.
+- **Don't** use a Unicode glyph or an emoji as an icon, and don't let one into an accessible name. Icons come from Lucide in one stroke family.
+- **Don't** report a count for an area that has none, or present a built-in default as a confirmed value.
 - **Don't** move elements on hover. Hover changes colour, border, and background only; floating and `translateY` lifts are not part of this system.
 - **Don't** add animation that does not explain a state change, and never remove the reduced-motion handling.
 - **Don't** fake capability in the interface. No placeholder search box, no decorative command palette, no `⌘K` affordance, no AI input that does not work.

@@ -60,7 +60,7 @@
   --fs-body: 15px;     --lh-body: 24px;
   --fs-sm: 13px;       --lh-sm: 20px;
   --fs-caption: 12px;  --lh-caption: 16px;
-  --fs-label: 11px;    --lh-label: 14px;
+  --fs-label: 12px;    --lh-label: 16px;
   --fs-metric: 28px;   --lh-metric: 32px;
   --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
 
@@ -572,11 +572,6 @@ footer p { margin: 0; text-align: right; }
 .ui-kit-states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (max-width: 700px) { .ui-kit-states { grid-template-columns: 1fr; } }
 
-.dashboard-loading { min-height: 260px; display: grid; place-items: center; color: #70798a; }
-.dashboard-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.dashboard-demo { margin-top: 20px; }
-.dashboard-hero .ui-badge { margin-bottom: 20px; }
-
 .project-filter button { min-height: 44px; cursor: pointer; }
 .project-filter-empty { padding: 18px 12px; color: #8a92a2; font-size: 12px; text-align: center; }
 
@@ -585,10 +580,6 @@ footer p { margin: 0; text-align: right; }
 .file-chip > div strong { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .preview-table th, .preview-table td { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.course-model-status { min-width: 240px; padding: 10px 12px; display: grid; gap: 4px; border: 1px solid #dce0e7; border-radius: 9px; background: #fafbfc; }
-.course-model-status span, .course-model-status small { color: #626978; font-size: 11px; }
-.course-model-status strong { color: #253043; font-size: 13px; }
-.course-model-status a { width: fit-content; color: #5752cc; font-size: 12px; font-weight: 700; text-decoration: none; }
 .ai-key-box { display: grid; gap: 6px; }
 .ai-key-box > strong { color: white; font-size: 12px; }
 .ai-key-box > a { color: #70dfc5; font-size: 11px; text-decoration: none; }
@@ -820,70 +811,11 @@ footer p { margin: 0; text-align: right; }
 .student-topbar > div:first-child span { color: #626978; font: 700 7px/1 monospace; letter-spacing: .1em; }
 .student-topbar h1 { margin: 7px 0 0; font: 600 24px/1.2 Georgia, "Songti SC", serif; }
 .student-topbar > div:last-child { display: flex; align-items: center; gap: 8px; }
-.command-button { border: 1px solid #d9dce4; border-radius: 8px; padding: 9px 11px; background: white; color: #686f7d; font-size: 7px; }
-.account-button { width: 70px; height: 34px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; border: 0; border-radius: 9px; background: #101526; color: white; cursor: pointer; font-size: 7px; }
-.account-button span { color: #d2d8e3; }
-.dashboard-login { padding: 10px 13px; border-radius: 8px; background: #101526; color: white; text-decoration: none; font-size: 8px; }
-.guest-banner { margin-top: 24px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid #ded8f5; border-radius: 10px; background: #f0effd; }
-.guest-banner b { color: #4f4bad; font-size: 8px; }
-.guest-banner p { margin: 3px 0 0; color: #73718f; font-size: 7px; }
-.guest-banner a { flex: 0 0 auto; color: #514bb5; text-decoration: none; font-size: 8px; font-weight: 700; }
-.dashboard-hero { min-height: 300px; margin-top: 25px; display: grid; grid-template-columns: 1fr 260px; overflow: hidden; border-radius: 15px; background: linear-gradient(145deg, #6964e4, #5353c9); color: white; box-shadow: 0 20px 50px rgba(83,83,201,.18); }
-.dashboard-hero > div { padding: 35px; }
-.dashboard-hero > div > span, .dashboard-hero > aside > span, .dashboard-section-title span, .dashboard-lower article header span, .dashboard-lower > aside > span { color: #d7d5ff; font: 700 7px/1 monospace; letter-spacing: .12em; }
-.dashboard-hero h2 { margin: 28px 0 0; font: 500 clamp(27px, 3.2vw, 41px)/1.08 Georgia, "Songti SC", serif; }
-.dashboard-hero > div > p { max-width: 520px; margin: 15px 0 0; color: #dcddfa; font-size: 9px; line-height: 1.65; }
-.dashboard-hero > div > div { display: flex; gap: 8px; margin-top: 30px; }
-.dashboard-hero > div a, .dashboard-hero > div button { padding: 11px 13px; border: 1px solid rgba(255,255,255,.24); border-radius: 8px; background: transparent; color: white; text-decoration: none; font-size: 8px; }
-.dashboard-hero > div a { background: white; color: #4b48a7; }
-.dashboard-hero > div a b { margin-left: 18px; }
-.dashboard-hero > aside { padding: 29px 25px; border-left: 1px solid rgba(255,255,255,.16); background: rgba(22,27,60,.2); }
-.dashboard-hero > aside > strong { display: block; margin-top: 30px; font: 500 45px/1 Georgia, serif; }
-.dashboard-hero > aside > strong small { margin-left: 4px; font-size: 16px; }
-.dashboard-hero > aside > p { margin: 6px 0 0; color: #d2d3ed; font-size: 7px; }
-.dashboard-hero > aside > div { height: 85px; margin-top: 30px; display: flex; align-items: flex-end; gap: 7px; }
-.dashboard-hero > aside > div i { flex: 1; border-radius: 4px 4px 0 0; background: rgba(255,255,255,.3); }
-.dashboard-hero > aside > div i:nth-child(6) { background: #70dfc5; }
-.dashboard-hero > aside > small { display: block; margin-top: 11px; color: #bfc2e2; font-size: 6px; }
-.dashboard-section-title { margin-top: 35px; display: flex; align-items: flex-end; justify-content: space-between; }
-.dashboard-section-title span, .dashboard-lower article header span, .dashboard-lower > aside > span { color: #626978; }
-.dashboard-section-title h2, .dashboard-lower h2 { margin: 7px 0 0; font: 600 21px/1.2 Georgia, "Songti SC", serif; }
-.dashboard-section-title button { border: 1px solid #d8dce4; border-radius: 7px; padding: 8px 11px; background: white; color: #5e6574; font-size: 7px; }
-.dashboard-modules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
-.dashboard-modules > a { min-height: 170px; padding: 17px; display: flex; flex-direction: column; border: 1px solid #dfe2e8; border-radius: 11px; background: white; color: #101526; text-decoration: none; transition: transform .2s ease; }
-.dashboard-modules > a:hover { transform: translateY(-3px); }
-.dashboard-modules > a > div { display: flex; align-items: center; }
-.dashboard-modules > a > div b { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 9px; background: #efeffb; color: #5c57c7; font-size: 10px; }
-.dashboard-modules > a.mint > div b { background: #e5f7f2; color: #318673; } .dashboard-modules > a.blue > div b { background: #e9f1ff; color: #4d76bd; }
-.dashboard-modules > a > div span { margin-left: 9px; color: #626978; font: 700 7px/1 monospace; letter-spacing: .08em; }
-.dashboard-modules > a > div i { margin-left: auto; color: #888e9b; font-style: normal; }
-.dashboard-modules h3 { margin: auto 0 0; font: 600 17px/1.2 Georgia, "Songti SC", serif; }
-.dashboard-modules p { margin: 6px 0 0; color: #626978; font-size: 7px; }
-.dashboard-lower { display: grid; grid-template-columns: 1.35fr .65fr; gap: 10px; margin-top: 26px; }
-.dashboard-lower > article, .dashboard-lower > aside { padding: 20px; border: 1px solid #dfe2e8; border-radius: 12px; background: white; }
-.dashboard-lower article header { display: flex; justify-content: space-between; }
-.dashboard-lower article header button,
-.dashboard-lower article header a { border: 0; background: transparent; color: #5852c7; font-size: 7px; text-decoration: none; }
-.dashboard-lower ul { margin: 14px 0 0; padding: 0; list-style: none; }
-.dashboard-lower li { display: grid; grid-template-columns: 35px 1fr auto; align-items: center; gap: 11px; padding: 12px 0; border-top: 1px solid #eceef2; }
-.dashboard-lower li > b { display: grid; place-items: center; width: 35px; height: 35px; border-radius: 8px; font: 800 7px/1 monospace; }
-.file-pdf { background: #ffe8e1; color: #b4553c; } .file-csv { background: #e3f6f0; color: #317866; } .file-course { background: #edecfc; color: #5954bc; }
-.dashboard-lower li p { min-width: 0; margin: 0; }
-.dashboard-lower li p strong, .dashboard-lower li p small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dashboard-lower li p strong { font-size: 8px; }
-.dashboard-lower li p small { margin-top: 4px; color: #626978; font-size: 7px; }
-.dashboard-lower li em { color: #626978; font-size: 7px; font-style: normal; }
-.dashboard-lower > aside { background: #12192a; color: white; }
-.dashboard-lower > aside > span { color: #70dfc5; }
-.dashboard-lower > aside p { margin: 13px 0 0; color: #9ca6b7; font-size: 8px; line-height: 1.7; }
-.dashboard-lower > aside > div { height: 4px; margin-top: 32px; overflow: hidden; border-radius: 99px; background: #2d3649; }
-.dashboard-lower > aside > div i { display: block; height: 100%; background: #70dfc5; }
-.dashboard-lower > aside small { display: block; margin-top: 7px; color: #7e899d; font-size: 6px; }
-.dashboard-lower > aside button,
-.dashboard-lower > aside > a { width: fit-content; display: inline-flex; margin-top: 21px; border: 1px solid #384257; border-radius: 7px; padding: 9px 11px; background: transparent; color: #c3cbd8; font-size: 7px; text-decoration: none; }
+
+
 .brand-mark { text-decoration: none; }
-@media (max-width: 900px) { .auth-shell { grid-template-columns: 1fr; } .auth-story { min-height: 350px; } .auth-story-copy { margin-top: 65px; } .auth-privacy { margin-top: 55px; } .student-app { grid-template-columns: 74px 1fr; } .student-sidebar { align-items: center; padding: 20px 10px; } .student-sidebar .acaora-brand > div, .student-sidebar nav span, .student-sidebar-foot > a span, .student-sidebar-foot p { display: none; } .student-sidebar-foot > div { display: block; padding: 0; } .dashboard-hero { grid-template-columns: 1fr; } .dashboard-hero > aside { border-left: 0; border-top: 1px solid rgba(255,255,255,.16); } .dashboard-modules { grid-template-columns: 1fr 1fr; } .dashboard-lower { grid-template-columns: 1fr; } }
-@media (max-width: 600px) { .auth-page { padding: 0; } .auth-back { top: 14px; left: 15px; color: #aab3c4; } .auth-shell { min-height: 100vh; border: 0; border-radius: 0; } .auth-story { min-height: 300px; padding: 26px 24px; } .auth-story-copy { margin-top: 52px; } .auth-story-copy h1 { font-size: 34px; } .auth-privacy { display: none; } .auth-form-side { padding: 42px 25px; } .student-app { display: block; } .student-sidebar { position: static; width: 100%; height: 66px; padding: 10px 15px; flex-direction: row; justify-content: space-between; } .student-sidebar > nav { margin: 0; display: flex; } .student-sidebar > nav a { display: none; } .student-sidebar > nav a.active { display: flex; } .student-sidebar-foot { margin: 0; } .student-sidebar-foot > a { display: none; } .student-main { padding: 24px 15px 45px; } .command-button span, .account-button span { display: none; } .account-button { width: 34px; justify-content: center; } .dashboard-hero > div { padding: 27px 22px; } .dashboard-hero > div > div { flex-direction: column; } .dashboard-hero > div a, .dashboard-hero > div button { text-align: center; } .dashboard-modules { grid-template-columns: 1fr; } .guest-banner { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 900px) { .auth-shell { grid-template-columns: 1fr; } .auth-story { min-height: 350px; } .auth-story-copy { margin-top: 65px; } .auth-privacy { margin-top: 55px; } .student-app { grid-template-columns: 74px 1fr; } .student-sidebar { align-items: center; padding: 20px 10px; } .student-sidebar .acaora-brand > div, .student-sidebar nav span, .student-sidebar-foot > a span, .student-sidebar-foot p { display: none; } .student-sidebar-foot > div { display: block; padding: 0; } }
+@media (max-width: 600px) { .auth-page { padding: 0; } .auth-back { top: 14px; left: 15px; color: #aab3c4; } .auth-shell { min-height: 100vh; border: 0; border-radius: 0; } .auth-story { min-height: 300px; padding: 26px 24px; } .auth-story-copy { margin-top: 52px; } .auth-story-copy h1 { font-size: 34px; } .auth-privacy { display: none; } .auth-form-side { padding: 42px 25px; } .student-app { display: block; } .student-sidebar { position: static; width: 100%; height: 66px; padding: 10px 15px; flex-direction: row; justify-content: space-between; } .student-sidebar > nav { margin: 0; display: flex; } .student-sidebar > nav a { display: none; } .student-sidebar > nav a.active { display: flex; } .student-sidebar-foot { margin: 0; } .student-sidebar-foot > a { display: none; } .student-main { padding: 24px 15px 45px; } }
 
 /* Readability and layout refresh */
 :root { font-size: 16px; }
@@ -1070,51 +1002,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .student-main { padding: 38px clamp(28px, 4vw, 68px) 72px; }
 .student-topbar > div:first-child span { font-size: 10px; }
 .student-topbar h1 { font-size: 34px; }
-.command-button,
-.account-button,
-.dashboard-login { min-height: 44px; font-size: 13px; }
-.account-button { width: 96px; }
-.guest-banner { padding: 16px 18px; }
-.guest-banner b,
-.guest-banner a { font-size: 13px; }
-.guest-banner p { font-size: 13px; }
-.dashboard-hero { min-height: 360px; grid-template-columns: 1fr 320px; border-radius: 18px; }
-.dashboard-hero > div { padding: 44px; }
-.dashboard-hero > div > span,
-.dashboard-hero > aside > span,
-.dashboard-section-title span,
-.dashboard-lower article header span,
-.dashboard-lower > aside > span { font-size: 10px; }
-.dashboard-hero h2 { font-size: clamp(36px, 4vw, 52px); }
-.dashboard-hero > div > p { font-size: 15px; }
-.dashboard-hero > div a,
-.dashboard-hero > div button { padding: 13px 17px; font-size: 14px; }
-.dashboard-hero > aside { padding: 36px 30px; }
-.dashboard-hero > aside > p { font-size: 13px; }
-.dashboard-hero > aside > small { font-size: 11px; }
-.dashboard-section-title h2,
-.dashboard-lower h2 { font-size: 26px; }
-.dashboard-section-title button { padding: 10px 14px; font-size: 13px; }
-.dashboard-modules { gap: 16px; }
-.dashboard-modules > a { min-height: 210px; padding: 22px; border-radius: 14px; }
-.dashboard-modules > a > div b { width: 40px; height: 40px; font-size: 14px; }
-.dashboard-modules > a > div span { font-size: 10px; }
-.dashboard-modules h3 { font-size: 23px; }
-.dashboard-modules p { font-size: 14px; line-height: 1.65; }
-.dashboard-lower { gap: 16px; }
-.dashboard-lower > article,
-.dashboard-lower > aside { padding: 26px; }
-.dashboard-lower article header button,
-.dashboard-lower article header a { font-size: 13px; }
-.dashboard-lower li { grid-template-columns: 44px 1fr auto; gap: 14px; }
-.dashboard-lower li > b { width: 44px; height: 44px; font-size: 10px; }
-.dashboard-lower li p strong { font-size: 14px; }
-.dashboard-lower li p small,
-.dashboard-lower li em { font-size: 12px; }
-.dashboard-lower > aside p { font-size: 14px; }
-.dashboard-lower > aside small { font-size: 11px; }
-.dashboard-lower > aside button,
-.dashboard-lower > aside > a { padding: 11px 14px; font-size: 13px; }
 
 /* DataLab: raise every analytical label above the readability floor */
 .app-shell { grid-template-columns: 248px 1fr; }
@@ -1260,7 +1147,6 @@ footer { font-size: 12px; }
   .auth-story { min-height: 430px; }
   .auth-story-copy { margin-top: 72px; }
   .student-app { grid-template-columns: 88px 1fr; }
-  .dashboard-hero { grid-template-columns: 1fr; }
   .app-shell { grid-template-columns: 88px 1fr; }
 }
 
@@ -1288,8 +1174,6 @@ footer { font-size: 12px; }
   .auth-form-head h2 { font-size: 32px; }
   .student-main { padding: 26px 16px 50px; }
   .student-topbar h1 { font-size: 27px; }
-  .dashboard-hero > div { padding: 30px 24px; }
-  .dashboard-hero h2 { font-size: 36px; }
   .paper-commandbar h1 { font-size: 40px; }
   .paper-workbench { display: block; }
 }
@@ -1315,79 +1199,19 @@ footer { font-size: 12px; }
 .format-support small { margin-left: 3px; color: #626978; font-size: 9px; font-weight: 500; }
 .file-chip .csv-badge { min-width: 52px; width: auto; padding-inline: 8px; }
 
-.learning-app,
 .settings-app { color: #151c2c; background: #f4f5f8; }
-.learning-main,
 .settings-main { width: 100%; max-width: 1680px; min-width: 0; margin: 0 auto; padding: 38px clamp(28px, 4vw, 68px) 72px; }
-.learning-topbar,
 .settings-topbar { align-items: flex-end; }
-.learning-topbar > div > p:last-child,
 .settings-topbar > div > p:last-child { margin: 11px 0 0; color: #606978; font-size: 14px; }
-.track-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 11px; background: #e7e9ee; }
-.track-tabs button { min-height: 38px; padding: 8px 15px; border: 0; border-radius: 8px; color: #596171; background: transparent; font-size: 12px; cursor: pointer; }
-.track-tabs button.active { color: white; background: #151c2c; }
-.learning-layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; margin-top: 28px; }
-.course-library,
-.course-focus,
-.practice-studio,
+
 .profile-card,
 .privacy-card { border: 1px solid #dfe3e9; border-radius: 18px; background: white; box-shadow: 0 15px 45px rgba(22, 29, 44, .04); }
-.course-library { padding: 28px; }
-.learning-section-title,
 .settings-section-head { display: flex; align-items: center; gap: 13px; }
-.learning-section-title > span,
 .settings-section-head > span { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; color: #5752cc; background: #edecff; font: 800 11px/1 monospace; }
-.learning-section-title p,
 .settings-section-head p { margin: 0; color: #625de5; font: 800 9px/1.2 monospace; letter-spacing: .13em; }
-.learning-section-title h2,
 .settings-section-head h2 { margin: 6px 0 0; color: #161d2c; font: 700 23px/1.2 Georgia, "Songti SC", serif; }
-.course-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
-.course-grid > button { min-height: 178px; display: flex; flex-direction: column; align-items: flex-start; padding: 18px; border: 1px solid #e1e4ea; border-radius: 13px; color: #202839; background: #fafbfc; text-align: left; cursor: pointer; }
-.course-grid > button:hover { border-color: #c8c5ff; transform: translateY(-1px); }
-.course-grid > button.active { border-color: #bab6ff; background: #f6f5ff; box-shadow: inset 3px 0 #625de5; }
-.course-grid > button > span { color: #625de5; font: 800 9px/1 monospace; letter-spacing: .08em; }
-.course-grid > button > small { margin-top: 14px; color: #626978; font-size: 10px; }
-.course-grid > button > strong { margin-top: 7px; font: 700 18px/1.25 Georgia, "Songti SC", serif; }
-.course-grid > button > p { margin: 9px 0 0; color: #626978; font-size: 11px; line-height: 1.55; }
-.course-grid > button > i { margin-top: auto; color: #4f4ab8; font-size: 10px; font-style: normal; font-weight: 700; }
-.course-focus { padding: 28px; color: #e9edf4; background: #151c2c; }
-.course-focus > span { color: #70dfc5; font: 800 10px/1 monospace; letter-spacing: .12em; }
-.course-focus h2 { margin: 17px 0 0; color: white; font: 700 30px/1.22 Georgia, "Songti SC", serif; }
-.course-focus > p { margin: 13px 0 0; color: #9ea8ba; font-size: 12px; line-height: 1.7; }
-.course-focus dl { margin: 28px 0 22px; border-top: 1px solid #30394b; }
-.course-focus dl div { display: flex; justify-content: space-between; gap: 18px; padding: 13px 0; border-bottom: 1px solid #30394b; }
-.course-focus dt { color: #8893a6; font-size: 11px; }
-.course-focus dd { max-width: 175px; overflow: hidden; margin: 0; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.material-upload { min-height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 9px; color: #151c2c; background: #70dfc5; font-size: 12px; font-weight: 800; cursor: pointer; }
-.material-upload input { display: none; }
-.course-focus > small { display: block; margin-top: 12px; color: #8792a5; font-size: 10px; line-height: 1.6; }
-.practice-studio { margin-top: 18px; padding: 28px; }
-.practice-grid { display: grid; grid-template-columns: minmax(320px, .82fr) minmax(0, 1.18fr); gap: 18px; margin-top: 22px; }
-.practice-config { padding: 20px; border-radius: 13px; background: #f6f7f9; }
-.practice-config > label { display: grid; gap: 8px; color: #343d4d; font-size: 12px; font-weight: 700; }
-.practice-config textarea { width: 100%; min-height: 235px; resize: vertical; padding: 14px; border: 1px solid #d8dde5; border-radius: 10px; outline: 0; color: #202838; background: white; font: 13px/1.75 "Segoe UI", sans-serif; }
-.practice-controls { display: grid; grid-template-columns: 140px 1fr; gap: 10px; margin-top: 12px; }
-.practice-controls label { display: grid; gap: 7px; color: #515a6b; font-size: 11px; font-weight: 700; }
-.practice-controls input,
-.practice-controls select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #d8dde5; border-radius: 9px; background: white; font-size: 12px; }
-.practice-config > button { width: 100%; min-height: 48px; margin-top: 12px; border: 0; border-radius: 9px; color: white; background: #171e2e; font-size: 13px; font-weight: 800; cursor: pointer; }
-.practice-config > button:disabled { opacity: .55; cursor: wait; }
-.course-error { margin: 12px 0 0; padding: 11px 12px; border-radius: 8px; color: #8b372a; background: #fff0ec; font-size: 11px; line-height: 1.5; }
-.practice-result { min-height: 430px; min-width: 0; }
-.practice-empty { height: 100%; min-height: 430px; display: grid; place-content: center; justify-items: center; padding: 30px; border: 1px dashed #d6dae2; border-radius: 13px; text-align: center; }
-.practice-empty b { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 16px; color: #625de5; background: #ecebff; font: 700 25px/1 Georgia, serif; }
-.practice-empty strong { margin-top: 17px; font-size: 15px; }
-.practice-empty p { margin: 8px 0 0; color: #626978; font-size: 12px; }
-.knowledge-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-.knowledge-tags span { padding: 6px 9px; border-radius: 999px; color: #4c47b2; background: #ecebff; font-size: 10px; font-weight: 700; }
-.practice-result details { margin-top: 9px; overflow: hidden; border: 1px solid #dfe3e9; border-radius: 11px; background: white; }
-.practice-result summary { display: grid; gap: 7px; padding: 15px 17px; cursor: pointer; }
-.practice-result summary span { color: #625de5; font-size: 9px; font-weight: 800; }
-.practice-result summary strong { color: #202839; font-size: 13px; line-height: 1.6; }
-.question-option { margin: 0; padding: 5px 18px; color: #626c7d; font-size: 12px; }
-.question-answer { margin-top: 10px; padding: 16px 18px; border-top: 1px solid #e5e8ed; background: #f7f8fa; }
-.question-answer b { display: block; color: #343d4d; font-size: 10px; }
-.question-answer p { margin: 5px 0 13px; color: #5e6879; font-size: 12px; line-height: 1.65; }
+
+
 
 .settings-topbar > button { min-height: 46px; padding: 11px 18px; border: 0; border-radius: 10px; color: white; background: #161d2c; font-size: 13px; font-weight: 800; cursor: pointer; }
 .settings-topbar > button:disabled { opacity: .45; }
@@ -1439,33 +1263,21 @@ footer { font-size: 12px; }
 .settings-state a { margin-top: 24px; padding: 12px 18px; border-radius: 9px; color: white; background: #171e2e; font-size: 12px; font-weight: 700; text-decoration: none; }
 
 @media (max-width: 1200px) {
-  .course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .learning-layout { grid-template-columns: minmax(0, 1fr) 300px; }
   .settings-grid { grid-template-columns: minmax(0, 1fr) 320px; }
 }
 @media (max-width: 900px) {
-  .learning-layout,
   .settings-grid { grid-template-columns: 1fr; }
-  .course-focus { order: -1; }
-  .practice-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .learning-main,
   .settings-main { max-width: 100%; padding: 26px 16px 50px; }
-  .learning-topbar,
   .settings-topbar { align-items: flex-start; flex-direction: column; gap: 18px; }
   .settings-topbar > button { width: 100%; }
 }
 @media (max-width: 560px) {
-  .course-library,
-  .course-focus,
-  .practice-studio,
   .profile-card,
   .privacy-card { padding: 20px; border-radius: 14px; }
-  .course-grid,
   .settings-form { grid-template-columns: 1fr; }
   .settings-form label.full { grid-column: auto; }
-  .practice-controls { grid-template-columns: 1fr; }
   .avatar-editor { align-items: flex-start; }
   .avatar-editor > img,
   .avatar-editor > b { width: 76px; height: 76px; border-radius: 19px; }
@@ -1619,19 +1431,7 @@ footer { font-size: 12px; }
 }
 
 /* Project workspace */
-.dashboard-section-title > a {
-  min-height: 42px;
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 15px;
-  border: 1px solid #d9dce3;
-  border-radius: 10px;
-  color: #131a2a;
-  background: white;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-}
+
 .project-app { background: #f3f5f8; }
 .project-main { max-width: 1680px; width: 100%; margin: 0 auto; }
 .project-topbar { align-items: center; }
@@ -1881,8 +1681,6 @@ footer { font-size: 12px; }
 .ui-badge { width: fit-content; padding: 5px 9px; border-radius: 999px; color: #515b6e; background: #edf0f4; font-size: 11px; font-weight: 800; }
 .ui-badge--info { color: #4641a6; background: #ecebff; }
 .ui-badge--success { color: #176b58; background: #dcf5ee; }
-.dashboard-hero > div > .ui-badge--success { color: #176b58; }
-.ui-button.account-button { border-color: #101526; background: #101526; color: white; }
 .ui-badge--warning { color: #835619; background: #fff0cf; }
 .ui-badge--danger { color: #943029; background: #ffe4df; }
 .ui-tabs { width: fit-content; padding: 4px; display: flex; gap: 3px; border-radius: 11px; background: #eceff3; }
@@ -2127,11 +1925,6 @@ body {
 .ui-button--ghost { color: var(--text-2); }
 .ui-button--ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--text); }
 .ui-button--danger { background: var(--danger); color: var(--text-inverse); }
-.ui-button.account-button {
-  border-color: var(--surface-inverse);
-  background: var(--surface-inverse);
-  color: var(--text-inverse);
-}
 
 .ui-form-field > label { color: var(--text); }
 .ui-input,
@@ -2258,4 +2051,947 @@ textarea.ui-textarea:focus:not([aria-invalid="true"]) {
   box-shadow: 0 0 0 3px var(--brand-subtle);
   outline: 2px solid var(--brand);
   outline-offset: 1px;
+}
+
+/* ==========================================================================
+   Phase 1G - the working-band vocabulary (V2 仪表 / Instrument)
+   Dense product surfaces organised by rules, not by cards: a control band opens
+   the page, a numeric register reports the real state, ruled tables and a
+   four-cell strip carry the content, and a bezel closes the page with the facts
+   that hold everywhere. No shadow and no rounded container is used for page
+   structure, so the only elevation left in the product is a dialog.
+
+   Vocabulary here is intentionally NOT page-prefixed: the Dashboard is the first
+   consumer and the remaining workspace pages adopt it in their own phases. Every
+   class was checked against the existing stylesheet for collisions first.
+   ========================================================================== */
+
+/* --- page frame --------------------------------------------------------- */
+/* The page column is uncapped here on purpose: the control band and the bezel
+   are full-bleed chrome, and the capped measure is applied inside each of them. */
+.dashboard-page { width: 100%; max-width: none; margin-inline: 0; }
+/* The shell becomes a column so the bezel can hold the bottom of the viewport
+   without fixed positioning. Zeroing the shared padding is scoped to this page. */
+.student-main.dashboard-shell { padding: 0; display: flex; flex-direction: column; }
+
+/* --- control band ------------------------------------------------------- */
+.page-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
+.page-bar-inner {
+  max-width: 1240px;
+  min-height: 56px;
+  margin-inline: auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.page-bar h1 {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-section);
+  line-height: 1.2;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+}
+.page-bar-spacer { flex: 1 1 auto; }
+.page-bar-date { color: var(--text-2); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+/* The band's filter: real segmented state, never decoration. `aria-pressed` is the
+   honest role for a filter that narrows a list rather than switching panels. */
+.page-bar-seg { display: flex; gap: 2px; padding: 3px; border-radius: var(--r-xs); border: 1px solid var(--border); background: var(--surface-2); }
+.page-bar-seg button {
+  min-height: 28px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.page-bar-seg button:hover { color: var(--text); }
+.page-bar-seg button[aria-pressed="true"] { background: var(--brand-subtle); color: var(--brand-on-subtle); font-weight: var(--fw-semibold); }
+/* A register cell may link to the setting behind its value. */
+.metric-register-cell a { display: inline-block; margin-top: 6px; color: var(--brand); font-size: var(--fs-caption); font-weight: var(--fw-semibold); text-decoration: none; }
+.metric-register-cell a:hover { color: var(--brand-hover); text-decoration: underline; text-underline-offset: 3px; }
+/* The account control keeps the visual weight of text; the box is only the hit
+   area and the hover wash the ghost variant already provides. */
+.page-bar .account-button { padding: 0 var(--s-3); font-size: var(--fs-sm); font-weight: var(--fw-medium); }
+.dashboard-login {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--brand);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+.dashboard-login:hover { color: var(--brand-hover); text-decoration: underline; text-underline-offset: 3px; }
+
+/* --- page body ---------------------------------------------------------- */
+/* Shared: the capped measure every workspace page puts inside its full-bleed
+   chrome. The Dashboard and the Courses page both consume it. */
+.page-body { width: 100%; max-width: 1240px; margin-inline: auto; padding: 24px 28px 34px; }
+/* A link carrying button styling still has to lose the underline. Scoped to this
+   page rather than changed in the shared primitive. */
+.dashboard-page .ui-button { text-decoration: none; }
+
+/* --- numeric register: the page's state in one ruled band --------------- */
+.metric-register {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border);
+}
+.metric-register-cell { min-width: 0; padding: 14px 0 14px 18px; border-left: 1px solid var(--border); }
+.metric-register-cell:first-child { border-left: 0; padding-left: 0; }
+.metric-register-cell b { display: block; color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-semibold); line-height: 1.4; }
+.metric-register-cell strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-metric);
+  line-height: 1.1;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.02em;
+}
+/* Cells that report a fact rather than a count step down to the text step, so a
+   phrase never has to pretend to be a metric. */
+.metric-register-cell .metric-register-value--text { font-size: var(--fs-card); line-height: 1.5; letter-spacing: 0; }
+.metric-register-cell small { display: block; margin-top: 4px; color: var(--text-2); font-size: var(--fs-caption); line-height: 1.5; }
+
+/* --- ruled split: the log beside the work in hand ----------------------- */
+.ruled-split { display: grid; grid-template-columns: minmax(0, 1fr) 320px; margin-top: 22px; }
+.ruled-split--single { grid-template-columns: minmax(0, 1fr); }
+/* With one column the aside stacks, so the column rule becomes a top rule. Without
+   this the border-left drew a stray full-height line down the aside. */
+.ruled-split--single .current-work { margin-top: 22px; padding: 24px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+.ruled-main { min-width: 0; padding-right: 24px; }
+.ruled-split--single .ruled-main { padding-right: 0; }
+.current-work { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); }
+.ruled-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 12px;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-card);
+  line-height: 1.35;
+  font-weight: var(--fw-semibold);
+}
+.ruled-heading > span { color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-regular); }
+/* A band that opens its own section needs the separation the earlier ones get
+   from the rule above them; the note and the state actions carry no bottom gap. */
+.ruled-heading--section { margin-top: 30px; }
+
+/* --- ruled table -------------------------------------------------------- */
+/* Wrapper exists so the log can scroll sideways on a phone instead of losing a
+   column or turning into cards. */
+.ruled-table-wrap { width: 100%; overflow-x: auto; }
+.ruled-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--fs-sm); }
+.ruled-table th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-strong);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+  text-align: left;
+  white-space: nowrap;
+}
+.ruled-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+.ruled-table tr:last-child td { border-bottom: 0; }
+.ruled-table .ruled-col--num { text-align: right; }
+.ruled-table .ruled-col--area { white-space: nowrap; }
+.ruled-table th:first-child, .ruled-table td:first-child { padding-left: 0; }
+.ruled-title { min-width: 18ch; }
+.ruled-area { display: inline-flex; align-items: center; gap: 7px; color: var(--text-2); font-size: var(--fs-caption); }
+.ruled-area svg { flex: 0 0 auto; color: var(--text-2); }
+.ruled-kind { color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-semibold); }
+.ruled-note {
+  margin: 14px 0 0;
+  padding-left: var(--s-3);
+  border-left: 1px solid var(--border-strong);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1.65;
+}
+
+/* --- the work in hand --------------------------------------------------- */
+.current-work-head { display: flex; align-items: flex-start; gap: 11px; }
+.current-work-mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: var(--r-xs);
+  background: var(--brand-subtle);
+  color: var(--brand-on-subtle);
+}
+.current-work-title { min-width: 0; color: var(--text); font-size: var(--fs-card); line-height: 1.4; font-weight: var(--fw-semibold); }
+.current-work-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 10px;
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1.6;
+}
+.current-work-action { width: 100%; margin-top: 14px; }
+
+/* --- state note (empty / guest) ----------------------------------------- */
+.state-note { max-width: 74ch; }
+.state-note-title {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-page);
+  line-height: 1.35;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.015em;
+}
+.state-note-copy { max-width: 62ch; margin: 10px 0 0; color: var(--text-2); font-size: var(--fs-body); line-height: 1.75; }
+.state-note-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+/* --- four-area strip ---------------------------------------------------- */
+.area-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.area-strip-cell { min-width: 0; padding: 16px 18px; border-left: 1px solid var(--border); }
+.area-strip-cell:first-child { border-left: 0; padding-left: 0; }
+.area-strip-head { display: flex; align-items: center; gap: 8px; color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-semibold); line-height: 1.4; }
+.area-strip-head svg { flex: 0 0 auto; }
+.area-strip-cell strong { display: block; margin-top: 7px; color: var(--text); font-size: var(--fs-card); line-height: 1.5; font-weight: var(--fw-semibold); }
+.area-strip-cell small { display: block; margin-top: 4px; color: var(--text-2); font-size: var(--fs-caption); line-height: 1.5; }
+
+/* --- status bezel ------------------------------------------------------- */
+.status-bezel { margin-top: auto; border-top: 1px solid var(--border); background: var(--surface); }
+.status-bezel-inner {
+  max-width: 1240px;
+  min-height: 34px;
+  margin-inline: auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+}
+.status-bezel-account { margin-left: auto; }
+
+/* --- loading: the same geometry, filled in ------------------------------ */
+/* Retained as its own hook: the E2E helper waits for this element to be hidden,
+   so the class must keep existing in the markup. No spinner: in a dense surface
+   the layout itself is the progress signal. */
+.dashboard-loading { display: block; }
+.skeleton-bar { display: block; height: 12px; border-radius: var(--r-xs); background: var(--border); }
+.skeleton-bar--value { width: 46px; height: 22px; margin-top: 5px; }
+.skeleton-bar--note { width: 104px; margin-top: 6px; }
+.skeleton-bar--heading { width: 88px; height: 16px; margin-bottom: 12px; }
+.skeleton-bar--action { width: 100%; height: 40px; margin-top: 14px; }
+.ruled-main > .skeleton-bar + .skeleton-bar { margin-top: 14px; }
+.current-work > .skeleton-bar + .skeleton-bar { margin-top: 12px; }
+
+/* --- browser surfaces belong to no design system, so they adopt this one --- */
+.dashboard-page ::selection { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+
+/* --- responsive (existing breakpoints only) ---------------------------- */
+@media (max-width: 1100px) {
+  .ruled-split { grid-template-columns: minmax(0, 1fr) 280px; }
+  .page-bar-inner, .page-body, .status-bezel-inner { padding-inline: 24px; }
+}
+@media (max-width: 760px) {
+  /* clearance for the drawer trigger, which is fixed at the top-left */
+  .student-main.dashboard-shell { padding-top: 78px; }
+  .page-bar-inner { min-height: 56px; padding: 10px 16px; flex-wrap: wrap; gap: 6px 12px; }
+  .page-bar-spacer { display: none; }
+  .page-body { padding: 18px 16px 28px; }
+  .metric-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric-register-cell { padding: 12px 0; }
+  .metric-register-cell:nth-child(odd) { border-left: 0; padding-left: 0; }
+  .metric-register-cell:nth-child(even) { padding-left: 16px; }
+  .metric-register-cell:nth-child(n + 3) { border-top: 1px solid var(--border); }
+  .metric-register-cell:last-child { grid-column: 1 / -1; border-left: 0; padding-left: 0; }
+  /* the log keeps every column and scrolls sideways rather than losing one */
+  .ruled-table { min-width: 520px; }
+  .ruled-split, .ruled-split--single { grid-template-columns: minmax(0, 1fr); }
+  .ruled-main { padding-right: 0; }
+  .current-work { margin-top: 22px; padding: 18px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+  .area-strip { grid-template-columns: minmax(0, 1fr); }
+  .area-strip-cell { padding: 14px 0; border-left: 0; }
+  .area-strip-cell + .area-strip-cell { border-top: 1px solid var(--border); }
+  .status-bezel-inner { min-height: 0; padding: 9px 16px; flex-wrap: wrap; gap: 4px 16px; }
+  .status-bezel-account { margin-left: 0; }
+}
+
+/* ==========================================================================
+   Phase 1H - Courses (/courses) on the working-band vocabulary
+   Every capability the page had is intact: the track filter, the course
+   selection, the local material import, the labelled AI practice studio and its
+   results. What changed is the composition - the Phase 1G bands replace the card
+   grid, and the page's own controls now use the shared form contract instead of
+   their private `#d8dde5` borders, which failed the 3:1 control-boundary rule.
+   ========================================================================== */
+
+/* --- shell -------------------------------------------------------------- */
+/* The band and the bezel are full-bleed chrome, so the shell drops the shared
+   page padding and the capped measure moves inside .page-body. */
+.learning-main.courses-shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- course list: real buttons in a ruled list -------------------------- */
+.course-list { margin: 0; padding: 0; list-style: none; }
+.course-list-item { border-bottom: 1px solid var(--border); }
+.course-list-item:last-child { border-bottom: 0; }
+/* Explicit areas rather than source order, so the row can restack on a phone
+   without reordering the DOM. */
+.course-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 84px 118px minmax(0, 1fr) auto 22px;
+  grid-template-areas: "code track name topics mark";
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 8px 12px 10px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+}
+.course-row:hover { background: var(--surface-2); }
+.course-row[aria-current="true"] { background: var(--brand-subtle); }
+.course-row-code { grid-area: code; color: var(--text-2); font: 600 var(--fs-caption)/1.5 var(--font-mono); }
+.course-row-track { grid-area: track; color: var(--text-2); font-size: var(--fs-caption); }
+.course-row-name { grid-area: name; font-size: var(--fs-card); font-weight: var(--fw-semibold); }
+.course-row-topics { grid-area: topics; min-width: 0; color: var(--text-2); font-size: var(--fs-caption); text-align: right; }
+/* The current row is marked by a wash *and* a check, so the state never rests on
+   colour alone; aria-current carries the same fact to assistive technology. */
+.course-row-mark { grid-area: mark; align-self: center; color: var(--brand); }
+.course-row[aria-current="true"] .course-row-topics { color: var(--brand-on-subtle); }
+
+/* --- the selected course ------------------------------------------------ */
+.course-kv { margin: 14px 0 0; border-top: 1px solid var(--border); }
+.course-kv > div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.course-kv dt { color: var(--text-2); font-size: var(--fs-caption); line-height: 1.6; }
+.course-kv dd { min-width: 0; margin: 0; font-size: var(--fs-sm); line-height: 1.6; }
+.course-upload {
+  position: relative;
+  min-height: 40px;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+.course-upload:hover { border-color: var(--brand); color: var(--brand); }
+/* Visually hidden but still focusable: `display: none` would take the file picker
+   away from the keyboard entirely. The ring is drawn on the label because the
+   input itself is a 1px box. */
+.course-upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.course-upload:focus-within { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* --- practice studio ---------------------------------------------------- */
+.ruled-split--practice { grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr); }
+.practice-config { min-width: 0; }
+/* The shared field contract sets a 48px floor; this control is a writing area. */
+.practice-config .practice-material { min-height: 200px; resize: vertical; font-family: var(--font-sans); }
+.practice-controls { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: end; }
+.practice-note { margin: 0 0 12px; color: var(--text-2); font-size: var(--fs-caption); line-height: 1.65; }
+.practice-run { margin-top: 16px; }
+.practice-error { margin-top: 14px; }
+
+/* --- AI result panel ---------------------------------------------------- */
+/* The record defines --ai-subtle as the ground behind an AI result panel, so the
+   region reads as AI output before a word of it is read. The label then says so
+   in words as well. */
+.practice-result {
+  min-width: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-md);
+  background: var(--ai-subtle);
+}
+.ai-label { display: flex; align-items: center; gap: 7px; margin: 0 0 14px; color: var(--ai); font-size: var(--fs-caption); font-weight: var(--fw-semibold); line-height: 1.5; }
+/* The column is stretched by the config beside it, so the placeholder centres in
+   the panel instead of leaving a tall empty ground under it. */
+.practice-empty { margin: auto; padding: 24px 18px; text-align: center; }
+.practice-empty strong { display: block; color: var(--ai); font-size: var(--fs-card); font-weight: var(--fw-semibold); }
+.practice-empty p { margin: 8px 0 0; color: var(--ai); font-size: var(--fs-sm); line-height: 1.7; }
+.knowledge-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+.knowledge-tags li { padding: 5px 9px; border-radius: 999px; background: var(--surface); color: var(--ai); font-size: var(--fs-caption); font-weight: var(--fw-semibold); }
+.practice-result details { margin-top: 8px; overflow: hidden; border-radius: var(--r-sm); background: var(--surface); }
+.practice-result summary { display: grid; gap: 6px; padding: 14px 16px; cursor: pointer; }
+.practice-result summary span { color: var(--ai); font-size: var(--fs-caption); font-weight: var(--fw-semibold); }
+.practice-result summary strong { color: var(--text); font-size: var(--fs-sm); line-height: 1.65; }
+.question-option { margin: 0; padding: 5px 16px; color: var(--text-2); font-size: var(--fs-sm); line-height: 1.65; }
+.question-answer { margin-top: 10px; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--surface-2); }
+.question-answer b { display: block; color: var(--text); font-size: var(--fs-caption); font-weight: var(--fw-semibold); }
+.question-answer p { margin: 5px 0 12px; color: var(--text-2); font-size: var(--fs-sm); line-height: 1.7; }
+.question-answer p:last-child { margin-bottom: 0; }
+
+/* --- responsive (existing breakpoints only) ---------------------------- */
+@media (max-width: 1100px) {
+  .course-row { grid-template-columns: 84px 118px minmax(0, 1fr) 22px; grid-template-areas: "code track name mark"; }
+  .course-row-topics { display: none; }
+}
+@media (max-width: 760px) {
+  /* clearance for the drawer trigger, which is fixed at the top-left */
+  .learning-main.courses-shell { padding-top: 78px; }
+  .course-row {
+    grid-template-columns: minmax(0, 1fr) 22px;
+    grid-template-areas:
+      "code  mark"
+      "name  mark"
+      "track mark";
+    align-items: start;
+    row-gap: 3px;
+    padding: 14px 8px 14px 10px;
+  }
+  .course-kv > div { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .practice-controls { grid-template-columns: minmax(0, 1fr); }
+  .practice-note { margin-bottom: 0; }
+}
+
+/* ==========================================================================
+   Phase 1I - settings, projects, data and papers on the working-band vocabulary
+   Four page shells adopt the Phase 1G bands, and each page's own chrome is moved
+   onto the token layer: decorative elevation and glass come out of page
+   structure, every font size below 12px is raised to the floor the design record
+   sets, and the legacy warm-grey surfaces resolve to the cool neutral tokens.
+   No page structure is restructured: PaperLab and DataLab keep their columns and
+   their density, as the record requires.
+   ========================================================================== */
+
+/* --- shell: bands and bezel are full-bleed, the measure is capped inside --- */
+.settings-main.settings-shell,
+.project-main.project-shell,
+.data-main.data-shell,
+.paper-main.papers-shell {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* The two tool surfaces keep their full working width. */
+.page-body--wide,
+.page-bar-inner--wide { max-width: 1680px; }
+/* A register with four cells rather than five. */
+.metric-register--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* A cell whose real state needs attention; the note beside it names the reason,
+   so the state is never carried by colour alone. */
+.metric-register-cell--alert strong { color: var(--warning); }
+
+/* --- shared: section headings on the sans stack, panels without elevation --- */
+.settings-section-head,
+.project-detail-head,
+.panel-heading,
+.analysis-header,
+.chart-toolbar { border-color: var(--border); }
+.settings-section-head { display: block; }
+.settings-section-head h2,
+.settings-state h2,
+.project-detail-head h2,
+.project-library header h2,
+.panel-heading h2,
+.analysis-header h2,
+.chart-toolbar h3,
+.test-config-card h3,
+.ai-studio-head h2,
+.ai-task-card h3,
+.translation-placeholder strong,
+.library-title h2,
+.search-head h2,
+.insight-head h2,
+.paper-insights article > strong,
+.ai-empty-result strong,
+.search-results h3,
+.search-empty strong,
+.library-empty strong,
+.empty-state strong,
+.paper-empty strong,
+.big-result strong,
+.project-progress-card strong {
+  font-family: var(--font-sans);
+  letter-spacing: -0.01em;
+}
+
+/* ======================================================================
+   Settings
+   ====================================================================== */
+/* Sections separate by rule and space, not by a raised card. */
+.settings-panel {
+  margin-top: 30px;
+  padding: 26px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.settings-sections > .settings-panel:first-child { margin-top: 24px; }
+.settings-section-head h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--fs-section);
+  line-height: var(--lh-section);
+  font-weight: var(--fw-semibold);
+}
+/* The sticky sub-nav was a glass panel; it is a ruled anchor row now. */
+.settings-nav {
+  /* still sticky, but opaque: the blur behind it was a glass effect */
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  margin: 18px 0 0;
+  padding: 0 0 2px;
+  gap: 6px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--bg-app);
+  backdrop-filter: none;
+}
+.settings-nav a {
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: var(--r-xs);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+}
+.settings-nav a:hover { background: var(--surface-2); color: var(--text); }
+.settings-panel-copy,
+.settings-state p { color: var(--text-2); font-size: var(--fs-sm); line-height: 1.75; }
+.settings-info-grid article {
+  padding: 16px;
+  border-color: var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+}
+.settings-info-grid article b { color: var(--text); font-size: var(--fs-sm); }
+.settings-info-grid article p { color: var(--text-2); font-size: var(--fs-caption); }
+.settings-about > small { color: var(--text-2); font: var(--fs-caption)/1.7 var(--font-mono); }
+.settings-about code { font-family: var(--font-mono); font-size: var(--fs-caption); }
+.settings-state {
+  min-height: 0;
+  margin-top: 24px;
+  padding: 34px 24px;
+  border-color: var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.settings-state h2 { margin: 12px 0 0; color: var(--text); font-size: var(--fs-page); line-height: 1.35; font-weight: var(--fw-semibold); }
+.settings-state > span { color: var(--text-2); font: var(--fw-semibold) var(--fs-caption)/1 var(--font-mono); letter-spacing: 0.08em; }
+.avatar-editor { border-bottom-color: var(--border); }
+.avatar-editor > b { background: var(--brand); font-family: var(--font-sans); }
+.avatar-editor small { color: var(--text-2); font-size: var(--fs-caption); line-height: 1.6; }
+.avatar-editor label { color: var(--text-2); font-size: var(--fs-caption); }
+.avatar-editor button {
+  min-height: 40px;
+  border-color: var(--border-control);
+  border-radius: var(--r-xs);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.settings-form label,
+.interest-editor > .interest-label { color: var(--text); font-size: var(--fs-sm); }
+.interest-editor input {
+  border-color: var(--border-control);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.interest-editor > div button {
+  min-height: 30px;
+  padding: 6px 10px;
+  background: var(--brand-subtle);
+  color: var(--brand-on-subtle);
+  font-size: var(--fs-caption);
+}
+.interest-editor form button { background: var(--brand); font-size: var(--fs-sm); }
+/* `display: none` took the avatar picker out of the tab order entirely; hidden but
+   focusable keeps it operable from the keyboard. */
+.avatar-editor { position: relative; }
+.avatar-editor input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; display: block; }
+.avatar-editor label { position: relative; }
+.avatar-editor label:focus-within { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ======================================================================
+   Projects
+   ====================================================================== */
+.project-message { border-radius: var(--r-sm); font-size: var(--fs-sm); }
+.project-loading i { border-color: var(--border); border-top-color: var(--brand); }
+.project-login-wall {
+  border-color: var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: none;
+}
+.project-login-wall h2 { font-family: var(--font-sans); font-weight: var(--fw-semibold); }
+.project-login-wall > span { color: var(--text-2); font: var(--fw-semibold) var(--fs-caption)/1 var(--font-mono); letter-spacing: 0.08em; }
+.project-empty { border-color: var(--border); border-radius: var(--r-lg); background: var(--surface); box-shadow: none; }
+.project-empty h2 { font-family: var(--font-sans); font-weight: var(--fw-semibold); }
+.project-shell .project-workbench {
+  border-color: var(--border);
+  border-radius: var(--r-md);
+  box-shadow: none;
+}
+.project-library { background: var(--surface-2); }
+.project-library header { border-bottom-color: var(--border); }
+.project-library header span,
+.project-detail-head > div > span,
+.project-progress-card > div > span,
+.project-task-card header span,
+.project-note-card header span,
+.project-resource-card header span,
+.project-task-card header small,
+.project-resource-card > header p { font-size: var(--fs-caption); }
+.project-filter button {
+  min-height: 32px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+}
+.project-filter button.active { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.project-list button { border-radius: var(--r-xs); border-color: transparent; }
+.project-list button:hover { background: var(--surface); }
+.project-list button.active { background: var(--surface); border-color: var(--border); }
+.project-list button.active::after {
+  content: "";
+  position: absolute;
+  inset: 10px auto 10px 0;
+  width: 1px;
+  background: var(--brand);
+}
+.project-list span,
+.project-list small,
+.project-task-card header small,
+.project-resource-card > header p,
+.project-resource-card a span small { font-size: var(--fs-caption); }
+.project-detail-head h2 { font-weight: var(--fw-semibold); }
+.project-detail-head p { color: var(--text-2); }
+.project-progress-card,
+.project-task-card,
+.project-note-card,
+.project-resource-card { border-color: var(--border); }
+.project-progress-card > i { background: var(--surface-2); }
+.project-progress-card > i b { background: var(--brand); }
+.project-progress-card strong { font-variant-numeric: tabular-nums; }
+.project-tasks label { align-items: flex-start; }
+.project-tasks label span { font-size: var(--fs-sm); }
+.project-note-card textarea,
+.project-task-card form input {
+  border-color: var(--border-control);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+.project-note-card textarea:focus,
+.project-task-card form input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-subtle);
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+.project-modal > form { border-radius: var(--r-xl); }
+.project-modal label { color: var(--text); font-size: var(--fs-sm); }
+.project-modal input,
+.project-modal select,
+.project-modal textarea {
+  border-color: var(--border-control);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+}
+.project-resource-card a { border-color: var(--border); border-radius: var(--r-sm); }
+.project-resource-card a:hover { border-color: var(--brand); }
+/* Measured 2.67:1, 2.97:1 and 3.56:1 — all below the 4.5:1 body-text floor. */
+.project-filter-empty,
+.project-tasks p,
+.project-tasks label.done span { color: var(--text-2); }
+
+/* ======================================================================
+   DataLab - keeps every column, every table and its horizontal scroll
+   ====================================================================== */
+.sample-button {
+  min-height: 38px;
+  border-color: var(--border-control);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-sm);
+  transition: border-color var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
+}
+.sample-button:hover { border-color: var(--brand); color: var(--brand); transform: none; }
+.upload-panel,
+.overview-panel,
+.quality-panel,
+.analysis-panel,
+.data-preview {
+  border-color: var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: none;
+}
+.dropzone {
+  border-color: var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  transition: border-color var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
+}
+.dropzone:hover { border-color: var(--brand); background: var(--surface); transform: none; }
+.dropzone.dragging { border-color: var(--brand); background: var(--brand-subtle); transform: none; }
+.upload-icon { background: var(--brand-subtle); color: var(--brand-on-subtle); font-size: 22px; }
+.privacy-pill,
+.quality-score,
+.updated-label,
+.csv-badge,
+.scale-badge { font-size: var(--fs-caption); }
+.privacy-pill { border-radius: var(--r-xs); background: var(--surface-2); color: var(--text-2); }
+.quality-score { border-radius: var(--r-xs); background: var(--surface-inverse); color: var(--text-inverse); }
+.csv-badge { border-radius: var(--r-xs); background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.metric-grid article { border-radius: var(--r-sm); background: var(--surface-2); }
+.metric-grid article.has-warning { background: var(--warning-subtle); }
+.metric-grid strong { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+.type-breakdown div { border-top-color: var(--border); }
+.type-breakdown strong { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+.variable-card { border-color: var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.variable-card > i { background: var(--border); }
+.variable-card > i b { background: var(--brand); }
+.variable-card strong { font-size: var(--fs-sm); }
+.type-number,
+.type-text { font-size: var(--fs-caption); }
+.type-number { background: var(--surface-inverse); color: var(--ai-on-dark); }
+.type-text { background: var(--surface-inverse); color: var(--brand-on-dark); }
+.format-support > span { border-color: var(--border); border-radius: var(--r-xs); font-size: var(--fs-caption); }
+.format-support small { font-size: var(--fs-caption); }
+.file-chip { border-top-color: var(--border); }
+.analysis-tabs { border-radius: var(--r-xs); background: var(--surface-2); }
+.analysis-tabs button { border-radius: 4px; color: var(--text-2); font-size: var(--fs-sm); }
+.analysis-tabs button.active { background: var(--brand-subtle); color: var(--brand-on-subtle); box-shadow: none; font-weight: var(--fw-semibold); }
+.chart-card,
+.test-config-card { border-color: var(--border); }
+.result-card { background: var(--surface-2); }
+.chart-toolbar p,
+.result-label { color: var(--text-2); font-size: var(--fs-caption); font-weight: var(--fw-semibold); letter-spacing: 0.04em; }
+.histogram { border-color: var(--border-strong); background: none; }
+.histogram-column span { font-size: var(--fs-caption); }
+.histogram-column i { background: var(--text-2); transition: none; }
+.axis-labels { font-size: var(--fs-caption); }
+.axis-labels strong { color: var(--text-2); }
+.big-result { border-bottom-color: var(--border); }
+.big-result strong { font-variant-numeric: tabular-nums; }
+.stats-list div { border-bottom-color: var(--border); }
+.stats-list dt { font-size: var(--fs-caption); }
+.stats-list dd { font-size: var(--fs-sm); font-family: var(--font-mono); }
+.table-title span { font-size: var(--fs-caption); }
+.table-title strong { font-size: var(--fs-sm); }
+.scatterplot { border-color: var(--border-strong); }
+.scatterplot i { box-shadow: none; border-color: var(--surface); }
+.y-axis-title { font-size: var(--fs-caption); }
+.plain-conclusion { border-radius: var(--r-sm); background: var(--brand-subtle); }
+.plain-conclusion span { color: var(--brand-on-subtle); font-size: var(--fs-caption); }
+.plain-conclusion p { color: var(--brand-on-subtle); font-size: var(--fs-sm); }
+.method-note { border-top-color: var(--border); color: var(--text-2); font-size: var(--fs-caption); }
+.group-comparison div { border-color: var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.group-comparison strong { font-family: var(--font-sans); font-variant-numeric: tabular-nums; }
+.test-stat-line { border-radius: var(--r-sm); background: var(--surface-inverse); color: var(--text-inverse); font-size: var(--fs-caption); }
+.empty-state strong { font-weight: var(--fw-semibold); }
+.empty-state p { font-size: var(--fs-sm); }
+.data-preview .status-copy { font-size: var(--fs-caption); }
+.missing-cell { background: var(--warning-subtle); color: var(--warning); }
+
+/* ======================================================================
+   PaperLab - the three columns and their density are untouched
+   ====================================================================== */
+.paper-workbench {
+  /* elevation out, hairline radius in: this is structure, not a floating card */
+  border-color: var(--border);
+  border-radius: var(--r-xs);
+  box-shadow: none;
+}
+.library-list article { border-radius: var(--r-xs); }
+.library-list article.active {
+  background: var(--surface-inverse-2);
+  /* 1px marker: a thicker coloured edge bar is what the craft floor refuses */
+  box-shadow: inset 1px 0 var(--brand-on-dark);
+}
+.library-title > span { font-size: var(--fs-caption); border-radius: var(--r-xs); }
+.library-title p,
+.search-head p,
+.insight-head p { font-size: var(--fs-caption); }
+.library-list article small { font-size: var(--fs-caption); }
+.library-privacy { border-color: var(--border-inverse); border-radius: var(--r-xs); }
+.library-privacy strong { font-size: var(--fs-caption); }
+.library-privacy p { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.pdf-token { border-radius: 3px; font-size: var(--fs-caption); background: var(--surface-inverse); color: var(--brand-on-dark); }
+.paper-delete { color: var(--text-inverse-2); }
+.paper-message { border-color: var(--border); border-radius: var(--r-xs); background: var(--surface-2); color: var(--text-2); }
+.paper-message span { color: var(--success); }
+.translator-status { border-color: var(--border); border-radius: var(--r-xs); background: var(--surface-2); }
+.translator-status span,
+.translator-status small { color: var(--text-2); font-size: var(--fs-caption); }
+.translator-status i { box-shadow: none; }
+.papers-shell .translator-status.state-unsupported i,
+.papers-shell .translator-status.state-error i { background: var(--danger); }
+.papers-shell .translator-status.state-downloadable i,
+.papers-shell .translator-status.state-working i { background: var(--warning); }
+.secondary-paper-button { border-color: var(--border-control); border-radius: var(--r-xs); color: var(--text); font-size: var(--fs-sm); }
+.secondary-paper-button:hover { border-color: var(--brand); color: var(--brand); }
+.paper-upload { border-radius: var(--r-xs); }
+.paper-upload strong { font-size: var(--fs-sm); }
+.paper-upload small { font-size: var(--fs-caption); }
+.paper-mobile-tabs { border-radius: var(--r-xs); background: var(--surface-2); }
+.paper-mobile-tabs button { border-radius: 4px; font-size: var(--fs-caption); }
+.paper-mobile-tabs button.active { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.reader-toolbar { border-bottom-color: var(--border); }
+.paper-title-edit span,
+.reader-progress span,
+.paragraph-meta span { font-size: var(--fs-caption); }
+.paper-title-edit input { font-family: var(--font-sans); font-weight: var(--fw-semibold); }
+.reader-controls button { border-color: var(--border-control); }
+.reader-controls span { font-size: var(--fs-caption); }
+.reader-progress { background: var(--surface-2); }
+.reader-progress i { background: var(--brand); }
+.section-chips button { border-color: var(--border); border-radius: var(--r-xs); font-size: var(--fs-caption); }
+.section-chips button.active { border-color: var(--brand); background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.paragraph-meta strong { border-radius: 3px; background: var(--surface-2); color: var(--text-2); font-size: var(--fs-caption); }
+.paragraph-meta button { font-size: var(--fs-caption); }
+.reader-labels { color: var(--text-2); font-size: var(--fs-caption); }
+.bilingual-active { border-bottom-color: var(--border); }
+.bilingual-active article + article { border-left-color: var(--border); }
+.bilingual-active p { font-family: var(--font-sans); font-size: 17px; line-height: 1.9; }
+.bilingual-active article[lang="zh-CN"] p { color: var(--text-2); }
+.translation-placeholder button { border-radius: var(--r-xs); background: var(--brand); font-size: var(--fs-caption); }
+.paragraph-actions button { border-color: var(--border-control); border-radius: var(--r-xs); font-size: var(--fs-caption); }
+.paragraph-actions button.done { border-color: var(--success); background: var(--success-subtle); color: var(--success); }
+.paragraph-actions button:last-child { background: var(--brand); }
+.paper-insights { background: var(--surface-2); }
+.insight-head { border-bottom-color: var(--border); }
+.insight-head span { border-radius: 3px; background: var(--surface); color: var(--text-2); font-size: var(--fs-caption); }
+.paper-insights > article { border-bottom-color: var(--border); }
+.paper-insights article > span { color: var(--text-2); font-size: var(--fs-caption); }
+.paper-insights article p { color: var(--text-2); font-size: var(--fs-sm); }
+.term-list b { border-radius: 3px; background: var(--surface-inverse); color: var(--brand-on-dark); font-size: var(--fs-caption); }
+.check-card li { color: var(--text-2); font-size: var(--fs-sm); }
+.note-card textarea {
+  border-color: var(--border-control);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+}
+.note-card textarea:focus { border-color: var(--brand); }
+.paper-search { border-top-color: var(--border); background: var(--surface-2); }
+.search-head > span { border-radius: 3px; background: var(--surface); color: var(--text-2); font-size: var(--fs-caption); }
+.paper-search-box { border-color: var(--border-control); border-radius: var(--r-xs); background: var(--surface); }
+.paper-search-box input { font-size: var(--fs-sm); }
+.paper-search-box button { background: var(--brand); font-size: var(--fs-sm); }
+.search-source { font-size: var(--fs-caption); }
+.search-results > article { border-color: var(--border); border-radius: var(--r-sm); background: var(--surface); }
+.result-topline span { color: var(--text-2); font-size: var(--fs-caption); }
+.result-topline small { font-size: var(--fs-caption); }
+.result-authors,
+.result-abstract { font-size: var(--fs-caption); }
+.result-links a,
+.result-links button { border-color: var(--border-control); border-radius: var(--r-xs); font-size: var(--fs-caption); }
+.result-links a:first-child { border-color: var(--brand); background: var(--brand); }
+.search-empty span { color: var(--brand); }
+.search-empty p { font-size: var(--fs-sm); }
+/* These inputs declare `outline: none` in the legacy layer at (0,1,1), which beats
+   the global :focus-visible fallback at (0,1,0) — so they had no ring at all. */
+.paper-title-edit input:focus-visible,
+.ai-task-card textarea:focus,
+.ai-task-card select:focus,
+.note-card textarea:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+/* Inside the search box an outline would be clipped by its overflow, so the ring
+   is drawn inset instead. */
+/* An outline here would be clipped by the box's own overflow, so the ring is drawn
+   on the container instead — the same technique the file-picker labels use. */
+.paper-search-box:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-subtle); }
+.paper-search-box input:focus,
+.paper-search-box button:focus-visible { outline: 0; }
+/* AI studio: the inverse panel is the AI-semantic ground, not a second brand */
+.ai-studio { background: var(--surface-inverse); }
+.ai-studio-head { border-bottom-color: var(--border-inverse); }
+.ai-studio-head p,
+.ai-task-card > p { color: var(--ai-on-dark); font-size: var(--fs-caption); }
+.ai-studio-head > div > span { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-key-box { border-color: var(--border-inverse); border-radius: var(--r-xs); background: var(--surface-inverse-2); }
+.ai-key-box label { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-key-box > div { border-color: var(--border-inverse); background: var(--inverse); }
+.ai-key-box input { font-size: var(--fs-sm); }
+.ai-key-box button { font-size: var(--fs-caption); }
+.ai-key-box small,
+.ai-key-box > a { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-action-tabs { border-bottom-color: var(--border-inverse); }
+.ai-action-tabs button { border-color: var(--border-inverse); border-radius: var(--r-xs); color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-task-card { border-right-color: var(--border-inverse); }
+.ai-task-card > span { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-task-card textarea,
+.ai-task-card select {
+  border-color: var(--border-inverse);
+  border-radius: var(--r-xs);
+  background: var(--surface-inverse-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+}
+.ai-task-card > small { color: var(--text-inverse-2); font-size: var(--fs-caption); }
+.ai-error { border-color: var(--danger); border-radius: var(--r-xs); background: var(--danger-subtle); color: var(--danger); font-size: var(--fs-caption); }
+.ai-result-panel { background: var(--ai-subtle); }
+.ai-result-top { border-bottom-color: var(--border); }
+.ai-result-top span { color: var(--ai); font-size: var(--fs-caption); }
+.ai-result-top small { color: var(--text-2); font-size: var(--fs-caption); }
+.ai-empty-result { color: var(--text-2); }
+.ai-empty-result b { border-radius: var(--r-sm); background: var(--surface-inverse); }
+.ai-empty-result p { color: var(--text-2); font-size: var(--fs-sm); }
+.result-field { border-color: var(--border); border-radius: var(--r-xs); background: var(--surface); }
+.result-field h4 { color: var(--ai); font-size: var(--fs-caption); }
+.result-field p { color: var(--text); font-size: var(--fs-sm); }
+.result-list > p i { background: var(--ai); }
+.result-object { border-radius: var(--r-xs); background: var(--surface-2); }
+.ai-result-foot { color: var(--text-2); font-size: var(--fs-caption); }
+.role-card { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+
+/* --- responsive ---------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .metric-register--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  /* clearance for the drawer trigger; the inner bands keep their own inset so
+     the bar and the bezel still reach the edges */
+  .settings-main.settings-shell,
+  .project-main.project-shell,
+  .data-main.data-shell,
+  .paper-main.papers-shell { padding: 78px 0 0; }
+  .metric-register--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

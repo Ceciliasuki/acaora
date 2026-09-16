@@ -3,7 +3,7 @@
 import AppSidebar from "../components/app-sidebar";
 import Link from "next/link";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch } from "../lib/auth-client";
 import { Dialog } from "../components/ui";
 
@@ -177,27 +177,56 @@ export default function ProjectsPage() {
     setMessage("项目已删除。");
   }
 
+  /* The create dialog is a hand-rolled modal, so it owes the same contract the
+     primitive's native <dialog> gets for free: Escape closes it, and initial focus
+     lands on the first field. `autoFocus` would fire on mount regardless of context,
+     which is why jsx-a11y rejects it; focusing after the open is the correct form. */
+  const createTitleRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!showCreate) return;
+    createTitleRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setShowCreate(false); };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showCreate]);
+
   const initials = viewer?.email?.slice(0, 2).toUpperCase() ?? "GU";
 
   return (
     <main className="student-app project-app">
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
-      <section className="student-main project-main">
-        <header className="student-topbar project-topbar"><div><span>项目管理</span><h1>项目工作台</h1><p>集中管理目标、论文、数据和行动。</p></div><button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}>＋ 新建项目</button></header>
+      <section className="student-main project-main project-shell">
+        <div className="page-bar">
+          <div className="page-bar-inner">
+            <h1>项目工作台</h1>
+            <span className="page-bar-spacer" />
+            <span className="page-bar-date">集中管理目标、论文、数据和行动</span>
+            <button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}>＋ 新建项目</button>
+          </div>
+        </div>
 
+        <div className="page-body">
         {message && <div className="project-message" role="status">{message}</div>}
 
         {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : !viewer ? (
           <section className="project-login-wall"><span>PERSONAL WORKSPACE</span><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><Link href="/auth">注册或密码登录 <b>→</b></Link></section>
         ) : (
           <>
-            <section className="project-metrics">
-              <article><span>ACTIVE PROJECTS</span><strong>{activeCount}</strong><small>个进行中的项目</small></article>
-              <article><span>COMPLETED TASKS</span><strong>{completedTasks}</strong><small>项行动已经完成</small></article>
-              <article className={dueSoon ? "attention" : ""}><span>NEXT 7 DAYS</span><strong>{dueSoon}</strong><small>个项目即将到期</small></article>
-              <article><span>RESEARCH MEMORY</span><strong>{projects.length}</strong><small>个持续积累的空间</small></article>
-            </section>
+            {/* Every cell is a real count derived from the project list. */}
+            <div className="metric-register">
+              {[
+                { label: "进行中", value: String(activeCount), note: "个进行中的项目" },
+                { label: "已完成任务", value: String(completedTasks), note: "项行动已经完成" },
+                { label: "7 天内到期", value: String(dueSoon), note: dueSoon ? "有项目即将到期" : "暂无临期项目" },
+                { label: "项目总数", value: String(projects.length), note: "个持续积累的空间" },
+                { label: "当前视图", value: filter === "active" ? "仅进行中" : "全部项目", note: `${filteredProjects.length} 个匹配` },
+              ].map((cell) => <div className={`metric-register-cell${cell.label === "7 天内到期" && dueSoon > 0 ? " metric-register-cell--alert" : ""}`} key={cell.label}>
+                <b>{cell.label}</b>
+                <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
+                <small>{cell.note}</small>
+              </div>)}
+            </div>
 
             {!projects.length ? <section className="project-empty"><b>◇</b><span>START WITH A REAL GOAL</span><h2>创建你的第一个项目</h2><p>可以是一篇课程论文、一次数据分析、一项竞赛，或任何需要持续推进的目标。</p><button onClick={() => setShowCreate(true)}>建立项目空间 →</button></section> : (
               <section className="project-workbench">
@@ -207,7 +236,7 @@ export default function ProjectsPage() {
                   <div className="project-list">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
                     const progress = projectProgress(project);
-                    return <button className={project.id === visibleSelectedId ? "active" : ""} key={project.id} onClick={() => setSelectedId(project.id)}><b>{kind.icon}</b><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><i><em style={{ width: `${progress}%` }} /></i><small>{progress}% · {(project.metadata.tasks ?? []).length} 项任务</small></div></button>;
+                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onClick={() => setSelectedId(project.id)}><b>{kind.icon}</b><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><i><em style={{ width: `${progress}%` }} /></i><small>{progress}% · {(project.metadata.tasks ?? []).length} 项任务</small></div></button>;
                   })}{!filteredProjects.length && <p className="project-filter-empty">没有进行中的项目。</p>}</div>
                   <section className="weekly-plan"><span>THIS WEEK</span><h3>下一步行动</h3>{weeklyPlan.length ? weeklyPlan.map((task) => <p key={task.id}><i /> <b>{task.text}</b><small>{task.projectTitle}</small></p>) : <p className="weekly-empty">暂无待办任务，给项目添加一个明确的下一步。</p>}</section>
                 </aside>
@@ -220,7 +249,7 @@ export default function ProjectsPage() {
                   <div className="project-detail-grid">
                     <section className="project-task-card"><header><div><span>NEXT ACTIONS</span><h3>任务清单</h3></div><small>完成一项，就推进一步</small></header><form onSubmit={addTask}><input value={taskText} onChange={(event) => setTaskText(event.target.value)} placeholder="输入一个明确、可执行的任务" aria-label="新任务" /><button disabled={saving || !taskText.trim()}>添加</button></form><div className="project-tasks">{(selected.metadata.tasks ?? []).length ? (selected.metadata.tasks ?? []).map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" checked={task.done} onChange={() => toggleTask(task.id)} /><span>{task.text}</span></label>) : <p>暂无任务。建议从“查找 3 篇核心论文”或“完成数据质量检查”开始。</p>}</div></section>
 
-                    <section className="project-note-card"><header><span>PROJECT NOTES</span><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈、关键结论或下一次要解决的问题…" id="project-notes" /><button disabled={saving} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</button></section>
+                    <section className="project-note-card"><header><span>PROJECT NOTES</span><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈、关键结论或下一次要解决的问题…" id="project-notes" aria-label="项目笔记" /><button disabled={saving} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</button></section>
                   </div>
 
                   <section className="project-resource-card"><header><div><span>CONNECTED TOOLS</span><h3>从项目继续工作</h3></div><p>在对应工作台继续处理论文与数据。</p></header><div><Link href="/papers"><b>文</b><span><strong>PaperLab</strong><small>检索、精读并分析相关论文</small></span><i>→</i></Link><Link href="/data"><b>Σ</b><span><strong>DataLab</strong><small>上传数据并完成统计分析</small></span><i>→</i></Link></div></section>
@@ -229,9 +258,19 @@ export default function ProjectsPage() {
             )}
           </>
         )}
+        </div>
+
+        <div className="status-bezel">
+          <div className="status-bezel-inner">
+            <span>本地优先</span>
+            <span>仅当前账户可见</span>
+            <span>项目、任务与笔记按账户同步</span>
+            <span className="status-bezel-account">{viewer ? `${projects.length} 个项目` : "未登录"}</span>
+          </div>
+        </div>
       </section>
 
-      {showCreate && viewer && <div className="project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title"><button className="project-modal-backdrop" onClick={() => setShowCreate(false)} aria-label="关闭新建项目窗口" /><form onSubmit={createProject}><header><div><span>NEW WORKSPACE</span><h2 id="create-project-title">建立一个项目空间</h2><p>先定义目标，后续再逐步加入论文、数据和任务。</p></div><button type="button" onClick={() => setShowCreate(false)} aria-label="关闭">×</button></header><label>项目名称<input name="title" required maxLength={120} placeholder="例如：大学生睡眠与学习成绩研究" /></label><label>项目类型<select name="kind" defaultValue="paper">{kindOptions.map((kind) => <option value={kind.value} key={kind.value}>{kind.label}</option>)}</select></label><label>希望完成什么？<textarea name="goal" rows={3} placeholder="用一句话描述你想得到的最终成果" /></label><label>计划截止日期<input name="deadline" type="date" /></label><footer><button type="button" onClick={() => setShowCreate(false)}>取消</button><button className="primary" disabled={saving}>{saving ? "正在创建…" : "创建项目空间"}</button></footer></form></div>}
+      {showCreate && viewer && <div className="project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title"><button className="project-modal-backdrop" onClick={() => setShowCreate(false)} aria-label="关闭新建项目窗口" /><form onSubmit={createProject}><header><div><span>NEW WORKSPACE</span><h2 id="create-project-title">建立一个项目空间</h2><p>先定义目标，后续再逐步加入论文、数据和任务。</p></div><button type="button" onClick={() => setShowCreate(false)} aria-label="关闭">×</button></header><label>项目名称<input ref={createTitleRef} name="title" required maxLength={120} placeholder="例如：大学生睡眠与学习成绩研究" /></label><label>项目类型<select name="kind" defaultValue="paper">{kindOptions.map((kind) => <option value={kind.value} key={kind.value}>{kind.label}</option>)}</select></label><label>希望完成什么？<textarea name="goal" rows={3} placeholder="用一句话描述你想得到的最终成果" /></label><label>计划截止日期<input name="deadline" type="date" /></label><footer><button type="button" onClick={() => setShowCreate(false)}>取消</button><button className="primary" disabled={saving}>{saving ? "正在创建…" : "创建项目空间"}</button></footer></form></div>}
       <Dialog open={deleteOpen} title="删除这个项目？" description={selected ? `“${selected.title}”及其任务和笔记将被永久删除。` : undefined} confirmLabel={saving ? "正在删除…" : "确认删除"} destructive onConfirm={() => void deleteProject()} onClose={() => setDeleteOpen(false)} />
     </main>
   );
