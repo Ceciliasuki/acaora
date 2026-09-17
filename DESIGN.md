@@ -15,6 +15,7 @@ colors:
   app-background: "#f5f6f9"
   surface-white: "#ffffff"
   surface-subtle: "#f8f9fb"
+  paper-surface: "#faf9f6"
   deep-navy: "#121828"
   deep-navy-raised: "#1b2334"
   ink-primary: "#131a2b"
@@ -57,7 +58,21 @@ typography:
     fontWeight: 700
     lineHeight: "16px"
     letterSpacing: "0.06em"
+  academic-display:
+    fontSize: "34px"
+    fontWeight: 600
+    lineHeight: "40px"
+    letterSpacing: "-0.025em"
+  research-record-title:
+    fontSize: "17px"
+    fontWeight: 500
+    lineHeight: "26px"
+  contents-title:
+    fontSize: "16px"
+    fontWeight: 500
+    lineHeight: "24px"
 rounded:
+  paper-layer: "3px"
   xs: "6px"
   sm: "8px"
   md: "10px"
@@ -151,6 +166,22 @@ components:
     textColor: "{colors.ink-secondary}"
   state-note:
     textColor: "{colors.ink-secondary}"
+  paper-field:
+    backgroundColor: "{colors.paper-surface}"
+    borderColor: "{colors.line-soft}"
+    rounded: "{rounded.sm}"
+  paper-sheet:
+    backgroundColor: "{colors.surface-white}"
+    borderColor: "{colors.line-strong}"
+    rounded: "3px"
+  contents-row:
+    backgroundColor: "transparent"
+    textColor: "{colors.ink-primary}"
+    rounded: "0px"
+  bibliographic-record:
+    borderColor: "{colors.line-soft}"
+    textColor: "{colors.ink-primary}"
+    rounded: "0px"
 ---
 
 # Design System: Acaora 学曦
@@ -165,6 +196,8 @@ Acaora is a workbench, not a stage. The surface is a cool, near-white working fi
 
 The page language is the **working band** (仪表). A surface opens on a rule-separated control band, states its real numbers in a register, arranges its content in ruled rows and columns rather than in cards, and closes on a bezel of the facts that hold everywhere. The two dense tools, PaperLab and DataLab, keep their own three-column workbenches inside that frame: the frame is what unifies the product, not a shared card.
 
+The second, newer page language is the **Scholarly Luxe workspace**, approved after the working bands and implemented first on the dashboard. Where a working band is an instrument panel, a scholarly surface is an editorial page: a running head, a publication object set in paper, numbered sections, an index and a bibliographic record list, held together by typography and rules instead of containers. Its full definition is the **Scholarly Luxe Workspace** section below; the dashboard is its reference implementation. The working bands remain valid for the surfaces that still use them, and both languages share one token layer, one type scale and one focus contract.
+
 The product carries two visual registers that must never blur. Ordinary product surfaces (courses, projects, data, settings, navigation, primary actions) speak in brand blue on cool neutrals. AI-semantic surfaces (the AI studio, AI-generated results, AI processing state) speak in teal on tinted or inverse grounds. Teal is not a second brand colour and must not be used to decorate ordinary business actions.
 
 Density is deliberately uneven between surfaces. A reading tool and a statistics tool are allowed to be far denser than a settings page. What is unified is the design language: the same neutrals, the same type scale, the same radius and elevation logic, the same focus treatment. Page structure is not unified, and forcing it to be would damage the two tools that need density.
@@ -172,10 +205,13 @@ Density is deliberately uneven between surfaces. A reading tool and a statistics
 **Key Characteristics:**
 - Light, cool, near-white workspace; deep navy for navigation and inverse panels.
 - One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).
+- One warm neutral exists, and it is paper (`#faf9f6`, `--surface-paper`): publication objects, paper sheets and document edges only, never a page ground.
 - System sans throughout; Georgia has been removed from page-level titles.
 - Page structure carries no elevation at all: full-bleed rule-separated bands hold the chrome, and the capped measure sits inside them.
+- A scholarly surface holds structure with rules, alignment and paper material instead: two clearly bounded premium surfaces is its guideline ceiling.
 - Borders plus the lightest shadow carry structure for controls and genuinely raised content; a page is never a stack of floating cards.
 - A numeric register reports the page's real state, and the dense tool surfaces are allowed to look like instruments rather than like marketing panels.
+- A surface never prints a number it has not read: unknown is `—`, never `0`.
 - Motion is restrained and always explains a state change.
 - Long-session legibility beats first-impression impact.
 
@@ -201,6 +237,7 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 - **App Field** (`#f5f6f9`, `--bg-app`): the page background for every workspace surface, and the mobile browser theme colour. Not pure white, so white surfaces can sit on it.
 - **Surface White** (`#ffffff`, `--surface`): cards, panels, inputs, dialogs.
 - **Surface Subtle** (`#f8f9fb`, `--surface-2`): inset areas, table headers, secondary panels, segmented control troughs.
+- **Paper Surface** (`#faf9f6`, `--surface-paper`): the system's one warm neutral, and the material of a publication object. Allowed for publication objects, paper sheets, document edges and academic archival surfaces. Forbidden as a page background, as a generic card fill, in warning states, and on ordinary form controls. Deeper paper steps are mixed from this token with the ink ramp through `color-mix()`; no second warm palette and no additional warm hex exists.
 - **Deep Navy** (`#121828`, `--surface-inverse`): the left rail, the paper library, the AI studio panel, and any inverse panel. One value, not several near-blacks.
 - **Deep Navy Raised** (`#1b2334`, `--surface-inverse-2`): selected rows and secondary blocks inside an inverse surface.
 - **Ink Primary** (`#131a2b`, `--text`): body and headings. 17.35:1 on white.
@@ -215,7 +252,9 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 ### Named Rules
 **The One Accent Rule.** Brand blue is the only product accent. No second decorative accent may be introduced for cards, emphasis, or decoration, and a single-series chart is blue or neutral, never a rainbow. One explicit exception: a multi-series data visualisation may need several encoding colours to distinguish real data series. Such a palette is not a second brand colour, is not governed by this rule, and must be designed and approved separately during the DataLab phase. AI teal must never be borrowed as an ordinary chart's second series.
 
-**The AI Teal Containment Rule.** Teal appears only where the surface is about AI: the AI studio, AI-generated results, AI processing state. It never fills a normal business action, a course card, a project control, or a chart series.
+**The AI Teal Containment Rule.** Teal appears only where the surface is about AI: the AI studio, AI-generated results, AI processing state. It never fills a normal business action, a course card, a project control, or a chart series. A scholarly surface, its paper material and its research records are not AI-semantic regions either: none of them may borrow teal to look technical, scientific or modern.
+
+**The Paper Containment Rule.** Paper Surface is a material, not a theme. It belongs to the publication object and the sheets inside it; it never becomes the page ground, never fills a generic card, never marks a warning, and never dresses an ordinary control. A surface that turns warm overall has misused the token, and any deeper paper tone is derived from it rather than added to the palette.
 
 **The Two Blues on Navy Rule.** Against deep navy, never use the main brand blue for text or marks (2.98:1). Use Blue on Deep Navy, or AI on Deep Navy inside AI regions.
 
@@ -230,7 +269,7 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 **Character:** One neutral, highly legible system sans carrying both Chinese and Latin text, so a Chinese heading and an English paper title sit in the same voice. No web font is loaded and no Latin-only serif is used for Chinese headings.
 
 ### Hierarchy
-- **Display** (600, 30px/36px, -0.02em): the largest token step. Reserve for a single moment per screen.
+- **Display** (600, 30px/36px, -0.02em): the largest step in the UI scale. Reserve for a single moment per screen. It is not the largest step in the system: the academic roles below sit above it on scholarly surfaces.
 - **Headline** (600, 24px/32px, -0.015em): the page title.
 - **Title** (600, 18px/26px): panel and section titles.
 - **Body** (400, 15px/24px): default text. Chinese body copy needs the generous 1.6 line ratio this encodes; long prose should be constrained to roughly 65 characters.
@@ -239,6 +278,15 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 Supporting steps in the same scale: card title (600, 15px/22px), secondary (400, 13px/20px), caption (400, 12px/16px), metric (600, 28px/32px). Weights available are 400 / 500 / 600 / 700; the old regular-and-bold-only pairing is gone.
 
 **The working-band title step.** A page's own title is set at the section step (600, 18px/26px) inside the control band, not at the page step: the band is chrome, and a 24px title turns it into a masthead. The page step and the display step are then reserved for content-level moments inside the page — an empty-state headline, the record the page is about.
+
+**The academic roles.** Three roles belong to the Scholarly Luxe workspace and sit above the UI scale rather than replacing it. They are typography roles, not dashboard-specific numbers, and a surface uses them only where it actually has the object they name:
+- **Academic Display** (600, 34px/40px, -0.025em) — the primary academic object the surface is about: the research subject, the study in hand.
+- **Research Record Title** (500, 17px/26px) — the title of one bibliographic entry.
+- **Contents Title** (500, 16px/24px) — one entry in a numbered workspace contents list.
+
+On a scholarly surface, which has no control band, the greeting takes the 24px page step and the primary academic object takes the academic display step, so the page's own chrome never competes with the object it is presenting. A surface with no such object has no reason to use these roles.
+
+**The Academic Display Restraint Rule.** The 34px step is not a page-title step, not a hero and not a marketing device. It appears at most once in a view, only on a genuine primary academic object, and it is never used to make an ordinary page feel important. Everything around it steps down: metadata at 12–13px, records at 17px, contents entries at 16px, so the object is the only thing at document scale.
 
 ### Named Rules
 **The 12px Floor Rule.** No body or interface text is set below 12px. The 6px to 9px labels inherited from earlier layers are a defect to be removed as each page is redesigned, not a style.
@@ -273,9 +321,11 @@ Responsive behaviour: desktop is the primary environment and must not be comprom
 
 **The Full-Bleed Chrome Rule.** The control band and the status bezel span the whole content column and carry the capped measure inside them. A band that itself stops at the measure turns the page back into a floating panel.
 
+**The Product Priority Rule.** On a single-column scholarly layout, the product's own entries may be printed before archive metadata: the dashboard numbers 02 INDEX before 03 WORKSPACES above 900px, and 02 WORKSPACES before 03 INDEX below it. The numbers always follow the visual order, so a reader never meets 03 above 02. This is product priority on a constrained viewport, not a per-page exception.
+
 ### Migration status
 
-The working bands and the token layer are in place on the dashboard, the course centre, the project workspace, settings, DataLab and PaperLab. They are not yet on the shell, the authentication pages or the public landing page, and those surfaces therefore still read as an earlier era. The landing page additionally ships three things this record's own Don'ts forbid — a mock product preview standing in for a screenshot, a decorative command-key control that performs nothing, and a fabricated progress figure with a sparkline — and its hero is to be replaced by a real product screenshot once the owner selects one. This gap is recorded so it is not mistaken for a decision.
+The token layer is product-wide. The page language is not yet unified: the dashboard is now built in the Scholarly Luxe workspace language and is that language's reference implementation, while the course centre, the project workspace, settings, DataLab and PaperLab still use the working bands described above. Both are approved, and both are recorded here so neither reads as a leftover. The shell, the authentication pages and the public landing page are on neither list and still read as an earlier era; the App Shell review is deferred deliberately (see Scholarly Luxe Workspace below). The landing page additionally ships three things this record's own Don'ts forbid — a mock product preview standing in for a screenshot, a decorative command-key control that performs nothing, and a fabricated progress figure with a sparkline — and its hero is to be replaced by a real product screenshot once the owner selects one. These gaps are recorded so they are not mistaken for decisions.
 
 ## Elevation & Depth
 
@@ -293,6 +343,8 @@ The system is hybrid but border-led: structure comes from a 1px border, and shad
 
 **The Structural Elevation Rule.** Page structure carries no elevation. Bands, registers, ruled rows, strips and the bezel are separated by a 1px border and by spacing alone; a shadow is reserved for a control at rest, a genuinely floating element, and an overlay. A page whose every section sits on a raised card has mixed the two vocabularies and lost the distinction the shadow was there to make.
 
+**The Two Shadow Surfaces Rule.** A scholarly surface may raise at most two things, and they are always parts of one publication object: the paper field and the top sheet, both at the resting `--shadow-1`. Everything else on the surface is separated by tone, rules and spacing. This is a budget, not a licence: a third shadowed surface on a scholarly page is a defect, and glow or glass is never a substitute for depth.
+
 ## Shapes
 
 Form language is soft-rectangular and consistent. Controls use the tighter radii and containers the softer ones: 6px for small marks, 8px for inputs and list rows, 10px for standard buttons and segmented controls, 14px for cards and panels, 18px for large workbench containers and dialogs. The rail and the workbench are the only large-radius containers; nested elements inside a panel step down rather than repeating the container radius.
@@ -307,6 +359,8 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 **The No Pill Buttons Rule.** Full rounding is reserved for avatars, dots, progress, and status pills. Primary and secondary buttons use the 10px control radius.
 
 **The Rule-Only Surface Rule.** A surface may be built from rules alone, with no corner radius and no container: a ruled table, a ruled row list, a register cell and a full-width band are each a complete surface. Radius belongs to controls and to genuinely raised panels, not to page structure.
+
+**The Scholarly Radius Rule.** On a Scholarly Luxe surface the radius budget is tighter than the UI default: the publication object takes 6–8px, paper layers take 2–4px, that surface's own controls take 6–8px, and structural regions — rules, registers, contents rows, record rows — take 0px. Nothing on such a surface exceeds 10px, and a large soft radius is never the default language of a page. The shared control radius above stays 10px for the product's ordinary surfaces; a scholarly surface that narrows it does so deliberately and page-locally, and that narrowing is recorded rather than assumed.
 
 ## Components
 
@@ -335,7 +389,7 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Segmented filter:** a Surface Subtle trough at the 6px radius; the pressed segment is Brand Wash with Blue Ink on Wash and a semibold label. A filter that narrows a list is a labelled group of `aria-pressed` buttons, not a tablist — it switches no panel, and calling it one misleads assistive technology.
 - **Numeric register:** four or five equal cells divided by 1px vertical rules, each a 12px Line Soft label, a 28px tabular value and a one-line caption. A cell that reports a fact rather than a number drops to the card step (15px), so a phrase never has to pretend to be a metric. Every value is a real array length, a real stored status, or an honest absence.
 - **Ruled table and ruled row list:** a Surface Subtle header row over 1px Line Soft row rules, with tabular figures in the numeric columns. Where the rows are actions they stay real buttons carrying their own hover, focus and current state.
-- **Four-area strip:** the product's four areas as one full-width four-cell ruled band, each cell carrying the same mark the rail uses for that destination. A cell reports a count only where a count exists.
+- **Four-area strip:** the product's four areas as one full-width four-cell ruled band, each cell carrying the same mark the rail uses for that destination. A cell reports a count only where a count exists. On a scholarly surface this strip is replaced by the workspace contents pattern (see Scholarly Luxe Workspace), which carries the same information as a numbered list rather than as a band.
 - **Status bezel:** a 34px band that closes the page with the facts that hold everywhere — local-first, what is not uploaded, the account or surface state. It holds the bottom of a short page, which is what a dense surface uses where an airy one would leave the space empty.
 - **State note:** the empty and guest message lives in the content region as a heading, one paragraph, and buttons where the surface has real actions. It is never a dashed dropzone, and it never states a fact that a failed request did not establish — an unread list is unknown, not zero.
 
@@ -360,6 +414,58 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Colour:** the four tones map to success, warning, danger, and information (which reuses brand blue). Each carries an icon in addition to its tint.
 - **Behaviour contract:** any modal must contain focus while it is open, place initial focus somewhere sensible, close on Escape where that is appropriate to the context, restore focus to the control that opened it on close, and expose a correct accessible name and description. Opening or closing must never silently change important state. Status and error regions announce themselves to assistive technology rather than repainting silently. What is fixed here is the contract, not a particular element or API: a native modal dialog satisfies it today, but this document does not lock the implementation.
 
+## Scholarly Luxe Workspace
+
+Approved as the workspace language for the product's research surfaces, and implemented first on the dashboard. What carries across surfaces is the language, not the dashboard's layout.
+
+### Principles
+A scholarly surface prefers publication hierarchy, editorial rhythm, research metadata, rules, paper material, typography and intentional whitespace. It does not reach for generic cards, KPI panels, a SaaS hero or rounded containers everywhere; structure is carried by type, alignment, rules, spacing and material before any container is drawn. Whitespace on such a surface is either deliberate breathing room or a mistake — never a gap waiting for a panel.
+
+### Paper material
+- **Paper Surface** (`--surface-paper`) is the publication object's material: paper sheets, document edges, academic archival surfaces. Its containment rule is stated in Colors above.
+- Three material steps are enough to read as paper, and the dashboard measures them as `#f5f6f9` (cool app field) → `#faf9f6` (paper field) → `#ffffff` (top sheet). Deeper steps inside the object are mixed from the paper token with the ink ramp, and the visible block edge of a stack is one of those steps rather than a border colour of its own.
+- The object is built from geometry that carries no invented content: page edges, a binding margin, a ruled measure, a figure block, a page marker and crop marks. It never contains a fabricated author, journal, abstract, DOI, citation or chart.
+
+### Publication rule system
+- **1px** carries ordinary structure: the rule that closes the running head, a section head rule, group hairlines, and the column rule between two registers.
+- **2px cobalt** is the rare editorial or active marker: the folio mark under the running head (64×2), the marker that opens the record list (48×2), and the marker that marks the current row on hover or focus. Nothing else on the surface is 2px.
+- A **short rule** (96×1) may close a label where a full-width rule would only repeat the one above it.
+- Rhythm is the point. A page mixes full-width rules, short rules, vertical rules, group hairlines and whitespace breaks. **Every section opening with a heading plus a full-width rule is a defect**, not a style, and a page whose rules all match has not been composed yet.
+
+### Bounded surface policy
+A scholarly surface reduces bounded containers and lets typography, alignment, rules, spacing and material do the work. **Two clearly bounded premium surfaces is the guideline ceiling** for such a page — on the dashboard they are the publication field and the top sheet. This is a design guideline, not a lint rule, and it is never a reason to remove a boundary the data needs.
+
+Dense tool surfaces (PaperLab, DataLab) may carry more structural boundaries because their workflows require them. They may not fall back to a generic card grid to get there.
+
+### Workspace contents pattern
+Workspace navigation on a scholarly surface may be a numbered contents list:
+- 01 / 02 / 03 numbering; the whole row is clickable and carries a visible focus ring;
+- a paper-light hover tint plus a 2px cobalt active marker on hover and focus;
+- the area's own metadata, typography-led, with no icon requirement;
+- no feature cards, no icon tiles, no floating panels, no giant chevrons.
+
+It replaces the four-area strip and the feature-card row on scholarly surfaces. It is a pattern, not a requirement that every surface carry four entries.
+
+### Bibliographic record pattern
+A research record or activity list may be set as a bibliographic log: number, date, type, title and metadata, separated by hairlines rather than contained in rows. The title is the visual focal point, metadata is secondary, the whole entry may be the target, and a status pill is not required — a plain label carries the state. Activity-feed styling is not the default.
+
+### Depth and radius on a scholarly surface
+Depth comes from tone, paper layering, rules and spacing; shadow is rare and its budget is the two surfaces named above. Radius follows the Scholarly Radius Rule in Shapes: publication object 6–8px, paper layers 2–4px, that surface's controls 6–8px, structural regions 0px.
+
+### Data truthfulness
+**The Unknown Is Not Zero Rule.** A value the surface has not read is unknown, never zero. Unknown values print `—`, or an explicit unavailable or error state; `0` is reserved for a count confirmed to be zero. The rule covers counts, statistics, workspace summaries and research metadata, and it is why a failed read never renders as an empty account and why an error state is never dressed as an empty state.
+
+### Scope: a language, not a template
+The dashboard is the reference implementation of this language; it is not the layout other workspaces must copy.
+- **PaperLab** translates it into reader / annotation / research-console language rather than into a page of numbered sections.
+- **DataLab** keeps its technical density and may stay instrument-like.
+- **Courses** and **Projects** choose whichever scholarly pattern fits their work.
+
+What unifies the product is the language — typography roles, rules, paper material, metadata discipline and truthfulness — not a cloned layout.
+
+### Deferred: App Shell and Sidebar
+The navigation rail and app shell still speak the earlier dark-navigation language, and the gap between that language and a Scholarly Luxe body is visible on the same screen. Status: **DEFERRED DESIGN REVIEW**. Once the core workspaces have adopted this language, the shell is reviewed on its own for rail proportion, typography, active state, material, and desktop/mobile navigation. No future shell styling is defined here, and the shell is not to be restyled as a side effect of a page phase.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -370,7 +476,10 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Do** keep `aria-current`, `aria-expanded`, `aria-invalid`, `aria-describedby`, and `aria-live` intact through any visual change, and keep the modal accessibility behaviour intact: focus containment while open, a sensible initial focus, Escape to close where appropriate, focus restoration on close, and a correct accessible name and description.
 - **Do** let PaperLab stay a dense three-column research workspace and DataLab stay a dense analytical one. Preserve their structure; the visual language is what unifies them.
 - **Do** build a workspace page from the working bands, with full-bleed chrome and the capped measure inside it.
+- **Do** build a research surface in the Scholarly Luxe language instead where the content is a study rather than a console: a running head, a publication object in paper, numbered sections, an index and a bibliographic record list, held by rules and typography rather than by containers. The two page languages are both approved; pick the one the surface's work calls for, and do not blend them into a third.
+- **Do** keep the contents numbering and the visual order in step, including when a narrow layout promotes the product's own entries above archive metadata.
 - **Do** keep every register cell, strip cell and count to something the product actually stores, and let a cell report a fact where no number exists.
+- **Do** print `—` for a value the surface has not read, and reserve `0` for a count confirmed to be zero; an unread list, a failed request and an empty account are three different states and must not render as one.
 - **Do** use borders and the single lightest shadow for structure, and step shadow up only for real elevation.
 - **Do** treat desktop as the primary environment and keep tools at their full width on it.
 - **Do** use tabular figures for changing numbers, and keep every value on the type scale with a 12px floor.
@@ -383,13 +492,14 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Don't** use full-screen glow, blurred background blobs, or heavy glassmorphism.
 - **Don't** put every section in a card, nest a card inside a card, or turn a data table into a stack of cards.
 - **Don't** make every control pill-shaped, or use a giant marketing hero inside the workspace.
-- **Don't** build decorative dots, ambient gradients, or shadows that carry no meaning.
+- **Don't** build decorative dots, ambient gradients, or shadows that carry no meaning. A single-colour `background-image` used to draw a partial-width rule (a short rule or a 2px editorial marker) is a rule, not a gradient, and is not covered by this ban; a colour ramp across a surface is. A shadow that marks a real object — the paper field and its top sheet — carries meaning and is inside the two-surface budget.
 - **Don't** put a kicker or an eyebrow above a heading. The heading carries its own weight: delete the label and let the heading speak. If a region needs a name, give the region a heading.
-- **Don't** number sections (01 / 02 / 03) unless the sequence itself carries information the reader needs.
+- **Don't** number sections (01 / 02 / 03) as decoration. Numbering is legitimate where it names a real structural order the reader needs — the numbered sections of a scholarly surface, or a numbered contents list — and illegitimate where it labels tiles, images or cards the reader can simply count. Publication numbering is structure, not a metric, and the number must match the order the content is actually read in.
 - **Don't** use a card container for page structure. Cards are for genuinely raised content; page structure is bands, rules and spacing.
-- **Don't** use a Unicode glyph or an emoji as an icon, and don't let one into an accessible name. Icons come from Lucide in one stroke family.
+- **Don't** turn a Scholarly Luxe page into the template for every other workspace: copy the language, never the layout. A dashboard cloned onto PaperLab or DataLab would break the two tools whose density the product depends on.
+- **Don't** use a Unicode glyph or an emoji as an icon, and don't let one into an accessible name. Icons come from Lucide in one stroke family. One narrow exception: a typographic arrow (`→`) may close a text action that already names its destination, provided it is `aria-hidden` and the action reads correctly without it. It is a typographic mark, not an icon system.
 - **Don't** report a count for an area that has none, or present a built-in default as a confirmed value.
-- **Don't** move elements on hover. Hover changes colour, border, and background only; floating and `translateY` lifts are not part of this system.
+- **Don't** move elements on hover. Hover changes colour, border, rule and background; floating and `translateY` lifts are not part of this system, and a card never rises. The one permitted movement is the small marker inside an action or a row — the arrow that names the destination, or the 2px active rule — which may shift a few pixels or fade in at 160ms to confirm the pointer. Nothing gains scale on hover.
 - **Don't** add animation that does not explain a state change, and never remove the reduced-motion handling.
 - **Don't** fake capability in the interface. No placeholder search box, no decorative command palette, no `⌘K` affordance, no AI input that does not work.
 - **Don't** fabricate metrics, testimonials, customer logos, benchmarks, or product screenshots. The repository has no such evidence; see PRODUCT.md.
