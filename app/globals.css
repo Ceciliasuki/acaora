@@ -12,6 +12,10 @@
   --bg-app: #f5f6f9;
   --surface: #ffffff;
   --surface-2: #f8f9fb;
+  /* paper - approved for the publication object alone: its field, its sheets, and
+     the document edges inside it. It must never become the page's own ground, and
+     every deeper paper step is mixed from this token rather than from a new hex. */
+  --surface-paper: #faf9f6;
   --surface-inverse: #121828;
   --surface-inverse-2: #1b2334;
 
@@ -3003,3 +3007,564 @@ textarea.ui-textarea:focus:not([aria-invalid="true"]) {
    from the shell, and on the dashboard that spans the whole page. It is a body
    typography decision for its own change, not a floor fix, so it stays as it is.
    The record's Typography gap note already covers it. */
+
+/* ==========================================================================
+   ACAORA - Scholarly Journal Workspace · Dashboard (prototype, 2026-09-17)
+   75% scholarly journal / 25% contemporary archive. Every selector is namespaced
+   to this page; the shared working bands (page-bar, metric-register, area-strip,
+   status-bezel) are untouched for the five other surfaces that build from them.
+
+   How the page is organised, and why it is not a stack of bands:
+   - one measure, capped at 1240px, with the type set left and a wide outer margin
+     holding the page's single visual asset. There is no full-bleed band anywhere;
+     the reading order is running head -> masthead -> study -> rules -> registers.
+   - typography carries the hierarchy: 24 / 30 / 18 / 15 / 13 / 12, weights 400,
+     500 and 600 separated by role instead of everything being semibold.
+   - the structure is numbered 01-04 and labelled in tracked small capitals, the
+     way a journal numbers its sections. The numbers are structure, not metrics.
+   - exactly one bounded surface exists on the page: the publication object. The
+     index, the contents list and the record list are held by rules, indentation
+     and alignment alone, so no card, tray or KPI cell appears anywhere.
+   - radius budget: 2px on the page layers, 8px on this page's controls, 0 on every
+     structural region. Nothing is rounder than 8px. AI teal, purple, glass and
+     glow are all zero; one soft shadow sits under the paper object, and nowhere
+     else.
+   - motion is limited to underlines, rule colour and the action's own marker,
+     160ms, and it collapses under prefers-reduced-motion.
+
+   Deferred, deliberately not done here: the app shell's sidebar still speaks the
+   older product language (dark rail, its own icon weight). Reviewing and, if it
+   is agreed, restyling the shell belongs in its own pass once this direction is
+   rolled out to the other workspace surfaces — it is out of this page's scope.
+   ========================================================================== */
+
+/* --- the page: one measure, no bands --------------------------------------- */
+.student-main.journal-shell { padding: 0; display: flex; flex-direction: column; }
+.journal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1240px;
+  margin-inline: auto;
+  padding: 40px clamp(20px, 3.4vw, 44px) 0;
+  /* Page-scoped type steps for the Scholarly Luxe pass. The committed scale tops
+     out at the 30px display step, which is what made the previous revision read
+     small and flat; these two steps are a deliberate, page-local prototype
+     deviation and are listed as a decision item in the review. */
+  --jl-title: 34px;
+  --jl-title-line: 40px;
+  --jl-record-title: 17px;
+  --jl-record-line: 26px;
+  --jl-contents-name: 16px;
+  --jl-contents-line: 24px;
+}
+.journal .ui-button { text-decoration: none; }
+
+/* --- running head ---------------------------------------------------------- */
+.journal-folio { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-5); }
+.journal-folio-name {
+  margin: 0;
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: .16em;
+  color: var(--text);
+}
+.journal-folio-right { display: flex; align-items: center; gap: var(--s-4); flex: 0 0 auto; }
+.journal-folio-date { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+/* The approved direction puts this page's controls at 6-8px rather than at the
+   shared 10px control radius. Scoped to this page on purpose: the shared control
+   contract belongs to all six surfaces and is not changed from here. */
+.journal-account.ui-button { min-height: 32px; padding-inline: var(--s-2); border-radius: var(--r-sm); color: var(--text-2); border-color: transparent; }
+.journal-account.ui-button:hover { color: var(--text); border-color: var(--border-control); }
+.journal-account-link { color: var(--brand); font-size: var(--fs-sm); font-weight: var(--fw-medium); text-decoration: none; }
+.journal-account-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.journal-account-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* The rule system. One firm rule closes the running head and carries the page's
+   folio mark; every later rule is a hairline, so the sections read as one page. */
+.journal-rule { height: 1px; background: var(--border); }
+.journal-rule--folio { position: relative; margin-top: var(--s-4); background: var(--border-strong); }
+.journal-rule--folio::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 64px;
+  height: 2px;
+  background: var(--brand);
+}
+
+/* --- masthead -------------------------------------------------------------- */
+.journal-masthead { padding-top: 56px; padding-bottom: 48px; }
+.journal-greeting {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-page);
+  line-height: var(--lh-page);
+  font-weight: var(--fw-medium);
+  letter-spacing: -.01em;
+  color: var(--text);
+  text-wrap: balance;
+}
+.journal-lede { margin: var(--s-2) 0 0; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
+
+/* --- 01 · the study -------------------------------------------------------- */
+/* The study is one asymmetric grid: the text column holds the label, the title
+   and the record's own metadata, while the outer margin carries the object. The
+   metadata is pushed to the foot of the column so the two sides hold a spread
+   rather than two stacked blocks. */
+.journal-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 372px;
+  grid-template-areas:
+    "study  object"
+    "action action";
+  column-gap: 88px;
+  align-items: start;
+}
+/* The study column is one text column: its head carries the section rule, its
+   title is the display moment, and its foot is the record's own metadata. */
+.journal-study { grid-area: study; align-self: stretch; display: flex; flex-direction: column; min-width: 0; }
+.journal-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin: 0 0 var(--s-4);
+  font-weight: var(--fw-regular);
+  font-size: var(--fs-label);
+  line-height: var(--lh-label);
+  color: var(--text-2);
+}
+.journal-label-text { font-weight: var(--fw-semibold); letter-spacing: .16em; }
+/* Structural numbers are text, not decoration, so they take the 5.51:1 step:
+   --text-3 measures 2.89:1 on this ground and fails AA at 12px. */
+.journal-label .journal-num { font-weight: var(--fw-regular); letter-spacing: .08em; color: var(--text-2); }
+.journal-num { font-variant-numeric: tabular-nums; }
+/* The narrow layout reorders the two registers, so it also renumbers them. */
+.journal-num--narrow { display: none; }
+.journal-spread > .journal-action-row { grid-area: action; }
+/* The section head closes on a firm rule, so the study opens the way a printed
+   section does: number and label first, then the rule, then the title. */
+.journal-label--study { padding-bottom: var(--s-4); border-bottom: 1px solid var(--border-strong); }
+/* Rule rhythm. The study opens on a full rule; the index closes its label on a
+   short rule; the contents list runs on whitespace alone; the record list opens on
+   the page's one 2px cobalt editorial marker. Four sections, four different
+   devices, so the page stops reading as a ruled template. */
+.journal-index .journal-label {
+  padding-bottom: var(--s-3);
+  background-image: linear-gradient(var(--border-strong), var(--border-strong));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 96px 1px;
+}
+.journal-records .journal-label {
+  padding-top: var(--s-3);
+  background-image: linear-gradient(var(--brand), var(--brand));
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 48px 2px;
+}
+
+.journal-title {
+  margin: 0;
+  max-width: 12em;
+  font-family: var(--font-sans);
+  font-size: var(--jl-title);
+  line-height: var(--jl-title-line);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -.025em;
+  color: var(--text);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.journal-title--note { max-width: 20em; font-size: var(--fs-page); line-height: var(--lh-page); letter-spacing: -.01em; }
+.journal-note-copy { margin: var(--s-5) 0 0; max-width: 46ch; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-2); }
+
+/* Bibliographic metadata: a tight cluster of label and value pairs, each pair
+   held together and the pairs separated widely, the way a record cites itself. */
+/* The record's own metadata is the column's apparatus: it sits at the foot of the
+   column, level with the object's lower edge, so the study reads as one closed
+   spread instead of a title floating above a long empty margin. */
+.journal-meta { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-6); margin: auto 0 0; }
+.journal-meta-item { display: flex; align-items: baseline; gap: var(--s-2); min-width: 0; }
+.journal-meta-item dt { font-size: var(--fs-caption); line-height: var(--lh-caption); font-weight: var(--fw-regular); letter-spacing: .06em; color: var(--text-2); }
+.journal-meta-item dd { margin: 0; font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--fw-medium); color: var(--text); overflow-wrap: anywhere; }
+/* The column's foot: a standing fact set as a margin note rather than as a badge. */
+.journal-margin-note {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  margin: var(--s-4) 0 0;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-caption);
+  line-height: var(--lh-caption);
+  color: var(--text-2);
+}
+.journal-margin-key { font-weight: var(--fw-medium); letter-spacing: .06em; color: var(--text); }
+
+.journal-action-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: var(--s-6);
+  margin-top: var(--s-6);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+}
+.journal-note-actions { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-6); }
+/* The action is typographic, not a filled button: a rule under the label that
+   completes on hover, plus the marker that moves with it. */
+.journal-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding-bottom: 3px;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 42%, transparent);
+  color: var(--brand);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition: border-color var(--dur-2) var(--ease-out), color var(--dur-2) var(--ease-out);
+}
+.journal-action:hover { border-bottom-color: var(--brand); color: var(--brand-hover); }
+.journal-action:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.journal-action-mark { transition: transform var(--dur-2) var(--ease-out); }
+.journal-action:hover .journal-action-mark { transform: translateX(3px); }
+.journal-action--quiet { border-bottom-color: transparent; color: var(--text-2); }
+.journal-action--quiet:hover { border-bottom-color: var(--border-control); color: var(--text); }
+/* A retry is an action, not a link, so it is a real button wearing the same
+   typographic treatment rather than a second control style entering the page. */
+.journal-action--button {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 42%, transparent);
+  padding: 0 0 3px;
+  cursor: pointer;
+}
+.journal-action--button:hover { border-bottom-color: var(--brand); }
+
+/* --- the publication object: the page's one bounded surface ---------------- */
+/* Three material steps, inside the approved budget: the shell's grey is the page
+   ground, the field is one step of paper tone, and the top sheet is the cleanest
+   white on the page. Two shadowed surfaces exist on this page and both are here.
+   The object leaves the column grid on purpose (it sits past the measure's right
+   edge), which is what gives the spread its uneven weight. */
+.journal-field {
+  grid-area: object;
+  justify-self: end;
+  align-self: start;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin-right: -18px;
+  padding: 22px;
+  /* The paper family. Ground (cool grey) -> field (paper) -> block edges (deeper
+     paper) -> leaves (the cleanest white on the page): four steps that survive a
+     thumbnail, all mixed from --surface-paper so no new warm hex enters the file. */
+  background: var(--surface-paper);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, var(--surface-paper));
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-1);
+}
+/* A landscape measure, so the object holds the right side of the spread instead
+   of standing as a tall placeholder beside a mostly empty column. */
+.journal-sheets { position: relative; display: block; width: 100%; aspect-ratio: 356 / 268; }
+.journal-page {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+}
+/* The sheets step down and to the right, so the stack shows its own edges. */
+.journal-page--back { transform: translate(9px, 9px); background: color-mix(in srgb, var(--text) 7%, var(--surface-paper)); }
+.journal-page--mid { transform: translate(4px, 4px); background: color-mix(in srgb, var(--text) 3.5%, var(--surface-paper)); }
+.journal-leaves {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  border-radius: 3px;
+  box-shadow: var(--shadow-1);
+}
+.journal-leaf { position: relative; display: block; overflow: hidden; border: 1px solid var(--border-strong); background: var(--surface); }
+.journal-leaf--verso { padding: 26px 18px 0 30px; border-radius: 3px 2px 2px 3px; }
+.journal-leaf--recto { padding: 26px 18px 0; border-radius: 2px 3px 3px 2px; }
+.journal-edge {
+  position: absolute;
+  top: 2px;
+  right: -5px;
+  bottom: -5px;
+  left: 2px;
+  border-right: 3px solid color-mix(in srgb, var(--text) 10%, var(--surface-paper));
+  border-bottom: 3px solid color-mix(in srgb, var(--text) 10%, var(--surface-paper));
+  border-radius: 0 3px 3px 0;
+}
+/* Binding margin, cobalt editorial mark, running rule: the leaf's own head. */
+.journal-leaf-margin { position: absolute; top: 0; bottom: 0; left: 22px; width: 1px; background: var(--border); }
+.journal-leaf-mark { display: block; width: 52px; height: 4px; background: color-mix(in srgb, var(--brand) 82%, var(--surface)); }
+.journal-leaf-running { display: block; width: 76px; height: 1px; margin-top: 10px; background: var(--border-strong); }
+.journal-leaf-headline { display: block; height: 3px; margin-top: 14px; border-radius: 1px; background: color-mix(in srgb, var(--text) 16%, var(--surface)); }
+.journal-leaf-headline--a { width: 100%; }
+.journal-leaf-headline--b { width: 68%; margin-top: 7px; }
+.journal-leaf-line { display: block; height: 1px; margin-top: 11px; background: var(--border-strong); }
+.journal-leaf-line--a { width: 100%; }
+.journal-leaf-line--b { width: 92%; }
+.journal-leaf-line--c { width: 78%; }
+.journal-leaf-line--d { width: 96%; }
+.journal-leaf-line--e { width: 64%; }
+.journal-leaf-block {
+  display: block;
+  height: 62px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--text) 3%, var(--surface-paper));
+}
+.journal-leaf-caption { display: block; width: 62%; height: 1px; margin-top: 9px; background: var(--border-strong); }
+.journal-leaf-folio {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  font-size: var(--fs-label);
+  letter-spacing: .16em;
+  color: var(--text-2);
+}
+/* Register ticks at mid-height, the way a printed sheet is registered. */
+.journal-tick { position: absolute; width: 10px; height: 1px; background: var(--border-strong); }
+.journal-tick--left { top: 50%; left: -10px; }
+.journal-tick--right { top: 50%; right: -10px; }
+.journal-crop { position: absolute; width: 12px; height: 12px; }
+.journal-crop--tl { top: 6px; left: 6px; border-top: 1px solid var(--border-strong); border-left: 1px solid var(--border-strong); }
+.journal-crop--tr { top: 6px; right: 6px; border-top: 1px solid var(--border-strong); border-right: 1px solid var(--border-strong); }
+.journal-crop--bl { bottom: 6px; left: 6px; border-bottom: 1px solid var(--border-strong); border-left: 1px solid var(--border-strong); }
+.journal-crop--br { bottom: 6px; right: 6px; border-bottom: 1px solid var(--border-strong); border-right: 1px solid var(--border-strong); }
+
+/* --- 02 + 03 · the registers, divided by one column rule ------------------- */
+.journal-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+  padding-block: var(--s-7);
+}
+.journal-index { padding-right: var(--s-6); }
+.journal-contents-block { padding-left: var(--s-6); border-left: 1px solid var(--border); }
+/* Both labels carry the same depth of padding, so the first index row and the
+   first contents row sit on one line across the column rule. */
+.journal-contents-block .journal-label { padding-bottom: var(--s-3); }
+
+/* The index prints label, leader rule and value on one line, the way a printed
+   index does, with the record's own note beneath it. */
+.journal-index-list { margin: 0; }
+.journal-index-row { display: flex; align-items: baseline; gap: var(--s-3); padding-block: var(--s-3); }
+.journal-index-key { flex: 0 0 74px; font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: .04em; color: var(--text-2); }
+.journal-index-value { flex: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-2); margin: 0; min-width: 0; }
+.journal-index-value::before { content: ""; flex: 1 1 24px; min-width: 24px; align-self: end; margin-bottom: 5px; border-bottom: 1px solid var(--border); }
+.journal-index-value > span:first-child { font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--fw-medium); color: var(--text); }
+.journal-index-note { flex: 1 1 100%; text-align: right; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+
+/* The four areas as a contents list, not as feature cards: number, name, real
+   value, and the area's own description beneath the name. No icon is needed. */
+.journal-contents { margin: 0; padding: 0; list-style: none; }
+.journal-contents-item + .journal-contents-item { border-top: 1px solid var(--border); }
+.journal-contents-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto 20px;
+  grid-template-areas:
+    "num name  value arrow"
+    "num meta  meta  arrow";
+  column-gap: var(--s-4);
+  align-items: baseline;
+  padding: var(--s-3) var(--s-2) var(--s-3) 0;
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+.journal-contents-num { grid-area: num; font-size: var(--fs-caption); letter-spacing: .08em; color: var(--text-2); }
+.journal-contents-name { grid-area: name; font-size: var(--jl-contents-name); line-height: var(--jl-contents-line); font-weight: var(--fw-medium); color: var(--text); }
+.journal-contents-value { grid-area: value; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
+.journal-contents-meta { grid-area: meta; margin-top: var(--s-1); font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.journal-contents-arrow { grid-area: arrow; align-self: center; font-size: var(--fs-sm); color: var(--text-2); opacity: .55; transition: opacity var(--dur-2) var(--ease-out), transform var(--dur-2) var(--ease-out); }
+/* The row is a real entry point, so it answers with the three cues a product
+   needs and none of the ones a card would use: a paper-light tint, the page's one
+   cobalt active rule, and the secondary arrow coming up to full strength. */
+.journal-contents-row::before {
+  content: "";
+  position: absolute;
+  top: var(--s-2);
+  bottom: var(--s-2);
+  left: -12px;
+  width: 2px;
+  background: var(--brand);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.journal-contents-row:hover,
+.journal-contents-row:focus-visible { background: color-mix(in srgb, var(--brand) 3.5%, transparent); }
+.journal-contents-row:hover::before,
+.journal-contents-row:focus-visible::before { opacity: 1; }
+.journal-contents-row:hover .journal-contents-arrow,
+.journal-contents-row:focus-visible .journal-contents-arrow { opacity: 1; transform: translateX(2px); }
+.journal-contents-row:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* --- 04 · the record list -------------------------------------------------- */
+.journal-records { padding-block: var(--s-7) 0; }
+.journal-record-list { margin: 0; padding: 0; list-style: none; }
+.journal-record-item + .journal-record-item { border-top: 1px solid var(--border); }
+.journal-record {
+  position: relative;
+  display: block;
+  padding: var(--s-5) var(--s-2) var(--s-5) 0;
+  color: inherit;
+  text-decoration: none;
+}
+/* The date column is fixed, so entries align down the page like a catalogue. */
+.journal-record-line { display: grid; grid-template-columns: 32px 96px minmax(0, 1fr); column-gap: var(--s-4); align-items: baseline; margin: 0; }
+.journal-record-num { font-size: var(--fs-caption); letter-spacing: .08em; color: var(--text-2); }
+.journal-record-date { font-size: var(--fs-caption); color: var(--text-2); }
+.journal-record-kind { font-size: var(--fs-caption); letter-spacing: .06em; color: var(--text-2); }
+.journal-record-title {
+  display: inline-block;
+  max-width: 46em;
+  margin-top: var(--s-3);
+  font-size: var(--jl-record-title);
+  line-height: var(--jl-record-line);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  overflow-wrap: anywhere;
+  transition: color var(--dur-2) var(--ease-out);
+}
+.journal-record-meta { display: flex; align-items: center; gap: var(--s-3); margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.journal-record-sep { width: 1px; height: 10px; background: var(--border-strong); }
+/* The entry is a real object too: the same paper-light tint, the same cobalt
+   active rule and the same title response as the contents rows above, so both
+   registers behave like one product. */
+.journal-record::before {
+  content: "";
+  position: absolute;
+  top: var(--s-4);
+  bottom: var(--s-4);
+  left: -14px;
+  width: 2px;
+  background: var(--brand);
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+.journal-record:hover,
+.journal-record:focus-visible { background: color-mix(in srgb, var(--brand) 2.5%, transparent); }
+.journal-record:hover::before,
+.journal-record:focus-visible::before { opacity: 1; }
+.journal-record:hover .journal-record-title,
+.journal-record:focus-visible .journal-record-title { color: var(--brand-hover); }
+.journal-record:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* --- colophon -------------------------------------------------------------- */
+.journal-colophon {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2) var(--s-5);
+  margin-top: var(--s-7);
+  padding-block: var(--s-4) var(--s-6);
+  border-top: 1px solid var(--border-strong);
+}
+.journal-colophon-facts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s-4); margin: 0; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.journal-colophon-facts span + span { padding-left: var(--s-4); border-left: 1px solid var(--border); }
+.journal-colophon-account { margin: 0; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text); }
+
+/* --- notice (error) -------------------------------------------------------- */
+.journal-notice { padding-block: var(--s-7); }
+
+/* --- loading: the same geometry, drawn in hairlines ------------------------ */
+.journal-skel { display: block; height: 12px; background: color-mix(in srgb, var(--text) 7%, var(--surface-2)); }
+.journal-skel--label { width: 120px; }
+.journal-skel--title { width: 62%; height: 26px; margin-top: var(--s-5); }
+.journal-skel--value { width: 84px; }
+.journal-skel--action { width: 128px; height: 20px; margin-top: var(--s-5); }
+.journal-skel--folio { width: 96px; }
+.journal-skel--date { width: 168px; }
+.journal-skel--greeting { width: 168px; height: 22px; }
+.journal-skel--lede { width: 128px; margin-top: var(--s-3); }
+.journal-skel--note { width: 40%; }
+.journal-skel--recordmeta { width: 220px; }
+.journal-skel--recordtitle { width: 58%; height: 18px; margin-top: var(--s-4); }
+.journal-record-skel { padding-block: var(--s-5); }
+.journal-record-skel + .journal-record-skel { border-top: 1px solid var(--border); }
+.journal-spread > .journal-skel--action { grid-area: action; margin-top: var(--s-6); justify-self: end; }
+.journal-study > .journal-skel--label { margin-bottom: var(--s-5); }
+.journal-study > .journal-skel--title { margin-top: 0; }
+.journal-study > .journal-skel--note { margin-top: auto; }
+
+/* --- responsive (existing breakpoints only) -------------------------------- */
+@media (max-width: 1200px) {
+  .journal-spread { grid-template-columns: minmax(0, 1fr) 300px; column-gap: 56px; }
+  .journal-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+  .journal-masthead { padding-top: var(--s-7); padding-bottom: var(--s-6); }
+  /* On one column the page puts the product's own entries first and the archive
+     metadata second, and the numbers follow that order: 02 WORKSPACES, 03 INDEX.
+     Reversing the flex order does it without moving anything in the document. */
+  .journal-columns { display: flex; flex-direction: column-reverse; padding-block: var(--s-6); }
+  .journal-num--wide { display: none; }
+  .journal-num--narrow { display: inline; }
+  /* The column rule becomes the rule between the two registers. */
+  .journal-index { padding-right: 0; padding-top: var(--s-6); border-top: 1px solid var(--border); }
+  .journal-contents-block { padding-left: 0; padding-top: 0; border-left: 0; border-top: 0; }
+}
+@media (max-width: 760px) {
+  /* The shell turns into a fixed top bar at this width, so the page keeps the same
+     78px of room under it that the other overview surfaces keep. */
+  .student-main.journal-shell { padding-top: 78px; }
+  .journal { padding-top: var(--s-6); }
+  .journal-masthead { padding-top: var(--s-6); padding-bottom: var(--s-5); }
+  /* One column, in reading order: folio, greeting, 01, title, the motif, the
+     record's metadata, the action, then the margin note. The study column stops
+     being a box at this width, so its own children can take those positions. */
+  .journal-spread {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "label" "title" "object" "meta" "action" "note";
+    column-gap: 0;
+  }
+  .journal-study { display: contents; }
+  .journal-label--study { grid-area: label; }
+  .journal-title { grid-area: title; }
+  .journal-note-copy,
+  .journal-meta { grid-area: meta; margin-top: var(--s-6); }
+  .journal-margin-note { grid-area: note; margin-top: var(--s-4); }
+  .journal-title { max-width: none; font-size: 28px; line-height: 36px; letter-spacing: -.02em; }
+  /* Only the top of the stack is shown. A crop of the publication object reads as
+     material; the whole page would push the record's own action off the screen. */
+  .journal-field {
+    justify-self: stretch;
+    max-width: none;
+    height: 168px;
+    margin-right: 0;
+    margin-top: var(--s-5);
+    padding: var(--s-4);
+    overflow: hidden;
+  }
+  .journal-sheets { width: 208px; margin-inline: auto; }
+  .journal-crop { display: none; }
+  /* The index keeps its printed form on a phone — label, leader, value, then the
+     record's own note — because stacking the pairs into columns measured taller
+     than the printed rows did, and pushed the work areas further down the page. */
+  .journal-action-row { justify-content: flex-start; }
+  .journal-contents-row { grid-template-columns: 26px minmax(0, 1fr) auto 16px; }
+  .journal-record-line { grid-template-columns: 28px 92px minmax(0, 1fr); }
+  .journal-record-title { max-width: none; }
+  .journal-colophon { justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .journal-action,
+  .journal-action-mark,
+  .journal-record-title,
+  .journal-contents-arrow,
+  .journal-contents-row::before,
+  .journal-record::before { transition: none; }
+  .journal-action:hover .journal-action-mark { transform: none; }
+}
