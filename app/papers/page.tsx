@@ -401,42 +401,29 @@ export default function PaperLab() {
   return (
     <main className="student-app paper-layout">
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section className="paper-shell paper-app paper-main papers-shell">
-      <div className="page-bar">
-        <div className="page-bar-inner page-bar-inner--wide">
+      <section className="student-main plab-shell">
+      {/* Running head: the surface's own line, then only the tools that act on the
+          library. The numeric register that used to sit here was removed because
+          every value in it is already printed where it belongs: the library count in
+          the index, the paragraph position and reading progress in the reader, the
+          sync state beside the library, and the privacy facts in the colophon. */}
+      <header className="plab-head">
+        <div className="plab-head-id">
           <h1>论文阅读与分析</h1>
-          <span className="page-bar-spacer" />
-          <div className="paper-commandbar-actions">
+          <p>阅读、标注与设备端翻译</p>
+        </div>
+        <div className="plab-head-tools">
           <div className={`translator-status state-${translationState}`}>
             <i />
             <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
           </div>
-          <div className="paper-actions">
-            <button className="secondary-paper-button" type="button" onClick={() => setMobilePanel("search")}>⌕ 检索论文</button>
-            <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
-              <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
-            </button>
-            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
-          </div>
-          </div>
+          <button className="plab-tool" type="button" onClick={() => setMobilePanel("search")}>检索论文</button>
+          <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+            {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
+          </button>
+          <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
         </div>
-      </div>
-
-      <div className="page-body page-body--wide">
-      {/* Only values that are not already printed elsewhere on the page, so nothing
-          a test matches by exact text can start resolving to two elements. */}
-      <div className="metric-register metric-register--4">
-        {[
-          { label: "论文库", value: String(library.length), note: "篇保存在本机" },
-          { label: "当前论文段落", value: String(paper.paragraphs.length), note: "由 PDF 提取" },
-          { label: "阅读进度", value: `${completion}%`, note: "记录在本机并按账户同步" },
-          { label: "原文件", value: "不上传", note: "解析在浏览器内完成" },
-        ].map((cell) => <div className="metric-register-cell" key={cell.label}>
-          <b>{cell.label}</b>
-          <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
-          <small>{cell.note}</small>
-        </div>)}
-      </div>
+      </header>
 
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
@@ -444,63 +431,122 @@ export default function PaperLab() {
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
-      <section className="paper-workbench">
-        <aside className={`paper-library ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
-          <div className="library-title"><div><p>DEVICE LIBRARY</p><h2>我的论文库</h2></div><span>{library.length}</span></div>
-          <div className="library-list">
+      <section className="plab-workbench">
+        {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
+            rows, the title as the entry, and the reader's own progress beneath it.
+            The row keeps its two real controls (open, delete) unchanged. */}
+        <aside className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
+          <div className="plab-index-head">
+            <h2>论文库</h2>
+            <span className="journal-num">{library.length}</span>
+          </div>
+          <div className="plab-index-list">
             {library.length ? library.map((record) => {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
-              return <article className={record.id === paper.id ? "active" : ""} key={record.id}>
-                <button type="button" onClick={() => openPaper(record)}><span className="pdf-token">PDF</span><div><strong>{record.title}</strong><small>{record.paragraphs.length} 段 · 已读 {progress}%</small></div></button>
-                <button className="paper-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
+              const current = record.id === paper.id;
+              return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
+                <button className="plab-index-open" type="button" onClick={() => openPaper(record)}>
+                  <strong>{record.title}</strong>
+                  <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
+                </button>
+                <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
               </article>;
-            }) : <div className="library-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
+            }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
           </div>
           <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
-        <section className={`paper-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
-          <div className="reader-toolbar">
+        {/* 2 · Publication Reader. One sheet of paper carries the paper itself: the
+            section line, the paragraph's number in the margin, the original as the
+            publication body and the device translation as its secondary layer. All
+            of the reader's real controls survive — the editable title, the file
+            name, paragraph stepping, bookmarks, the read toggle and translation. */}
+        <section className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
+          <div className="plab-reader-bar">
             <div className="paper-title-edit">
-              <span>{paper.fileName}</span>
+              <span className="journal-num">{paper.fileName}</span>
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
             </div>
             <div className="reader-controls">
-              <button type="button" disabled={activeIndex === 0} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.max(0, activeIndex - 1) }))}>←</button>
-              <span>{activeIndex + 1} / {paper.paragraphs.length}</span>
-              <button type="button" disabled={activeIndex >= paper.paragraphs.length - 1} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.min(current.paragraphs.length - 1, activeIndex + 1) }))}>→</button>
+              <button type="button" aria-label="上一段" disabled={activeIndex === 0} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.max(0, activeIndex - 1) }))}>←</button>
+              <span className="journal-num">{activeIndex + 1} / {paper.paragraphs.length}</span>
+              <button type="button" aria-label="下一段" disabled={activeIndex >= paper.paragraphs.length - 1} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.min(current.paragraphs.length - 1, activeIndex + 1) }))}>→</button>
+            </div>
+            <div className="plab-reader-progress">
+              <b className="journal-num">{completion}% 已读</b>
+              <i style={{ width: `${completion}%` }} />
             </div>
           </div>
 
-          <div className="reader-progress"><i style={{ width: `${completion}%` }} /><span>{completion}% 已读</span></div>
-          <div className="section-chips">{sections.map((section) => <button key={section} type="button" className={activeParagraph?.section === section ? "active" : ""} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: current.paragraphs.findIndex((item) => item.section === section) }))}>{section}</button>)}</div>
+          <div className="plab-reader-scroll">
+            {sections.length > 0 && <div className="section-chips">{sections.map((section) => <button key={section} type="button" className={activeParagraph?.section === section ? "active" : ""} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: current.paragraphs.findIndex((item) => item.section === section) }))}>{section}</button>)}</div>}
 
-          {activeParagraph ? <div className="active-paragraph">
-            <div className="paragraph-meta"><span>PAGE {activeParagraph.page}</span><strong>{activeParagraph.section}</strong><button className={activeParagraph.bookmarked ? "bookmarked" : ""} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button></div>
-            <div className="reader-labels"><span>ENGLISH ORIGINAL</span><span>简体中文 · 设备端翻译</span></div>
-            <div className="bilingual-active">
-              <article lang="en"><p>{activeParagraph.original}</p></article>
-              <article lang="zh-CN">
+            {activeParagraph ? <article className="plab-page">
+              {/* The marginal marker carries the same number the annotation rail
+                  opens with, so the reader's position and the rail are one object. */}
+              <div className="plab-page-meta">
+                <span className="plab-page-mark journal-num">{String(activeIndex + 1).padStart(2, "0")}</span>
+                <span className="journal-num">PAGE {activeParagraph.page}</span>
+                <strong>{activeParagraph.section}</strong>
+                <button className={activeParagraph.bookmarked ? "plab-bookmark plab-bookmark--on" : "plab-bookmark"} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button>
+              </div>
+              <div className="plab-body">
+                <span className="plab-layer-label">原文 · ENGLISH ORIGINAL</span>
+                <p>{activeParagraph.original}</p>
+              </div>
+              <div className="plab-translation">
+                <span className="plab-layer-label">简体中文 · 设备端翻译</span>
                 {activeParagraph.translation ? <p>{activeParagraph.translation}</p> : <div className="translation-placeholder"><strong>尚未翻译</strong><span>使用 Edge 内置模型，内容不会离开设备。</span><button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("current")}>翻译当前段落</button></div>}
-              </article>
-            </div>
-            <div className="paragraph-actions">
-              <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
-              <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
-              <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
-            </div>
-          </div> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
+              </div>
+              <div className="paragraph-actions">
+                <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
+                <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
+                <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
+              </div>
+            </article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
+          </div>
         </section>
 
-        <aside className={`paper-insights ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="insight-head"><p>PARAGRAPH GUIDE</p><h2>段落提示</h2><span>非 AI · 规则识别</span></div>
+        {/* 3 · Margin Annotation Rail. The old right-hand panel becomes the page's
+            margin: numbered blocks, each one a fact the product already knows about
+            the active paragraph. Nothing is invented — no citation count, no
+            summary, no score — and the first block carries the same number as the
+            reader's marginal marker, so the reader and the rail read as one page. */}
+        <aside className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
+          <div className="plab-rail-head">
+            <h2>页边注释</h2>
+            <span>非 AI · 规则识别</span>
+          </div>
+          {activeParagraph && <div className="plab-rail-block">
+            <p className="plab-rail-num journal-num">{String(activeIndex + 1).padStart(2, "0")}</p>
+            <h3>当前段落</h3>
+            <dl className="plab-rail-meta">
+              <div><dt>页码</dt><dd className="journal-num">P{activeParagraph.page}</dd></div>
+              <div><dt>章节</dt><dd>{activeParagraph.section}</dd></div>
+              <div><dt>状态</dt><dd>{activeParagraph.read ? "已读" : "未读"}</dd></div>
+            </dl>
+          </div>}
           {insight && <>
-            <article className="role-card"><span>段落作用</span><strong>{insight.role}</strong><p>{insight.explanation}</p></article>
-            <article><span>统计线索</span>{insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}</article>
-            <article className="check-card"><span>阅读检查</span><ul>{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul></article>
-            <article className="note-card"><span>我的笔记</span><textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} /></article>
+            <div className="plab-rail-block">
+              <h3>段落作用</h3>
+              <strong className="plab-rail-role">{insight.role}</strong>
+              <p>{insight.explanation}</p>
+            </div>
+            <div className="plab-rail-block">
+              <h3>统计线索</h3>
+              {insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}
+            </div>
+            <div className="plab-rail-block">
+              <h3>阅读检查</h3>
+              <ul className="plab-rail-questions">{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul>
+            </div>
           </>}
+          {activeParagraph && <div className="plab-rail-block">
+            <h3>我的笔记</h3>
+            <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
+          </div>}
         </aside>
+      </section>
 
         <AiStudio
           paper={paper}
@@ -527,9 +573,6 @@ export default function PaperLab() {
             {!searchResults.length && !searching && <div className="search-empty"><span>⌕</span><strong>从当前论文开始发现</strong><p>检索结果会展示来源、作者、年份、引用次数和开放全文入口。</p></div>}
           </div>
         </section>
-      </section>
-      </div>
-
       <div className="status-bezel">
         <div className="status-bezel-inner">
           <span>本地优先</span>

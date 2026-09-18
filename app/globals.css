@@ -3009,6 +3009,397 @@ textarea.ui-textarea:focus:not([aria-invalid="true"]) {
    The record's Typography gap note already covers it. */
 
 /* ==========================================================================
+   PaperLab Route B - Scholarly Reader Console (Phase 1: the reading three)
+   Library Index / Publication Reader / Margin Annotation Rail.
+
+   The language is the approved Scholarly Luxe one (DESIGN.md), the layout is
+   PaperLab's own: three columns with the reader as the protagonist, the library
+   as an archival index and the old paragraph panel as the page's margin.
+
+   - the reader is the only shadowed object on the surface; the index and the rail
+     are flat and structured by rules;
+   - the paper sheet uses --surface-paper, its text sits on a 68ch measure, and the
+     reader's own controls keep their behaviour (title editing, paragraph stepping,
+     bookmarks, read toggle, device translation);
+   - the marginal paragraph number and the rail's first block share one number and
+     one cobalt marker, so position and annotation read as one page.
+   Phase 1 does not touch the AI studio or the scholarly search: their markup,
+   state and API stay exactly as they were, and they keep their existing visuals.
+   ========================================================================== */
+.student-main.plab-shell { padding: 0; display: flex; flex-direction: column; }
+
+/* --- running head ---------------------------------------------------------- */
+.plab-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding: 24px clamp(20px, 3vw, 40px) 16px;
+  border-bottom: 1px solid var(--border-strong);
+}
+.plab-head-id { min-width: 0; }
+.plab-head-id h1 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-page);
+  line-height: var(--lh-page);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -.015em;
+  color: var(--text);
+}
+.plab-head-id p { margin: var(--s-2) 0 0; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
+.plab-head-tools { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-3); }
+.plab-tool {
+  min-height: 36px;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: border-color var(--dur-2) var(--ease-out), background var(--dur-2) var(--ease-out);
+}
+.plab-tool:hover { border-color: var(--text-2); }
+.plab-tool:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.plab-tool--primary { border-color: var(--brand); background: var(--brand); color: var(--text-inverse); }
+.plab-tool--primary:hover { border-color: var(--brand-hover); background: var(--brand-hover); }
+.plab-tool:disabled { opacity: .7; cursor: progress; }
+/* The translator status pill is kept, brought onto the 12px floor and squared. */
+.plab-head .translator-status { border-radius: var(--r-xs); background: var(--surface); }
+.plab-head .translator-status strong { font-size: var(--fs-caption); }
+.plab-head .translator-status small { font-size: var(--fs-caption); color: var(--text-2); }
+
+/* --- the workbench: three columns, each owning its own scroll -------------- */
+/* The page still scrolls to reach the AI studio and the search below; the reading
+   three are one bounded region so the reader keeps its toolbar while its text
+   moves. That is the only scroll each column owns, so nothing nests. */
+.plab-workbench {
+  display: grid;
+  grid-template-columns: minmax(196px, 224px) minmax(0, 1fr) minmax(264px, 288px);
+  height: clamp(560px, calc(100dvh - 132px), 1040px);
+  min-height: 0;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+/* --- 1 · Library Index ----------------------------------------------------- */
+.plab-index {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 18px 16px 14px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.plab-index-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); padding-bottom: var(--s-3); border-bottom: 1px solid var(--border-strong); }
+.plab-index-head h2 { margin: 0; font-size: var(--fs-label); line-height: var(--lh-label); font-weight: var(--fw-semibold); letter-spacing: .14em; color: var(--text); }
+.plab-index-head span { font-size: var(--fs-caption); color: var(--text-2); }
+.plab-index-list { flex: 1; min-height: 0; overflow-y: auto; margin-top: var(--s-2); }
+.plab-index-row { position: relative; display: flex; align-items: stretch; gap: var(--s-2); border-bottom: 1px solid var(--border); }
+.plab-index-row--current { background: var(--surface-paper); box-shadow: inset 2px 0 var(--brand); }
+.plab-index-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-3) var(--s-2) var(--s-3) 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.plab-index-open strong {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.plab-index-open small { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.plab-index-open:hover strong { color: var(--brand); }
+.plab-index-open:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.plab-index-delete {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  margin-right: 2px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.plab-index-delete:hover { background: var(--danger-subtle); color: var(--danger); }
+.plab-index-delete:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.plab-index-empty { padding: var(--s-5) var(--s-2); color: var(--text-2); }
+.plab-index-empty strong { display: block; font-size: var(--fs-sm); color: var(--text); }
+.plab-index-empty span { display: block; margin-top: var(--s-2); font-size: var(--fs-caption); line-height: var(--lh-caption); }
+/* The sync state, kept in place and flattened into the index's own register. */
+.plab-index .library-privacy { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--border-strong); }
+.plab-index .library-privacy strong { display: block; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text); }
+.plab-index .library-privacy p { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+
+/* --- 2 · Publication Reader ------------------------------------------------ */
+.plab-reader { display: flex; flex-direction: column; min-width: 0; background: var(--bg-app); }
+.plab-reader-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-5);
+  padding: 16px clamp(20px, 3vw, 32px) 12px;
+  border-bottom: 1px solid var(--border);
+}
+.plab-reader-bar .paper-title-edit { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; flex: 1; }
+.plab-reader-bar .paper-title-edit > span { font-size: var(--fs-caption); letter-spacing: .04em; color: var(--text-2); }
+/* The paper's title is still the real editable control; it is only dressed as the
+   publication's title rather than as a form field. */
+.plab-reader-bar .paper-title-edit input {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -.02em;
+  text-overflow: ellipsis;
+}
+.plab-reader-bar .paper-title-edit input:hover { border-bottom-color: var(--border-control); }
+.plab-reader-bar .paper-title-edit input:focus-visible { outline: none; border-bottom-color: var(--brand); }
+.plab-reader-bar .reader-controls { display: flex; align-items: center; gap: var(--s-2); flex: 0 0 auto; }
+.plab-reader-bar .reader-controls button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.plab-reader-bar .reader-controls button:hover:not(:disabled) { border-color: var(--text-2); }
+.plab-reader-bar .reader-controls button:disabled { opacity: .45; cursor: default; }
+.plab-reader-bar .reader-controls button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.plab-reader-bar .reader-controls span { font-size: var(--fs-caption); color: var(--text-2); }
+.plab-reader-progress { display: flex; flex-direction: column; align-items: flex-end; gap: var(--s-2); flex: 0 0 auto; }
+.plab-reader-progress b { font-size: var(--fs-caption); font-weight: var(--fw-regular); color: var(--text-2); }
+.plab-reader-progress { width: 96px; }
+.plab-reader-progress i { display: block; height: 2px; background: var(--brand); }
+
+.plab-reader-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.plab-reader-scroll .section-chips { display: flex; gap: var(--s-2); padding: var(--s-4) clamp(20px, 3vw, 32px) 0; overflow-x: auto; }
+.plab-reader-scroll .section-chips button {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+.plab-reader-scroll .section-chips button.active { border-color: var(--brand); color: var(--brand); }
+.plab-reader-scroll .section-chips button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* The sheet. The reader's page is the surface's one raised object. */
+.plab-page {
+  margin: var(--s-5) clamp(20px, 3vw, 32px) var(--s-6);
+  padding: 36px clamp(24px, 4vw, 56px) 32px;
+  background: var(--surface-paper);
+  border: 1px solid color-mix(in srgb, var(--text) 8%, var(--surface-paper));
+  border-radius: 3px;
+  box-shadow: var(--shadow-1);
+}
+/* The page's marginal apparatus: the paragraph's number, its page and section. */
+.plab-page-meta { display: flex; align-items: baseline; gap: var(--s-3); padding-bottom: var(--s-3); border-bottom: 1px solid var(--border-strong); }
+.plab-page-mark {
+  padding-left: 10px;
+  border-left: 2px solid var(--brand);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-semibold);
+  letter-spacing: .08em;
+  color: var(--brand);
+}
+.plab-page-meta > span { font-size: var(--fs-caption); color: var(--text-2); }
+.plab-page-meta strong { font-size: var(--fs-caption); font-weight: var(--fw-medium); letter-spacing: .06em; color: var(--text); }
+.plab-bookmark {
+  margin-left: auto;
+  min-height: 32px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+}
+.plab-bookmark--on { border-color: var(--brand); color: var(--brand); }
+.plab-bookmark:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* The measure. Long text does not run the width of the column. */
+.plab-body, .plab-translation, .plab-page .paragraph-actions { max-width: 68ch; margin-inline: auto; }
+.plab-layer-label { display: block; font-size: var(--fs-caption); letter-spacing: .12em; color: var(--text-2); }
+.plab-body { margin-top: var(--s-5); }
+.plab-body p {
+  margin: var(--s-3) 0 0;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 28px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+/* Translation is the page's secondary layer, not a second panel: an inset block
+   behind the same measure, introduced by the page's own cobalt rule. */
+.plab-translation { margin-top: var(--s-6); padding-left: var(--s-4); border-left: 2px solid color-mix(in srgb, var(--brand) 45%, transparent); }
+.plab-translation p { margin: var(--s-3) 0 0; font-size: 15px; line-height: 26px; color: var(--text); overflow-wrap: anywhere; }
+.plab-page .translation-placeholder { margin-top: var(--s-3); padding: var(--s-4); border: 1px solid var(--border); border-radius: var(--r-xs); background: color-mix(in srgb, var(--text) 2%, var(--surface-paper)); }
+.plab-page .translation-placeholder strong { display: block; font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--text); }
+.plab-page .translation-placeholder span { display: block; margin-top: var(--s-1); font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.plab-page .translation-placeholder button {
+  margin-top: var(--s-3);
+  min-height: 36px;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--brand);
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--brand);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+.plab-page .translation-placeholder button:disabled { opacity: .5; cursor: default; }
+.plab-page .translation-placeholder button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.plab-page .paragraph-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-5); padding-top: var(--s-4); border-top: 1px solid var(--border); }
+.plab-page .paragraph-actions button {
+  min-height: 40px;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+.plab-page .paragraph-actions button:hover:not(:disabled) { border-color: var(--text-2); }
+.plab-page .paragraph-actions button.done { border-color: var(--brand); color: var(--brand); }
+.plab-page .paragraph-actions button:disabled { opacity: .5; cursor: default; }
+.plab-page .paragraph-actions button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.plab-reader-scroll .paper-empty { margin: var(--s-5) clamp(20px, 3vw, 32px); padding: var(--s-6); border: 1px solid var(--border); border-radius: var(--r-xs); background: var(--surface); }
+.plab-reader-scroll .paper-empty strong { display: block; font-size: var(--fs-card); color: var(--text); }
+.plab-reader-scroll .paper-empty p { margin: var(--s-2) 0 0; font-size: var(--fs-sm); color: var(--text-2); }
+
+/* --- 3 · Margin Annotation Rail ------------------------------------------- */
+.plab-rail { min-width: 0; overflow-y: auto; padding: 18px 18px 20px; border-left: 1px solid var(--border); background: var(--surface-2); }
+.plab-rail-head { padding-bottom: var(--s-3); border-bottom: 1px solid var(--border-strong); }
+.plab-rail-head h2 { margin: 0; font-size: var(--fs-label); line-height: var(--lh-label); font-weight: var(--fw-semibold); letter-spacing: .14em; color: var(--text); }
+.plab-rail-head span { display: block; margin-top: var(--s-1); font-size: var(--fs-caption); color: var(--text-2); }
+.plab-rail-block { padding: var(--s-4) 0; border-bottom: 1px solid var(--border); }
+.plab-rail-num { margin: 0; font-size: var(--fs-caption); font-weight: var(--fw-semibold); letter-spacing: .08em; color: var(--text-2); }
+/* The first block is the reader's own position, so its number carries the same
+   cobalt marker the page uses in its margin. */
+.plab-rail-block:first-of-type .plab-rail-num { color: var(--brand); }
+.plab-rail-block h3 { margin: var(--s-1) 0 0; font-size: var(--fs-sm); line-height: var(--lh-sm); font-weight: var(--fw-semibold); color: var(--text); }
+.plab-rail-block p { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); overflow-wrap: anywhere; }
+.plab-rail-role { display: block; margin-top: var(--s-2); font-size: var(--fs-sm); font-weight: var(--fw-medium); color: var(--text); }
+.plab-rail-meta { display: grid; gap: var(--s-1); margin: var(--s-3) 0 0; }
+.plab-rail-meta > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
+.plab-rail-meta dt { font-size: var(--fs-caption); color: var(--text-2); }
+.plab-rail-meta dd { margin: 0; font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--text); }
+.plab-rail-questions { margin: var(--s-2) 0 0; padding-left: 16px; }
+.plab-rail-questions li { font-size: var(--fs-caption); line-height: var(--lh-caption); color: var(--text-2); }
+.plab-rail-block textarea {
+  width: 100%;
+  min-height: 84px;
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--border-control);
+  border-radius: var(--r-xs);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-sm);
+  resize: vertical;
+}
+.plab-rail-block textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.plab-rail .term-list { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); }
+.plab-rail .term-list b { padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--r-xs); background: var(--surface); font-size: var(--fs-caption); font-weight: var(--fw-medium); color: var(--text); }
+
+/* --- the kept sections: AI studio and scholarly search -------------------- */
+/* Phase 1 leaves both alone. They only need to sit correctly now that they are
+   siblings of the workbench rather than cells inside it. */
+.plab-shell .ai-studio { border-top: 1px solid var(--border-strong); }
+.plab-shell .paper-search { padding: 22px clamp(20px, 3vw, 40px); border-top: 1px solid var(--border-strong); }
+/* Kept PaperLab elements that need to sit inside the new shell. */
+.plab-shell .paper-message { margin: 12px clamp(20px, 3vw, 40px) 0; }
+.plab-shell .paper-mobile-tabs { margin: 12px clamp(16px, 3vw, 28px); }
+
+/* --- responsive ----------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .plab-workbench { grid-template-columns: minmax(184px, 208px) minmax(0, 1fr) minmax(240px, 264px); }
+}
+/* Below this width three columns stop being honest, so the reading three become
+   one column in priority order: reader, then the index beside the rail. The
+   reader keeps its measure and the page keeps a single scroll. */
+@media (max-width: 1024px) {
+  .plab-workbench { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .plab-reader { order: 1; border-bottom: 1px solid var(--border-strong); }
+  .plab-index { order: 2; border-right: 0; border-bottom: 1px solid var(--border); }
+  .plab-rail { order: 3; border-left: 0; }
+  /* One scroll for the whole page at these widths: no column keeps an inner
+     scroll area, so nothing nests inside the page's own scroll. */
+  .plab-index-list,
+  .plab-rail { max-height: none; overflow: visible; }
+  .plab-reader-scroll { overflow: visible; }
+}
+@media (max-width: 760px) {
+  /* The tabs PaperLab already had remain the switch; each panel keeps its own
+     scroll and the reader is the panel the page opens on. */
+  /* The shell turns into a fixed top bar at this width, so the page keeps the same
+     78px of room under it that the other surfaces keep. */
+  .student-main.plab-shell { padding-top: 78px; }
+  .plab-reader-bar .paper-title-edit input { font-size: 20px; line-height: 28px; }
+  .plab-shell .translator-status { width: 100%; }
+  .plab-head { flex-direction: column; align-items: stretch; gap: var(--s-4); }
+  .plab-head-tools { justify-content: flex-start; }
+  .plab-workbench { height: auto; }
+  .plab-workbench > .plab-index,
+  .plab-workbench > .plab-reader,
+  .plab-workbench > .plab-rail { display: none; }
+  .plab-workbench > .mobile-visible { display: flex; }
+  .plab-shell .ai-studio,
+  .plab-shell .paper-search { display: none; }
+  .plab-shell .ai-studio.mobile-visible,
+  .plab-shell .paper-search.mobile-visible { display: block; }
+  .plab-page { margin: var(--s-4) var(--s-4) var(--s-5); padding: 22px var(--s-4) 22px; }
+  .plab-reader-bar { align-items: flex-start; flex-direction: column; gap: var(--s-3); }
+  .plab-reader-progress { width: 100%; align-items: stretch; }
+  .plab-index-delete { width: 44px; height: 44px; }
+  .plab-page .paragraph-actions button,
+  .plab-bookmark { min-height: 44px; }
+  .plab-reader-scroll .section-chips button { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plab-tool { transition: none; }
+}
+
+/* ==========================================================================
    ACAORA - Scholarly Journal Workspace · Dashboard (prototype, 2026-09-17)
    75% scholarly journal / 25% contemporary archive. Every selector is namespaced
    to this page; the shared working bands (page-bar, metric-register, area-strip,
