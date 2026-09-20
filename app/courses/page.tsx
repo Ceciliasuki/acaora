@@ -211,7 +211,7 @@ export default function CoursesPage() {
             </aside>
           </div>
 
-          <h2 className="ruled-heading ruled-heading--section">基于资料生成练习<span>AI 生成 · 每题标注来源</span></h2>
+          <h2 className="ruled-heading ruled-heading--section">基于资料生成练习<span>AI 生成 · 含答案、解析与常见误区</span></h2>
           <div className="ruled-split ruled-split--practice">
             <div className="ruled-main practice-config">
               <FormField label="课程资料" hint="至少约 80 个字符；PDF 与 Word 暂不支持。">
@@ -271,7 +271,7 @@ export default function CoursesPage() {
           <div className="status-bezel-inner">
             <span>本地优先</span>
             <span>资料留在设备</span>
-            <span>练习由 AI 生成并标注来源</span>
+            <span>练习由 AI 生成并与课程原文分开呈现</span>
             <span className="status-bezel-account">{selected.code} · {selected.track}</span>
           </div>
         </div>

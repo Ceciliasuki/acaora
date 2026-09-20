@@ -52,7 +52,8 @@ for (const [name, path, prepare] of [
 for (const viewport of [
   { id: "UI-01", width: 375, height: 812 },
   { id: "UI-02", width: 768, height: 1024 },
-  { id: "UI-03", width: 1440, height: 900 },
+  { id: "UI-03", width: 1024, height: 900 },
+  { id: "UI-04", width: 1440, height: 900 },
 ]) {
   test(`${viewport.id} ${viewport.width}×${viewport.height} has no document-level overflow`, async ({ page }) => {
     await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -64,11 +65,35 @@ for (const viewport of [
   });
 }
 
-test("@a11y critical workspace accessibility smoke", async ({ page }) => {
-  for (const path of ["/", "/auth", "/dashboard", "/courses", "/papers", "/data", "/projects", "/settings"]) {
-    await ready(page, path);
-    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
-    const blocking = results.violations.filter((violation) => violation.impact === "critical" || violation.impact === "serious");
-    expect(blocking, `${path}: ${blocking.map((violation) => `${violation.id} (${violation.nodes.length})`).join(", ")}`).toEqual([]);
-  }
+test("mobile navigation contains focus, closes on Escape, and restores focus", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await ready(page, "/courses");
+  const trigger = page.getByRole("button", { name: "打开主导航" });
+  const sidebar = page.locator("#app-sidebar");
+  await expect(sidebar).toHaveAttribute("inert", "");
+  await trigger.click();
+  await expect(sidebar).not.toHaveAttribute("inert", "");
+  await expect(page.locator(".sidebar-close-button")).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("link", { name: "返回 Acaora 工作台" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("link", { name: "编辑个人资料" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+  await expect(sidebar).toHaveAttribute("inert", "");
 });
+
+for (const viewport of [
+  { id: "desktop", width: 1440, height: 900 },
+  { id: "mobile", width: 375, height: 812 },
+]) {
+  test(`@a11y ${viewport.id} critical workspace accessibility smoke`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    for (const path of ["/", "/auth", "/dashboard", "/courses", "/papers", "/data", "/projects", "/settings"]) {
+      await ready(page, path);
+      const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+      const blocking = results.violations.filter((violation) => violation.impact === "critical" || violation.impact === "serious");
+      expect(blocking, `${path}: ${blocking.map((violation) => `${violation.id} (${violation.nodes.length})`).join(", ")}`).toEqual([]);
+    }
+  });
+}

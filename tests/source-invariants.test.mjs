@@ -158,3 +158,12 @@ test("paper cloud API exposes tombstones and uses atomic authenticated RPCs", as
   assert.match(route, /status:\s*409/);
   assert.match(route, /privateNoStore\(NextResponse\.json/);
 });
+
+test("release-facing copy does not claim unsupported citations or fabricated product data", async () => {
+  const courses = await read("app/courses/page.tsx");
+  const landing = await read("app/page.tsx");
+
+  assert.doesNotMatch(courses, /每题标注来源/);
+  assert.doesNotMatch(landing, /⌘K|84%|68%|4\s*\/\s*6/);
+  assert.doesNotMatch(landing, /demo-control|focus-card|weekly-card|quick-paper|ai-preview/);
+});

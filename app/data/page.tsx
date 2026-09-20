@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
+import { ArrowUpFromLine, HardDrive, RotateCcw } from "lucide-react";
 import AppSidebar from "../components/app-sidebar";
 import { Badge } from "../components/ui";
 import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
@@ -111,7 +112,7 @@ export default function Home() {
             <h1>数据分析工作台</h1>
             {isSample && <Badge tone="warning">示例数据</Badge>}
             <span className="page-bar-spacer" />
-            <button className="sample-button" type="button" onClick={restoreSample}>↺ 恢复示例数据</button>
+            <button className="sample-button" type="button" onClick={restoreSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button>
           </div>
         </div>
 
@@ -136,7 +137,7 @@ export default function Home() {
           <div className="upload-panel">
             <div className="panel-heading">
               <div><h2>读取常用数据文件</h2></div>
-              <span className="privacy-pill">● 仅本地处理</span>
+              <span className="privacy-pill"><HardDrive size={15} aria-hidden="true" />仅本地处理</span>
             </div>
             <button
               className={`dropzone ${dragging ? "dragging" : ""}`}
@@ -147,7 +148,7 @@ export default function Home() {
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
             >
-              <span className="upload-icon">↑</span>
+              <span className="upload-icon"><ArrowUpFromLine size={24} aria-hidden="true" /></span>
               <strong>{reading ? "正在识别并读取数据…" : dragging ? "松开即可读取文件" : "拖入文件，或点击选择"}</strong>
               <small>CSV · Excel · Stata · SPSS · SAS · R 数据文件</small>
             </button>
@@ -206,7 +207,7 @@ export default function Home() {
 
         <section className="analysis-panel" id="analysis">
           <div className="analysis-header">
-            <div><p className="section-kicker">04 · 分析中心</p><h2>选择方法，查看结果</h2></div>
+            <div><h2>选择方法，查看结果</h2></div>
             <div className="analysis-tabs" role="tablist" aria-label="分析方法">
               <button role="tab" aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
               <button role="tab" aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
@@ -250,7 +251,17 @@ export default function Home() {
               </div>
               <div className="summary-table-card">
                 <div className="table-title"><strong>全部数值变量</strong><span>自动计算</span></div>
-                <div className="table-wrap">
+                <div className="table-wrap" role="region" aria-label="数值变量统计表，可横向滚动">
+                  <button
+                    type="button"
+                    className="sr-only"
+                    aria-label="使用左右方向键横向滚动数值变量统计表"
+                    onKeyDown={(event) => {
+                      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+                      event.preventDefault();
+                      event.currentTarget.parentElement?.scrollBy({ left: event.key === "ArrowRight" ? 160 : -160 });
+                    }}
+                  >横向滚动表格</button>
                   <table>
                     <thead><tr><th>变量</th><th>N</th><th>均值</th><th>标准差</th><th>最小</th><th>中位数</th><th>最大</th></tr></thead>
                     <tbody>{summaries.map((item) => <tr key={item.name}><td><strong>{item.name}</strong></td><td>{item.n}</td><td>{formatNumber(item.mean)}</td><td>{formatNumber(item.sd)}</td><td>{formatNumber(item.min)}</td><td>{formatNumber(item.median)}</td><td>{formatNumber(item.max)}</td></tr>)}</tbody>
@@ -310,10 +321,20 @@ export default function Home() {
 
         <section className="data-preview" id="preview">
           <div className="panel-heading compact">
-            <div><p className="section-kicker">05 · 原始数据</p><h2>{data.name}</h2></div>
+            <div><h2>{data.name}</h2></div>
             <div className="status-copy"><span /> 显示前 {Math.min(8, data.rows.length)} 行</div>
           </div>
-          <div className="table-wrap preview-table">
+          <div className="table-wrap preview-table" role="region" aria-label="原始数据预览，可横向滚动">
+            <button
+              type="button"
+              className="sr-only"
+              aria-label="使用左右方向键横向滚动原始数据预览"
+              onKeyDown={(event) => {
+                if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+                event.preventDefault();
+                event.currentTarget.parentElement?.scrollBy({ left: event.key === "ArrowRight" ? 160 : -160 });
+              }}
+            >横向滚动表格</button>
             <table>
               <thead><tr>{data.headers.map((header, index) => <th key={`${header}-${index}`}>{header}</th>)}</tr></thead>
               <tbody>{data.rows.slice(0, 8).map((row, rowIndex) => <tr key={rowIndex}>{data.headers.map((_, column) => <td className={isMissing(row[column] ?? "") ? "missing-cell" : ""} key={column}>{isMissing(row[column] ?? "") ? "缺失" : row[column]}</td>)}</tr>)}</tbody>
