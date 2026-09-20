@@ -43,6 +43,14 @@ export default function PaperLab() {
   const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
+  /* A search has three distinct endings — results, a settled empty answer, and a
+     failure — and they must not render as one another. */
+  const [searchError, setSearchError] = useState("");
+  const [searchSettled, setSearchSettled] = useState(false);
+  /* A device-library read is a real operation that can really fail; when it does
+     the count is unknown rather than zero, and the reader can retry the read. */
+  const [libraryError, setLibraryError] = useState("");
+  const [hydrationAttempt, setHydrationAttempt] = useState(0);
   const [cloudState, setCloudState] = useState<"checking" | "guest" | "syncing" | "offline" | "ready" | "error">("checking");
   const cloudStateRef = useRef(cloudState);
   const signedInRef = useRef(false);
@@ -158,13 +166,23 @@ export default function PaperLab() {
 
   useEffect(() => {
     void (async () => {
+      setLibraryError("");
       try {
         const sessionResponse = await authFetch("/api/auth/session");
         if (!sessionResponse.ok) throw new Error("账户状态不可用。");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
         signedInRef.current = Boolean(session.user);
         userIdRef.current = session.user?.id ?? null;
-        let records = await getPaperLibrary(userIdRef.current);
+        let records: PaperRecord[];
+        try {
+          records = await getPaperLibrary(userIdRef.current);
+        } catch {
+          /* The device store itself could not be read: that is a failure, not an
+             empty library, so the index reports it instead of showing "0 篇". */
+          setLibraryError("无法读取本机论文库。本次没有删除或覆盖任何记录，可以重试读取。");
+          setCloudStatus(navigator.onLine ? "error" : "offline");
+          return;
+        }
         if (session.user) {
           records = await refreshCloud();
           void syncNow();
@@ -182,12 +200,13 @@ export default function PaperLab() {
           setSearchQuery(records[0].title);
         }
       } catch {
+        setLibraryError("无法读取论文库状态。请检查网络或账户状态后重试。");
         setCloudStatus(navigator.onLine ? "error" : "offline");
       } finally {
         setHydrated(true);
       }
     })();
-  }, [refreshCloud, setCloudStatus, syncNow]);
+  }, [hydrationAttempt, refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
     const offline = () => {
@@ -353,19 +372,36 @@ export default function PaperLab() {
 
   async function searchPapers() {
     const query = searchQuery.trim();
-    if (query.length < 3) return;
+    if (query.length < 3) {
+      setSearchResults([]);
+      setSearchMessage("");
+      setSearchError("请输入至少三个字符后再检索。");
+      setSearchSettled(true);
+      setMobilePanel("search");
+      return;
+    }
     setSearching(true);
+    setSearchResults([]);
     setSearchMessage("");
+    setSearchError("");
+    setSearchSettled(false);
     try {
       const response = await fetch(`/api/papers/search?q=${encodeURIComponent(query)}`);
       const payload = await response.json() as { error?: string; papers?: SearchPaper[]; source?: string };
       if (!response.ok) throw new Error(payload.error ?? "检索失败。" );
       const normalizedTitle = paper.title.toLowerCase();
-      setSearchResults((payload.papers ?? []).filter((result) => result.title.toLowerCase() !== normalizedTitle));
-      setSearchMessage(`来自 ${payload.source ?? "公共学术索引"} · ${(payload.papers ?? []).length} 条结果`);
+      /* The list the reader actually sees is the list that is counted: the paper
+         already open in the reader is not repeated as a discovery result. */
+      const discovered = (payload.papers ?? []).filter((result) => result.title.toLowerCase() !== normalizedTitle);
+      setSearchResults(discovered);
+      setSearchMessage(`来自 ${payload.source ?? "公共学术索引"} · ${discovered.length} 条结果`);
+      setSearchSettled(true);
       setMobilePanel("search");
     } catch (error) {
-      setSearchMessage(error instanceof Error ? error.message : "检索失败。" );
+      setSearchResults([]);
+      setSearchMessage("");
+      setSearchError(error instanceof Error ? error.message : "检索失败。" );
+      setSearchSettled(true);
     } finally {
       setSearching(false);
     }
@@ -432,16 +468,23 @@ export default function PaperLab() {
       </div>
 
       <section className="plab-workbench">
+        {!hydrated ? <ReadingSkeleton /> : <>
         {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
             rows, the title as the entry, and the reader's own progress beneath it.
             The row keeps its two real controls (open, delete) unchanged. */}
         <aside className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
           <div className="plab-index-head">
             <h2>论文库</h2>
-            <span className="journal-num">{library.length}</span>
+            {/* An unread store has no count, so the index prints an absence rather
+                than a zero that would claim the library is empty. */}
+            <span className="journal-num">{libraryError ? "—" : library.length}</span>
           </div>
+          {libraryError ? <p className="plab-index-error" role="alert">
+            {libraryError}
+            <button className="plab-index-retry" type="button" onClick={() => { setLibraryError(""); setHydrated(false); setHydrationAttempt((attempt) => attempt + 1); }}>重试读取</button>
+          </p> : null}
           <div className="plab-index-list">
-            {library.length ? library.map((record) => {
+            {!libraryError && (library.length ? library.map((record) => {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
               const current = record.id === paper.id;
               return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
@@ -451,7 +494,7 @@ export default function PaperLab() {
                 </button>
                 <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
               </article>;
-            }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
+            }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
           </div>
           <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
@@ -546,44 +589,156 @@ export default function PaperLab() {
             <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
           </div>}
         </aside>
+        </>}
       </section>
 
-        <AiStudio
+        {hydrated ? <AiStudio
           paper={paper}
           activeParagraph={activeParagraph}
           activeIndex={activeIndex}
           mobileVisible={mobilePanel === "ai"}
           onSave={(aiMemory: AiMemory) => updatePaper((current) => ({ ...current, aiMemory }))}
           onTranslation={(translation) => updateActiveParagraph({ translation })}
-          onSearchQuery={(query) => setSearchQuery(query)}
-        />
+          onSearchQuery={(query) => {
+            setSearchQuery(query);
+            setSearchResults([]);
+            setSearchMessage("");
+            setSearchError("");
+            setSearchSettled(false);
+          }}
+        /> : <AiConsoleSkeleton />}
 
-        <section className={`paper-search ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
-          <div className="search-head"><div><p>OPEN SCHOLARLY INDEX</p><h2>相关论文检索</h2></div><span>免密钥</span></div>
-          <div className="paper-search-box"><input aria-label="论文检索关键词" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchPapers(); }} /><button type="button" onClick={() => void searchPapers()} disabled={searching}>{searching ? "检索中…" : "检索相关论文"}</button></div>
-          <p className="search-source">{searchMessage || "输入标题、DOI 或关键词，从公共学术索引查找真实论文。"}</p>
-          <div className="search-results">
-            {searchResults.map((result) => <article key={`${result.source}-${result.id}`}>
-              <div className="result-topline"><span>{result.source}</span><small>{result.year ?? "年份未知"} · 被引 {result.citationCount}</small></div>
-              <h3>{result.title}</h3>
-              <p className="result-authors">{result.authors.slice(0, 4).join(", ") || "作者信息缺失"}{result.authors.length > 4 ? " 等" : ""}</p>
-              {result.abstract && <p className="result-abstract">{result.abstract}</p>}
-              <div className="result-links">{result.url && <a href={result.url} target="_blank" rel="noreferrer">查看来源 ↗</a>}{result.pdfUrl && <a href={result.pdfUrl} target="_blank" rel="noreferrer">开放 PDF</a>}{result.doi && <button type="button" onClick={() => void navigator.clipboard.writeText(result.doi)}>复制 DOI</button>}</div>
-            </article>)}
-            {!searchResults.length && !searching && <div className="search-empty"><span>⌕</span><strong>从当前论文开始发现</strong><p>检索结果会展示来源、作者、年份、引用次数和开放全文入口。</p></div>}
+        {/* Scholarly Discovery Index: the page's lowest-weight research tool. It is
+            a bibliography, not a search product: one query field, ruled records, and
+            four endings that never impersonate one another. */}
+        {hydrated ? <section className={`plab-discovery ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
+          <div className="plab-discovery-head">
+            <h2>学术检索索引</h2>
+            <p className="plab-discovery-note">公共学术索引（Semantic Scholar，失败时回退 Crossref），不需要密钥。AI 控制台的「检索策略」会把生成的检索式填进下面的输入框。</p>
           </div>
-        </section>
+
+          <form className="plab-query" onSubmit={(event) => { event.preventDefault(); void searchPapers(); }}>
+            <label className="plab-query-field">
+              <span>检索式</span>
+              <input
+                aria-label="论文检索关键词"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="标题、DOI 或关键词（至少三个字符）"
+                name="paper-query"
+                autoComplete="off"
+              />
+            </label>
+            <button className="plab-query-submit" type="submit" disabled={searching}>{searching ? "检索中…" : "检索"}</button>
+          </form>
+
+          {searching ? <SearchLoadingSkeleton /> : null}
+          {!searching && searchError ? <p className="plab-discovery-error" role="alert">
+            {searchError}
+            <button className="plab-discovery-retry" type="button" onClick={() => void searchPapers()}>重新检索</button>
+          </p> : null}
+          {!searching && !searchError && searchSettled && !searchResults.length ? <p className="plab-discovery-empty">没有匹配的记录。可以换成英文关键词，或改用论文的 DOI 再试一次。</p> : null}
+          {!searching && !searchError && !searchSettled ? <p className="plab-discovery-idle">输入检索式后开始检索。每条记录只显示索引真实提供的字段：题名、作者、年份、来源、引用次数与可用的开放全文入口。</p> : null}
+          {searchMessage ? <p className="plab-discovery-source">{searchMessage}</p> : null}
+
+          {searchResults.length ? <ol className="plab-records">
+            {searchResults.map((result, index) => <li className="plab-record" key={`${result.source}-${result.id}`}>
+              <p className="plab-record-line">
+                <span className="plab-record-num journal-num">{String(index + 1).padStart(2, "0")}</span>
+                <span className="plab-record-source">{result.source}</span>
+                {result.year !== null ? <span className="plab-record-year journal-num">{result.year}</span> : null}
+                {result.citationCount > 0 ? <span className="plab-record-cites journal-num">被引 {result.citationCount}</span> : null}
+                {result.venue ? <span className="plab-record-venue">{result.venue}</span> : null}
+              </p>
+              <h3 className="plab-record-title">{result.title}</h3>
+              {result.authors.length ? <p className="plab-record-authors">{result.authors.slice(0, 4).join(", ")}{result.authors.length > 4 ? " 等" : ""}</p> : null}
+              {result.abstract ? <p className="plab-record-abstract">{result.abstract}</p> : null}
+              {(result.url || result.pdfUrl || result.doi) ? <p className="plab-record-actions">
+                {result.url ? <a href={result.url} target="_blank" rel="noreferrer">查看来源 ↗</a> : null}
+                {result.pdfUrl ? <a href={result.pdfUrl} target="_blank" rel="noreferrer">开放全文 ↗</a> : null}
+                {result.doi ? <button type="button" onClick={() => void navigator.clipboard.writeText(result.doi)}>复制 DOI</button> : null}
+              </p> : null}
+            </li>)}
+          </ol> : null}
+        </section> : <DiscoverySkeleton />}
       <div className="status-bezel">
         <div className="status-bezel-inner">
           <span>本地优先</span>
           <span>原文不上传</span>
           <span>文件在浏览器内解析</span>
-          <span className="status-bezel-account">{library.length} 篇在本机</span>
+          <span className="status-bezel-account">{!hydrated || libraryError ? "本机论文数 —" : `${library.length} 篇在本机`}</span>
         </div>
       </div>
       </section>
     </main>
   );
+}
+
+/* While the device library is being read, the reading three show their own geometry
+   in hairlines — an index, a page and a margin — so the page never flashes a
+   rounded placeholder card or an empty library that is not yet known to be empty. */
+function ReadingSkeleton() {
+  return <>
+    <aside className="plab-index" aria-hidden="true">
+      <div className="plab-index-head"><h2>论文库</h2><span className="plab-skel plab-skel--count" /></div>
+      <div className="plab-index-list">
+        {[0, 1, 2, 3].map((row) => <div className="plab-index-row" key={row}>
+          <span className="plab-skel plab-skel--row-title" />
+          <span className="plab-skel plab-skel--row-meta" />
+        </div>)}
+      </div>
+    </aside>
+    <section className="plab-reader" aria-hidden="true">
+      <div className="plab-reader-bar">
+        <span className="plab-skel plab-skel--file" />
+        <span className="plab-skel plab-skel--paper-title" />
+      </div>
+      <div className="plab-reader-scroll">
+        <article className="plab-page">
+          <span className="plab-skel plab-skel--row-meta" />
+          <span className="plab-skel plab-skel--line" />
+          <span className="plab-skel plab-skel--line" />
+          <span className="plab-skel plab-skel--line" />
+        </article>
+      </div>
+    </section>
+    <aside className="plab-rail" aria-hidden="true">
+      <div className="plab-rail-head"><h2>页边注释</h2></div>
+      {[0, 1, 2].map((block) => <div className="plab-rail-block" key={block}>
+        <span className="plab-skel plab-skel--row-meta" />
+        <span className="plab-skel plab-skel--line" />
+        <span className="plab-skel plab-skel--line" />
+      </div>)}
+    </aside>
+  </>;
+}
+
+function AiConsoleSkeleton() {
+  return <section className="ai-studio plab-ai-skeleton" aria-label="AI 研究控制台正在加载" aria-busy="true">
+    <div className="ai-console">
+      <div className="plab-skeleton-heading"><span className="plab-skel plab-skel--section-title" /><span className="plab-skel plab-skel--section-note" /></div>
+      <div className="plab-skeleton-index">{[0, 1, 2, 3].map((item) => <span className="plab-skel plab-skel--mode" key={item} />)}</div>
+      <span className="plab-skel plab-skel--analysis" />
+    </div>
+  </section>;
+}
+
+function DiscoverySkeleton() {
+  return <section className="plab-discovery plab-discovery-skeleton" aria-label="学术检索索引正在加载" aria-busy="true">
+    <div className="plab-skeleton-heading"><span className="plab-skel plab-skel--section-title" /><span className="plab-skel plab-skel--section-note" /></div>
+    <span className="plab-skel plab-skel--query" />
+    <SearchLoadingSkeleton />
+  </section>;
+}
+
+function SearchLoadingSkeleton() {
+  return <div className="plab-discovery-loading" role="status" aria-label="正在检索公共学术索引">
+    {[0, 1, 2].map((record) => <div className="plab-record plab-record--skeleton" key={record} aria-hidden="true">
+      <span className="plab-skel plab-skel--record-meta" />
+      <span className="plab-skel plab-skel--record-title" />
+      <span className="plab-skel plab-skel--record-copy" />
+    </div>)}
+  </div>;
 }
 
 function getTranslatorFactory() {
