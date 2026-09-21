@@ -12,10 +12,17 @@ export type MockProject = {
 
 export type MockState = {
   signedIn: boolean;
+  userId: string;
   password: string;
   failNextLogin: boolean;
   projects: MockProject[];
   cloudPapers: unknown[];
+  cloudDeletions: Array<{ id: string; deletedAt: number }>;
+  failPaperSync: boolean;
+  paperSyncDelayMs: number;
+  paperSyncStatus: number;
+  failPaperDelete: boolean;
+  requestBodies: unknown[];
   requests: string[];
 };
 
@@ -31,10 +38,17 @@ const profile = {
 export async function installApiMocks(page: Page, initial: Partial<MockState> = {}) {
   const state: MockState = {
     signedIn: initial.signedIn ?? false,
+    userId: initial.userId ?? user.id,
     password: initial.password ?? "ValidPass1",
     failNextLogin: initial.failNextLogin ?? false,
     projects: initial.projects ? structuredClone(initial.projects) : [],
     cloudPapers: initial.cloudPapers ? structuredClone(initial.cloudPapers) : [],
+    cloudDeletions: initial.cloudDeletions ? structuredClone(initial.cloudDeletions) : [],
+    failPaperSync: initial.failPaperSync ?? false,
+    paperSyncDelayMs: initial.paperSyncDelayMs ?? 0,
+    paperSyncStatus: initial.paperSyncStatus ?? 200,
+    failPaperDelete: initial.failPaperDelete ?? false,
+    requestBodies: [],
     requests: [],
   };
 
@@ -46,7 +60,7 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
 
     if (url.pathname === "/api/version") return json(route, { commit: "e2e-fixed-commit", buildTime: "2026-08-16T08:00:00.000Z", environment: "test" });
     if (url.pathname === "/api/auth/status") return json(route, { configured: true });
-    if (url.pathname === "/api/auth/session") return privateJson(route, { configured: true, user: state.signedIn ? user : null });
+    if (url.pathname === "/api/auth/session") return privateJson(route, { configured: true, user: state.signedIn ? { ...user, id: state.userId } : null });
     if (url.pathname === "/api/auth/login") {
       const body = request.postDataJSON() as { password?: string };
       if (state.failNextLogin) {
@@ -96,12 +110,20 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
     }
     if (url.pathname === "/api/cloud/papers") {
       if (!state.signedIn) return privateJson(route, { error: "请先登录。" }, 401);
-      if (request.method() === "GET") return privateJson(route, { papers: state.cloudPapers });
+      if (request.method() === "GET") return privateJson(route, { papers: state.cloudPapers, deletions: state.cloudDeletions });
       if (request.method() === "DELETE") {
+        if (state.failPaperDelete) return privateJson(route, { error: "云端删除失败。" }, 503);
         const id = url.searchParams.get("id");
         state.cloudPapers = state.cloudPapers.filter((paper) => (paper as { id?: string }).id !== id);
-        return privateJson(route, { deleted: true });
+        const deletedAt = Date.now();
+        state.cloudDeletions.push({ id: id ?? "", deletedAt });
+        return privateJson(route, { deleted: true, deletedAt });
       }
+      const body = request.postDataJSON() as unknown;
+      state.requestBodies.push(body);
+      if (state.paperSyncDelayMs) await new Promise((resolve) => setTimeout(resolve, state.paperSyncDelayMs));
+      if (state.failPaperSync) return privateJson(route, { error: "云同步失败，请稍后重试。" }, 503);
+      if (state.paperSyncStatus !== 200) return privateJson(route, { error: "模拟同步拒绝。" }, state.paperSyncStatus);
       return privateJson(route, { saved: true });
     }
     if (url.pathname === "/api/papers/ai" && request.method() === "GET") return json(route, { available: true, mode: "byok", model: "deepseek-v4-flash" });

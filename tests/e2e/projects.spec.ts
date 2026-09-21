@@ -33,3 +33,21 @@ test("PROJECT-02 authenticated project deletion", async ({ page }) => {
   expect(state.projects).toHaveLength(0);
   expect(state.requests).toContain("DELETE /api/projects");
 });
+
+test("PROJECT-03 create dialog traps focus and restores its trigger", async ({ page }) => {
+  const now = "2026-08-16T08:00:00.000Z";
+  await installApiMocks(page, { signedIn: true, projects: [{ id: "project-existing", title: "现有项目", kind: "paper", status: "active", metadata: { tasks: [] }, created_at: now, updated_at: now }] });
+  await page.goto("/projects");
+  const trigger = page.getByRole("button", { name: "新建项目", exact: true }).first();
+  await trigger.click();
+  await expect(page.getByRole("dialog", { name: "建立一个项目空间" })).toBeVisible();
+  await expect(page.getByLabel("项目名称")).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "关闭", exact: true })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "关闭新建项目窗口" })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByRole("button", { name: "创建项目空间" })).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+});

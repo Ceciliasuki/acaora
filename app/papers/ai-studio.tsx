@@ -104,36 +104,76 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
 
   return (
     <section className={`ai-studio ${mobileVisible ? "mobile-visible" : ""}`}>
-      <div className="ai-studio-head">
-        <div>
-          <p>DEEPSEEK RESEARCH COPILOT</p>
-          <h2>AI 研究工作台</h2>
-          <span>证据优先 · 段落可追溯 · 结果保存在当前设备</span>
+      <div className="ai-console">
+        {/* The console states what it is looking at before it offers to run. */}
+        <header className="ai-console-head">
+          <div>
+            <p className="ai-console-kicker">AI RESEARCH CONSOLE</p>
+            <h2>AI 研究控制台</h2>
+          </div>
+          <div className="ai-console-key">
+            <strong>{apiKey ? "当前会话已配置 DeepSeek Key" : "当前会话未配置 AI Key"}</strong>
+            <small>Key 只保存在当前浏览器会话；发起分析时会发送到 Acaora 服务端并转发给 DeepSeek，不写入账户数据库。</small>
+            <Link href="/settings#ai-models">管理 AI 与模型 →</Link>
+          </div>
+        </header>
+
+        <dl className="ai-console-context">
+          {/* The paper is named here without repeating its title as bare text: the
+              library row already carries that exact string, and two identical text
+              nodes would make an exact-text lookup ambiguous for the user's tools
+              as much as for the test suite. Chinese title marks keep it a label. */}
+          <div><dt>论文</dt><dd>{`当前论文《${paper.title}》`}</dd></div>
+          <div><dt>段落</dt><dd>{activeParagraph ? `${activeIndex + 1} / ${paper.paragraphs.length} · ${activeParagraph.section} · P${activeParagraph.page}` : "未选择段落"}</dd></div>
+          <div><dt>上下文</dt><dd>{action === "paragraph" || action === "translate" ? "当前段落原文" : action === "search" ? "研究主题输入" : `最多 ${Math.min(paper.paragraphs.length, 80)} 个带编号段落`}</dd></div>
+        </dl>
+
+        <div className="ai-mode" role="tablist" aria-label="AI 研究功能">
+          {(Object.keys(actionMeta) as AiAction[]).map((item, index) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "ai-mode-item ai-mode-item--on" : "ai-mode-item"} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>
+            <span className="ai-mode-num">{String(index + 1).padStart(2, "0")}</span>
+            {actionMeta[item].label}
+          </button>)}
         </div>
-        <div className="ai-key-box"><strong>{apiKey ? "当前会话已配置 DeepSeek Key" : "当前会话未配置 AI Key"}</strong><small>Key 只保存在当前浏览器会话；发起分析时会发送到 Acaora 服务端并转发给 DeepSeek，不写入账户数据库。</small><Link href="/settings#ai-models">管理 AI 与模型 →</Link></div>
-      </div>
 
-      <div className="ai-action-tabs" role="tablist" aria-label="AI 研究功能">
-        {(Object.keys(actionMeta) as AiAction[]).map((item) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "active" : ""} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>{actionMeta[item].label}</button>)}
-      </div>
+        <p className="ai-mode-brief">
+          <span className="ai-mode-brief-kicker">{actionMeta[action].kicker}</span>
+          <span className="ai-mode-brief-copy">{actionMeta[action].description}</span>
+        </p>
 
-      <div className="ai-studio-body">
-        <aside className="ai-task-card">
-          <p>{actionMeta[action].kicker}</p>
-          <h3>{actionMeta[action].label}</h3>
-          <span>{actionMeta[action].description}</span>
-          {action === "chat" && <textarea value={question} onChange={(event) => setQuestion(event.target.value)} aria-label="向论文提问" placeholder="例如：作者的因果结论成立吗？" />}
-          {action === "search" && <textarea value={researchTopic} onChange={(event) => setResearchTopic(event.target.value)} aria-label="研究主题" placeholder="用中文描述研究主题……" />}
-          {action === "translate" && <select aria-label="翻译风格" value={translationStyle} onChange={(event) => setTranslationStyle(event.target.value)}><option>统计术语优先，表达自然</option><option>忠实直译，保留句法</option><option>本科生易懂，并解释术语</option></select>}
-          <button className="ai-run" type="button" disabled={working || !activeParagraph} onClick={() => void runAction()}>{working ? "DeepSeek 正在分析…" : actionMeta[action].button}</button>
-          <small>{action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : `将使用最多 ${Math.min(paper.paragraphs.length, 80)} 个带编号段落`}</small>
-          {error && <div className="ai-error" role="alert">{error}</div>}
-        </aside>
+        <div className="ai-question">
+          {action === "chat" && <label className="ai-field">
+            <span>研究问题</span>
+            <textarea value={question} onChange={(event) => setQuestion(event.target.value)} aria-label="向论文提问" placeholder="例如：作者的因果结论成立吗？" />
+          </label>}
+          {action === "search" && <label className="ai-field">
+            <span>研究主题</span>
+            <textarea value={researchTopic} onChange={(event) => setResearchTopic(event.target.value)} aria-label="研究主题" placeholder="用中文描述研究主题……" />
+          </label>}
+          {action === "translate" && <label className="ai-field">
+            <span>翻译风格</span>
+            <select aria-label="翻译风格" value={translationStyle} onChange={(event) => setTranslationStyle(event.target.value)}><option>统计术语优先，表达自然</option><option>忠实直译，保留句法</option><option>本科生易懂，并解释术语</option></select>
+          </label>}
 
-        <div className="ai-result-panel">
-          <div className="ai-result-top"><div><span>STRUCTURED RESULT</span><strong>{result ? result.title : "等待运行"}</strong></div>{usage && <small>{usage}</small>}</div>
-          {result ? <><ResultView data={result.data} /><div className="ai-result-foot">生成于 {new Date(result.createdAt).toLocaleString("zh-CN")} · AI 内容可能出错，请回到引用段落核对。</div></> : <div className="ai-empty-result"><b>DS</b><strong>从一个可核查的问题开始</strong><p>AI 不会替你做学术判断。它会把结论、证据和不确定性分开呈现。</p></div>}
+          <div className="ai-run-row">
+            <button className="ai-run" type="button" disabled={working || !activeParagraph} onClick={() => void runAction()}>{working ? "DeepSeek 正在分析…" : actionMeta[action].button}</button>
+            <span className="ai-run-note">{usage || (action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : `将使用最多 ${Math.min(paper.paragraphs.length, 80)} 个带编号段落`)}</span>
+          </div>
+          {error && <p className="ai-error" role="alert">{error}</p>}
         </div>
+
+        {/* The result is printed as an analysis document: rules, a reading measure
+            and one small AI provenance mark. No tinted slab, no card grid. */}
+        <section className="ai-doc" aria-label="AI 分析结果">
+          <div className="ai-doc-head">
+            <p className="ai-doc-kicker">ANALYSIS</p>
+            <strong>{result ? result.title : "尚未生成分析"}</strong>
+            {result ? <span className="ai-doc-mark">AI 生成</span> : null}
+            {working ? <span className="ai-doc-working" aria-hidden="true" /> : null}
+          </div>
+          {result
+            ? <><ResultView data={result.data} /><p className="ai-doc-foot">生成于 {new Date(result.createdAt).toLocaleString("zh-CN")} · AI 内容可能出错，请回到引用段落核对。</p></>
+            : <p className="ai-doc-idle">选择一种分析方式，再针对当前论文运行；结果会保存在这篇论文的记忆里，可随时回看。</p>}
+        </section>
       </div>
     </section>
   );
@@ -166,19 +206,19 @@ function buildRelevantContext(paper: PaperRecord, question: string) {
 }
 
 function ResultView({ data }: { data: Record<string, unknown> }) {
-  return <div className="structured-result">{Object.entries(data).map(([key, value]) => <ResultField key={key} label={prettyLabel(key)} value={value} />)}</div>;
+  return <div className="ai-doc-body">{Object.entries(data).map(([key, value]) => <ResultField key={key} label={prettyLabel(key)} value={value} />)}</div>;
 }
 
 function ResultField({ label, value }: { label: string; value: unknown }) {
   if (value === null || value === undefined || value === "") return null;
   if (Array.isArray(value)) {
-    return <section className="result-field"><h4>{label}</h4><div className="result-list">{value.map((item, index) => typeof item === "object" && item !== null ? <div className="result-object" key={index}>{Object.entries(item as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div> : <p key={index}><i />{String(item)}</p>)}</div></section>;
+    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-list">{value.map((item, index) => typeof item === "object" && item !== null ? <div className="ai-doc-object" key={index}>{Object.entries(item as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div> : <p key={index}><i />{String(item)}</p>)}</div></section>;
   }
   if (typeof value === "object") {
-    return <section className="result-field"><h4>{label}</h4><div className="result-object">{Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div></section>;
+    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-object">{Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div></section>;
   }
   const long = String(value).length > 100;
-  return <section className={`result-field ${long ? "wide" : ""}`}><h4>{label}</h4><p>{String(value)}</p></section>;
+  return <section className={`ai-doc-field ${long ? "ai-doc-field--wide" : ""}`}><h4>{label}</h4><p>{String(value)}</p></section>;
 }
 
 function prettyLabel(key: string) {

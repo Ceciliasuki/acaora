@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client";
 import { IconButton } from "./ui";
 
@@ -45,7 +45,11 @@ export default function AppSidebar({
   avatarUrl = "",
 }: AppSidebarProps) {
   const [open, setOpen] = useState(false);
+  const [isDrawer, setIsDrawer] = useState(false);
   const [profile, setProfile] = useState({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -77,22 +81,61 @@ export default function AppSidebar({
   }, [avatarUrl, initials, profileSubtitle, profileTitle]);
 
   useEffect(() => {
-    if (!open) return;
+    const query = window.matchMedia("(max-width: 600px)");
+    const update = () => {
+      setIsDrawer(query.matches);
+      if (!query.matches) setOpen(false);
+    };
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!open || !isDrawer) return;
     const previous = document.body.style.overflow;
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previous; };
-  }, [open]);
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(sidebarRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? []);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKeyDown);
+      trigger?.focus();
+    };
+  }, [isDrawer, open]);
 
   return <>
-    <IconButton className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>
+    <IconButton ref={triggerRef} className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>
     {open && <button className="sidebar-backdrop" type="button" aria-label="关闭主导航" onClick={() => setOpen(false)} />}
-    <aside className={`student-sidebar app-sidebar ${open ? "is-open" : ""}`} id="app-sidebar">
+    <aside ref={sidebarRef} className={`student-sidebar app-sidebar ${open ? "is-open" : ""}`} id="app-sidebar" aria-label="应用导航" inert={isDrawer && !open ? true : undefined}>
       <div className="sidebar-head">
         <Link className="acaora-brand light" href="/dashboard" aria-label="返回 Acaora 工作台" onClick={() => setOpen(false)}>
           <span>A</span>
           <div><strong>Acaora</strong><small>学曦</small></div>
         </Link>
-        <IconButton className="sidebar-close-button" variant="ghost" label="关闭主导航" onClick={() => setOpen(false)}><X size={21} /></IconButton>
+        <IconButton ref={closeRef} className="sidebar-close-button" variant="ghost" label="关闭主导航" onClick={() => setOpen(false)}><X size={21} /></IconButton>
       </div>
       <nav aria-label="主要导航">
         {navigation.map((item) => {

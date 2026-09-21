@@ -44,3 +44,11 @@ yarn-error.log*
 /outputs/
 /work/
 *.tsbuildinfo
+
+# skill tooling artifacts (generated, never source)
+# platform executables shipped by the Impeccable launcher
+/.agents/skills/impeccable/scripts/bin/
+# python bytecode cache from skill scripts
+__pycache__/
+# generated agent hook (installed by skill tooling, not part of the project)
+.codex/hooks.json

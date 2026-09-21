@@ -3,11 +3,13 @@
 import AppSidebar from "../components/app-sidebar";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { deletePaper, getPaperLibrary, savePaper } from "./paper-storage";
+import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import AiStudio from "./ai-studio";
-import type { AiMemory, PaperRecord, Paragraph, SearchPaper } from "./paper-types";
+import type { AiMemory, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
 import { authFetch } from "../lib/auth-client";
+import { flushPaperSyncQueue, reconcileSnapshot } from "./paper-sync.mjs";
+import type { RetryDecision } from "./paper-sync.mjs";
 
 type TranslatorSession = {
   translate: (text: string) => Promise<string>;
@@ -41,8 +43,22 @@ export default function PaperLab() {
   const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
+  /* A search has three distinct endings — results, a settled empty answer, and a
+     failure — and they must not render as one another. */
+  const [searchError, setSearchError] = useState("");
+  const [searchSettled, setSearchSettled] = useState(false);
+  /* A device-library read is a real operation that can really fail; when it does
+     the count is unknown rather than zero, and the reader can retry the read. */
+  const [libraryError, setLibraryError] = useState("");
+  const [hydrationAttempt, setHydrationAttempt] = useState(0);
   const [cloudState, setCloudState] = useState<"checking" | "guest" | "syncing" | "offline" | "ready" | "error">("checking");
   const cloudStateRef = useRef(cloudState);
+  const signedInRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
+  const retryTimerRef = useRef<number | null>(null);
+  const syncNowRef = useRef<() => void>(() => undefined);
+  const skipPersistRef = useRef(false);
+  const dirtyRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
@@ -59,54 +75,169 @@ export default function PaperLab() {
     setCloudState(next);
   }, []);
 
+  const refreshCloud = useCallback(async () => {
+    const userId = userIdRef.current;
+    if (!userId) throw new Error("账户尚未就绪。");
+    const response = await authFetch("/api/cloud/papers");
+    if (!response.ok) throw new Error("无法获取云端论文记忆。");
+    if (userIdRef.current !== userId) throw new Error("账户已切换。");
+    const cloud = await response.json() as { papers?: PaperRecord[]; deletions?: Array<{ id: string; deletedAt: number }> };
+    const result = reconcileSnapshot({
+      localPapers: await getPaperLibrary(userId),
+      cloudPapers: (cloud.papers ?? []).map((paper) => ({ ...paper, ownerId: userId })),
+      deletions: cloud.deletions ?? [],
+      pending: await getPaperSyncOperations(userId),
+    });
+    await applyPaperSyncSnapshot(userId, result.papers, result.pending);
+    setLibrary(result.papers);
+    setPaper((current) => {
+      const next = result.papers.find((item) => item.id === current.id) ?? result.papers[0] ?? samplePaper;
+      if (next !== current) skipPersistRef.current = true;
+      return next;
+    });
+    return result.papers;
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    const userId = userIdRef.current;
+    if (!userId) return;
+    if (retryTimerRef.current !== null) window.clearTimeout(retryTimerRef.current);
+    setCloudStatus(navigator.onLine ? "syncing" : "offline");
+    try {
+      await flushPaperSyncQueue({
+        online: () => navigator.onLine,
+        now: () => Date.now(),
+        list: () => getPaperSyncOperations(userId),
+        send: async (operation: PaperSyncOperation) => {
+          try {
+            if (userIdRef.current !== userId) return { status: 401 };
+            const sessionResponse = await authFetch("/api/auth/session");
+            if (!sessionResponse.ok) return { status: 401 };
+            const session = await sessionResponse.json() as { user?: { id: string } | null };
+            if (session.user?.id !== userId) return { status: 401 };
+            const cloudPaper = operation.type === "upsert" ? { ...operation.paper } : null;
+            if (cloudPaper) delete cloudPaper.ownerId;
+            const response = operation.type === "delete"
+              ? await authFetch(`/api/cloud/papers?id=${encodeURIComponent(operation.id)}`, { method: "DELETE" })
+              : await authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cloudPaper) });
+            return { status: response.status };
+          } catch { return { status: 503 }; }
+        },
+        acknowledge: async (_id: string, operation: PaperSyncOperation) => { await acknowledgePaperSyncOperation(operation); },
+        reschedule: async (next: PaperSyncOperation, sent: PaperSyncOperation) => { await reschedulePaperSyncOperation(sent, next); },
+        refreshCloud: async (conflicted: PaperSyncOperation) => {
+          if (userIdRef.current !== userId) return;
+          await refreshCloud();
+          const stillPending = (await getPaperSyncOperations(userId)).some((operation) =>
+            operation.id === conflicted.id && operation.type === conflicted.type && operation.updatedAt === conflicted.updatedAt);
+          if (stillPending) setCloudStatus("error");
+        },
+        onState: (decision: RetryDecision) => {
+          if (userIdRef.current !== userId) return;
+          if (decision === "pause-offline") setCloudStatus("offline");
+          else if (decision === "pause-auth" || decision === "non-retryable") setCloudStatus("error");
+        },
+      });
+      if (userIdRef.current !== userId) return;
+      const pending = await getPaperSyncOperations(userId);
+      const retryable = pending.filter((operation) => operation.type === "delete" || !operation.blockedReason);
+      if (!pending.length && !dirtyRef.current) setCloudStatus("ready");
+      else if (!pending.length) setCloudStatus("syncing");
+      else if (!navigator.onLine) setCloudStatus("offline");
+      else if (!retryable.length) setCloudStatus("error");
+      else {
+        const nextAttemptAt = Math.min(...retryable.map((operation) => operation.nextAttemptAt));
+        if (nextAttemptAt > Date.now()) {
+          setCloudStatus("error");
+          retryTimerRef.current = window.setTimeout(() => syncNowRef.current(), Math.min(nextAttemptAt - Date.now(), 60_000));
+        } else if (cloudStateRef.current !== "error") {
+          setCloudStatus("syncing");
+          retryTimerRef.current = window.setTimeout(() => syncNowRef.current(), 0);
+        }
+      }
+    } catch {
+      if (userIdRef.current === userId) setCloudStatus(navigator.onLine ? "error" : "offline");
+    }
+  }, [refreshCloud, setCloudStatus]);
+
+  useEffect(() => {
+    syncNowRef.current = () => { void syncNow(); };
+  }, [syncNow]);
+
   useEffect(() => {
     void (async () => {
+      setLibraryError("");
       try {
-        const localRecords = await getPaperLibrary();
-        let records = localRecords;
         const sessionResponse = await authFetch("/api/auth/session");
+        if (!sessionResponse.ok) throw new Error("账户状态不可用。");
         const session = await sessionResponse.json() as { user?: { id: string } | null };
+        signedInRef.current = Boolean(session.user);
+        userIdRef.current = session.user?.id ?? null;
+        let records: PaperRecord[];
+        try {
+          records = await getPaperLibrary(userIdRef.current);
+        } catch {
+          /* The device store itself could not be read: that is a failure, not an
+             empty library, so the index reports it instead of showing "0 篇". */
+          setLibraryError("无法读取本机论文库。本次没有删除或覆盖任何记录，可以重试读取。");
+          setCloudStatus(navigator.onLine ? "error" : "offline");
+          return;
+        }
         if (session.user) {
-          const cloudResponse = await authFetch("/api/cloud/papers");
-          if (cloudResponse.ok) {
-            const cloud = await cloudResponse.json() as { papers?: PaperRecord[] };
-            const byId = new Map<string, PaperRecord>();
-            [...localRecords, ...(cloud.papers ?? [])].forEach((record) => {
-              const existing = byId.get(record.id);
-              if (!existing || record.updatedAt > existing.updatedAt) byId.set(record.id, record);
-            });
-            records = [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt);
-            await Promise.all((cloud.papers ?? []).map((record) => savePaper(record)));
-            setCloudStatus("ready");
-          } else setCloudStatus(navigator.onLine ? "error" : "offline");
-        } else setCloudStatus("guest");
+          records = await refreshCloud();
+          void syncNow();
+        } else {
+          const guestRecords = await getPaperLibrary();
+          setLibrary(guestRecords);
+          skipPersistRef.current = true;
+          setPaper(guestRecords[0] ?? samplePaper);
+          setCloudStatus("guest");
+        }
         setLibrary(records);
         if (records.length) {
+          skipPersistRef.current = true;
           setPaper(records[0]);
           setSearchQuery(records[0].title);
         }
       } catch {
+        setLibraryError("无法读取论文库状态。请检查网络或账户状态后重试。");
         setCloudStatus(navigator.onLine ? "error" : "offline");
       } finally {
         setHydrated(true);
       }
     })();
-  }, [setCloudStatus]);
+  }, [hydrationAttempt, refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
     const offline = () => {
       if (["ready", "syncing"].includes(cloudStateRef.current)) setCloudStatus("offline");
     };
     const online = () => {
-      if (cloudStateRef.current === "offline") setCloudStatus("ready");
+      void syncNow();
+    };
+    const authChanged = () => {
+      void authFetch("/api/auth/session").then(async (response) => {
+        if (!response.ok) return;
+        const session = await response.json() as { user?: { id: string } | null };
+        signedInRef.current = Boolean(session.user);
+        userIdRef.current = session.user?.id ?? null;
+        dirtyRef.current = false;
+        if (session.user) {
+          await refreshCloud();
+          void syncNow();
+        } else setCloudStatus("guest");
+      }).catch(() => setCloudStatus("error"));
     };
     window.addEventListener("offline", offline);
     window.addEventListener("online", online);
+    window.addEventListener("acaora:auth-change", authChanged);
     return () => {
       window.removeEventListener("offline", offline);
       window.removeEventListener("online", online);
+      window.removeEventListener("acaora:auth-change", authChanged);
+      if (retryTimerRef.current !== null) window.clearTimeout(retryTimerRef.current);
     };
-  }, [setCloudStatus]);
+  }, [refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
     const factory = getTranslatorFactory();
@@ -122,22 +253,28 @@ export default function PaperLab() {
 
   useEffect(() => {
     if (!hydrated || paper.id === samplePaper.id) return;
+    if ((paper.ownerId ?? null) !== userIdRef.current) return;
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
     const handle = window.setTimeout(() => {
-      const updated = { ...paper, updatedAt: Date.now() };
-      void savePaper(updated).then(() => {
+      const updated = { ...paper, ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
+      const persist = signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated);
+      void persist.then(() => {
+        dirtyRef.current = false;
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
-      });
-      if (cloudStateRef.current === "ready") {
-        setCloudStatus("syncing");
-        void authFetch("/api/cloud/papers", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updated) })
-          .then((response) => setCloudStatus(response.ok ? "ready" : navigator.onLine ? "error" : "offline"))
-          .catch(() => setCloudStatus(navigator.onLine ? "error" : "offline"));
-      }
+        if (signedInRef.current) void syncNow();
+      }).catch(() => setCloudStatus("error"));
     }, 450);
     return () => window.clearTimeout(handle);
-  }, [paper, hydrated, setCloudStatus]);
+  }, [paper, hydrated, setCloudStatus, syncNow]);
 
   function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
+    if (userIdRef.current) {
+      dirtyRef.current = true;
+      setCloudStatus("syncing");
+    }
     setPaper((current) => updater(current));
   }
 
@@ -161,12 +298,18 @@ export default function PaperLab() {
     setMessage("正在设备本地解析论文……");
     try {
       const extracted = await extractPdf(file, setExtractProgress);
+      skipPersistRef.current = true;
       setPaper(extracted);
       setSearchQuery(extracted.title);
-      await savePaper(extracted);
+      if (signedInRef.current) {
+        extracted.ownerId = userIdRef.current ?? undefined;
+        await savePaperAndQueue(extracted);
+      }
+      else await savePaper(extracted);
       setLibrary((current) => [extracted, ...current.filter((item) => item.id !== extracted.id)]);
       setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。`);
       setMobilePanel("reader");
+      if (signedInRef.current) void syncNow();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "PDF 解析失败。" );
     } finally {
@@ -229,31 +372,60 @@ export default function PaperLab() {
 
   async function searchPapers() {
     const query = searchQuery.trim();
-    if (query.length < 3) return;
+    if (query.length < 3) {
+      setSearchResults([]);
+      setSearchMessage("");
+      setSearchError("请输入至少三个字符后再检索。");
+      setSearchSettled(true);
+      setMobilePanel("search");
+      return;
+    }
     setSearching(true);
+    setSearchResults([]);
     setSearchMessage("");
+    setSearchError("");
+    setSearchSettled(false);
     try {
       const response = await fetch(`/api/papers/search?q=${encodeURIComponent(query)}`);
       const payload = await response.json() as { error?: string; papers?: SearchPaper[]; source?: string };
       if (!response.ok) throw new Error(payload.error ?? "检索失败。" );
       const normalizedTitle = paper.title.toLowerCase();
-      setSearchResults((payload.papers ?? []).filter((result) => result.title.toLowerCase() !== normalizedTitle));
-      setSearchMessage(`来自 ${payload.source ?? "公共学术索引"} · ${(payload.papers ?? []).length} 条结果`);
+      /* The list the reader actually sees is the list that is counted: the paper
+         already open in the reader is not repeated as a discovery result. */
+      const discovered = (payload.papers ?? []).filter((result) => result.title.toLowerCase() !== normalizedTitle);
+      setSearchResults(discovered);
+      setSearchMessage(`来自 ${payload.source ?? "公共学术索引"} · ${discovered.length} 条结果`);
+      setSearchSettled(true);
       setMobilePanel("search");
     } catch (error) {
-      setSearchMessage(error instanceof Error ? error.message : "检索失败。" );
+      setSearchResults([]);
+      setSearchMessage("");
+      setSearchError(error instanceof Error ? error.message : "检索失败。" );
+      setSearchSettled(true);
     } finally {
       setSearching(false);
     }
   }
 
   async function removeFromLibrary(record: PaperRecord) {
-    if (!window.confirm(`从当前设备删除“${record.title}”的阅读记忆？`)) return;
-    await deletePaper(record.id);
-    if (cloudState === "ready" || cloudState === "syncing") void authFetch(`/api/cloud/papers?id=${encodeURIComponent(record.id)}`, { method: "DELETE" });
-    const remaining = library.filter((item) => item.id !== record.id);
-    setLibrary(remaining);
-    if (paper.id === record.id) setPaper(remaining[0] ?? samplePaper);
+    const confirmation = signedInRef.current
+      ? `从所有设备删除“${record.title}”的论文记忆？原始 PDF 不受影响；提取文本、翻译、笔记、阅读进度和 AI 结果将被删除。`
+      : `从当前设备删除“${record.title}”的论文记忆？原始 PDF 不受影响。`;
+    if (!window.confirm(confirmation)) return;
+    try {
+      if (signedInRef.current && userIdRef.current) await deletePaperAndQueue(record.id, Date.now(), userIdRef.current);
+      else await deletePaper(record.id);
+      const remaining = library.filter((item) => item.id !== record.id);
+      setLibrary(remaining);
+      if (paper.id === record.id) {
+        skipPersistRef.current = true;
+        setPaper(remaining[0] ?? samplePaper);
+      }
+      if (signedInRef.current) {
+        setMessage(navigator.onLine ? "论文记忆已从当前设备删除，云端删除正在同步。" : "论文记忆已从当前设备删除，云端删除等待同步。");
+        void syncNow();
+      }
+    } catch { setMessage("删除未完成，请重试。" ); }
   }
 
   function openPaper(record: PaperRecord) {
@@ -265,26 +437,29 @@ export default function PaperLab() {
   return (
     <main className="student-app paper-layout">
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section className="paper-shell paper-app paper-main">
-      <section className="paper-commandbar">
-        <div>
-          <p className="section-kicker">论文工作台</p>
+      <section className="student-main plab-shell">
+      {/* Running head: the surface's own line, then only the tools that act on the
+          library. The numeric register that used to sit here was removed because
+          every value in it is already printed where it belongs: the library count in
+          the index, the paragraph position and reading progress in the reader, the
+          sync state beside the library, and the privacy facts in the colophon. */}
+      <header className="plab-head">
+        <div className="plab-head-id">
           <h1>论文阅读与分析</h1>
+          <p>阅读、标注与设备端翻译</p>
         </div>
-        <div className="paper-commandbar-actions">
+        <div className="plab-head-tools">
           <div className={`translator-status state-${translationState}`}>
             <i />
             <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
           </div>
-          <div className="paper-actions">
-            <button className="secondary-paper-button" type="button" onClick={() => setMobilePanel("search")}>⌕ 检索论文</button>
-            <button className="paper-upload" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
-              <span>{extracting ? `${extractProgress}%` : "↑"}</span><strong>{extracting ? "正在解析" : "导入英文论文 PDF"}</strong><small>文件只在本地解析</small>
-            </button>
-            <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
-          </div>
+          <button className="plab-tool" type="button" onClick={() => setMobilePanel("search")}>检索论文</button>
+          <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+            {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
+          </button>
+          <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
         </div>
-      </section>
+      </header>
 
       {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
 
@@ -292,93 +467,278 @@ export default function PaperLab() {
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
-      <section className="paper-workbench">
-        <aside className={`paper-library ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
-          <div className="library-title"><div><p>DEVICE LIBRARY</p><h2>我的论文库</h2></div><span>{library.length}</span></div>
-          <div className="library-list">
-            {library.length ? library.map((record) => {
+      <section className="plab-workbench">
+        {!hydrated ? <ReadingSkeleton /> : <>
+        {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
+            rows, the title as the entry, and the reader's own progress beneath it.
+            The row keeps its two real controls (open, delete) unchanged. */}
+        <aside className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
+          <div className="plab-index-head">
+            <h2>论文库</h2>
+            {/* An unread store has no count, so the index prints an absence rather
+                than a zero that would claim the library is empty. */}
+            <span className="journal-num">{libraryError ? "—" : library.length}</span>
+          </div>
+          {libraryError ? <p className="plab-index-error" role="alert">
+            {libraryError}
+            <button className="plab-index-retry" type="button" onClick={() => { setLibraryError(""); setHydrated(false); setHydrationAttempt((attempt) => attempt + 1); }}>重试读取</button>
+          </p> : null}
+          <div className="plab-index-list">
+            {!libraryError && (library.length ? library.map((record) => {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
-              return <article className={record.id === paper.id ? "active" : ""} key={record.id}>
-                <button type="button" onClick={() => openPaper(record)}><span className="pdf-token">PDF</span><div><strong>{record.title}</strong><small>{record.paragraphs.length} 段 · 已读 {progress}%</small></div></button>
-                <button className="paper-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
+              const current = record.id === paper.id;
+              return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
+                <button className="plab-index-open" type="button" onClick={() => openPaper(record)}>
+                  <strong>{record.title}</strong>
+                  <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
+                </button>
+                <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
               </article>;
-            }) : <div className="library-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>}
+            }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
           </div>
           <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
-        <section className={`paper-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
-          <div className="reader-toolbar">
+        {/* 2 · Publication Reader. One sheet of paper carries the paper itself: the
+            section line, the paragraph's number in the margin, the original as the
+            publication body and the device translation as its secondary layer. All
+            of the reader's real controls survive — the editable title, the file
+            name, paragraph stepping, bookmarks, the read toggle and translation. */}
+        <section className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
+          <div className="plab-reader-bar">
             <div className="paper-title-edit">
-              <span>{paper.fileName}</span>
+              <span className="journal-num">{paper.fileName}</span>
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
             </div>
             <div className="reader-controls">
-              <button type="button" disabled={activeIndex === 0} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.max(0, activeIndex - 1) }))}>←</button>
-              <span>{activeIndex + 1} / {paper.paragraphs.length}</span>
-              <button type="button" disabled={activeIndex >= paper.paragraphs.length - 1} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.min(current.paragraphs.length - 1, activeIndex + 1) }))}>→</button>
+              <button type="button" aria-label="上一段" disabled={activeIndex === 0} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.max(0, activeIndex - 1) }))}>←</button>
+              <span className="journal-num">{activeIndex + 1} / {paper.paragraphs.length}</span>
+              <button type="button" aria-label="下一段" disabled={activeIndex >= paper.paragraphs.length - 1} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.min(current.paragraphs.length - 1, activeIndex + 1) }))}>→</button>
+            </div>
+            <div className="plab-reader-progress">
+              <b className="journal-num">{completion}% 已读</b>
+              <i style={{ width: `${completion}%` }} />
             </div>
           </div>
 
-          <div className="reader-progress"><i style={{ width: `${completion}%` }} /><span>{completion}% 已读</span></div>
-          <div className="section-chips">{sections.map((section) => <button key={section} type="button" className={activeParagraph?.section === section ? "active" : ""} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: current.paragraphs.findIndex((item) => item.section === section) }))}>{section}</button>)}</div>
+          <div className="plab-reader-scroll">
+            {sections.length > 0 && <div className="section-chips">{sections.map((section) => <button key={section} type="button" className={activeParagraph?.section === section ? "active" : ""} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: current.paragraphs.findIndex((item) => item.section === section) }))}>{section}</button>)}</div>}
 
-          {activeParagraph ? <div className="active-paragraph">
-            <div className="paragraph-meta"><span>PAGE {activeParagraph.page}</span><strong>{activeParagraph.section}</strong><button className={activeParagraph.bookmarked ? "bookmarked" : ""} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button></div>
-            <div className="reader-labels"><span>ENGLISH ORIGINAL</span><span>简体中文 · 设备端翻译</span></div>
-            <div className="bilingual-active">
-              <article lang="en"><p>{activeParagraph.original}</p></article>
-              <article lang="zh-CN">
+            {activeParagraph ? <article className="plab-page">
+              {/* The marginal marker carries the same number the annotation rail
+                  opens with, so the reader's position and the rail are one object. */}
+              <div className="plab-page-meta">
+                <span className="plab-page-mark journal-num">{String(activeIndex + 1).padStart(2, "0")}</span>
+                <span className="journal-num">PAGE {activeParagraph.page}</span>
+                <strong>{activeParagraph.section}</strong>
+                <button className={activeParagraph.bookmarked ? "plab-bookmark plab-bookmark--on" : "plab-bookmark"} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button>
+              </div>
+              <div className="plab-body">
+                <span className="plab-layer-label">原文 · ENGLISH ORIGINAL</span>
+                <p>{activeParagraph.original}</p>
+              </div>
+              <div className="plab-translation">
+                <span className="plab-layer-label">简体中文 · 设备端翻译</span>
                 {activeParagraph.translation ? <p>{activeParagraph.translation}</p> : <div className="translation-placeholder"><strong>尚未翻译</strong><span>使用 Edge 内置模型，内容不会离开设备。</span><button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("current")}>翻译当前段落</button></div>}
-              </article>
-            </div>
-            <div className="paragraph-actions">
-              <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
-              <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
-              <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
-            </div>
-          </div> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
+              </div>
+              <div className="paragraph-actions">
+                <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
+                <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
+                <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
+              </div>
+            </article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
+          </div>
         </section>
 
-        <aside className={`paper-insights ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="insight-head"><p>PARAGRAPH GUIDE</p><h2>段落提示</h2><span>非 AI · 规则识别</span></div>
+        {/* 3 · Margin Annotation Rail. The old right-hand panel becomes the page's
+            margin: numbered blocks, each one a fact the product already knows about
+            the active paragraph. Nothing is invented — no citation count, no
+            summary, no score — and the first block carries the same number as the
+            reader's marginal marker, so the reader and the rail read as one page. */}
+        <aside className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
+          <div className="plab-rail-head">
+            <h2>页边注释</h2>
+            <span>非 AI · 规则识别</span>
+          </div>
+          {activeParagraph && <div className="plab-rail-block">
+            <p className="plab-rail-num journal-num">{String(activeIndex + 1).padStart(2, "0")}</p>
+            <h3>当前段落</h3>
+            <dl className="plab-rail-meta">
+              <div><dt>页码</dt><dd className="journal-num">P{activeParagraph.page}</dd></div>
+              <div><dt>章节</dt><dd>{activeParagraph.section}</dd></div>
+              <div><dt>状态</dt><dd>{activeParagraph.read ? "已读" : "未读"}</dd></div>
+            </dl>
+          </div>}
           {insight && <>
-            <article className="role-card"><span>段落作用</span><strong>{insight.role}</strong><p>{insight.explanation}</p></article>
-            <article><span>统计线索</span>{insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}</article>
-            <article className="check-card"><span>阅读检查</span><ul>{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul></article>
-            <article className="note-card"><span>我的笔记</span><textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} /></article>
+            <div className="plab-rail-block">
+              <h3>段落作用</h3>
+              <strong className="plab-rail-role">{insight.role}</strong>
+              <p>{insight.explanation}</p>
+            </div>
+            <div className="plab-rail-block">
+              <h3>统计线索</h3>
+              {insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}
+            </div>
+            <div className="plab-rail-block">
+              <h3>阅读检查</h3>
+              <ul className="plab-rail-questions">{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul>
+            </div>
           </>}
+          {activeParagraph && <div className="plab-rail-block">
+            <h3>我的笔记</h3>
+            <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
+          </div>}
         </aside>
+        </>}
+      </section>
 
-        <AiStudio
+        {hydrated ? <AiStudio
           paper={paper}
           activeParagraph={activeParagraph}
           activeIndex={activeIndex}
           mobileVisible={mobilePanel === "ai"}
           onSave={(aiMemory: AiMemory) => updatePaper((current) => ({ ...current, aiMemory }))}
           onTranslation={(translation) => updateActiveParagraph({ translation })}
-          onSearchQuery={(query) => setSearchQuery(query)}
-        />
+          onSearchQuery={(query) => {
+            setSearchQuery(query);
+            setSearchResults([]);
+            setSearchMessage("");
+            setSearchError("");
+            setSearchSettled(false);
+          }}
+        /> : <AiConsoleSkeleton />}
 
-        <section className={`paper-search ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
-          <div className="search-head"><div><p>OPEN SCHOLARLY INDEX</p><h2>相关论文检索</h2></div><span>免密钥</span></div>
-          <div className="paper-search-box"><input aria-label="论文检索关键词" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") void searchPapers(); }} /><button type="button" onClick={() => void searchPapers()} disabled={searching}>{searching ? "检索中…" : "检索相关论文"}</button></div>
-          <p className="search-source">{searchMessage || "输入标题、DOI 或关键词，从公共学术索引查找真实论文。"}</p>
-          <div className="search-results">
-            {searchResults.map((result) => <article key={`${result.source}-${result.id}`}>
-              <div className="result-topline"><span>{result.source}</span><small>{result.year ?? "年份未知"} · 被引 {result.citationCount}</small></div>
-              <h3>{result.title}</h3>
-              <p className="result-authors">{result.authors.slice(0, 4).join(", ") || "作者信息缺失"}{result.authors.length > 4 ? " 等" : ""}</p>
-              {result.abstract && <p className="result-abstract">{result.abstract}</p>}
-              <div className="result-links">{result.url && <a href={result.url} target="_blank" rel="noreferrer">查看来源 ↗</a>}{result.pdfUrl && <a href={result.pdfUrl} target="_blank" rel="noreferrer">开放 PDF</a>}{result.doi && <button type="button" onClick={() => void navigator.clipboard.writeText(result.doi)}>复制 DOI</button>}</div>
-            </article>)}
-            {!searchResults.length && !searching && <div className="search-empty"><span>⌕</span><strong>从当前论文开始发现</strong><p>检索结果会展示来源、作者、年份、引用次数和开放全文入口。</p></div>}
+        {/* Scholarly Discovery Index: the page's lowest-weight research tool. It is
+            a bibliography, not a search product: one query field, ruled records, and
+            four endings that never impersonate one another. */}
+        {hydrated ? <section className={`plab-discovery ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
+          <div className="plab-discovery-head">
+            <h2>学术检索索引</h2>
+            <p className="plab-discovery-note">公共学术索引（Semantic Scholar，失败时回退 Crossref），不需要密钥。AI 控制台的「检索策略」会把生成的检索式填进下面的输入框。</p>
           </div>
-        </section>
-      </section>
+
+          <form className="plab-query" onSubmit={(event) => { event.preventDefault(); void searchPapers(); }}>
+            <label className="plab-query-field">
+              <span>检索式</span>
+              <input
+                aria-label="论文检索关键词"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="标题、DOI 或关键词（至少三个字符）"
+                name="paper-query"
+                autoComplete="off"
+              />
+            </label>
+            <button className="plab-query-submit" type="submit" disabled={searching}>{searching ? "检索中…" : "检索"}</button>
+          </form>
+
+          {searching ? <SearchLoadingSkeleton /> : null}
+          {!searching && searchError ? <p className="plab-discovery-error" role="alert">
+            {searchError}
+            <button className="plab-discovery-retry" type="button" onClick={() => void searchPapers()}>重新检索</button>
+          </p> : null}
+          {!searching && !searchError && searchSettled && !searchResults.length ? <p className="plab-discovery-empty">没有匹配的记录。可以换成英文关键词，或改用论文的 DOI 再试一次。</p> : null}
+          {!searching && !searchError && !searchSettled ? <p className="plab-discovery-idle">输入检索式后开始检索。每条记录只显示索引真实提供的字段：题名、作者、年份、来源、引用次数与可用的开放全文入口。</p> : null}
+          {searchMessage ? <p className="plab-discovery-source">{searchMessage}</p> : null}
+
+          {searchResults.length ? <ol className="plab-records">
+            {searchResults.map((result, index) => <li className="plab-record" key={`${result.source}-${result.id}`}>
+              <p className="plab-record-line">
+                <span className="plab-record-num journal-num">{String(index + 1).padStart(2, "0")}</span>
+                <span className="plab-record-source">{result.source}</span>
+                {result.year !== null ? <span className="plab-record-year journal-num">{result.year}</span> : null}
+                {result.citationCount > 0 ? <span className="plab-record-cites journal-num">被引 {result.citationCount}</span> : null}
+                {result.venue ? <span className="plab-record-venue">{result.venue}</span> : null}
+              </p>
+              <h3 className="plab-record-title">{result.title}</h3>
+              {result.authors.length ? <p className="plab-record-authors">{result.authors.slice(0, 4).join(", ")}{result.authors.length > 4 ? " 等" : ""}</p> : null}
+              {result.abstract ? <p className="plab-record-abstract">{result.abstract}</p> : null}
+              {(result.url || result.pdfUrl || result.doi) ? <p className="plab-record-actions">
+                {result.url ? <a href={result.url} target="_blank" rel="noreferrer">查看来源 ↗</a> : null}
+                {result.pdfUrl ? <a href={result.pdfUrl} target="_blank" rel="noreferrer">开放全文 ↗</a> : null}
+                {result.doi ? <button type="button" onClick={() => void navigator.clipboard.writeText(result.doi)}>复制 DOI</button> : null}
+              </p> : null}
+            </li>)}
+          </ol> : null}
+        </section> : <DiscoverySkeleton />}
+      <div className="status-bezel">
+        <div className="status-bezel-inner">
+          <span>本地优先</span>
+          <span>原文不上传</span>
+          <span>文件在浏览器内解析</span>
+          <span className="status-bezel-account">{!hydrated || libraryError ? "本机论文数 —" : `${library.length} 篇在本机`}</span>
+        </div>
+      </div>
       </section>
     </main>
   );
+}
+
+/* While the device library is being read, the reading three show their own geometry
+   in hairlines — an index, a page and a margin — so the page never flashes a
+   rounded placeholder card or an empty library that is not yet known to be empty. */
+function ReadingSkeleton() {
+  return <>
+    <aside className="plab-index" aria-hidden="true">
+      <div className="plab-index-head"><h2>论文库</h2><span className="plab-skel plab-skel--count" /></div>
+      <div className="plab-index-list">
+        {[0, 1, 2, 3].map((row) => <div className="plab-index-row" key={row}>
+          <span className="plab-skel plab-skel--row-title" />
+          <span className="plab-skel plab-skel--row-meta" />
+        </div>)}
+      </div>
+    </aside>
+    <section className="plab-reader" aria-hidden="true">
+      <div className="plab-reader-bar">
+        <span className="plab-skel plab-skel--file" />
+        <span className="plab-skel plab-skel--paper-title" />
+      </div>
+      <div className="plab-reader-scroll">
+        <article className="plab-page">
+          <span className="plab-skel plab-skel--row-meta" />
+          <span className="plab-skel plab-skel--line" />
+          <span className="plab-skel plab-skel--line" />
+          <span className="plab-skel plab-skel--line" />
+        </article>
+      </div>
+    </section>
+    <aside className="plab-rail" aria-hidden="true">
+      <div className="plab-rail-head"><h2>页边注释</h2></div>
+      {[0, 1, 2].map((block) => <div className="plab-rail-block" key={block}>
+        <span className="plab-skel plab-skel--row-meta" />
+        <span className="plab-skel plab-skel--line" />
+        <span className="plab-skel plab-skel--line" />
+      </div>)}
+    </aside>
+  </>;
+}
+
+function AiConsoleSkeleton() {
+  return <section className="ai-studio plab-ai-skeleton" aria-label="AI 研究控制台正在加载" aria-busy="true">
+    <div className="ai-console">
+      <div className="plab-skeleton-heading"><span className="plab-skel plab-skel--section-title" /><span className="plab-skel plab-skel--section-note" /></div>
+      <div className="plab-skeleton-index">{[0, 1, 2, 3].map((item) => <span className="plab-skel plab-skel--mode" key={item} />)}</div>
+      <span className="plab-skel plab-skel--analysis" />
+    </div>
+  </section>;
+}
+
+function DiscoverySkeleton() {
+  return <section className="plab-discovery plab-discovery-skeleton" aria-label="学术检索索引正在加载" aria-busy="true">
+    <div className="plab-skeleton-heading"><span className="plab-skel plab-skel--section-title" /><span className="plab-skel plab-skel--section-note" /></div>
+    <span className="plab-skel plab-skel--query" />
+    <SearchLoadingSkeleton />
+  </section>;
+}
+
+function SearchLoadingSkeleton() {
+  return <div className="plab-discovery-loading" role="status" aria-label="正在检索公共学术索引">
+    {[0, 1, 2].map((record) => <div className="plab-record plab-record--skeleton" key={record} aria-hidden="true">
+      <span className="plab-skel plab-skel--record-meta" />
+      <span className="plab-skel plab-skel--record-title" />
+      <span className="plab-skel plab-skel--record-copy" />
+    </div>)}
+  </div>;
 }
 
 function getTranslatorFactory() {

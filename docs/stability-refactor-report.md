@@ -1,5 +1,16 @@
 # Acaora 稳定性重构交付报告
 
+> 以下 2026-08-31 的 PR open、Supabase inactive 等文字仅为历史记录，不代表当前状态。PR #1 后来已 Squash Merge；当前 GitHub、EdgeOne、Supabase 状态须重新读取，不得据此报告上线 PASS。
+
+## 2026-09-15 Paper 同步可靠性增补（本地实现，尚未上线）
+
+- 本地 IndexedDB v2 持久化每篇论文至多一项同步操作；编辑、导入与删除先提交本机事务，再通过同源 `/api/cloud/papers` 顺序同步。断网与 5xx 保留队列并退避重试，401 暂停，409 重新取云端快照，413 保留本地记录且停止自动重试。
+- 云端迁移草案 `supabase/migrations/0005_paper_sync_tombstones.sql` 增加 `deleted_at` 和索引、两个 authenticated / security invoker RPC。删除清除提取文本、译文、笔记、阅读进度及 AI 内容，仅保留最小 tombstone；重复删除保留原 tombstone 时间。草案未应用到 Supabase。
+- 本机记录与队列以登录用户 ID 隔离；旧的无归属设备端记录继续保留为 guest 数据，不会自动上传到新登录账号，以免共享浏览器换账号时泄露记录。需要明确的数据归属迁移方案另行评估。
+- 本地纯规则、队列错误路径和 Paper Playwright mock 已覆盖失败上传重载、补发、删除重载、tombstone、确认文案、账号切换及上传中再次编辑。真实 Supabase SQL/RLS 验证与 Production 双资料 smoke：`NOT VERIFIED`。
+
+上线影响与顺序：迁移是加列、加索引、创建 authenticated invoker RPC，不删除表，不批量改写现有行；新的删除会清空对应论文内容并留下 tombstone。必须先审查现有 schema/RLS、向所有者报告 SQL 影响，再受控应用迁移和专用账号往返；之后才从 GitHub `main` 部署。应用回滚时可以回退，但 additive 数据库对象和 tombstones 保留，不能盲目删表或恢复已清空的内容。当前没有执行迁移、推送或部署，Production 仍为 `NOT VERIFIED`。
+
 日期：2026-08-31
 
 仓库：`Ceciliasuki/acaora`

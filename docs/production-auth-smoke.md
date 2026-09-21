@@ -1,6 +1,6 @@
 # Acaora Production Auth Smoke Test
 
-本清单用于已恢复的 Production Supabase 项目和正式 EdgeOne 域名。它不是自动化 mock E2E 的替代品，也不得在 Supabase 项目处于 `INACTIVE` / paused 时标记通过。
+本清单用于正式 EdgeOne 域名和 Production Supabase 项目。旧报告中的 `INACTIVE` / paused 是历史文字，不能代表当前状态；实际状态必须重新验证。自动化 mock E2E 不能替代真实 Production smoke。
 
 ## 前置门槛
 
@@ -51,6 +51,34 @@
 | 14 | Profile save / refresh | 保存后刷新仍能读取同一资料，只访问同源 `/api/profile` |  |  |  |  |  |
 | 15 | Project create/update/delete | 三个操作和刷新持久化均成功，只访问同源 `/api/projects` |  |  |  |  |  |
 | 16 | Paper cloud sync | load/save/update/delete/sync 状态正确，只访问同源 `/api/cloud/papers` |  |  |  |  |  |
+
+## Paper 跨设备同步专项复核
+
+仅在 `0005_paper_sync_tombstones.sql` 已受控应用、Production 版本一致且专用测试账号就绪后执行。用两个独立浏览器资料/profile 登录同一专用账号；不要使用真实用户论文。每一步记录 `VERIFIED`、`FAIL` 或 `NOT VERIFIED` 和脱敏证据。
+
+1. Profile A 导入文本型测试 PDF，确认原始 PDF 字节未发送至 `/api/cloud/papers`，只发送提取文本与阅读记忆。Profile B 刷新后看到同一论文。
+2. Profile A 断网，修改标题、译文或笔记并刷新，确认本机仍保留且状态显示等待同步。恢复网络后确认 PUT 自动补发、队列清空；Profile B 刷新看到最新内容。
+3. Profile A 删除测试论文，确认文案明确写“从所有设备删除”、云端提取内容与 AI 结果清空。Profile B 刷新后论文消失；Profile A 再刷新也不复活。重复 DELETE 应保持同一 tombstone 时间。
+4. 两个 Profile 的 Network 中浏览器直连 `*.supabase.co` 核心请求均为 0；同源 `/api/cloud/papers` 的私有响应为 `Cache-Control: private, no-store`。检查 session Cookie 的 HttpOnly、Secure、SameSite=Lax。
+
+上线前在 Supabase SQL Editor 只读检查（不得把查询结果中的真实用户内容放进报告）：
+
+```sql
+select column_name, data_type from information_schema.columns
+where table_schema = 'public' and table_name = 'paper_memories' and column_name = 'deleted_at';
+select proname, prosecdef from pg_proc
+where oid in ('public.sync_paper_memory(text,text,text,jsonb,jsonb,timestamptz)'::regprocedure,
+              'public.delete_paper_memory(text)'::regprocedure);
+select c.relrowsecurity from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relname = 'paper_memories';
+select has_function_privilege('authenticated', 'public.sync_paper_memory(text,text,text,jsonb,jsonb,timestamptz)', 'EXECUTE') as sync_authenticated,
+       has_function_privilege('anon', 'public.sync_paper_memory(text,text,text,jsonb,jsonb,timestamptz)', 'EXECUTE') as sync_anon,
+       has_function_privilege('authenticated', 'public.delete_paper_memory(text)', 'EXECUTE') as delete_authenticated,
+       has_function_privilege('anon', 'public.delete_paper_memory(text)', 'EXECUTE') as delete_anon;
+```
+
+迁移在仓库里只是草案。执行前必须先向所有者说明影响；受控验证只使用专用测试账号。现阶段这些 SQL 查询和真实往返均为 `NOT VERIFIED`。
 
 ## 收尾记录
 
