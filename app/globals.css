@@ -2963,6 +2963,16 @@ textarea.ui-textarea:focus:not([aria-invalid="true"]) {
   min-height: 0;
   border-bottom: 1px solid var(--border-strong);
 }
+/* The bounded height above holds only if the cells opt out of their automatic
+   minimum size. A grid item's `min-height: auto` floors it at its own content,
+   which grows the single `auto` row past the workbench; the workbench does not
+   clip, so an over-full reader or rail paints straight over the AI console below
+   it. `min-height: 0` keeps all three inside the region, and the column's own
+   scroll container — the index list, the reader's text, the rail — takes the
+   overflow instead. */
+.plab-workbench > .plab-index,
+.plab-workbench > .plab-reader,
+.plab-workbench > .plab-rail { min-height: 0; }
 
 /* --- 1 · Library Index ----------------------------------------------------- */
 .plab-index {

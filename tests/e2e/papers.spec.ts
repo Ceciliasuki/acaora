@@ -165,6 +165,91 @@ test("PAPER-09 offline deletion survives reload and reaches cloud after reconnec
   expect(state.cloudDeletions.some((deletion) => deletion.id === paperFixture.id)).toBe(true);
 });
 
+/* The reader only overflows its column once a paper's active paragraph is taller
+   than the workbench, so the built-in sample — the state every other PaperLab
+   test and the visual baseline capture — never reaches the layout these
+   assertions describe. This fixture is deliberately long enough to get there. */
+const longPaperFixture = {
+  id: "paper-long",
+  fileName: "long-paper.pdf",
+  title: "Long paper memory",
+  addedAt: 1_788_912_000_000,
+  updatedAt: 1_788_912_000_000,
+  activeParagraph: 0,
+  paragraphs: [{
+    id: "long-p1",
+    page: 1,
+    section: "Abstract",
+    original: "Statistical learning methods are widely used to identify patterns in complex observational data. Careful validation is essential because apparent predictive performance may not generalize to new populations, and the study design determines which causal claims the evidence can support. ".repeat(6),
+    translation: "统计学习方法被广泛用于识别复杂观察数据中的模式。谨慎的验证至关重要，因为表面上的预测性能可能无法推广到新的人群，而研究设计决定了证据能够支持哪些因果结论。".repeat(3),
+    note: "",
+    bookmarked: false,
+    read: false,
+  }],
+};
+
+test("PAPER-10 a long paper keeps the reader inside the workbench and clear of the AI console", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await installApiMocks(page, { signedIn: true, cloudPapers: [longPaperFixture] });
+  await page.goto("/papers");
+  await expect(page.getByText(longPaperFixture.title, { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI 研究控制台" })).toBeVisible();
+
+  const regions = await page.evaluate(() => {
+    function edges(selector: string) {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`missing ${selector}`);
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom) };
+    }
+    const scroll = document.querySelector(".plab-reader-scroll") as HTMLElement;
+    return {
+      workbench: edges(".plab-workbench"),
+      reader: edges(".plab-reader"),
+      index: edges(".plab-index"),
+      rail: edges(".plab-rail"),
+      console: edges(".ai-studio"),
+      readerScrolls: scroll.scrollHeight > scroll.clientHeight,
+    };
+  });
+
+  /* The bounded reading region is what keeps the three columns apart from the
+     console, so the invariant is that no column grows past it. While the reader
+     was allowed to size to its content, all three stretched past this edge. */
+  for (const column of ["reader", "index", "rail"] as const) {
+    expect(regions[column].bottom, `${column} 越过了 workbench 下边界`).toBeLessThanOrEqual(regions.workbench.bottom + 1);
+  }
+  expect(regions.console.top, "AI 控制台与阅读器重叠").toBeGreaterThanOrEqual(regions.reader.bottom - 1);
+  expect(regions.console.top, "AI 控制台与 workbench 重叠").toBeGreaterThanOrEqual(regions.workbench.bottom - 1);
+
+  // Geometry is not the whole symptom: the console's own band has to be painted
+  // by the console, not by a column spilling over it.
+  await page.locator(".ai-studio").scrollIntoViewIfNeeded();
+  const covered = await page.evaluate(() => {
+    const section = document.querySelector(".ai-studio");
+    if (!section) throw new Error("missing .ai-studio");
+    const rect = section.getBoundingClientRect();
+    const top = Math.max(rect.top + 4, 2);
+    const bottom = Math.min(rect.bottom - 4, window.innerHeight - 2);
+    const foreign = new Set<string>();
+    for (let row = 0; row < 4; row += 1) {
+      const y = Math.round(top + ((bottom - top) * row) / 3);
+      for (let column = 0; column <= 10; column += 1) {
+        const x = Math.round(rect.left + 4 + ((rect.width - 8) * column) / 10);
+        const hit = document.elementFromPoint(x, y);
+        if (!hit || section.contains(hit) || hit.tagName === "NEXTJS-PORTAL" || hit.closest(".student-sidebar")) continue;
+        foreign.add(`${hit.tagName.toLowerCase()}.${String((hit as HTMLElement).className || "")}`);
+      }
+    }
+    return [...foreign];
+  });
+  expect(covered, "AI 控制台被其他区域覆盖").toEqual([]);
+
+  // If the paper stops over-filling the reader this case silently stops covering
+  // the bug it was written for, so the fixture's length is asserted too.
+  expect(regions.readerScrolls, "测试论文没有撑满阅读器，用例已失去意义").toBe(true);
+});
+
 async function readSyncQueue(page: import("@playwright/test").Page) {
   return page.evaluate(async () => {
     const request = indexedDB.open("statlab-paper-memory", 2);
