@@ -108,8 +108,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
         {/* The console states what it is looking at before it offers to run. */}
         <header className="ai-console-head">
           <div>
-            <p className="ai-console-kicker">AI RESEARCH CONSOLE</p>
-            <h2>AI 研究控制台</h2>
+            <h2>AI 分析</h2>
           </div>
           <div className="ai-console-key">
             <strong>{apiKey ? "当前会话已配置 DeepSeek Key" : "当前会话未配置 AI Key"}</strong>
@@ -129,14 +128,12 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
         </dl>
 
         <div className="ai-mode" role="tablist" aria-label="AI 研究功能">
-          {(Object.keys(actionMeta) as AiAction[]).map((item, index) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "ai-mode-item ai-mode-item--on" : "ai-mode-item"} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>
-            <span className="ai-mode-num">{String(index + 1).padStart(2, "0")}</span>
+          {(Object.keys(actionMeta) as AiAction[]).map((item) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "ai-mode-item ai-mode-item--on" : "ai-mode-item"} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>
             {actionMeta[item].label}
           </button>)}
         </div>
 
         <p className="ai-mode-brief">
-          <span className="ai-mode-brief-kicker">{actionMeta[action].kicker}</span>
           <span className="ai-mode-brief-copy">{actionMeta[action].description}</span>
         </p>
 
@@ -165,7 +162,6 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
             and one small AI provenance mark. No tinted slab, no card grid. */}
         <section className="ai-doc" aria-label="AI 分析结果">
           <div className="ai-doc-head">
-            <p className="ai-doc-kicker">ANALYSIS</p>
             <strong>{result ? result.title : "尚未生成分析"}</strong>
             {result ? <span className="ai-doc-mark">AI 生成</span> : null}
             {working ? <span className="ai-doc-working" aria-hidden="true" /> : null}

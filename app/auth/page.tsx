@@ -139,7 +139,7 @@ export default function AuthPage() {
       <section className="auth-shell">
         <div className="auth-story">
           <Link className="acaora-brand light" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
-          <div className="auth-story-copy"><h1>你的课程、研究与数据，<br />持续积累。</h1><p>一个账户管理课程进度、论文笔记、数据项目和 AI 学习记录。原始文件仍默认留在你的设备。</p></div>
+          <div className="auth-story-copy"><h1>你的学习与研究资料</h1><p>登录后查看论文笔记和项目记录。课程、论文与数据的原始文件默认留在你的设备。</p></div>
           <div className="auth-privacy"><ShieldCheck size={22} aria-hidden="true" /><div><strong>账户安全</strong><p>密码由 Supabase Auth 安全处理；本站不保存或读取你的明文密码。</p></div></div>
           <div className="auth-orbit"><i /><i /><i /><b>A</b></div>
         </div>

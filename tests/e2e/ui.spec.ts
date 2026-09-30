@@ -51,6 +51,7 @@ for (const [name, path, prepare] of [
 
 for (const viewport of [
   { id: "UI-01", width: 375, height: 812 },
+  { id: "UI-drawer", width: 700, height: 900 },
   { id: "UI-02", width: 768, height: 1024 },
   { id: "UI-03", width: 1024, height: 900 },
   { id: "UI-04", width: 1440, height: 900 },
