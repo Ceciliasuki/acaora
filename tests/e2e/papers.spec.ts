@@ -193,7 +193,7 @@ test("PAPER-10 a long paper keeps the reader inside the workbench and clear of t
   await installApiMocks(page, { signedIn: true, cloudPapers: [longPaperFixture] });
   await page.goto("/papers");
   await expect(page.getByText(longPaperFixture.title, { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "AI 研究控制台" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeVisible();
 
   const regions = await page.evaluate(() => {
     function edges(selector: string) {

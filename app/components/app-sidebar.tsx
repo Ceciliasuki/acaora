@@ -81,7 +81,7 @@ export default function AppSidebar({
   }, [avatarUrl, initials, profileSubtitle, profileTitle]);
 
   useEffect(() => {
-    const query = window.matchMedia("(max-width: 600px)");
+    const query = window.matchMedia("(max-width: 760px)");
     const update = () => {
       setIsDrawer(query.matches);
       if (!query.matches) setOpen(false);

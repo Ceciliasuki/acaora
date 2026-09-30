@@ -461,7 +461,7 @@ export default function PaperLab() {
         </div>
       </header>
 
-      {message && <div className="paper-message" role="status"><span>●</span>{message}</div>}
+      {message && <div className="paper-message" role="status">{message}</div>}
 
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
@@ -529,16 +529,16 @@ export default function PaperLab() {
                   opens with, so the reader's position and the rail are one object. */}
               <div className="plab-page-meta">
                 <span className="plab-page-mark journal-num">{String(activeIndex + 1).padStart(2, "0")}</span>
-                <span className="journal-num">PAGE {activeParagraph.page}</span>
+                <span className="journal-num">第 {activeParagraph.page} 页</span>
                 <strong>{activeParagraph.section}</strong>
                 <button className={activeParagraph.bookmarked ? "plab-bookmark plab-bookmark--on" : "plab-bookmark"} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button>
               </div>
               <div className="plab-body">
-                <span className="plab-layer-label">原文 · ENGLISH ORIGINAL</span>
+                <span className="plab-layer-label">原文</span>
                 <p>{activeParagraph.original}</p>
               </div>
               <div className="plab-translation">
-                <span className="plab-layer-label">简体中文 · 设备端翻译</span>
+                <span className="plab-layer-label">译文</span>
                 {activeParagraph.translation ? <p>{activeParagraph.translation}</p> : <div className="translation-placeholder"><strong>尚未翻译</strong><span>使用 Edge 内置模型，内容不会离开设备。</span><button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("current")}>翻译当前段落</button></div>}
               </div>
               <div className="paragraph-actions">
@@ -546,7 +546,7 @@ export default function PaperLab() {
                 <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
                 <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
               </div>
-            </article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请尝试文本型 PDF；扫描版论文将在后续版本加入 OCR。</p></div>}
+            </article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
           </div>
         </section>
 
@@ -613,8 +613,8 @@ export default function PaperLab() {
             four endings that never impersonate one another. */}
         {hydrated ? <section className={`plab-discovery ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
           <div className="plab-discovery-head">
-            <h2>学术检索索引</h2>
-            <p className="plab-discovery-note">公共学术索引（Semantic Scholar，失败时回退 Crossref），不需要密钥。AI 控制台的「检索策略」会把生成的检索式填进下面的输入框。</p>
+            <h2>学术检索</h2>
+            <p className="plab-discovery-note">输入关键词或 DOI，无需密钥。也可以从 AI「检索策略」填入检索式。</p>
           </div>
 
           <form className="plab-query" onSubmit={(event) => { event.preventDefault(); void searchPapers(); }}>
@@ -638,7 +638,7 @@ export default function PaperLab() {
             <button className="plab-discovery-retry" type="button" onClick={() => void searchPapers()}>重新检索</button>
           </p> : null}
           {!searching && !searchError && searchSettled && !searchResults.length ? <p className="plab-discovery-empty">没有匹配的记录。可以换成英文关键词，或改用论文的 DOI 再试一次。</p> : null}
-          {!searching && !searchError && !searchSettled ? <p className="plab-discovery-idle">输入检索式后开始检索。每条记录只显示索引真实提供的字段：题名、作者、年份、来源、引用次数与可用的开放全文入口。</p> : null}
+          {!searching && !searchError && !searchSettled ? <p className="plab-discovery-idle">英文关键词通常更容易找到相关论文。</p> : null}
           {searchMessage ? <p className="plab-discovery-source">{searchMessage}</p> : null}
 
           {searchResults.length ? <ol className="plab-records">
@@ -664,7 +664,7 @@ export default function PaperLab() {
       <div className="status-bezel">
         <div className="status-bezel-inner">
           <span>本地优先</span>
-          <span>原文不上传</span>
+          <span>原始 PDF 留在本机</span>
           <span>文件在浏览器内解析</span>
           <span className="status-bezel-account">{!hydrated || libraryError ? "本机论文数 —" : `${library.length} 篇在本机`}</span>
         </div>

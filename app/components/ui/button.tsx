@@ -21,6 +21,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     ref={ref}
     className={cx("ui-button", `ui-button--${variant}`, `ui-button--${size}`, className)}
     disabled={disabled || loading}
+    aria-busy={loading || undefined}
     type={type}
     {...props}
   >{loading && <span className="ui-spinner" aria-hidden="true" />}{children}</button>;
