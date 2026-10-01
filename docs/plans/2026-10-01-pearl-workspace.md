@@ -22,3 +22,5 @@ Design read: a white research application with silver material, quiet graphite t
 Inspect populated and empty overviews, paper reading, desktop and mobile screenshots before accepting visual baselines. Check responsive overflow, independent reader scrolling, account isolation, keyboard drawer behavior and reduced motion with the existing suite. No data model or API changes are planned.
 
 The first full run exposed a pending Next image-optimizer request for the new homepage preview. The preview is now a pre-encoded WebP loaded directly with `unoptimized`; the existing homepage checks require successful image decoding. A complete rerun passed 45/45. Visual review also caught workspace container coverage, a legacy narrow-screen navigation rule and the nickname input boundary; these were corrected and checked separately.
+
+Final review replaced unmatched reader selectors with the actual journal filename and editable-title selectors, and scoped the privacy notice to override the existing index rule. The affected UI and paper suite passed 27/27 without retries; the paper screenshot was refreshed and visually reviewed.

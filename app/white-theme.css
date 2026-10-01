@@ -126,10 +126,11 @@ body:has(.plab-shell) > .light-curtain { opacity: .25; }
 .plab-index-row--current { background: var(--brand-subtle); box-shadow: inset 2px 0 var(--brand); }
 .plab-index-row--current .plab-index-open strong { color: var(--brand-on-subtle); }
 .plab-reader-bar { background: #fff; border-color: var(--border); }
-.plab-paper-header { background: #fff; }
-.plab-paper-file { font-family: var(--font-sans); text-transform: none; letter-spacing: 0; font-weight: 400; }
-.plab-paper-title { font-family: var(--font-sans); font-size: 20px; font-weight: 500; }
-.library-privacy { border: 0; border-radius: 8px; background: #eff1f5; padding: 12px; }
+.plab-shell .journal-num { font-family: var(--font-sans); text-transform: none; letter-spacing: 0; font-weight: 400; }
+.plab-reader-bar .paper-title-edit > span { letter-spacing: 0; }
+.plab-reader-bar .paper-title-edit input { font-size: 20px; line-height: 30px; font-weight: 500; }
+.plab-index .library-privacy { border: 0; border-radius: 8px; background: #eff1f5; padding: 12px; }
+.plab-index .library-privacy strong { font-weight: 500; }
 .plab-page { max-width: 76ch; margin-inline: auto; padding: 28px 24px 36px; background: #fff; }
 .plab-page-meta { border: 0; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
 .plab-page-mark, .plab-rail-num { display: none; }
