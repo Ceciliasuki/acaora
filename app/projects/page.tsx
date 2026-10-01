@@ -2,7 +2,7 @@
 
 import AppSidebar from "../components/app-sidebar";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpen, FileSearch, FolderPlus, GraduationCap, PenLine, Plus, Sigma, Users, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Sigma, Users, X, type LucideIcon } from "lucide-react";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch } from "../lib/auth-client";
@@ -36,7 +36,6 @@ const kindOptions = [
 ] satisfies Array<{ value: string; label: string; icon: LucideIcon }>;
 
 const statusLabels = { active: "进行中", paused: "已暂停", completed: "已完成" };
-const dueSoonReferenceTime = Date.now();
 
 function kindInfo(kind: string) {
   return kindOptions.find((item) => item.value === kind) ?? kindOptions[0];
@@ -70,12 +69,6 @@ export default function ProjectsPage() {
   const selected = projects.find((project) => project.id === visibleSelectedId) ?? null;
   const notes = selected ? noteDrafts[selected.id] ?? selected.metadata.notes ?? "" : "";
   const activeCount = projects.filter((project) => project.status === "active").length;
-  const completedTasks = projects.reduce((total, project) => total + (project.metadata.tasks ?? []).filter((task) => task.done).length, 0);
-  const dueSoon = projects.filter((project) => {
-    if (!project.metadata.deadline || project.status === "completed") return false;
-    const distance = new Date(project.metadata.deadline).getTime() - dueSoonReferenceTime;
-    return distance >= 0 && distance <= 7 * 24 * 60 * 60 * 1000;
-  }).length;
 
   useEffect(() => {
     void authFetch("/api/auth/session")
@@ -233,9 +226,9 @@ export default function ProjectsPage() {
       <section className="student-main project-main project-shell">
         <div className="page-bar">
           <div className="page-bar-inner">
-            <h1>项目工作台</h1>
+            <h1>项目空间</h1>
             <span className="page-bar-spacer" />
-            <span className="page-bar-date">集中管理目标、论文、数据和行动</span>
+
             <button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}><Plus size={17} aria-hidden="true" />新建项目</button>
           </div>
         </div>
@@ -243,31 +236,17 @@ export default function ProjectsPage() {
         <div className="page-body">
         {message && <div className="project-message" role="status">{message}</div>}
 
-        {!loaded ? <section className="project-loading"><i /><p>正在整理你的项目空间…</p></section> : loadError ? (
+        {!loaded ? <section className="project-loading"><i /><p>正在读取项目…</p></section> : loadError ? (
           <ErrorState
             description={loadError}
             action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
           />
         ) : !viewer ? (
-          <section className="project-login-wall"><h2>登录后，项目才真正属于你。</h2><p>每个项目都只对当前账户可见，并在设备之间同步目标、任务与笔记。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
+          <section className="project-login-wall"><h2>登录后查看项目</h2><p>项目、任务与笔记会在你的设备之间同步。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
         ) : (
           <>
-            {/* Every cell is a real count derived from the project list. */}
-            <div className="metric-register">
-              {[
-                { label: "进行中", value: String(activeCount), note: "个进行中的项目" },
-                { label: "已完成任务", value: String(completedTasks), note: "项行动已经完成" },
-                { label: "7 天内到期", value: String(dueSoon), note: dueSoon ? "有项目即将到期" : "暂无临期项目" },
-                { label: "项目总数", value: String(projects.length), note: "个持续积累的空间" },
-                { label: "当前视图", value: filter === "active" ? "仅进行中" : "全部项目", note: `${filteredProjects.length} 个匹配` },
-              ].map((cell) => <div className={`metric-register-cell${cell.label === "7 天内到期" && dueSoon > 0 ? " metric-register-cell--alert" : ""}`} key={cell.label}>
-                <b>{cell.label}</b>
-                <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
-                <small>{cell.note}</small>
-              </div>)}
-            </div>
 
-            {!projects.length ? <section className="project-empty"><FolderPlus size={30} aria-hidden="true" /><h2>创建你的第一个项目</h2><p>可以是一篇课程论文、一次数据分析、一项竞赛，或任何需要持续推进的目标。</p><button onClick={() => setShowCreate(true)}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
+            {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => setShowCreate(true)}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
                   <header><div><h2>项目列表</h2></div><button onClick={() => setShowCreate(true)} aria-label="新建项目"><Plus size={18} aria-hidden="true" /></button></header>
@@ -300,14 +279,6 @@ export default function ProjectsPage() {
         )}
         </div>
 
-        <div className="status-bezel">
-          <div className="status-bezel-inner">
-            <span>本地优先</span>
-            <span>仅当前账户可见</span>
-            <span>项目、任务与笔记按账户同步</span>
-            <span className="status-bezel-account">{viewer ? `${projects.length} 个项目` : "未登录"}</span>
-          </div>
-        </div>
       </section>
 
       {showCreate && viewer && <div ref={createDialogRef} className="project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title" aria-describedby="create-project-description">

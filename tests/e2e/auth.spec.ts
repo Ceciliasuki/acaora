@@ -28,7 +28,8 @@ test("AUTH-02 login succeeds and redirects to Dashboard", async ({ page }) => {
 test("AUTH-03 login survives a Dashboard refresh", async ({ page }) => {
   await login(page);
   await page.reload();
-  await expect(page.getByRole("heading", { name: "你好，student。" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "总览", exact: true })).toBeVisible();
+  await expect(page.locator(".sidebar-profile-link")).toContainText("测试同学");
   await expect(page.getByText("工作台还是空的")).toBeVisible();
 });
 
@@ -36,7 +37,8 @@ test("AUTH-04 workspace logo returns to Dashboard without losing identity", asyn
   await login(page);
   await page.getByRole("link", { name: "返回 Acaora 工作台" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByRole("heading", { name: "你好，student。" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "总览", exact: true })).toBeVisible();
+  await expect(page.locator(".sidebar-profile-link")).toContainText("测试同学");
 });
 
 test("AUTH-05 all workspace navigation preserves the session", async ({ page }) => {

@@ -66,7 +66,7 @@ export default function CoursesPage() {
     if (!file) return;
     if (!/\.(txt|md|csv)$/i.test(file.name)) {
       setMaterialName(file.name);
-      setError("第一版可直接读取 TXT、Markdown 与 CSV；PDF、Word 和课件请稍后随课程资料一起接入。" );
+      setError("目前支持 TXT、Markdown 和 CSV。请将 PDF 或 Word 的内容粘贴到资料框。" );
       return;
     }
     setMaterial((await file.text()).slice(0, 60000));
@@ -106,34 +106,6 @@ export default function CoursesPage() {
     }
   }
 
-  /* Every cell is a real value: the course list length, the current selection,
-     the real model the API reported, and the real question count once one has
-     been generated. Nothing is derived into a metric that the product does not
-     actually have. */
-  const questionCount = result?.questions?.length ?? 0;
-  const register = [
-    { label: "课程", value: String(courses.length), note: "统计学 · 经济学 两个方向", numeric: true },
-    { label: "当前课程", value: selected.name, note: selected.code, numeric: false },
-    { label: "当前资料", value: materialName, note: "TXT / MD / CSV，本地解析", numeric: false },
-    {
-      label: "当前模型",
-      /* The ready path is deliberately unchanged, including its note, so no
-         approved baseline moves; only the two non-confirmed states are new. */
-      value: modelState === "ready" ? model : modelState === "fallback" ? "未声明" : modelState === "error" ? "未获取" : "读取中",
-      note: modelState === "ready"
-        ? (apiKey ? "当前会话已配置 Key" : "尚未配置 Key")
-        : modelState === "fallback"
-          ? "服务端未返回模型名，按服务端默认运行"
-          : modelState === "error"
-            ? "配置请求失败，未能确认当前模型"
-            : "正在读取服务端配置",
-      numeric: false,
-      href: "/settings#ai-models",
-      hrefLabel: "管理 AI 设置",
-    },
-    { label: "本次练习", value: questionCount ? `${questionCount} 题` : "尚未生成", note: "每题含答案、解析与常见误区", numeric: Boolean(questionCount) },
-  ];
-
   return (
     <main className="student-app learning-app">
       <AppSidebar active="courses" profileTitle="课程学习中心" profileSubtitle="统计学 × 国际经贸" />
@@ -141,7 +113,7 @@ export default function CoursesPage() {
         {/* Control band: the page name, the one real filter, and the counts. */}
         <div className="page-bar">
           <div className="page-bar-inner">
-            <h1>课程学习中心</h1>
+            <h1>课程中心</h1>
             <div className="page-bar-seg" role="group" aria-label="课程方向">
               {tracks.map((item) => <button type="button" aria-pressed={track === item} key={item} onClick={() => setTrack(item)}>{item}</button>)}
             </div>
@@ -151,18 +123,10 @@ export default function CoursesPage() {
         </div>
 
         <div className="page-body">
-          <div className="metric-register">
-            {register.map((cell) => <div className="metric-register-cell" key={cell.label}>
-              <b>{cell.label}</b>
-              <strong className={cell.numeric ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
-              {cell.note ? <small>{cell.note}</small> : null}
-              {cell.href ? <Link href={cell.href}>{cell.hrefLabel}</Link> : null}
-            </div>)}
-          </div>
 
           <div className="ruled-split">
             <div className="ruled-main">
-              <h2 className="ruled-heading">课程地图<span>双学位知识体系</span></h2>
+              <h2 className="ruled-heading">课程</h2>
               <ul className="course-list">
                 {visibleCourses.map((course) => {
                   const current = selected.code === course.code;
@@ -211,7 +175,8 @@ export default function CoursesPage() {
             </aside>
           </div>
 
-          <h2 className="ruled-heading ruled-heading--section">基于资料生成练习<span>AI 生成 · 含答案、解析与常见误区</span></h2>
+          <h2 className="ruled-heading ruled-heading--section">练习</h2>
+          <p className="practice-model"><span>{modelState === "ready" ? model : modelState === "fallback" ? "模型未声明，使用服务端默认配置" : modelState === "error" ? "暂时无法读取模型配置" : "正在读取模型配置…"}</span> · {apiKey ? "已配置密钥" : "尚未配置密钥"} <Link href="/settings#ai-models">设置</Link></p>
           <div className="ruled-split ruled-split--practice">
             <div className="ruled-main practice-config">
               <FormField label="课程资料" hint="至少约 80 个字符；PDF 与 Word 暂不支持。">
@@ -267,14 +232,6 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        <div className="status-bezel">
-          <div className="status-bezel-inner">
-            <span>本地优先</span>
-            <span>资料留在设备</span>
-            <span>练习由 AI 生成并与课程原文分开呈现</span>
-            <span className="status-bezel-account">{selected.code} · {selected.track}</span>
-          </div>
-        </div>
       </section>
     </main>
   );

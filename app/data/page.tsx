@@ -109,7 +109,7 @@ export default function Home() {
       <section className="workspace data-main data-shell" id="workspace">
         <div className="page-bar">
           <div className="page-bar-inner">
-            <h1>数据分析工作台</h1>
+            <h1>数据分析</h1>
             {isSample && <Badge tone="warning">示例数据</Badge>}
             <span className="page-bar-spacer" />
             <button className="sample-button" type="button" onClick={restoreSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button>
@@ -117,26 +117,11 @@ export default function Home() {
         </div>
 
         <div className="page-body page-body--wide">
-        {/* The register replaces the old context strip: the same real numbers, in
-            the shared band, with the dataset's own facts beside them. */}
-        <div className="metric-register">
-          {[
-            { label: "数据集", value: data.name, note: `${formatLabel(data.name)} · ${data.rows.length} 行 × ${data.headers.length} 列` },
-            { label: "观测数", value: String(data.rows.length), note: "来自本机文件" },
-            { label: "变量数", value: String(data.headers.length), note: `数值 ${numeric.length} · 分类 ${Math.max(0, data.headers.length - numeric.length)}` },
-            { label: "缺失值", value: String(missingCount), note: `${(100 - completeness).toFixed(2)}% 的单元格为空` },
-            { label: "完整度", value: `${completeness.toFixed(1)}%`, note: "仅本地处理" },
-          ].map((cell) => <div className="metric-register-cell" key={cell.label}>
-            <b>{cell.label}</b>
-            <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
-            <small>{cell.note}</small>
-          </div>)}
-        </div>
 
         <section className="hero-grid">
           <div className="upload-panel">
             <div className="panel-heading">
-              <div><h2>读取常用数据文件</h2></div>
+              <div><h2>导入数据</h2></div>
               <span className="privacy-pill"><HardDrive size={15} aria-hidden="true" />仅本地处理</span>
             </div>
             <button
@@ -170,18 +155,18 @@ export default function Home() {
           <div className="overview-panel">
             <div className="panel-heading compact">
               <div><h2>样本概况</h2></div>
-              <span className="updated-label">实时更新</span>
+
             </div>
             <div className="metric-grid">
-              <article><span>观测数</span><strong>{data.rows.length}</strong><small>ROWS</small></article>
-              <article><span>变量数</span><strong>{data.headers.length}</strong><small>COLUMNS</small></article>
+              <article><span>观测数</span><strong>{data.rows.length}</strong></article>
+              <article><span>变量数</span><strong>{data.headers.length}</strong></article>
               <article className={missingCount ? "has-warning" : ""}><span>缺失值</span><strong>{missingCount}</strong><small>{(100 - completeness).toFixed(2)}%</small></article>
             </div>
             <div className="type-breakdown">
               <div><span>数值变量</span><strong>{numeric.length}</strong></div>
               <div><span>分类变量</span><strong>{Math.max(0, data.headers.length - numeric.length)}</strong></div>
             </div>
-            <p className="overview-note">已自动识别变量类型，可直接进入描述统计与推断分析。</p>
+
           </div>
         </section>
 
@@ -207,7 +192,7 @@ export default function Home() {
 
         <section className="analysis-panel" id="analysis">
           <div className="analysis-header">
-            <div><h2>选择方法，查看结果</h2></div>
+            <div><h2>分析方法</h2></div>
             <div className="analysis-tabs" role="tablist" aria-label="分析方法">
               <button role="tab" aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
               <button role="tab" aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
@@ -250,7 +235,7 @@ export default function Home() {
                 })()}
               </div>
               <div className="summary-table-card">
-                <div className="table-title"><strong>全部数值变量</strong><span>自动计算</span></div>
+                <div className="table-title"><strong>全部数值变量</strong></div>
                 <div className="table-wrap" role="region" aria-label="数值变量统计表，可横向滚动">
                   <button
                     type="button"
@@ -345,14 +330,6 @@ export default function Home() {
         <footer><span>Acaora · DataLab</span><p>用于探索性学习与课程项目；正式研究请结合研究设计与专业判断。</p></footer>
         </div>
 
-        <div className="status-bezel">
-          <div className="status-bezel-inner">
-            <span>本地优先</span>
-            <span>数据在浏览器内处理</span>
-            <span>不上传到服务器</span>
-            <span className="status-bezel-account">{isSample ? "示例数据" : data.name}</span>
-          </div>
-        </div>
       </section>
     </main>
   );

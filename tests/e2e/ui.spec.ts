@@ -50,7 +50,9 @@ for (const [name, path, prepare] of [
     if (name === "dashboard-empty") mockState.projects = [];
     await ready(page, path);
     if (prepare) await prepare(page);
-    await expect(page).toHaveScreenshot(`${name}-1440.png`, { fullPage: true, animations: "disabled", caret: "hide", maxDiffPixelRatio: 0.01 });
+    // The reader owns its scroll panes. Chrome's stitched WebGL capture produces
+    // a transparent header; its viewport capture matches the actual browser view.
+    await expect(page).toHaveScreenshot(`${name}-1440.png`, { fullPage: name !== "papers", animations: "disabled", caret: "hide", maxDiffPixelRatio: 0.01 });
   });
 }
 
@@ -67,6 +69,7 @@ for (const viewport of [
       await ready(page, path);
       const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
       expect(dimensions.scrollWidth, `${path} overflowed at ${viewport.width}px`).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+      if (viewport.id === "UI-01") await page.screenshot({ path: `test-results/ui-mobile-${path === "/" ? "home" : path.slice(1)}.png` });
     }
   });
 }
