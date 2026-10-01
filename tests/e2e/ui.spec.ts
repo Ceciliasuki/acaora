@@ -15,6 +15,11 @@ const project: MockProject = {
 
 async function ready(page: Page, path: string) {
   await page.goto(path);
+  if (path === "/") {
+    const preview = page.getByRole("img", { name: "Acaora 工作台的空状态" });
+    await expect(preview).toBeVisible();
+    await expect.poll(() => preview.evaluate((node) => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth > 0)).toBe(true);
+  }
   if (path === "/dashboard") await expect(page.locator(".dashboard-loading")).toBeHidden();
   if (path === "/papers") await expect(page.getByText("云端记忆已同步")).toHaveCount(1);
   if (path === "/projects") await expect(page.getByRole("heading", { name: project.title })).toBeVisible();

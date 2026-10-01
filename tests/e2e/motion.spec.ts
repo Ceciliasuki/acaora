@@ -11,7 +11,7 @@ test("light curtain is decorative and reduced motion keeps controls steady", asy
   const curtain = page.locator("body > .light-curtain");
   await expect(curtain).toHaveAttribute("aria-hidden", "true");
   expect(await curtain.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("none");
-  expect(await curtain.locator("svg").first().evaluate((node) => getComputedStyle(node).animationName)).toBe("none");
+  expect(await curtain.locator(".light-curtain-fold").evaluate((node) => getComputedStyle(node).animationName)).toBe("none");
   const action = page.getByRole("link", { name: "新建项目", exact: true }).first();
   await action.hover();
   expect(await action.evaluate((node) => getComputedStyle(node).transform)).toBe("none");

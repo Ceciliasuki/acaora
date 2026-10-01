@@ -3,7 +3,7 @@
 import { BarChart3, BookOpen, FileSearch, FolderKanban, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import dashboardPreview from "../public/preview-dashboard.png";
+import dashboardPreview from "../public/preview-dashboard.webp";
 import { getServerViewer } from "./lib/auth/server-viewer";
 
 const modules = [
@@ -29,8 +29,8 @@ export default async function AcaoraHome() {
         <p>整理课程资料，读论文，分析数据，再把研究任务放进项目。原始文件默认留在你的设备。</p>
         <div className="hero-actions"><Link className="hero-main" href="/dashboard">进入工作台</Link><Link className="hero-demo" href="/papers">查看 PaperLab</Link></div>
         <figure className="hero-product approved-preview">
-          <Image src={dashboardPreview} priority sizes="(max-width: 768px) 100vw, 1200px" alt="Acaora 工作台的空状态" />
-          <figcaption>工作台界面 · 尚未导入论文或创建项目</figcaption>
+          <Image src={dashboardPreview} preload unoptimized sizes="(max-width: 768px) 100vw, 1200px" alt="Acaora 工作台的空状态" />
+          <figcaption>总览界面</figcaption>
         </figure>
       </section>
 
