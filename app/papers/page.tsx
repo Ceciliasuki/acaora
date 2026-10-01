@@ -445,8 +445,7 @@ export default function PaperLab() {
           sync state beside the library, and the privacy facts in the colophon. */}
       <header className="plab-head">
         <div className="plab-head-id">
-          <h1>论文阅读与分析</h1>
-          <p>阅读、标注与设备端翻译</p>
+          <h1>论文研究</h1>
         </div>
         <div className="plab-head-tools">
           <div className={`translator-status state-${translationState}`}>
@@ -661,14 +660,6 @@ export default function PaperLab() {
             </li>)}
           </ol> : null}
         </section> : <DiscoverySkeleton />}
-      <div className="status-bezel">
-        <div className="status-bezel-inner">
-          <span>本地优先</span>
-          <span>原始 PDF 留在本机</span>
-          <span>文件在浏览器内解析</span>
-          <span className="status-bezel-account">{!hydrated || libraryError ? "本机论文数 —" : `${library.length} 篇在本机`}</span>
-        </div>
-      </div>
       </section>
     </main>
   );

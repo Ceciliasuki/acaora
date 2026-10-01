@@ -199,42 +199,16 @@ export default function SettingsPage() {
         <div className="page-bar-inner">
           <h1>设置</h1>
           <span className="page-bar-spacer" />
-          <span className="page-bar-date">管理个人资料、账户安全、AI 模型与数据边界</span>
+
           <Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button>
         </div>
       </div>
 
       <div className="page-body">
-        {/* Every cell reports something the page actually knows. */}
-        <div className="metric-register">
-          {[
-            {
-              label: "账号",
-              value: signedIn ? (email || "已登录") : sessionError ? "未获取" : "未登录",
-              note: signedIn ? "云端同步已开启" : sessionError ? "账户状态请求失败，未知" : "当前设备没有可用的登录会话",
-            },
-            { label: "AI 密钥", value: aiKey.trim() ? "已配置" : "未配置", note: "仅保存在当前浏览器会话" },
-            {
-              label: "兴趣标签",
-              value: loading ? "读取中" : sessionError ? "未获取" : profile.preferences.interests.length ? String(profile.preferences.interests.length) : "尚未添加",
-              note: "上限 12 个",
-            },
-            {
-              label: "构建版本",
-              value: versionState === "ready" && version ? getShortCommit(version.commit) : versionState === "error" ? "未获取" : "读取中",
-              note: versionState === "ready" && version ? (version.environment || "读取中") : versionState === "error" ? "版本请求失败" : "读取中",
-            },
-            { label: "数据边界", value: "本地优先", note: "原始文件不上传" },
-          ].map((cell) => <div className="metric-register-cell" key={cell.label}>
-            <b>{cell.label}</b>
-            <strong className={/^\d+$/.test(cell.value) ? "dashboard-tabular" : "metric-register-value--text"}>{cell.value}</strong>
-            <small>{cell.note}</small>
-          </div>)}
-        </div>
 
-      <nav className="settings-nav" aria-label="设置分区"><a href="#profile">个人资料</a><a href="#security">账户与安全</a><a href="#ai-models">AI 与模型</a><a href="#privacy">隐私与数据</a><a href="#about">关于</a></nav>
+      {signedIn && <nav className="settings-nav" aria-label="设置分区"><a href="#profile">个人资料</a><a href="#security">账户与安全</a><a href="#ai-models">AI 与模型</a><a href="#privacy">隐私与数据</a><a href="#about">关于</a></nav>}
 
-      {loading ? <div className="settings-state" role="status">正在核验账户状态…</div> : sessionError ? <div className="settings-state" role="alert"><span>ACCOUNT UNREACHABLE</span><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><span>ACCOUNT REQUIRED</span><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
+      {loading ? <div className="settings-state" role="status">正在读取账户…</div> : sessionError ? <div className="settings-state" role="alert"><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
         {(message || error) && <StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage>}
         <div className="settings-sections">
           <section className="settings-panel" id="profile">
@@ -246,7 +220,7 @@ export default function SettingsPage() {
 
           <section className="settings-panel" id="security">
             <div className="settings-section-head"><h2>账户与安全</h2></div>
-            <p className="settings-panel-copy">Acaora 使用同源 HttpOnly Cookie 维持会话；浏览器脚本不能读取 access token 或 refresh token。</p>
+            <p className="settings-panel-copy">更改密码后，请用新密码登录。</p>
             <div className="settings-narrow-form"><FormField label="新密码" id="settings-new-password"><PasswordField autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} showPolicy /></FormField><FormField label="确认新密码" id="settings-confirm-password" error={confirmNewPassword && newPassword !== confirmNewPassword ? "两次输入的新密码不一致。" : undefined}><PasswordField autoComplete="new-password" value={confirmNewPassword} onChange={(event) => setConfirmNewPassword(event.target.value)} /></FormField><Button loading={changingPassword} disabled={!newPassword || !confirmNewPassword} onClick={() => void changePassword()}>更新密码</Button></div>
           </section>
 
@@ -258,26 +232,18 @@ export default function SettingsPage() {
 
           <section className="settings-panel" id="privacy">
             <div className="settings-section-head"><h2>隐私与数据</h2></div>
-            <div className="settings-info-grid"><article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认只在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户同步</b><p>个人资料、项目、提取后的论文文本、译文与笔记按账户隔离同步；原始 PDF 不上传。</p></article><article><b>资料导出</b><p>导出当前个人资料的 JSON 副本，不包含密码和认证 token。</p><Button variant="secondary" onClick={exportProfile}>导出资料</Button></article><article><b>结束会话</b><p>退出会清除当前站点的服务端会话 Cookie。</p><Button variant="danger" onClick={() => void logout()}>退出登录</Button></article></div>
+            <div className="settings-info-grid"><article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认只在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户同步</b><p>个人资料、项目、提取后的论文文本、译文与笔记按账户隔离同步；原始 PDF 不上传。</p></article><article><b>资料导出</b><p>下载个人资料的 JSON 副本，副本不包含密码或登录凭据。</p><Button variant="secondary" onClick={exportProfile}>导出资料</Button></article><article><b>结束会话</b><p>退出当前设备上的账户。</p><Button variant="danger" onClick={() => void logout()}>退出登录</Button></article></div>
           </section>
 
           <section className="settings-panel settings-about" id="about">
             <div className="settings-section-head"><h2>关于 Acaora</h2></div>
-            <p>大学生学习与研究工作台。生产构建可通过 <code>/api/version</code> 独立核验。</p>
-            <small>{versionState === "error" ? "Build 未获取 ·版本信息请求失败" : versionState === "ready" && version ? `Build ${getShortCommit(version.commit)} · ${version.environment || "unknown"} · ${version.buildTime || "unknown"}` : "Build 读取中 ·读取中 ·读取中"}</small>
+            <p>整理课程资料，阅读论文，分析数据和管理研究项目。</p>
+            <small>{versionState === "error" ? "暂时无法读取版本" : versionState === "ready" && version ? `Build ${getShortCommit(version.commit)} · ${version.environment || "unknown"} · ${version.buildTime || "unknown"}` : "正在读取版本…"}</small>
           </section>
         </div>
       </>}
       </div>
 
-      <div className="status-bezel">
-        <div className="status-bezel-inner">
-          <span>本地优先</span>
-          <span>原始文件不上传</span>
-          <span>{signedIn ? "云端同步已开启" : sessionError ? "账户状态未知" : "仅保存在当前设备"}</span>
-          <span className="status-bezel-account">{signedIn ? email : sessionError ? "未获取" : "未登录"}</span>
-        </div>
-      </div>
     </section>
   </main>;
 }

@@ -155,7 +155,9 @@ export async function login(page: Page, password = "ValidPass1") {
   await page.locator("#account-password").fill(password);
   await page.getByRole("button", { name: "登录账户" }).click();
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("heading", { name: /你好/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "总览", exact: true })).toBeVisible();
+  await expect(page.locator(".overview-footer")).toContainText("student@example.com");
+  await expect(page.getByRole("button", { name: "退出", exact: true })).toBeVisible();
 }
 
 export function makeTextPdf() {
