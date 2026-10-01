@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 /* Matches --bg-app so the mobile browser chrome stays continuous with the
    app background instead of cutting to a white surface. */
 export const viewport: Viewport = {
-  themeColor: "#f4f8fe",
+  themeColor: "#f3f4f6",
 };
 
 export default function RootLayout({

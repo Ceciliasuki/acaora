@@ -1,17 +1,15 @@
-# White workspace — 2026-09-30
+# White workspace — 2026-10-01
 
-This user-approved direction replaces the earlier editorial appearance in DESIGN.md. Existing behavior and data boundaries remain authoritative in PRODUCT.md.
+The current direction uses silver-white material, graphite text and blue for actions and selected states. The sidebar sits beside one opaque working surface. Reading panes stay white, with no animated background under the paper text.
 
-The shell, sidebar and reading panes are white. Silver-blue translucent folds drift slowly around the workspace; the overview's feature card has its own clipped curtain. Paper text uses an opaque white background with no moving decoration beneath it.
+The overview gives one real recent record priority and presents other records as a compact list. Empty and guest states collapse the unused record column. Workspace shortcuts use open spacing instead of four additional bordered cards.
 
-Primary buttons use an inset highlight, a single hover sheen and a small press response. Keyboard focus remains visible. Disabled controls stop moving. The system's reduced-motion setting disables curtain animation and button movement; status color and focus cues remain.
+`public/pearl-curtain.webp` is a generated decorative material asset, encoded as a 1536 × 1024 WebP (40,332 bytes). CSS translates and scales the material layer slowly and moves a separate light wash. No canvas loop, per-frame React state or animation dependency is used. Reduced motion disables both layers.
 
-Implementation lives in `app/white-theme.css` and `app/components/light-curtain.tsx`. The theme follows the existing stylesheet without introducing a new CSS framework or runtime dependency. Semantic success, warning, danger and AI labels remain distinct from the brand color.
+Buttons retain a single hover sheen, a small press response, keyboard focus and disabled feedback. Frequent reading controls use color changes. Semantic status and AI colors remain separate from the brand accent.
 
-The overview uses fetched account records and retains loading, guest, empty and error states. Record links open the existing paper or project workspaces; they do not imply a new record-specific route. No mockup summaries or fake productivity metrics are shipped.
+Implementation lives in `app/white-theme.css` and `app/components/light-curtain.tsx`. Account, storage, API and sync behavior remain unchanged. The overview retains loading, guest, empty, ready and error states; record links open the existing workspaces.
 
-Copy changes remove repeated English headings, decorative section numbering and implementation details such as storage migration plans. Translation is labeled neutrally because existing paper memory can contain either device translations or AI-enhanced translations.
+Product copy remains direct and retains AI provenance and privacy details. Functional paragraph and page numbers are preserved. The home preview is a dedicated 49,680-byte WebP, refreshed from the reviewed empty-state view and served directly to avoid the pending image-optimizer request observed during verification.
 
-Button material references Magic UI's MIT-licensed Shimmer Button. See THIRD_PARTY_NOTICES.md for the source and license. The hover-only CSS effect does not import Magic UI, Motion or a shader library.
-
-Home uses a dedicated product-preview image instead of importing a visual-test baseline, so test output no longer changes a shipped page asset.
+The button highlight retains the MIT-licensed Magic UI reference credited in THIRD_PARTY_NOTICES.md. The generated material is decorative artwork, not an official Apple interface asset or material implementation.

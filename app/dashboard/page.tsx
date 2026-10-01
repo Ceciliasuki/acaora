@@ -86,7 +86,7 @@ export default function DashboardPage() {
         </div>
       </header>
       <h2 className="overview-section-title">最近更新</h2>
-      {state === "loading" ? <div className="dashboard-loading" role="status" aria-label="正在读取工作台记录" /> : <div className="overview-grid">
+      {state === "loading" ? <div className="dashboard-loading" role="status" aria-label="正在读取工作台记录" /> : <div className={`overview-grid${rest.length ? "" : " overview-grid--single"}`}>
         <article className="overview-feature">
           <LightCurtain inset />
           <span className="overview-kind">{lead ? lead.href === "/papers" ? "论文" : "项目" : state === "guest" ? "本机阅读" : state === "error" ? "加载失败" : "开始使用"}</span>
@@ -96,13 +96,13 @@ export default function DashboardPage() {
             : state === "error" ? <Button onClick={() => location.reload()}>重新加载</Button>
               : <Link className="ui-button ui-button--primary" href="/papers">进入论文研究<ArrowRight size={18} aria-hidden="true" /></Link>}
         </article>
-        <div className="overview-recent" aria-label="其他最近记录">
-          {rest.length ? rest.map((item) => <Link className="overview-record" href={item.href} key={item.id}>
+        {rest.length > 0 && <div className="overview-recent" aria-label="其他最近记录">
+          {rest.map((item) => <Link className="overview-record" href={item.href} key={item.id}>
             {item.href === "/papers" ? <FileText size={25} aria-hidden="true" /> : <Folder size={25} aria-hidden="true" />}
             <div><small>{item.href === "/papers" ? "论文" : "项目"} · {stamp(item.updatedAt)}</small><strong>{item.title}</strong></div>
             <ChevronRight size={17} aria-hidden="true" />
-          </Link>) : <div className="overview-recent-empty"><strong>{lead ? "没有其他最近记录" : "记录会出现在这里"}</strong><p>{state === "error" ? "读取成功后可查看最近更新。" : "保存的论文与项目按更新时间排列。"}</p></div>}
-        </div>
+          </Link>)}
+        </div>}
       </div>}
       <h2 className="overview-section-title">工作区</h2>
       <div className="overview-shortcuts">{workspaces.map(({ href, name, detail, icon: Icon }) => <Link href={href} className="overview-shortcut" key={href}>
