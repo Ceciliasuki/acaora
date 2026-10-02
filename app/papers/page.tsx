@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "../focused-workspaces.module.css";
+
 import AppSidebar from "../components/app-sidebar";
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -437,7 +439,7 @@ export default function PaperLab() {
   return (
     <main className="student-app paper-layout">
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section className="student-main plab-shell">
+      <section className={`student-main plab-shell ${styles.focused}`}>
       {/* Running head: the surface's own line, then only the tools that act on the
           library. The numeric register that used to sit here was removed because
           every value in it is already printed where it belongs: the library count in
@@ -462,11 +464,17 @@ export default function PaperLab() {
 
       {message && <div className="paper-message" role="status">{message}</div>}
 
+      <nav className="paper-workspace-nav" aria-label="论文工作模式">
+        <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}>阅读与笔记</button>
+        <button type="button" aria-pressed={mobilePanel === "ai"} onClick={() => setMobilePanel("ai")}>AI 分析</button>
+        <button type="button" aria-pressed={mobilePanel === "search"} onClick={() => setMobilePanel("search")}>学术检索</button>
+      </nav>
+
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
-        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "提示", ai: "AI", search: "检索" }[panel]}</button>)}
+        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
-      <section className="plab-workbench">
+      <section className="plab-workbench" hidden={mobilePanel === "ai" || mobilePanel === "search"}>
         {!hydrated ? <ReadingSkeleton /> : <>
         {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
             rows, the title as the entry, and the reader's own progress beneath it.
@@ -549,48 +557,24 @@ export default function PaperLab() {
           </div>
         </section>
 
-        {/* 3 · Margin Annotation Rail. The old right-hand panel becomes the page's
-            margin: numbered blocks, each one a fact the product already knows about
-            the active paragraph. Nothing is invented — no citation count, no
-            summary, no score — and the first block carries the same number as the
-            reader's marginal marker, so the reader and the rail read as one page. */}
+        {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
         <aside className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="plab-rail-head">
-            <h2>页边注释</h2>
-            <span>非 AI · 规则识别</span>
-          </div>
+          <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span></div>
           {activeParagraph && <div className="plab-rail-block">
-            <p className="plab-rail-num journal-num">{String(activeIndex + 1).padStart(2, "0")}</p>
-            <h3>当前段落</h3>
-            <dl className="plab-rail-meta">
-              <div><dt>页码</dt><dd className="journal-num">P{activeParagraph.page}</dd></div>
-              <div><dt>章节</dt><dd>{activeParagraph.section}</dd></div>
-              <div><dt>状态</dt><dd>{activeParagraph.read ? "已读" : "未读"}</dd></div>
-            </dl>
-          </div>}
-          {insight && <>
-            <div className="plab-rail-block">
-              <h3>段落作用</h3>
-              <strong className="plab-rail-role">{insight.role}</strong>
-              <p>{insight.explanation}</p>
-            </div>
-            <div className="plab-rail-block">
-              <h3>统计线索</h3>
-              {insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}
-            </div>
-            <div className="plab-rail-block">
-              <h3>阅读检查</h3>
-              <ul className="plab-rail-questions">{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul>
-            </div>
-          </>}
-          {activeParagraph && <div className="plab-rail-block">
-            <h3>我的笔记</h3>
             <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
           </div>}
+          {insight && <details className="paper-hints">
+            <summary>段落提示 <span>非 AI · 规则识别</span></summary>
+            <div className="plab-rail-block"><strong className="plab-rail-role">{insight.role}</strong><p>{insight.explanation}</p></div>
+            <div className="plab-rail-block"><h3>统计线索</h3>{insight.terms.length ? <div className="term-list">{insight.terms.map((term) => <b key={term}>{term}</b>)}</div> : <p>未识别到常见统计术语。</p>}</div>
+            <div className="plab-rail-block"><h3>阅读检查</h3><ul className="plab-rail-questions">{insight.questions.map((question) => <li key={question}>{question}</li>)}</ul></div>
+          </details>}
+
         </aside>
         </>}
       </section>
 
+        <div className="paper-mode-content" hidden={mobilePanel !== "ai"}>
         {hydrated ? <AiStudio
           paper={paper}
           activeParagraph={activeParagraph}
@@ -606,10 +590,12 @@ export default function PaperLab() {
             setSearchSettled(false);
           }}
         /> : <AiConsoleSkeleton />}
+        </div>
 
         {/* Scholarly Discovery Index: the page's lowest-weight research tool. It is
             a bibliography, not a search product: one query field, ruled records, and
             four endings that never impersonate one another. */}
+        <div className="paper-mode-content" hidden={mobilePanel !== "search"}>
         {hydrated ? <section className={`plab-discovery ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
           <div className="plab-discovery-head">
             <h2>学术检索</h2>
@@ -660,6 +646,7 @@ export default function PaperLab() {
             </li>)}
           </ol> : null}
         </section> : <DiscoverySkeleton />}
+        </div>
       </section>
     </main>
   );

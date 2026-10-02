@@ -1,0 +1,159 @@
+/* Page-local composition: the approved overview and shared material stay intact. */
+.focused.focused :global([hidden]) { display: none; }
+.focused.focused :global(.page-body) { padding-top: 14px; }
+
+/* A course index and one working desk, with no empty result surface. */
+.focused.focused :global(.course-workbench) { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: clamp(28px, 4vw, 60px); align-items: start; }
+.focused.focused :global(.course-index) { padding-top: 12px; min-width: 0; }
+.focused.focused :global(.course-list) { padding: 0; background: transparent; border: 0; border-radius: 0; }
+.focused.focused :global(.course-list-item) { border: 0; }
+.focused.focused :global(.course-row) { min-height: 76px; padding: 14px 12px; margin-bottom: 4px; grid-template-columns: minmax(0, 1fr) 18px; grid-template-areas: "code mark" "name mark"; gap: 5px 10px; border: 1px solid transparent; border-radius: 10px; background: transparent; transition: background 180ms ease, border-color 180ms ease; }
+.focused.focused :global(.course-row:hover:not(:disabled)) { background: rgb(255 255 255 / 50%); }
+.focused.focused :global(.course-row[aria-current="true"]) { background: rgb(255 255 255 / 82%); border-color: #fff; box-shadow: 0 4px 16px rgb(38 62 103 / 4%); }
+.focused.focused :global(.course-row-name) { font-size: 14px; line-height: 1.7; }
+.focused.focused :global(.course-row-code) { font-size: 10px; letter-spacing: .04em; }
+.focused.focused :global(.course-desk) { min-width: 0; max-width: 800px; padding-top: 12px; }
+.focused.focused :global(.course-intro) { padding: 8px 0 28px; }
+.focused.focused :global(.course-intro h2) { margin: 12px 0 16px; font-size: clamp(28px, 3vw, 38px); line-height: 1.4; font-weight: 500; letter-spacing: -.025em; color: var(--text); }
+.focused.focused :global(.course-intro p) { margin: 0; font-size: 12px; line-height: 1.9; color: var(--text-2); }
+.focused.focused :global(.course-intro .course-topics) { font-size: 14px; }
+.focused.focused :global(.practice-model) { margin: 0 0 12px; font-size: 11px; }
+.focused.focused :global(.course-practice) { display: grid; gap: 28px; }
+.focused.focused :global(.practice-config) { padding: 24px 28px; border: 1px solid #fff; border-radius: 16px; background: rgb(255 255 255 / 87%); box-shadow: 0 8px 28px rgb(34 61 104 / 4%); }
+.focused.focused :global(.course-material-tools) { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.focused.focused :global(.course-material-tools > span) { min-width: 0; overflow-wrap: anywhere; color: var(--text-2); font-size: 12px; }
+.focused.focused :global(.course-upload) { margin: 0; min-height: 40px; padding: 8px 12px; flex-shrink: 0; width: auto; background: transparent; }
+.focused.focused :global(.practice-material) { min-height: 180px; border-radius: 8px; background: rgb(248 250 253 / 75%); line-height: 1.9; }
+.focused.focused :global(.practice-controls) { grid-template-columns: 110px minmax(0, 1fr) auto; align-items: end; margin: 20px 0; gap: 24px; }
+.focused.focused :global(.practice-controls .ui-form-field), .focused.focused :global(.practice-controls .ui-select) { min-width: 0; }
+.focused.focused :global(.practice-note) { font-size: 12px; line-height: 1.9; max-width: 32ch; margin: 0 0 4px; }
+.focused.focused :global(.practice-run) { width: auto; min-width: 150px; margin: 0; }
+.focused.focused :global(.ruled-note) { font-size: 11px; line-height: 1.9; margin: 16px 0 0; }
+.focused.focused :global(.practice-result) { min-height: 0; padding: 24px 28px; border: 1px solid #fff; border-radius: 16px; background: rgb(255 255 255 / 94%); }
+
+/* Projects use the global field for orientation and two surfaces for the work. */
+.focused.focused :global(.project-workbench) { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(24px, 3vw, 44px); min-height: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+.focused.focused :global(.project-library) { padding: 12px 0; border: 0; background: transparent; }
+.focused.focused :global(.project-filter) { margin: 0 0 18px; }
+.focused.focused :global(.project-list > button) { display: block; padding: 16px 14px; border: 1px solid transparent; border-radius: 10px; background: transparent; }
+.focused.focused :global(.project-list > button.active) { background: rgb(255 255 255 / 82%); border-color: #fff; box-shadow: none; }
+.focused.focused :global(.project-list > button:hover) { background: rgb(255 255 255 / 65%); }
+.focused.focused :global(.project-list strong) { margin: 8px 0; font-size: 15px; font-weight: 500; line-height: 1.8; }
+.focused.focused :global(.project-list small), .focused.focused :global(.project-list span) { font-size: 11px; font-weight: 400; }
+.focused.focused :global(.project-detail) { padding: 16px 0 24px; }
+.focused.focused :global(.project-detail-head) { padding: 0; border: 0; flex-wrap: wrap; gap: 20px; }
+.focused.focused :global(.project-detail-head > div:first-child) { flex: 1 1 350px; min-width: 0; }
+.focused.focused :global(.project-detail-head h2) { margin-top: 12px; font-family: var(--font-sans); font-size: clamp(26px, 2.6vw, 36px); font-weight: 500; line-height: 1.5; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.focused.focused :global(.project-detail-head p) { margin-top: 16px; font-size: 13px; line-height: 1.9; }
+.focused.focused :global(.project-detail-head > div:last-child) { width: auto; flex-shrink: 0; }
+.focused.focused :global(.project-summary) { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 24px 0 28px; font-size: 12px; color: var(--text-2); }
+.focused.focused :global(.project-detail-grid) { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); margin: 0; gap: 22px; align-items: start; }
+.focused.focused :global(.project-task-card), .focused.focused :global(.project-note-card) { padding: 24px; border: 1px solid #fff; border-radius: 14px; background: rgb(255 255 255 / 88%); box-shadow: 0 6px 24px rgb(35 60 94 / 3%); }
+.focused.focused :global(.project-task-card header), .focused.focused :global(.project-note-card header) { padding: 0; margin-bottom: 20px; border: 0; }
+.focused.focused :global(.project-task-card h3), .focused.focused :global(.project-note-card h3) { margin: 0; font-size: 15px; font-weight: 500; }
+.focused.focused :global(.project-task-card form) { display: flex; margin: 0 0 16px; gap: 8px; }
+.focused.focused :global(.project-task-card form input) { width: 0; min-width: 0; flex: 1; background: #f8fafd; }
+.focused.focused :global(.project-tasks label) { min-height: 54px; padding: 12px 0; background: transparent; border-radius: 0; border: 0; border-bottom: 1px solid var(--border); }
+.focused.focused :global(.project-tasks label:last-child) { border-bottom: 0; }
+.focused.focused :global(.project-tasks span) { font-size: 13px; line-height: 1.9; }
+.focused.focused :global(.project-note-card textarea) { height: 220px; min-height: 140px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; font-size: 13px; line-height: 2; }
+.focused.focused :global(.project-note-card > .ui-button) { display: flex; width: auto; margin: 20px 0 0 auto; }
+.focused.focused :global(.project-related) { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 28px; }
+.focused.focused :global(.project-related a) { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-2); }
+.focused.focused :global(.project-related a:hover) { color: var(--brand); }
+
+/* The reader is one still sheet between two open margins. Other tools are modes. */
+.focused.focused :global(.plab-head) { margin: 0; padding-bottom: 20px; }
+.focused.focused :global(.paper-workspace-nav) { display: flex; gap: 24px; margin: 0 28px 26px; }
+.focused.focused :global(.paper-workspace-nav button) { min-height: 40px; padding: 0 0 7px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--text-2); font-size: 13px; cursor: pointer; }
+.focused.focused :global(.paper-workspace-nav button[aria-pressed="true"]) { color: var(--text); border-bottom-color: var(--brand); }
+.focused.focused :global(.paper-workspace-nav button:hover) { color: var(--brand); }
+.focused.focused :global(.paper-workspace-nav button:focus-visible) { outline: 2px solid var(--brand); outline-offset: 4px; }
+.focused.focused :global(.plab-workbench) { grid-template-columns: 180px minmax(0, 1fr) 210px; gap: 22px; margin: 0 28px 28px; height: clamp(530px, calc(100dvh - 205px), 860px); border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+.focused.focused :global(.plab-index), .focused.focused :global(.plab-rail) { padding: 16px 0 0; border: 0; background: transparent; order: initial; }
+.focused.focused :global(.plab-index-head), .focused.focused :global(.plab-rail-head) { border: 0; }
+.focused.focused :global(.plab-index-row) { padding: 10px 8px; background: transparent; }
+.focused.focused :global(.plab-index-row--current) { background: rgb(255 255 255 / 76%); box-shadow: inset 2px 0 var(--brand); }
+.focused.focused :global(.plab-index .library-privacy) { padding: 14px 0 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; }
+.focused.focused :global(.plab-index .library-privacy p) { font-size: 11px; }
+.focused.focused :global(.plab-reader) { background: rgb(255 255 255 / 96%); border: 1px solid #fff; border-radius: 12px; box-shadow: 0 8px 30px rgb(30 54 94 / 5%); overflow: hidden; order: initial; min-height: 0; }
+.focused.focused :global(.plab-reader-bar) { flex-wrap: wrap; gap: 14px; padding: 22px 26px 18px; }
+.focused.focused :global(.paper-title-edit) { flex-basis: 100%; }
+.focused.focused :global(.paper-title-edit input) { font-size: 20px; line-height: 1.6; }
+.focused.focused :global(.plab-reader-scroll) { overflow-y: auto; }
+.focused.focused :global(.plab-page) { margin: 0; padding: 26px; border: 0; border-radius: 0; box-shadow: none; }
+.focused.focused :global(.section-chips) { padding-inline: 26px; }
+.focused.focused :global(.plab-body p), .focused.focused :global(.plab-translation p) { font-size: 15px; line-height: 1.95; }
+.focused.focused :global(.plab-rail-head span) { font-size: 11px; }
+.focused.focused :global(.plab-rail-block) { padding: 16px 0; border: 0; }
+.focused.focused :global(.plab-rail-block textarea) { min-height: 260px; width: 100%; padding: 14px; border: 1px solid #fff; border-radius: 9px; background: rgb(255 255 255 / 72%); font-size: 12px; line-height: 2; }
+.focused.focused :global(.paper-hints) { border-top: 1px solid var(--border); padding-top: 18px; }
+.focused.focused :global(.paper-hints summary) { cursor: pointer; font-size: 12px; line-height: 2; }
+.focused.focused :global(.paper-hints summary span) { display: block; font-size: 10px; color: var(--text-2); }
+.focused.focused :global(.paper-mode-content) { margin: 0 28px 40px; max-width: 1080px; }
+.focused.focused :global(.ai-studio) { padding: 0; }
+.focused.focused :global(.ai-console), .focused.focused :global(.plab-discovery) { margin: 0; padding: 28px 32px; border: 1px solid #fff; border-radius: 14px; background: rgb(255 255 255 / 91%); }
+.focused.focused :global(.ai-console-key) { max-width: 460px; }
+.focused.focused :global(.ai-console-key small) { font-size: 11px; }
+.focused.focused :global(.ai-provenance) { margin: 20px 0 0; font-size: 11px; line-height: 1.8; color: var(--text-2); }
+.focused.focused :global(.ai-doc) { min-height: 0; }
+
+@media (max-width: 1200px) {
+  .focused.focused :global(.plab-workbench) { grid-template-columns: 150px minmax(0, 1fr) 170px; gap: 16px; margin-inline: 20px; }
+  .focused.focused :global(.project-detail-grid) { grid-template-columns: minmax(0, 1fr); }
+  .focused.focused :global(.course-workbench) { grid-template-columns: 190px minmax(0, 1fr); gap: 28px; }
+  .focused.focused :global(.practice-controls) { grid-template-columns: 110px minmax(0, 1fr); gap: 14px; }
+  .focused.focused :global(.practice-run) { grid-column: 1 / -1; justify-self: start; margin-top: 4px; }
+}
+@media (max-width: 1024px) and (min-width: 761px) {
+  .focused.focused :global(.plab-workbench) { grid-template-columns: minmax(0, 1fr) 190px; height: auto; }
+  .focused.focused :global(.plab-index) { grid-column: 1 / -1; max-height: 210px; padding: 0; }
+  .focused.focused :global(.plab-index-list) { display: flex; gap: 12px; overflow: auto; flex: none; }
+  .focused.focused :global(.plab-index-row) { flex: 0 0 230px; }
+  .focused.focused :global(.library-privacy) { margin: 12px 0 0; }
+  .focused.focused :global(.library-privacy p) { margin-top: 4px; }
+  .focused.focused :global(.plab-reader) { height: 680px; }
+  .focused.focused :global(.plab-rail) { max-height: 680px; overflow: auto; }
+}
+@media (max-width: 760px) {
+  .focused.focused :global(.page-body) { padding-top: 12px; }
+  .focused.focused :global(.course-workbench) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .focused.focused :global(.course-index) { padding: 0; }
+  .focused.focused :global(.course-list) { display: flex; gap: 8px; overflow-x: auto; padding: 0 0 8px; }
+  .focused.focused :global(.course-list-item) { flex: 0 0 180px; }
+  .focused.focused :global(.course-row) { width: 100%; min-height: 80px; margin: 0; }
+  .focused.focused :global(.course-intro) { padding-top: 0; }
+  .focused.focused :global(.course-intro h2) { font-size: 29px; }
+  .focused.focused :global(.practice-config), .focused.focused :global(.practice-result) { padding: 20px 18px; }
+  .focused.focused :global(.course-material-tools) { gap: 8px; }
+  .focused.focused :global(.course-upload) { font-size: 11px; padding: 8px; }
+  .focused.focused :global(.practice-controls) { gap: 14px; }
+  .focused.focused :global(.project-workbench) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .focused.focused :global(.project-library) { padding: 0; }
+  .focused.focused :global(.project-list) { display: flex; gap: 12px; overflow-x: auto; }
+  .focused.focused :global(.project-list > button) { flex: 0 0 250px; }
+  .focused.focused :global(.project-detail) { padding: 0; }
+  .focused.focused :global(.project-detail-head) { gap: 18px; }
+  .focused.focused :global(.project-detail-head > div:first-child) { flex-basis: auto; }
+  .focused.focused :global(.project-task-card), .focused.focused :global(.project-note-card) { padding: 22px 18px; }
+  .focused.focused :global(.paper-workspace-nav) { display: none; }
+  .focused.focused :global(.plab-head) { padding: 76px 20px 20px; }
+  .focused.focused :global(.plab-workbench) { grid-template-columns: minmax(0, 1fr); height: auto; margin: 18px 16px 30px; gap: 0; }
+  .focused.focused :global(.plab-workbench > .plab-index), .focused.focused :global(.plab-workbench > .plab-reader), .focused.focused :global(.plab-workbench > .plab-rail) { display: none; }
+  .focused.focused :global(.plab-workbench > .mobile-visible) { display: flex; }
+  .focused.focused :global(.plab-reader) { height: auto; }
+  .focused.focused :global(.plab-reader-bar) { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .focused.focused :global(.reader-controls) { width: auto; justify-content: flex-start; }
+  .focused.focused :global(.plab-reader-progress) { width: 96px; margin-left: auto; }
+  .focused.focused :global(.plab-reader-scroll) { overflow: visible; }
+  .focused.focused :global(.plab-page), .focused.focused :global(.plab-reader-bar) { padding-inline: 20px; }
+  .focused.focused :global(.section-chips) { padding-inline: 20px; }
+  .focused.focused :global(.plab-index), .focused.focused :global(.plab-rail) { max-height: none; overflow: visible; }
+  .focused.focused :global(.plab-rail.mobile-visible) { flex-direction: column; }
+  .focused.focused :global(.paper-mode-content) { margin: 18px 16px 30px; }
+  .focused.focused :global(.ai-console), .focused.focused :global(.plab-discovery) { padding: 24px 18px; }
+  .focused.focused :global(.ai-console-head) { flex-direction: column; gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .focused.focused :global(.course-row) { transition: none; }
+}
