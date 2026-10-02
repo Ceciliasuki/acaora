@@ -1,4 +1,4 @@
-# White workspace — 2026-10-01
+# White workspace — 2026-10-02
 
 The current direction uses one continuous silver-white light field, graphite text and blue actions. The sidebar, headers and spacing expose the material on every route. Reading panes stay opaque white so motion does not pass under paper text.
 
@@ -8,11 +8,13 @@ The overview gives one real recent record priority and presents other records as
 
 `public/pearl-curtain.webp` remains a static fallback when WebGL is unavailable or lost. It is generated decorative artwork, not an official Apple material. The web treatment borrows material separation, not Apple's platform-only native Liquid Glass implementation. No animation dependency was added.
 
-The working pages no longer share a metrics register and status footer template. Courses pair selection and material, with practice below. Projects pair a project list with tasks and notes. Settings place category links beside one form. Data separates import, variable checks and analysis. The reader retains independent scroll panes, and AI provenance stays next to the relevant controls.
+The approved overview remains unchanged. Courses now expose a compact index and selected-course title on the global field, with one material editor and no idle result panel. Projects expose the index and title, with separate task and note surfaces instead of a full-width white workbench; the duplicate task rollup and progress slab are removed. Settings place category links beside one form. Data separates import, variable checks and analysis.
+
+PaperLab defaults to the bounded reader, an open library margin and notes. AI analysis and scholarly search are separate modes, mounted but hidden while reading so their inputs and results survive switches. Rule-based reading hints are an optional disclosure, visibly distinguished from AI. Mobile mode switching retains the current paragraph and notes. The mobile reader toolbar explicitly wraps in rows so previous/next controls stay inside the sheet.
 
 Buttons retain a single hover sheen, a small press response, keyboard focus and disabled feedback. Frequent reading controls use color changes. Semantic status and AI colors remain separate from the brand accent.
 
-Implementation lives in `app/white-theme.css` and `app/components/light-curtain.tsx`. Account, storage, API and sync behavior remain unchanged. The overview retains loading, guest, empty, ready and error states; record links open the existing workspaces.
+Shared material lives in `app/white-theme.css` and `app/components/light-curtain.tsx`; the three revised workspace compositions are scoped in `app/focused-workspaces.module.css`. Account, storage, API and sync contracts remain unchanged. The overview retains loading, guest, empty, ready and error states; record links open the existing workspaces. Course selection and material input pause during generation to prevent associating a response with a different course.
 
 Product copy remains direct and retains AI provenance and privacy details. Functional paragraph and page numbers are preserved. The public page uses a single entrance action, an actual product preview and a directory of working routes. Its preview is a 1440 × 900, 40,530-byte WebP refreshed from the reviewed empty-state view and served directly.
 

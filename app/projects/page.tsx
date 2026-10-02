@@ -1,8 +1,9 @@
 "use client";
 
+import styles from "../focused-workspaces.module.css";
 import AppSidebar from "../components/app-sidebar";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Sigma, Users, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Users, X, type LucideIcon } from "lucide-react";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch } from "../lib/auth-client";
@@ -88,11 +89,6 @@ export default function ProjectsPage() {
       .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "项目读取失败。"))
       .finally(() => setLoaded(true));
   }, []);
-
-  const weeklyPlan = useMemo(() => projects.flatMap((project) => (project.metadata.tasks ?? [])
-    .filter((task) => !task.done)
-    .slice(0, 2)
-    .map((task) => ({ ...task, projectTitle: project.title }))).slice(0, 4), [projects]);
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -223,7 +219,7 @@ export default function ProjectsPage() {
     <main className="student-app project-app">
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
-      <section className="student-main project-main project-shell">
+      <section className={`student-main project-main project-shell ${styles.focused}`}>
         <div className="page-bar">
           <div className="page-bar-inner">
             <h1>项目空间</h1>
@@ -249,21 +245,18 @@ export default function ProjectsPage() {
             {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => setShowCreate(true)}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
-                  <header><div><h2>项目列表</h2></div><button onClick={() => setShowCreate(true)} aria-label="新建项目"><Plus size={18} aria-hidden="true" /></button></header>
                   <div className="project-filter"><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></div>
                   <div className="project-list">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
-                    const progress = projectProgress(project);
-                    const KindIcon = kind.icon;
-                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onClick={() => setSelectedId(project.id)}><b><KindIcon size={17} aria-hidden="true" /></b><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><i><em style={{ width: `${progress}%` }} /></i><small>{progress}% · {(project.metadata.tasks ?? []).length} 项任务</small></div></button>;
+                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onClick={() => setSelectedId(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;
                   })}{!filteredProjects.length && <p className="project-filter-empty">没有进行中的项目。</p>}</div>
-                  <section className="weekly-plan"><h3>下一步行动</h3>{weeklyPlan.length ? weeklyPlan.map((task) => <p key={task.id}><i /> <b>{task.text}</b><small>{task.projectTitle}</small></p>) : <p className="weekly-empty">暂无待办任务，给项目添加一个明确的下一步。</p>}</section>
+
                 </aside>
 
                 {selected && <article className="project-detail">
                   <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => setDeleteOpen(true)} disabled={saving}>删除</button></div></header>
 
-                  <section className="project-progress-card"><div><span>项目进度</span><strong>{projectProgress(selected)}<small>%</small></strong></div><i><b style={{ width: `${projectProgress(selected)}%` }} /></i><p><span>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} 项完成</span><span>{selected.metadata.deadline ? `截止 ${selected.metadata.deadline}` : "未设置截止日期"}</span></p></section>
+                  <p className="project-summary"><span>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>
 
                   <div className="project-detail-grid">
                     <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={addTask}><input value={taskText} onChange={(event) => setTaskText(event.target.value)} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><div className="project-tasks">{(selected.metadata.tasks ?? []).length ? (selected.metadata.tasks ?? []).map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" checked={task.done} onChange={() => toggleTask(task.id)} /><span>{task.text}</span></label>) : <p>还没有任务。可以先记录需要查找的论文或待处理的数据。</p>}</div></section>
@@ -271,7 +264,7 @@ export default function ProjectsPage() {
                     <section className="project-note-card"><header><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈或待解决的问题…" id="project-notes" aria-label="项目笔记" /><Button disabled={saving} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</Button></section>
                   </div>
 
-                  <section className="project-resource-card"><header><div><h3>从项目继续工作</h3></div><p>在对应工作台继续处理论文与数据。</p></header><div><Link href="/papers"><b><FileSearch size={18} aria-hidden="true" /></b><span><strong>PaperLab</strong><small>检索、精读并分析相关论文</small></span><i><ArrowRight size={17} aria-hidden="true" /></i></Link><Link href="/data"><b><Sigma size={18} aria-hidden="true" /></b><span><strong>DataLab</strong><small>上传数据并完成统计分析</small></span><i><ArrowRight size={17} aria-hidden="true" /></i></Link></div></section>
+                  <nav className="project-related" aria-label="项目相关工作台"><Link href="/papers">查阅论文 <ArrowRight size={15} aria-hidden="true" /></Link><Link href="/data">分析数据 <ArrowRight size={15} aria-hidden="true" /></Link></nav>
                 </article>}
               </section>
             )}

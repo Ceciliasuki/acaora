@@ -160,16 +160,17 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
 
         {/* The result is printed as an analysis document: rules, a reading measure
             and one small AI provenance mark. No tinted slab, no card grid. */}
-        <section className="ai-doc" aria-label="AI 分析结果">
+        {(result || working) && <section className="ai-doc" aria-label="AI 分析结果">
           <div className="ai-doc-head">
-            <strong>{result ? result.title : "尚未生成分析"}</strong>
+            <strong>{result ? result.title : "正在生成分析…"}</strong>
             {result ? <span className="ai-doc-mark">AI 生成</span> : null}
             {working ? <span className="ai-doc-working" aria-hidden="true" /> : null}
           </div>
           {result
             ? <><ResultView data={result.data} /><p className="ai-doc-foot">生成于 {new Date(result.createdAt).toLocaleString("zh-CN")} · AI 内容可能出错，请回到引用段落核对。</p></>
             : <p className="ai-doc-idle">选择一种分析方式，再针对当前论文运行；结果会保存在这篇论文的记忆里，可随时回看。</p>}
-        </section>
+        </section>}
+        <p className="ai-provenance">AI 结果保存在论文记忆中，可能出错，请核对原文。</p>
       </div>
     </section>
   );

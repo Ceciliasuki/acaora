@@ -188,12 +188,12 @@ const longPaperFixture = {
   }],
 };
 
-test("PAPER-10 a long paper keeps the reader inside the workbench and clear of the AI console", async ({ page }) => {
+test("PAPER-10 a long paper stays bounded and switches to an unobstructed AI mode", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await installApiMocks(page, { signedIn: true, cloudPapers: [longPaperFixture] });
   await page.goto("/papers");
   await expect(page.getByText(longPaperFixture.title, { exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeHidden();
 
   const regions = await page.evaluate(() => {
     function edges(selector: string) {
@@ -208,19 +208,18 @@ test("PAPER-10 a long paper keeps the reader inside the workbench and clear of t
       reader: edges(".plab-reader"),
       index: edges(".plab-index"),
       rail: edges(".plab-rail"),
-      console: edges(".ai-studio"),
       readerScrolls: scroll.scrollHeight > scroll.clientHeight,
     };
   });
 
-  /* The bounded reading region is what keeps the three columns apart from the
-     console, so the invariant is that no column grows past it. While the reader
-     was allowed to size to its content, all three stretched past this edge. */
+  // Long content must stay in its own scroll pane while the tool mode changes.
   for (const column of ["reader", "index", "rail"] as const) {
     expect(regions[column].bottom, `${column} 越过了 workbench 下边界`).toBeLessThanOrEqual(regions.workbench.bottom + 1);
   }
-  expect(regions.console.top, "AI 控制台与阅读器重叠").toBeGreaterThanOrEqual(regions.reader.bottom - 1);
-  expect(regions.console.top, "AI 控制台与 workbench 重叠").toBeGreaterThanOrEqual(regions.workbench.bottom - 1);
+  await page.getByLabel("段落笔记").fill("核对研究设计与因果结论。");
+  await page.getByRole("navigation", { name: "论文工作模式" }).getByRole("button", { name: "AI 分析", exact: true }).click();
+  await expect(page.locator(".plab-workbench")).toBeHidden();
+  await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeVisible();
 
   // Geometry is not the whole symptom: the console's own band has to be painted
   // by the console, not by a column spilling over it.
@@ -244,10 +243,42 @@ test("PAPER-10 a long paper keeps the reader inside the workbench and clear of t
     return [...foreign];
   });
   expect(covered, "AI 控制台被其他区域覆盖").toEqual([]);
+  await page.screenshot({ path: "test-results/papers-ai-desktop.png" });
+  await page.getByRole("navigation", { name: "论文工作模式" }).getByRole("button", { name: "学术检索", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "论文检索关键词" })).toBeVisible();
+  await expect(page.locator(".ai-studio")).toBeHidden();
+  await page.screenshot({ path: "test-results/papers-search-desktop.png" });
+  await page.getByRole("navigation", { name: "论文工作模式" }).getByRole("button", { name: "阅读与笔记", exact: true }).click();
+  await expect(page.getByLabel("段落笔记")).toHaveValue("核对研究设计与因果结论。");
+  await expect(page.getByLabel("论文标题")).toHaveValue(longPaperFixture.title);
 
   // If the paper stops over-filling the reader this case silently stops covering
   // the bug it was written for, so the fixture's length is asserted too.
   expect(regions.readerScrolls, "测试论文没有撑满阅读器，用例已失去意义").toBe(true);
+});
+
+test("PAPER-11 mobile modes retain notes and return to the selected paragraph", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await installApiMocks(page, { signedIn: true, cloudPapers: [paperFixture] });
+  await page.goto("/papers");
+  await expect(page.getByLabel("论文标题")).toHaveValue(paperFixture.title);
+  const toolbar = await page.locator(".plab-reader-bar").boundingBox();
+  const next = await page.getByRole("button", { name: "下一段", exact: true }).boundingBox();
+  expect(toolbar).not.toBeNull();
+  expect(next).not.toBeNull();
+  expect(next!.x + next!.width, "段落导航越过了移动端工具栏").toBeLessThanOrEqual(toolbar!.x + toolbar!.width + 1);
+  const panels = page.getByRole("tablist", { name: "论文工作台面板" });
+  await panels.getByRole("tab", { name: "笔记", exact: true }).click();
+  await page.getByLabel("段落笔记").fill("移动端笔记。");
+  await panels.getByRole("tab", { name: "AI", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeVisible();
+  await expect(page.getByLabel("段落笔记")).toBeHidden();
+  await panels.getByRole("tab", { name: "检索", exact: true }).click();
+  await expect(page.getByLabel("论文检索关键词")).toBeVisible();
+  await panels.getByRole("tab", { name: "笔记", exact: true }).click();
+  await expect(page.getByLabel("段落笔记")).toHaveValue("移动端笔记。");
+  await panels.getByRole("tab", { name: "阅读", exact: true }).click();
+  await expect(page.getByLabel("论文标题")).toHaveValue(paperFixture.title);
 });
 
 async function readSyncQueue(page: import("@playwright/test").Page) {
