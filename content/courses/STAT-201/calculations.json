@@ -1498,6 +1498,25 @@
       "tolerance": 1e-06,
       "absolute_error": 0.0,
       "status": "passed"
+    },
+    {
+      "id": "STAT-201-case-se",
+      "inputs": {
+        "observations": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "ddof": 1
+      },
+      "method": "NumPy sample standard deviation divided by root sample size.",
+      "computed": 0.6454972243679028,
+      "exact_or_repr": "0.6454972243679028",
+      "declared": 0.6454972243679028,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
     }
   ]
 }

@@ -39,7 +39,7 @@ for(const course of courses.filter(c=>!selected||c.code===selected)) {
       }
     }
   }
-  for(const entry of [...course.chapters.map(c=>c.id),'midterm','final']) {
+  for(const entry of course.format==='guided'?['case-study']:[...course.chapters.map(c=>c.id),'midterm','final']) {
     const assessment=await loadAssessment(course.code,entry);
     if(!assessment){failures.push(`${course.code}/${entry} 作业或综合自测未通过`);continue;}
     checkedAssessments.push(assessment);

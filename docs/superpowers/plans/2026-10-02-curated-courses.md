@@ -154,6 +154,10 @@ test('a course can be studied without imported material or an AI key', async ({ 
 - [ ] 边界检查：角点、预算不足/零收入、无交易、税收后交易量、短长期退出、效率与分配不混用。
 - [ ] 运行该门 `check:courses` 和计算复核命令，浏览器检查图形/推导与练习，记录实际状态，通过后提交。
 
+### Task 6a: 简化课程主线（2026-10-04 用户批准的修订）
+
+以 `docs/superpowers/specs/2026-10-04-guided-courses.md` 为题量与呈现的最新依据，覆盖本计划旧的每节两例六题、逐章作业与两套卷要求。已完成内容保留，不重新编写；默认一个例题和三道题，其余选学。改读者/题目/目录和综合案例的共享数据契约，写失败用例验证三题与旧记录保存，再执行两门内容和浏览器检查。后续 Tasks 7–11 均采用三题、一个综合案例和适当精简的核心范围，不编写旧考试体系；Task 12 发布证据要求保留。
+
 ### Task 7: 回归分析内容与逐门核验
 
 **Files:** `content/courses/STAT-302/`、`docs/course-reviews/STAT-302.md`。

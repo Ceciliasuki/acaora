@@ -189,3 +189,4 @@ def verify(ctx):
         fit=minimize_scalar(lambda rate: -(10*np.log(rate)-rate*50),bounds=(.001,1),method='bounded',options={'xatol':1e-12})
         ctx.numeric('STAT-201-final-q3',fit.x,'Numerically optimize censored log likelihood from aggregate exposure.',{'events':10,'total_exposure':50})
         ctx.numeric('STAT-201-final-q4',(24/2)/(12/12),'Independent ANOVA dimension/mean-square calculation.',{'SSB':24,'SSW':12,'k':3,'N':15})
+        ctx.numeric('STAT-201-case-se',np.std([1,2,3,4],ddof=1)/np.sqrt(4),'NumPy sample standard deviation divided by root sample size.',{'observations':[1,2,3,4],'ddof':1})

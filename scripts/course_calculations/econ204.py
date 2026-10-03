@@ -258,3 +258,5 @@ def verify_figures(ctx):
     assert np.allclose(points,metadata['figures'][1]['triangle'],atol=.001,rtol=0)
     area=abs(np.dot(points[:,0],np.roll(points[:,1],1))-np.dot(points[:,1],np.roll(points[:,0],1)))/2
     ctx.check('ECON-204-figure-tax-area',area,100,'Parse actual SVG polygon, invert graph coordinates and compute shoelace area.',{'vertices':points.tolist(),'coordinate_rounding_pixels':.001},tolerance=.002)
+    from scipy.optimize import brentq
+    ctx.numeric('ECON-204-case-quantity',brentq(lambda q:100-q-(20+q+20),0,100),'Numerically solve original buyer-price minus seller-price and tax equilibrium equation.',{'demand_intercept':100,'supply_intercept':20,'slopes':[-1,1],'tax':20})

@@ -66,8 +66,14 @@ export function validateLesson(lesson) {
     const f=s.figure;
     if(!text(f.caption)||!text(f.alt)||!/^\/courses\/[A-Z0-9-]+\/[a-z0-9-]+\.svg$/.test(f.src)||!f.src.startsWith(`/courses/${lesson.courseId}/`))errors.push('图形来源或说明无效');
   }
-  if(!Array.isArray(lesson.examples)||lesson.examples.length<2||lesson.examples.some(e=>!e || ![e.title,e.problem,e.conclusion].every(text)||!texts(e.steps))) errors.push("完整例题不足");
-  errors.push(...validateQuestions(lesson.questions,Array.isArray(lesson.objectives)?lesson.objectives:[]));
+  if(!Array.isArray(lesson.examples)||lesson.examples.length<(lesson.format==='guided'?1:2)||lesson.examples.some(e=>!e || ![e.title,e.problem,e.conclusion].every(text)||!texts(e.steps))) errors.push("完整例题不足");
+  errors.push(...validateQuestions(lesson.questions,Array.isArray(lesson.objectives)?lesson.objectives:[],lesson.format==='guided'?3:6));
+  if(lesson.format==='guided') {
+    const ids=lesson.coreQuestionIds;
+    const core=Array.isArray(ids)&&Array.isArray(lesson.questions)?ids.map(id=>lesson.questions.find(q=>q.id===id)):[];
+    if(!Array.isArray(ids)||ids.length!==3||new Set(ids).size!==3||core.some(q=>!q)||new Set(core.map(q=>q?.type)).size!==3)errors.push('核心练习须为三道不同的概念、数值与解释题');
+    if(!lesson.sections?.some?.(s=>s.optional!==true))errors.push('核心讲解缺失');
+  }
   return errors;
 }
 export async function loadLesson(courseId,lessonId) {
@@ -82,11 +88,12 @@ export async function availableLessonIds(course) {
  return (await Promise.all(course.chapters.flatMap(c=>c.lessons.map(async lesson=>(await loadLesson(course.code,lesson.id))?lesson.id:null)))).filter(id=>id!==null);
 }
 export async function loadAssessment(courseId,assessmentId) {
-  if(!listCourses().some(c=>c.code===courseId) || !/^(midterm|final|chapter-\d+)$/.test(assessmentId)) return null;
+  if(!listCourses().some(c=>c.code===courseId) || !/^(case-study|midterm|final|chapter-\d+)$/.test(assessmentId)) return null;
   try {
     const all=JSON.parse(await readFile(path.join(root,courseId,"assessments.json"),"utf8"));
     const assessment=all.find(a=>a.id===assessmentId);
-    if(!assessment || assessment.status!=="checked" || !texts(assessment.objectives) || validateQuestions(assessment.questions,assessment.objectives,assessmentId.startsWith("chapter-")?8:12).length) return null;
+    if(!assessment || assessment.status!=="checked" || !texts(assessment.objectives) || validateQuestions(assessment.questions,assessment.objectives,assessmentId==='case-study'?3:assessmentId.startsWith("chapter-")?8:12).length) return null;
+    if(assessmentId==='case-study'&&(!Array.isArray(assessment.context)||!assessment.context.length||assessment.context.some(s=>!text(s.heading)||!texts(s.paragraphs))))return null;
     return assessment;
   }
   catch(error){ if(error.code==="ENOENT")return null;throw error; }

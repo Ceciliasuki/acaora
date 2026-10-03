@@ -1613,6 +1613,25 @@
       "tolerance": 0.002,
       "absolute_error": 0.0013793103444186272,
       "status": "passed"
+    },
+    {
+      "id": "ECON-204-case-quantity",
+      "inputs": {
+        "demand_intercept": 100,
+        "supply_intercept": 20,
+        "slopes": [
+          -1,
+          1
+        ],
+        "tax": 20
+      },
+      "method": "Numerically solve original buyer-price minus seller-price and tax equilibrium equation.",
+      "computed": 30.0,
+      "exact_or_repr": "30.0",
+      "declared": 30,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
     }
   ]
 }

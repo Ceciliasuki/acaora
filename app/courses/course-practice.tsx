@@ -1,9 +1,10 @@
 "use client";
-import {useState} from "react";
+import {useEffect,useState} from "react";
 import type {Attempt,Question} from "./course-types";
 import {gradeQuestion,createQuestionAttempt,latestQuestionAttempt} from "./course-grading.mjs";
 import {CourseText} from "./course-text";
 import styles from "./courses.module.css";
+import {guidedQuestions} from './course-guided.mjs';
 function PracticeQuestion({question,index,onAttempt,attempts}:{question:Question;index:number;onAttempt:(attempt:Attempt)=>void;attempts:Attempt[]}) {
   const prior=latestQuestionAttempt(question,attempts);
   const [answer,setAnswer]=useState(prior?.answer??"");
@@ -33,6 +34,9 @@ function PracticeQuestion({question,index,onAttempt,attempts}:{question:Question
     {solution&&<div className={styles.solution}><h4>{question.type==="open"?"参考答案与评分要点":"答案与解析"}</h4><p><CourseText text={question.type==="choice"?(question.options?.find(o=>o.id===question.answer)?.text??""):String(question.answer)}/></p><p><CourseText text={question.explanation}/></p>{question.type==="open"&&<p className={styles.muted}>请逐项核对条件、推导和解释；本站不对开放题自动评分。</p>}</div>}
   </section>;
 }
-export default function CoursePractice({questions,onAttempt,attempts=[]}:{questions:Question[];onAttempt:(attempt:Attempt)=>void;attempts?:Attempt[]}) {
-  return <section aria-labelledby="practice"><h2 id="practice">分层练习</h2><p className={styles.muted}>先独立作答，再查看提示与解析。练习记录与手动完成阅读分别保存。</p>{questions.map((question,i)=><PracticeQuestion key={`${question.id}-${question.version}`} question={question} index={i} onAttempt={onAttempt} attempts={attempts}/>)}</section>;
+export default function CoursePractice({questions,coreQuestionIds,onAttempt,attempts=[]}:{questions:Question[];coreQuestionIds?:string[];onAttempt:(attempt:Attempt)=>void;attempts?:Attempt[]}) {
+  const {core,optional}=guidedQuestions(questions,coreQuestionIds);
+  useEffect(()=>{function revealTarget(){let id;try{id=decodeURIComponent(window.location.hash.slice(1));}catch{return;}const target=document.getElementById(id);const details=target?.closest('details');if(details){details.open=true;target?.scrollIntoView({block:'center'});}}revealTarget();window.addEventListener('hashchange',revealTarget);return()=>window.removeEventListener('hashchange',revealTarget);},[]);
+  const render=(question:Question,i:number)=><PracticeQuestion key={`${question.id}-${question.version}`} question={question} index={i} onAttempt={onAttempt} attempts={attempts}/>;
+  return <section aria-labelledby="practice"><h2 id="practice">练习</h2><p className={styles.muted}>先独立作答，再查看提示与解析。</p>{core.map(render)}{optional.length>0&&<details className={styles.references}><summary>更多练习（选学）</summary>{optional.map((q,i)=>render(q,core.length+i))}</details>}</section>;
 }

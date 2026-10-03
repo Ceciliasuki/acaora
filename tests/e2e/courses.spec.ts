@@ -1,6 +1,24 @@
 import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
+
+test('COURSE-12 guided lessons show three exercises and preserve optional review links',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.goto('/courses/STAT-201/lesson-1');
+ await expect(page.locator('form:visible')).toHaveCount(3);
+ await expect(page.getByText('例 2 ·', {exact:false})).toBeHidden();
+ await page.getByText('更多例题（选学）',{exact:true}).click();
+ await expect(page.getByText('例 2 ·',{exact:false})).toBeVisible();
+ await page.goto('/courses/STAT-201/lesson-1#title-STAT-201-l1-q2');
+ // The optional question keeps its original ID and is reachable from review.
+ await expect(page.locator('[aria-labelledby="title-STAT-201-l1-q2"]')).toBeVisible();
+ await expect(page.locator('form:visible')).toHaveCount(6);
+ await page.goto('/courses/STAT-201');
+ await expect(page.getByRole('link',{name:'章节作业',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('link',{name:'综合案例',exact:true})).toHaveCount(1);
+ await expect(page.getByRole('link',{name:'复习作答记录',exact:true})).toBeHidden();
+ await page.getByText('学习记录',{exact:true}).click();
+ await expect(page.getByRole('link',{name:'复习作答记录',exact:true})).toBeVisible();
+});
 test('COURSE-01 preset lessons work without imported material or AI keys',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true});await page.goto('/courses');
  await page.getByRole('link',{name:'开始学习概率论与数理统计'}).click();
@@ -8,7 +26,7 @@ test('COURSE-01 preset lessons work without imported material or AI keys',async(
  await expect(page).toHaveURL('/courses/STAT-201/lesson-1',{timeout:15000});
  await expect(page.getByRole('heading',{name:'学习目标',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'查看解析'}).first()).toBeVisible();
- const calculation=page.getByRole('region',{name:/第 3 题/});
+ const calculation=page.locator('[aria-labelledby="title-STAT-201-l1-q3"]');
  await calculation.getByLabel('输入数值答案').fill('0.6');await calculation.getByRole('button',{name:'检查答案'}).click();
  await expect(calculation).toContainText('回答正确');await calculation.getByRole('button',{name:'查看解析'}).click();
  await expect(calculation.getByRole('heading',{name:'答案与解析'})).toBeVisible();
@@ -36,7 +54,7 @@ test('COURSE-03 unavailable sync preserves IndexedDB queue across refresh and ac
 });
 test('COURSE-04 loaded lesson and answers survive loss of network',async({page,context})=>{
  await installApiMocks(page,{signedIn:true});await page.goto('/courses/STAT-201/lesson-1');
- const calculation=page.getByRole('region',{name:/第 3 题/});await calculation.getByLabel('输入数值答案').fill('0.6');
+ const calculation=page.locator('[aria-labelledby="title-STAT-201-l1-q3"]');await calculation.getByLabel('输入数值答案').fill('0.6');
  await context.setOffline(true);await calculation.getByRole('button',{name:'检查答案'}).click();
  await expect(calculation).toContainText('回答正确');await expect(page.getByRole('heading',{name:'学习目标',exact:true})).toBeVisible();await context.setOffline(false);
 });
@@ -45,8 +63,8 @@ test('COURSE-05 invalid course paths return 404',async({page})=>{
 });
 test('COURSE-06 saved answers restore and untrusted mathematical text has a safe fallback',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true});await page.goto('/courses/STAT-201/lesson-1');
- const calculation=page.getByRole('region',{name:/第 3 题/});await calculation.getByLabel('输入数值答案').fill('0.7');await calculation.getByRole('button',{name:'检查答案'}).click();
- const proof=page.getByRole('region',{name:/第 5 题/});await proof.getByRole('textbox').fill('\\(\\unrecognized{a}\\) <script>alert(1)</script>');await proof.getByRole('button',{name:'记录作答'}).click();
+ const calculation=page.locator('[aria-labelledby="title-STAT-201-l1-q3"]');await calculation.getByLabel('输入数值答案').fill('0.7');await calculation.getByRole('button',{name:'检查答案'}).click();
+ const proof=page.locator('[aria-labelledby="title-STAT-201-l1-q6"]');await proof.getByRole('textbox').fill('\\(\\unrecognized{a}\\) <script>alert(1)</script>');await proof.getByRole('button',{name:'记录作答'}).click();
  await expect.poll(()=>state.courseRecords[JSON.stringify([state.userId,'STAT-201'])]?.attempts.length).toBe(2);
  await page.reload();await expect(calculation.getByLabel('输入数值答案')).toHaveValue('0.7');
  await page.goto('/courses/STAT-201/review');await expect(page.getByText(/公式暂时无法排版/)).toBeVisible();await expect(page.getByText('上次作答：',{exact:false})).toHaveCount(2);
@@ -63,7 +81,10 @@ for(const width of [1440,375])test(`@a11y COURSE-07 ${width}px lesson has no ser
 test('COURSE-08 complete probability course includes inference and assessed questions with review links',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true});
  await page.goto('/courses/STAT-201/lesson-7');
+ await expect(page.getByRole('heading',{name:'进阶：截断样本需要条件密度',exact:true})).toBeHidden();
+ await page.getByText('选学：进阶：截断样本需要条件密度',{exact:true}).click();
  await expect(page.getByRole('heading',{name:'进阶：截断样本需要条件密度',exact:true})).toBeVisible();
+ await page.getByText('例 3（选学）',{exact:true}).click();
  await expect(page.getByRole('heading',{name:'例 3 · 固定门槛截断的速率估计',exact:true})).toBeVisible();
  await page.goto('/courses/STAT-201/assessments/chapter-11');
  await expect(page.getByRole('region',{name:/第 8 题/})).toBeVisible();
@@ -95,7 +116,8 @@ test('COURSE-10 consumer diagram, zero-trade boundary and chapter practice work 
  const diagram=page.getByRole('img',{name:/预算线2x/});
  await expect(diagram).toBeVisible();expect(await diagram.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
  await page.goto('/courses/ECON-204/lesson-7');
- const boundary=page.getByRole('region',{name:/第 4 题/});await boundary.getByLabel('输入数值答案').fill('0');await boundary.getByRole('button',{name:'检查答案'}).click();await expect(boundary).toContainText('回答正确');
+ await page.getByText('更多练习（选学）',{exact:true}).click();
+ const boundary=page.locator('[aria-labelledby="title-ECON-204-l7-q4"]');await boundary.getByLabel('输入数值答案').fill('0');await boundary.getByRole('button',{name:'检查答案'}).click();await expect(boundary).toContainText('回答正确');
  await page.goto('/courses/ECON-204/assessments/chapter-5');
  const insurance=page.getByRole('region',{name:/第 4 题/});await insurance.getByLabel('输入数值答案').fill('10.400811771689499');await insurance.getByRole('button',{name:'检查答案'}).click();await expect(insurance).toContainText('回答正确');
  await page.reload();await expect(insurance.getByLabel('输入数值答案')).toHaveValue('10.400811771689499');

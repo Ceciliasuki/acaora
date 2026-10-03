@@ -32,7 +32,8 @@
       "formulas": [
         "E[g(X)]=\\sum_xg(x)p(x)\\quad\\text{或}\\quad\\int g(x)f(x)dx",
         "E\\!\\left[\\sum_i a_iX_i+b\\right]=\\sum_i a_iE(X_i)+b"
-      ]
+      ],
+      "optional": false
     },
     {
       "heading": "方差与协方差保留尺度和共同波动",
@@ -43,14 +44,16 @@
       ],
       "formulas": [
         "\\operatorname{Var}\\!\\left(\\sum_i a_iX_i\\right)=\\sum_i a_i^2\\operatorname{Var}(X_i)+2\\sum_{i<j}a_ia_j\\operatorname{Cov}(X_i,X_j)"
-      ]
+      ],
+      "optional": false
     },
     {
       "heading": "零相关不能排除非线性依赖",
       "paragraphs": [
         "令 X 等概率取 −1、0、1，Y=X²。E(X)=E(XY)=0，故协方差为零；但知道 X=0 就能确定 Y=0，而 Y=0 的边缘概率仅为 1/3。这已经违反独立。",
         "联合正态向量是一个特殊例外：在联合正态的前提下，不相关的两个分量独立。两个边缘分别正态不等于联合正态，因此不能删掉“联合”。相关也不自动给出因果；共同原因、选择和时间趋势都可造成相关。"
-      ]
+      ],
+      "optional": false
     },
     {
       "heading": "条件期望与全方差公式",
@@ -61,7 +64,8 @@
       ],
       "formulas": [
         "\\operatorname{Var}(Y)=E[\\operatorname{Var}(Y\\mid X)]+\\operatorname{Var}(E[Y\\mid X])"
-      ]
+      ],
+      "optional": false
     },
     {
       "heading": "概率界和生成函数的适用范围",
@@ -69,7 +73,8 @@
         "非负 X 与 a>0 给出 Markov 界 P(X≥a)≤EX/a：在事件 X≥a 上 X 至少为 a，积分得 EX≥aP(X≥a)。对 (X−μ)² 应用它，就得到有限方差下的 Chebyshev 界 P(|X−μ|≥t)≤σ²/t²。界大于 1 时只能再取与 1 的较小值；界可能很松。",
         "凸函数 φ 的 Jensen 不等式为 φ(EX)≤Eφ(X)，要求期望有意义。用凸函数在均值处的支撑线取期望可理解其理由；不能把相反方向套给凸函数。",
         "矩母函数 M_X(t)=E(e^{tX}) 若在零的某个开邻域有限，才可用其导数生成各阶矩并在该条件下唯一确定分布。独立和的矩母函数相乘。特征函数 E(e^{itX}) 对所有实 t 总存在，因为复指数模长为 1；它是处理矩母函数不存在情形的工具，不应假定每个分布都有矩母函数。"
-      ]
+      ],
+      "optional": true
     }
   ],
   "examples": [
@@ -199,5 +204,11 @@
     "和的方差须包含协方差项，零方差的相关系数未定义。",
     "全方差把组内波动和组间平均差异分开。",
     "概率界不是精确分布；生成函数也有存在条件。"
+  ],
+  "format": "guided",
+  "coreQuestionIds": [
+    "STAT-201-l5-q1",
+    "STAT-201-l5-q3",
+    "STAT-201-l5-q6"
   ]
 }

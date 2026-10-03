@@ -27,7 +27,7 @@ async function rpc(name:string,token:string,body:unknown) {
 }
 async function questionMap(course:CourseSummary) {
  const lessons=await Promise.all(course.chapters.flatMap(c=>c.lessons.map(l=>loadLesson(course.code,l.id))));
- const assessments=await Promise.all([...course.chapters.map(c=>c.id),'midterm','final'].map(id=>loadAssessment(course.code,id)));
+ const assessments=await Promise.all([...course.chapters.map(c=>c.id),'midterm','final','case-study'].map(id=>loadAssessment(course.code,id)));
  return new Map<string,Question>([...lessons,...assessments].flatMap(item=>item?.questions??[]).map(q=>[q.id,q]));
 }
 async function handle(request:Request,context:Context,action:'read'|'sync'|'reset') {
