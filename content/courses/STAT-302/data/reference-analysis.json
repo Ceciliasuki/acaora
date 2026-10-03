@@ -1,0 +1,17 @@
+{
+  "data": "regression.csv",
+  "method": "SciPy least squares on train only",
+  "coefficients": [
+    0.8095238095238112,
+    0.9428571428571427
+  ],
+  "sse": 1.276190476190477,
+  "df": 4,
+  "slope_se": 0.13502330360721743,
+  "test_predictions": [
+    6.466666666666668,
+    7.40952380952381
+  ],
+  "test_mse": 0.28321995464852634,
+  "scope": "Constructed teaching data; no causal or future-performance claim."
+}

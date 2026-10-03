@@ -1,103 +1,97 @@
 {
   "courseId": "STAT-302",
-  "status": "draft",
-  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
   "targets": [
     {
-      "target": "矩阵预备与统计模型",
+      "topic": "从数据到线性模型",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括先写目标，再写模型；矩阵与可识别参数，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-1"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "简单回归",
+      "topic": "简单回归与最小二乘",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括由平方和得到直线；残差揭示拟合遗漏，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-2"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "多元回归与投影",
+      "topic": "多元回归与条件解释",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括多元系数保持什么固定；系数与预测是不同目标，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-3"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "区间估计与联合检验",
+      "topic": "区间估计和联合检验",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括从估计到不确定性；联合限制需要一个联合问题，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-4"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "定性变量与函数形式",
+      "topic": "类别变量、交互和函数形式",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括参照组与交互；对数和多项式；选学：正交多项式，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-5"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "残差诊断与影响点",
+      "topic": "残差诊断与影响点",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括三个不同的异常概念；按问题检查模型，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-6"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "GLS与误差结构",
+      "topic": "异方差与相关误差",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括异方差主要改变什么；已知协方差与GLS，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-7"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "多项式与变量选择",
+      "topic": "模型选择和预测验证",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括比较要在相同问题上进行；预测要面对新数据，配完整例题和目标对应练习。覆盖核心方法、适用条件与结论边界。",
       "lessonIds": [
         "lesson-8"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "岭回归与主成分回归",
+      "topic": "正则化与稳健拟合",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括岭回归与主成分回归；稳健回归与稳健标准误，配完整例题和目标对应练习。该专题选学，未宣称完整复刻大学大纲。",
       "lessonIds": [
         "lesson-9"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "稳健回归",
+      "topic": "非线性与广义线性模型",
+      "source": "https://math.pku.edu.cn/bks/sykc/148754.htm",
+      "basis": "正文包括广义线性模型的三个组成；非线性最小二乘，配完整例题和目标对应练习。该专题选学，未宣称完整复刻大学大纲。",
       "lessonIds": [
         "lesson-10"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "非线性与广义线性模型",
-      "lessonIds": [
-        "lesson-11"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "预测验证与完整报告",
-      "lessonIds": [
-        "lesson-12"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     }
   ]
 }

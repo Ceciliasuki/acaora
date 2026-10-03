@@ -358,24 +358,26 @@
     "chapters": [
       {
         "id": "chapter-1",
-        "title": "矩阵预备与统计模型",
+        "title": "从数据到线性模型",
         "lessons": [
           {
             "id": "lesson-1",
-            "title": "矩阵预备与统计模型",
+            "title": "从数据到线性模型",
             "level": "预备",
+            "optional": false,
             "prerequisites": []
           }
         ]
       },
       {
         "id": "chapter-2",
-        "title": "简单回归",
+        "title": "简单回归与最小二乘",
         "lessons": [
           {
             "id": "lesson-2",
-            "title": "简单回归",
+            "title": "简单回归与最小二乘",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-1"
             ]
@@ -384,12 +386,13 @@
       },
       {
         "id": "chapter-3",
-        "title": "多元回归与投影",
+        "title": "多元回归与条件解释",
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "多元回归与投影",
+            "title": "多元回归与条件解释",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-2"
             ]
@@ -398,12 +401,13 @@
       },
       {
         "id": "chapter-4",
-        "title": "区间估计与联合检验",
+        "title": "区间估计和联合检验",
         "lessons": [
           {
             "id": "lesson-4",
-            "title": "区间估计与联合检验",
+            "title": "区间估计和联合检验",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-3"
             ]
@@ -412,12 +416,13 @@
       },
       {
         "id": "chapter-5",
-        "title": "定性变量与函数形式",
+        "title": "类别变量、交互和函数形式",
         "lessons": [
           {
             "id": "lesson-5",
-            "title": "定性变量与函数形式",
+            "title": "类别变量、交互和函数形式",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-4"
             ]
@@ -432,6 +437,7 @@
             "id": "lesson-6",
             "title": "残差诊断与影响点",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-5"
             ]
@@ -440,12 +446,13 @@
       },
       {
         "id": "chapter-7",
-        "title": "GLS与误差结构",
+        "title": "异方差与相关误差",
         "lessons": [
           {
             "id": "lesson-7",
-            "title": "GLS与误差结构",
+            "title": "异方差与相关误差",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-6"
             ]
@@ -454,12 +461,13 @@
       },
       {
         "id": "chapter-8",
-        "title": "多项式与变量选择",
+        "title": "模型选择和预测验证",
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "多项式与变量选择",
+            "title": "模型选择和预测验证",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-7"
             ]
@@ -468,12 +476,13 @@
       },
       {
         "id": "chapter-9",
-        "title": "岭回归与主成分回归",
+        "title": "正则化与稳健拟合",
         "lessons": [
           {
             "id": "lesson-9",
-            "title": "岭回归与主成分回归",
-            "level": "核心",
+            "title": "正则化与稳健拟合",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-8"
             ]
@@ -482,42 +491,15 @@
       },
       {
         "id": "chapter-10",
-        "title": "稳健回归",
-        "lessons": [
-          {
-            "id": "lesson-10",
-            "title": "稳健回归",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-9"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-11",
         "title": "非线性与广义线性模型",
         "lessons": [
           {
-            "id": "lesson-11",
+            "id": "lesson-10",
             "title": "非线性与广义线性模型",
-            "level": "核心",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
-              "lesson-10"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-12",
-        "title": "预测验证与完整报告",
-        "lessons": [
-          {
-            "id": "lesson-12",
-            "title": "预测验证与完整报告",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-11"
+              "lesson-9"
             ]
           }
         ]

@@ -2,6 +2,28 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-13 regression core, elective and original-data scenario remain simple and restorable',async({page})=>{
+ const state=await installApiMocks(page,{signedIn:true});
+ for(let i=1;i<=10;i++){
+  await page.goto(`/courses/STAT-302/lesson-${i}`);
+  await expect(page.locator('form:visible')).toHaveCount(3);
+  await expect(page.getByRole('heading',{name:'完整例题',exact:true})).toBeVisible();
+ }
+ await page.goto('/courses/STAT-302/lesson-8');
+ await expect(page.getByRole('link',{name:/下一节/})).toHaveCount(0);
+ await page.goto('/courses/STAT-302');
+ await expect(page.getByText('核心已读 0 / 8 节',{exact:true})).toBeVisible();
+ await page.getByRole('link',{name:'综合案例',exact:true}).click();
+ const q=page.locator('[aria-labelledby="title-STAT-302-case-mse"]');
+ await q.getByLabel('输入数值答案').fill('0.28321995464852634');await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');
+ await expect.poll(()=>state.courseRecords[JSON.stringify([state.userId,'STAT-302'])]?.attempts.length).toBe(1);
+ await page.reload();await expect(q.getByLabel('输入数值答案')).toHaveValue('0.28321995464852634');
+ await page.setViewportSize({width:375,height:900});await page.goto('/courses/STAT-302/lesson-7');
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+ await page.screenshot({path:'test-results/course-STAT-302-375.png'});
+});
+
 test('COURSE-12 guided lessons show three exercises and preserve optional review links',async({page})=>{
  await installApiMocks(page,{signedIn:true});await page.goto('/courses/STAT-201/lesson-1');
  await expect(page.locator('form:visible')).toHaveCount(3);
