@@ -62,6 +62,10 @@ export function validateLesson(lesson) {
     const t=s.table;
     if(!text(t.caption)||!texts(t.headers)||!Array.isArray(t.rows)||!t.rows.length||t.rows.some(row=>!Array.isArray(row)||row.length!==t.headers.length||!row.every(text))) errors.push('表格格式无效');
   }
+  for(const s of Array.isArray(lesson.sections)?lesson.sections:[])if(s?.figure) {
+    const f=s.figure;
+    if(!text(f.caption)||!text(f.alt)||!/^\/courses\/[A-Z0-9-]+\/[a-z0-9-]+\.svg$/.test(f.src)||!f.src.startsWith(`/courses/${lesson.courseId}/`))errors.push('图形来源或说明无效');
+  }
   if(!Array.isArray(lesson.examples)||lesson.examples.length<2||lesson.examples.some(e=>!e || ![e.title,e.problem,e.conclusion].every(text)||!texts(e.steps))) errors.push("完整例题不足");
   errors.push(...validateQuestions(lesson.questions,Array.isArray(lesson.objectives)?lesson.objectives:[]));
   return errors;

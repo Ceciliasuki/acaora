@@ -22,6 +22,12 @@ for(const course of courses.filter(c=>!selected||c.code===selected)) {
       lessons++;
       checkedLessons.push(lesson);
       failures.push(...auditMathMarkup(lesson).map(error=>`${course.code}/${entry.id} ${error}`));
+      for(const section of lesson.sections)if(section.figure) {
+        try {
+          const svg=await readFile(path.join('public',section.figure.src.slice(1)),'utf8');
+          if(!svg.includes('<svg')||/<(?:script|foreignObject)\b|\bon\w+\s*=|(?:xlink:)?href\s*=/i.test(svg))failures.push(`${course.code}/${entry.id} 图形文件含非静态内容`);
+        } catch {failures.push(`${course.code}/${entry.id} 图形文件缺失`);}
+      }
       for(const objective of lesson.objectives)if(!lesson.questions.some(q=>q.objective===objective))failures.push(`${course.code}/${entry.id} 目标未配套练习：${objective}`);
       for(const level of ['基础','核心','挑战'])if(!lesson.questions.some(q=>q.level===level))failures.push(`${course.code}/${entry.id} 缺少${level}练习`);
       for(const q of lesson.questions) {

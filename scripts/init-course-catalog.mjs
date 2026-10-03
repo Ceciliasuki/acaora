@@ -15,6 +15,9 @@ const catalog=definitions.map(([code,name,track,prerequisites,titles])=>({
 const probability=catalog.find(c=>c.code==='STAT-201');
 probability.chapters[2].lessons=[{id:'lesson-3',title:'离散分布与模型选择',level:'核心',prerequisites:['lesson-2']},{id:'lesson-3-continuous',title:'连续分布、分布函数与标准化',level:'核心',prerequisites:['lesson-3']}];
 probability.chapters[3].lessons[0].prerequisites=['lesson-3-continuous'];
+const micro=catalog.find(c=>c.code==='ECON-204');
+micro.chapters[7].lessons=[{id:'lesson-8',title:'寡头竞争与博弈均衡',level:'核心',prerequisites:['lesson-7']},{id:'lesson-8-factor',title:'要素市场与买方势力',level:'核心',prerequisites:['lesson-8']}];
+micro.chapters[8].lessons[0].prerequisites=['lesson-8-factor'];
 mkdirSync("content/courses",{recursive:true});writeFileSync("content/courses/catalog.json",JSON.stringify(catalog,null,2)+"\n");
 for(const course of catalog) {
  const dir="content/courses/"+course.code;mkdirSync(dir,{recursive:true});

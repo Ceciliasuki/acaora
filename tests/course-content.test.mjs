@@ -36,3 +36,11 @@ test('catalog prerequisites must be known and acyclic, while stable IDs remain u
  first.prerequisites=['unknown'];assert.ok(validateCatalog(catalog).length);
  first.prerequisites=[];catalog[0].chapters[1].lessons[0].id=first.id;assert.ok(validateCatalog(catalog).length);
 });
+test('course figures require a same-course static SVG and an explanatory caption and alternative',()=>{
+ const lesson=validLesson();lesson.sections[0].figure={src:'/courses/STAT-201/example.svg',caption:'原始模型图',alt:'完整图形的条件和关键结果'};
+ assert.deepEqual(validateLesson(lesson),[]);
+ for(const src of ['https://example.org/plot.svg','javascript:x','/courses/STAT-201/../../secret.svg','/courses/ECON-204/example.svg']){
+  lesson.sections[0].figure.src=src;assert.ok(validateLesson(lesson).length);
+ }
+ lesson.sections[0].figure={src:'/courses/STAT-201/example.svg',caption:'模型图',alt:''};assert.ok(validateLesson(lesson).length);
+});

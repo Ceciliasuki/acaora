@@ -283,10 +283,18 @@
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "寡头博弈与要素市场",
+            "title": "寡头竞争与博弈均衡",
             "level": "核心",
             "prerequisites": [
               "lesson-7"
+            ]
+          },
+          {
+            "id": "lesson-8-factor",
+            "title": "要素市场与买方势力",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
             ]
           }
         ]
@@ -300,7 +308,7 @@
             "title": "一般均衡与福利",
             "level": "核心",
             "prerequisites": [
-              "lesson-8"
+              "lesson-8-factor"
             ]
           }
         ]

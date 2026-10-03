@@ -1,0 +1,1618 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "ECON-204-example-1-1",
+      "inputs": {
+        "objective": "12q-q^2",
+        "bounds": [
+          0,
+          4
+        ]
+      },
+      "method": "Constrained numerical maximization on the feasible interval.",
+      "computed": 31.999999999999645,
+      "exact_or_repr": "31.999999999999645",
+      "declared": 32,
+      "tolerance": 1e-09,
+      "absolute_error": 3.552713678800501e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-1-2",
+      "inputs": {
+        "demand_intercept": 100,
+        "supply_reservation": 20
+      },
+      "method": "Root of nonnegative truncated demand/supply functions.",
+      "computed": 40.0,
+      "exact_or_repr": "40.0",
+      "declared": 40,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-1-2-no-trade",
+      "inputs": {
+        "prices": [
+          100.0,
+          101.0,
+          102.0,
+          103.0,
+          104.0,
+          105.0,
+          106.0,
+          107.0,
+          108.0,
+          109.0,
+          110.0,
+          111.0,
+          112.0,
+          113.0,
+          114.0,
+          115.0,
+          116.0,
+          117.0,
+          118.0,
+          119.0,
+          120.0
+        ],
+        "demand_reservation": 100,
+        "supply_reservation": 120
+      },
+      "method": "Check the zero-trade price interval directly in truncated functions.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l1-q3",
+      "inputs": {
+        "objective": "8x-x^2",
+        "bounds": [
+          0,
+          10
+        ]
+      },
+      "method": "Constrained numerical optimization instead of inserting first-order root.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l1-q4",
+      "inputs": {
+        "demand_intercept": 60,
+        "supply_intercept": -15,
+        "supply_slope": 2
+      },
+      "method": "Root find nonnegative demand and supply, then compute feasible trade.",
+      "computed": 35.0,
+      "exact_or_repr": "35.0",
+      "declared": 35,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-2-1",
+      "inputs": {
+        "alpha": 0.5,
+        "income": 100,
+        "prices": [
+          2,
+          1
+        ],
+        "optimized_bundle": [
+          25.000000370810262,
+          49.999999258379475
+        ]
+      },
+      "method": "Direct bounded utility maximization, separate from constant-share demand formula.",
+      "computed": 35.35533905932737,
+      "exact_or_repr": "35.35533905932737",
+      "declared": 35.35533905932738,
+      "tolerance": 1e-08,
+      "absolute_error": 7.105427357601002e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-2-2",
+      "inputs": {
+        "utility_weights": [
+          3,
+          1
+        ],
+        "income": 12,
+        "prices": [
+          2,
+          1
+        ]
+      },
+      "method": "Linear programming of the substitute utility objective and original budget.",
+      "computed": 18.0,
+      "exact_or_repr": "18.0",
+      "declared": 18,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-2-2-complement",
+      "inputs": {
+        "income": 12,
+        "prices": [
+          2,
+          1
+        ]
+      },
+      "method": "Epigraph linear program for min(x,y), not a preset ratio formula.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l2-q3",
+      "inputs": {
+        "alpha": 0.25,
+        "income": 80,
+        "prices": [
+          4,
+          2
+        ]
+      },
+      "method": "Numerically maximize raw Cobb-Douglas utility on the budget.",
+      "computed": 4.999999999576499,
+      "exact_or_repr": "4.999999999576499",
+      "declared": 5,
+      "tolerance": 1e-06,
+      "absolute_error": 4.235012340814137e-10,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l2-q4",
+      "inputs": {
+        "income": 30,
+        "prices": [
+          3,
+          4
+        ],
+        "utility": "min(x/2,y)"
+      },
+      "method": "Epigraph linear program for min(x/2,y).",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-3-1",
+      "inputs": {
+        "demand": "100-2p",
+        "price": 20,
+        "step": 0.0001
+      },
+      "method": "Numerical centered demand derivative times price/quantity.",
+      "computed": -0.666666666665113,
+      "exact_or_repr": "-0.666666666665113",
+      "declared": -0.6666666666666666,
+      "tolerance": 1e-08,
+      "absolute_error": 1.553646100660444e-12,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-3-2",
+      "inputs": {
+        "prices": [
+          2,
+          1
+        ],
+        "bundle": [
+          2,
+          1
+        ],
+        "second_income": 3
+      },
+      "method": "Direct dot product at the second observed budget prices.",
+      "computed": 5.0,
+      "exact_or_repr": "5",
+      "declared": 5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l3-q3",
+      "inputs": {
+        "demand": "120-3p",
+        "price": 20,
+        "step": 0.0001
+      },
+      "method": "Numerical centered derivative; declared answer used only for comparison.",
+      "computed": -0.999999999985827,
+      "exact_or_repr": "-0.999999999985827",
+      "declared": -1,
+      "tolerance": 1e-06,
+      "absolute_error": 1.4172996110062286e-11,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l3-q4",
+      "inputs": {
+        "prices": [
+          2,
+          3
+        ],
+        "bundle": [
+          4,
+          2
+        ]
+      },
+      "method": "Direct vector dot product.",
+      "computed": 14.0,
+      "exact_or_repr": "14",
+      "declared": 14,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-4-1",
+      "inputs": {
+        "target_utility": 10,
+        "prices": [
+          4,
+          1
+        ]
+      },
+      "method": "Numerically minimize cost over the utility constraint xy>=100.",
+      "computed": 40.0,
+      "exact_or_repr": "40.0",
+      "declared": 40,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-4-2",
+      "inputs": {
+        "income": 100,
+        "old_prices": [
+          1,
+          1
+        ],
+        "new_prices": [
+          4,
+          1
+        ],
+        "target_utility": 50
+      },
+      "method": "Re-optimize expenditure at new prices and the original utility.",
+      "computed": 100.0,
+      "exact_or_repr": "100.0",
+      "declared": 100,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-4-2-EV",
+      "inputs": {
+        "income": 100,
+        "old_prices": [
+          1,
+          1
+        ],
+        "new_utility": 25
+      },
+      "method": "Re-optimize at old prices and new utility for equivalent variation.",
+      "computed": 50.0,
+      "exact_or_repr": "50.0",
+      "declared": 50,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-4-2-CS",
+      "inputs": {
+        "demand": "50/p",
+        "price_change": [
+          1,
+          4
+        ]
+      },
+      "method": "Numerical integration over uncompensated demand, independently from logarithm evaluation.",
+      "computed": 69.31471805599452,
+      "exact_or_repr": "69.31471805599452",
+      "declared": 69.31471805599453,
+      "tolerance": 1e-09,
+      "absolute_error": 1.4210854715202004e-14,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l4-q3",
+      "inputs": {
+        "target_utility": 6,
+        "prices": [
+          1,
+          4
+        ]
+      },
+      "method": "Numerically minimize original expenditure subject to target product.",
+      "computed": 24.0,
+      "exact_or_repr": "24.0",
+      "declared": 24,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l4-q4",
+      "inputs": {
+        "target_utility": 50,
+        "py": 1,
+        "px": 1,
+        "step": 0.0001
+      },
+      "method": "Centered derivative of independently root-solved compensated optimum.",
+      "computed": -25.000000156261137,
+      "exact_or_repr": "-25.000000156261137",
+      "declared": -25,
+      "tolerance": 1e-06,
+      "absolute_error": 1.562611373628897e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-5-1",
+      "inputs": {
+        "income": [
+          40,
+          80
+        ],
+        "rate": 0,
+        "beta": 1,
+        "first_period_upper_bound": 40
+      },
+      "method": "Constrained numerical utility maximization with no borrowing.",
+      "computed": 40.0,
+      "exact_or_repr": "40.0",
+      "declared": 40,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-5-1-unconstrained",
+      "inputs": {
+        "income": [
+          40,
+          80
+        ],
+        "rate": 0,
+        "beta": 1
+      },
+      "method": "Numerical maximization under unrestricted intertemporal transfer.",
+      "computed": 60.00000088994414,
+      "exact_or_repr": "60.00000088994414",
+      "declared": 60,
+      "tolerance": 1e-06,
+      "absolute_error": 8.899441397147712e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-5-2",
+      "inputs": {
+        "wealth": [
+          50,
+          100
+        ],
+        "probabilities": [
+          0.5,
+          0.5
+        ],
+        "utility": "log"
+      },
+      "method": "Root solve utility equal to expected state utility instead of using geometric-mean formula.",
+      "computed": 70.71067811865476,
+      "exact_or_repr": "70.71067811865476",
+      "declared": 70.71067811865476,
+      "tolerance": 1e-10,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-5-2-premium",
+      "inputs": {
+        "wealth": [
+          50,
+          100
+        ],
+        "probabilities": [
+          0.5,
+          0.5
+        ]
+      },
+      "method": "Mean wealth minus the independently solved certainty equivalent.",
+      "computed": 4.289321881345245,
+      "exact_or_repr": "4.289321881345245",
+      "declared": 4.289321881345245,
+      "tolerance": 1e-10,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l5-q3",
+      "inputs": {
+        "income": [
+          30,
+          70
+        ],
+        "beta": 1,
+        "rate": 0
+      },
+      "method": "Numerically maximize the two-period objective on the full present-value budget.",
+      "computed": 49.999999999999986,
+      "exact_or_repr": "49.999999999999986",
+      "declared": 50,
+      "tolerance": 1e-06,
+      "absolute_error": 1.4210854715202004e-14,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l5-q4",
+      "inputs": {
+        "initial_wealth": 100,
+        "loss": 40,
+        "probability": 0.25,
+        "coverage": 40
+      },
+      "method": "Construct insured state cash flows and verify identical wealth in both states.",
+      "computed": 90.0,
+      "exact_or_repr": "90",
+      "declared": 90,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-6-1",
+      "inputs": {
+        "target_output": 10,
+        "r": 4,
+        "w": 1,
+        "inputs": [
+          4.999999899120876,
+          20.00000040351622
+        ]
+      },
+      "method": "Constrained two-input numerical cost minimization using the original production function.",
+      "computed": 39.99999999999973,
+      "exact_or_repr": "39.99999999999973",
+      "declared": 40,
+      "tolerance": 1e-07,
+      "absolute_error": 2.7000623958883807e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-6-2",
+      "inputs": {
+        "output": 6,
+        "fixed_capital": 4,
+        "r": 1,
+        "w": 1
+      },
+      "method": "Root solve production for labor under fixed capital, then add expenditure.",
+      "computed": 12.999999999999996,
+      "exact_or_repr": "12.999999999999996",
+      "declared": 13,
+      "tolerance": 1e-10,
+      "absolute_error": 3.552713678800501e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l6-q3",
+      "inputs": {
+        "output": 8,
+        "r": 2,
+        "w": 2
+      },
+      "method": "Constrained numerical optimization rather than inserting cost function.",
+      "computed": 32.0,
+      "exact_or_repr": "32.0",
+      "declared": 32,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l6-q4",
+      "inputs": {
+        "cost": "10+2q+q^2",
+        "output": 3,
+        "step": 0.0001
+      },
+      "method": "Centered derivative of total cost.",
+      "computed": 7.999999999999119,
+      "exact_or_repr": "7.999999999999119",
+      "declared": 8,
+      "tolerance": 1e-06,
+      "absolute_error": 8.810729923425242e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-7-1",
+      "inputs": {
+        "inverse_demand": "100-q",
+        "cost": "20q"
+      },
+      "method": "Numerically maximize profit over nonnegative, nonnegative-price output.",
+      "computed": 1600.0,
+      "exact_or_repr": "1600.0",
+      "declared": 1600,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-7-2",
+      "inputs": {
+        "inverse_demand": "100-q",
+        "inverse_supply": "20+q",
+        "tax": 20
+      },
+      "method": "Solve price-wedge equilibrium numerically, then compute revenue.",
+      "computed": 600.0,
+      "exact_or_repr": "600.0",
+      "declared": 600,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-7-2-DWL",
+      "inputs": {
+        "lost_quantity_interval": [
+          30.0,
+          40
+        ],
+        "tax": 20
+      },
+      "method": "Integrate lost gains from trade, separate from triangle formula.",
+      "computed": 100.0,
+      "exact_or_repr": "100.0",
+      "declared": 100,
+      "tolerance": 1e-10,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l7-q3",
+      "inputs": {
+        "inverse_demand": "80-2q",
+        "cost": "20q"
+      },
+      "method": "Direct nonnegative-output profit maximization.",
+      "computed": 15.000000000000002,
+      "exact_or_repr": "15.000000000000002",
+      "declared": 15,
+      "tolerance": 1e-06,
+      "absolute_error": 1.7763568394002505e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l7-q4",
+      "inputs": {
+        "tax": 100,
+        "quantity_bounds": [
+          0,
+          40
+        ]
+      },
+      "method": "Constrained optimum of post-tax gains from nonnegative trade, independently rejecting negative algebraic quantity.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-8-1",
+      "inputs": {
+        "a": 100,
+        "b": 1,
+        "c": 10,
+        "quantities": [
+          30.0,
+          30.0
+        ]
+      },
+      "method": "Numerically solve the joint individual profit first-order system, then calculate profit.",
+      "computed": 900.0,
+      "exact_or_repr": "900.0",
+      "declared": 900,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-8-2",
+      "inputs": {
+        "a": 100,
+        "b": 1,
+        "c": 10,
+        "leader": 45.0,
+        "follower": 22.5
+      },
+      "method": "Solve leader stationarity and independently maximize follower profit after the commitment.",
+      "computed": 1012.5,
+      "exact_or_repr": "1012.5",
+      "declared": 1012.5,
+      "tolerance": 1e-05,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l8-q3",
+      "inputs": {
+        "a": 70,
+        "b": 1,
+        "c": 10
+      },
+      "method": "Numerical joint first-order system instead of symmetric quantity formula.",
+      "computed": 20.0,
+      "exact_or_repr": "20.0",
+      "declared": 20,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l8-q4",
+      "inputs": {
+        "a": 70,
+        "b": 1,
+        "c": 10,
+        "leader_quantity": 30.0
+      },
+      "method": "Numerically maximize follower original profit at the optimal leader commitment.",
+      "computed": 15.0,
+      "exact_or_repr": "15.0",
+      "declared": 15,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-8f-1",
+      "inputs": {
+        "production": "10sqrt(L)",
+        "output_price": 2,
+        "wage": 5
+      },
+      "method": "Direct nonnegative labor profit maximization.",
+      "computed": 4.000000118377828,
+      "exact_or_repr": "4.000000118377828",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 1.1837782842860634e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-8f-2",
+      "inputs": {
+        "revenue": "20L-L^2",
+        "wage": "2+L",
+        "bounds": [
+          0,
+          10
+        ]
+      },
+      "method": "Optimize original revenue less the full uniform wage bill, then recover wage.",
+      "computed": 6.499999999999999,
+      "exact_or_repr": "6.499999999999999",
+      "declared": 6.5,
+      "tolerance": 1e-06,
+      "absolute_error": 8.881784197001252e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-8f-2-minimum-wage",
+      "inputs": {
+        "minimum_wage": 8,
+        "candidates": [
+          0,
+          6,
+          10,
+          5.999994979317206,
+          6.0000056286735886
+        ]
+      },
+      "method": "Global piecewise profit comparison, including kink and feasible boundaries.",
+      "computed": 6.0,
+      "exact_or_repr": "6",
+      "declared": 6,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l8f-q3",
+      "inputs": {
+        "production": "8sqrt(L)",
+        "output_price": 1,
+        "wage": 2
+      },
+      "method": "Direct numerical profit maximization.",
+      "computed": 3.9999999399387143,
+      "exact_or_repr": "3.9999999399387143",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 6.006128572266789e-08,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l8f-q4",
+      "inputs": {
+        "wage": "3+2L",
+        "labour": 5,
+        "step": 0.0001
+      },
+      "method": "Centered derivative of the entire wage bill, not of the wage rate.",
+      "computed": 22.99999999991087,
+      "exact_or_repr": "22.99999999991087",
+      "declared": 23,
+      "tolerance": 1e-06,
+      "absolute_error": 8.913048077374697e-11,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-9-1",
+      "inputs": {
+        "endowments": [
+          [
+            8,
+            2
+          ],
+          [
+            2,
+            8
+          ]
+        ],
+        "normalized_py": 1,
+        "solved_px": 1.0000000000002252
+      },
+      "method": "Root find resource clearing with endogenous endowment wealth; independently optimize individual utility.",
+      "computed": 4.999999999999774,
+      "exact_or_repr": "4.999999999999774",
+      "declared": 5,
+      "tolerance": 1e-06,
+      "absolute_error": 2.255973186038318e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-9-2",
+      "inputs": {
+        "allocation": [
+          [
+            2,
+            2
+          ],
+          [
+            8,
+            8
+          ]
+        ],
+        "resources": [
+          10,
+          10
+        ]
+      },
+      "method": "Direct utility at the feasible unequal allocation; confirm both MRS are identical.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-9-2-MRS",
+      "inputs": {
+        "allocation": [
+          [
+            2,
+            2
+          ],
+          [
+            8,
+            8
+          ]
+        ]
+      },
+      "method": "Compare both directional marginal rates at the interior allocation.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l9-q3",
+      "inputs": {
+        "prices": [
+          2,
+          1
+        ],
+        "endowment": [
+          8,
+          2
+        ]
+      },
+      "method": "Direct value of original endowment at specified prices.",
+      "computed": 18.0,
+      "exact_or_repr": "18",
+      "declared": 18,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l9-q4",
+      "inputs": {
+        "bundle": [
+          4,
+          8
+        ],
+        "utility": "sqrt(xy)",
+        "step": 0.0001
+      },
+      "method": "Ratio of numerical utility partial derivatives, independent of y/x insertion.",
+      "computed": 2.0000000001256075,
+      "exact_or_repr": "2.0000000001256075",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 1.2560752438162126e-10,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-10-1",
+      "inputs": {
+        "MB": "100-q",
+        "PMC": "20+q",
+        "MD": 10
+      },
+      "method": "Numerically integrate social net benefits and optimize quantity, then compare against private allocation.",
+      "computed": 24.999999999999773,
+      "exact_or_repr": "24.999999999999773",
+      "declared": 25,
+      "tolerance": 1e-08,
+      "absolute_error": 2.2737367544323206e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-10-2",
+      "inputs": {
+        "individual_MB_intercepts": [
+          10,
+          6
+        ],
+        "MC": 8
+      },
+      "method": "Root of piecewise vertically aggregated public-good marginal benefits.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-10-2-voluntary",
+      "inputs": {
+        "A_MB": "max(10-G,0)",
+        "B_MB": "max(6-G,0)",
+        "MC": 8
+      },
+      "method": "Solve A contribution incentive and check B zero-contribution best response.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l10-q3",
+      "inputs": {
+        "MB": "90-q",
+        "PMC": "10+q",
+        "MD": 20
+      },
+      "method": "Numerically optimize social surplus rather than insert linear optimum.",
+      "computed": 30.0,
+      "exact_or_repr": "30.0",
+      "declared": 30,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l10-q4",
+      "inputs": {
+        "MB_intercepts": [
+          8,
+          4
+        ],
+        "MC": 6
+      },
+      "method": "Root solve the actual piecewise aggregate benefit condition.",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-11-1",
+      "inputs": {
+        "high_wage": 10,
+        "low_wage": 4,
+        "signal": 3,
+        "costs_per_unit": [
+          1,
+          3
+        ]
+      },
+      "method": "Construct net high-type signal payoff and independently verify the low-type no-mimic inequality.",
+      "computed": 7.0,
+      "exact_or_repr": "7",
+      "declared": 7,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-11-2",
+      "inputs": {
+        "high_success": 0.8,
+        "low_success": 0.4,
+        "effort_cost": 1,
+        "outside": 0,
+        "success_value": 10
+      },
+      "method": "Linear programming over IC and PC, then compute expected principal payoff.",
+      "computed": 6.0,
+      "exact_or_repr": "6.0",
+      "declared": 6,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-example-11-2-bonus",
+      "inputs": {
+        "IC_coeff": 0.4,
+        "cost": 1,
+        "PC_coeff": 0.8,
+        "outside": 0
+      },
+      "method": "Separate contract bonus from principal payoff.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l11-q3",
+      "inputs": {
+        "high_success": 0.9,
+        "low_success": 0.5,
+        "effort_cost": 2
+      },
+      "method": "Linear program for the stated incentive constraint.",
+      "computed": 5.0,
+      "exact_or_repr": "5.0",
+      "declared": 5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-l11-q4",
+      "inputs": {
+        "high_wage": 10,
+        "low_wage": 4,
+        "low_type_cost_per_unit": 3
+      },
+      "method": "Linear program for low-type no-mimic constraint.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch1-q3",
+      "inputs": {
+        "objective": "10x-x^2",
+        "bounds": [
+          0,
+          3
+        ]
+      },
+      "method": "Constrained numerical maximization on the actual capacity interval.",
+      "computed": 20.999999999999645,
+      "exact_or_repr": "20.999999999999645",
+      "declared": 21,
+      "tolerance": 1e-06,
+      "absolute_error": 3.552713678800501e-13,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch1-q4",
+      "inputs": {
+        "demand": "max(80-2p,0)",
+        "supply": "max(p-5,0)"
+      },
+      "method": "Root find the truncated demand/supply equilibrium.",
+      "computed": 28.333333333333336,
+      "exact_or_repr": "28.333333333333336",
+      "declared": 28.333333333333332,
+      "tolerance": 1e-06,
+      "absolute_error": 3.552713678800501e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch2-q3",
+      "inputs": {
+        "income": 18,
+        "prices": [
+          3,
+          2
+        ],
+        "utility_weights": [
+          2,
+          1
+        ]
+      },
+      "method": "Linear program for substitute utility with original budget.",
+      "computed": 6.0,
+      "exact_or_repr": "6.0",
+      "declared": 6,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch2-q4",
+      "inputs": {
+        "income": 24,
+        "prices": [
+          2,
+          1
+        ],
+        "utility": "min(x,y/3)"
+      },
+      "method": "Epigraph linear program for min(x,y/3).",
+      "computed": 14.4,
+      "exact_or_repr": "14.4",
+      "declared": 14.4,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch3-q3",
+      "inputs": {
+        "demand": "200/p",
+        "price": 10,
+        "step": 0.0001
+      },
+      "method": "Centered numerical derivative of inverse demand quantity.",
+      "computed": -1.0000000001042508,
+      "exact_or_repr": "-1.0000000001042508",
+      "declared": -1,
+      "tolerance": 1e-06,
+      "absolute_error": 1.042508301907219e-10,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch3-q4",
+      "inputs": {
+        "price": [
+          1,
+          2
+        ],
+        "bundle": [
+          2,
+          1
+        ],
+        "income": 5
+      },
+      "method": "Original-bundle expenditure at second-period prices.",
+      "computed": 4.0,
+      "exact_or_repr": "4",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch3-q5",
+      "inputs": {
+        "prices": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        "bundles": [
+          [
+            2,
+            1
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      },
+      "method": "Both strict affordability gaps in the open revealed-preference consistency task.",
+      "computed": 1.0,
+      "exact_or_repr": "1",
+      "declared": 1,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch4-q3",
+      "inputs": {
+        "target_utility": 3,
+        "prices": [
+          9,
+          1
+        ]
+      },
+      "method": "Numerical expenditure minimization under original target utility.",
+      "computed": 18.0,
+      "exact_or_repr": "18.0",
+      "declared": 18,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch4-q4",
+      "inputs": {
+        "demand": "10/p",
+        "prices": [
+          1,
+          2
+        ],
+        "numeraire_interior": true
+      },
+      "method": "Independent adaptive quadrature for the quasi-linear welfare path.",
+      "computed": 6.931471805599453,
+      "exact_or_repr": "6.931471805599453",
+      "declared": 6.931471805599453,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch5-q3",
+      "inputs": {
+        "income": [
+          40,
+          66
+        ],
+        "rate": 0.1,
+        "beta": 1
+      },
+      "method": "Root solve marginal intertemporal utility and recover signed saving.",
+      "computed": -10.0,
+      "exact_or_repr": "-10.0",
+      "declared": -10,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch5-q4",
+      "inputs": {
+        "wealth": 100,
+        "loss": 20,
+        "loss_probability": 0.25,
+        "premium_per_unit": 0.27,
+        "bounds": [
+          0,
+          20
+        ]
+      },
+      "method": "Root solve the state-weighted utility derivative and compare both feasible insurance boundaries.",
+      "computed": 10.400811770674784,
+      "exact_or_repr": "10.400811770674784",
+      "declared": 10.400811770674784,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch6-q3",
+      "inputs": {
+        "output": 5,
+        "technology": "min(K/2,L)",
+        "r": 3,
+        "w": 1
+      },
+      "method": "Linear cost minimization using the separate Leontief production bottlenecks.",
+      "computed": 35.0,
+      "exact_or_repr": "35.0",
+      "declared": 35,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch6-q4",
+      "inputs": {
+        "exponents": [
+          0.4,
+          0.8
+        ],
+        "input_scale": 2
+      },
+      "method": "Evaluate actual production before/after simultaneous input scaling.",
+      "computed": 2.2973967099940698,
+      "exact_or_repr": "2.2973967099940698",
+      "declared": 2.2973967099940698,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch7-q3",
+      "inputs": {
+        "inverse_demand": "120-2q",
+        "inverse_supply": "20+q",
+        "tax": 10
+      },
+      "method": "Root solve tax-wedge equilibrium then recover net seller price.",
+      "computed": 50.0,
+      "exact_or_repr": "50.0",
+      "declared": 50,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch7-q4",
+      "inputs": {
+        "price": 6,
+        "variable_cost": "2q+q^2",
+        "sunk_fixed_cost": 20
+      },
+      "method": "Direct incremental-profit maximization with the sunk fixed cost excluded.",
+      "computed": 1.999999970334875,
+      "exact_or_repr": "1.999999970334875",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 2.9665125023115024e-08,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch8-q3",
+      "inputs": {
+        "firms": 3,
+        "a": 100,
+        "b": 1,
+        "c": 10
+      },
+      "method": "Solve the three-firm joint first-order system instead of reusing two-firm quantities.",
+      "computed": 22.5,
+      "exact_or_repr": "22.5",
+      "declared": 22.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch8-q4",
+      "inputs": {
+        "revenue": "18L-L^2",
+        "wage": "2+2L"
+      },
+      "method": "Numerically maximize revenue less the complete uniform wage bill.",
+      "computed": 2.6666667062200586,
+      "exact_or_repr": "2.6666667062200586",
+      "declared": 2.6666666666666665,
+      "tolerance": 1e-06,
+      "absolute_error": 3.955339211714204e-08,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch9-q3",
+      "inputs": {
+        "total_endowment": [
+          12,
+          8
+        ],
+        "Cobb_share": 0.5,
+        "normalized_py": 1
+      },
+      "method": "Root solve aggregate resource clearing with endowment wealth.",
+      "computed": 0.6666666666666938,
+      "exact_or_repr": "0.6666666666666938",
+      "declared": 0.6666666666666666,
+      "tolerance": 1e-06,
+      "absolute_error": 2.7200464103316335e-14,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch9-q4",
+      "inputs": {
+        "bundle": [
+          3,
+          6
+        ],
+        "step": 0.0001
+      },
+      "method": "Ratio of numerical utility partial derivatives.",
+      "computed": 2.0000000002135327,
+      "exact_or_repr": "2.0000000002135327",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 2.1353274703983516e-10,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch10-q3",
+      "inputs": {
+        "MB": "100-q",
+        "PMC": "10+q",
+        "MD": "q"
+      },
+      "method": "Integrate quantity-dependent external damage in welfare, then numerically optimize.",
+      "computed": 30.00000044497224,
+      "exact_or_repr": "30.00000044497224",
+      "declared": 30,
+      "tolerance": 1e-06,
+      "absolute_error": 4.4497224038764216e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch10-q4",
+      "inputs": {
+        "people": 3,
+        "individual_MB": "max(6-G,0)",
+        "MC": 9
+      },
+      "method": "Root solve piecewise vertically aggregated benefits of three people.",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch11-q3",
+      "inputs": {
+        "p_high": 0.75,
+        "p_low": 0.25,
+        "cost": 3,
+        "outside": 2
+      },
+      "method": "Linear program enforcing both incentive and nonzero-outside-option participation constraints.",
+      "computed": 6.666666666666667,
+      "exact_or_repr": "6.666666666666667",
+      "declared": 6.666666666666667,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-ch11-q4",
+      "inputs": {
+        "high_wage": 10,
+        "low_wage": 4,
+        "cost_per_unit": 2
+      },
+      "method": "Linear program for the low-type non-mimic constraint.",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-midterm-q3",
+      "inputs": {
+        "share_x": 0.4,
+        "income": 150,
+        "prices": [
+          3,
+          2
+        ]
+      },
+      "method": "Direct bounded consumer utility optimization.",
+      "computed": 45.00000044677629,
+      "exact_or_repr": "45.00000044677629",
+      "declared": 45,
+      "tolerance": 1e-06,
+      "absolute_error": 4.4677629063016866e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-midterm-q4",
+      "inputs": {
+        "output": 12,
+        "r": 9,
+        "w": 1
+      },
+      "method": "Original-production constrained cost minimization.",
+      "computed": 71.99999999999332,
+      "exact_or_repr": "71.99999999999332",
+      "declared": 72,
+      "tolerance": 1e-06,
+      "absolute_error": 6.679101716144942e-12,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-final-q3",
+      "inputs": {
+        "inverse_demand": "90-q",
+        "inverse_supply": "10+q",
+        "tax": 20
+      },
+      "method": "Numerical root of original tax price wedge.",
+      "computed": 30.0,
+      "exact_or_repr": "30.0",
+      "declared": 30,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-final-q4",
+      "inputs": {
+        "p_high": 0.8,
+        "p_low": 0.2,
+        "cost": 1.5
+      },
+      "method": "Linear program for the stated action incentive constraint.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-figure-consumer-budget.svg",
+      "inputs": {
+        "file": "consumer-budget.svg",
+        "curves": [
+          {
+            "equation": "y=100-2x",
+            "from": 0,
+            "to": 50
+          },
+          {
+            "equation": "y=1250/x",
+            "from": 12.5,
+            "to": 50
+          }
+        ],
+        "samples_per_curve": 101,
+        "coordinate_rounding_pixels": 0.001
+      },
+      "method": "Parse the actual SVG polylines, invert graph coordinates and check all sampled points against independent model equations.",
+      "computed": 0.00044303926654265524,
+      "exact_or_repr": "0.00044303926654265524",
+      "declared": 0,
+      "tolerance": 0.002,
+      "absolute_error": 0.00044303926654265524,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-figure-market-tax.svg",
+      "inputs": {
+        "file": "market-tax.svg",
+        "curves": [
+          {
+            "equation": "p=100-q"
+          },
+          {
+            "equation": "p=20+q"
+          },
+          {
+            "equation": "p=40+q"
+          }
+        ],
+        "samples_per_curve": 101,
+        "coordinate_rounding_pixels": 0.001
+      },
+      "method": "Parse the actual SVG polylines, invert graph coordinates and check all sampled points against independent model equations.",
+      "computed": 0.0001379310345015483,
+      "exact_or_repr": "0.0001379310345015483",
+      "declared": 0,
+      "tolerance": 0.002,
+      "absolute_error": 0.0001379310345015483,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-figure-consumer-tangency",
+      "inputs": {
+        "point": [
+          25,
+          50
+        ],
+        "indifference_product": 1250,
+        "prices": [
+          2,
+          1
+        ]
+      },
+      "method": "Independently compare indifference slope and budget slope at the displayed optimum.",
+      "computed": -2.0,
+      "exact_or_repr": "-2.0",
+      "declared": -2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-204-figure-tax-area",
+      "inputs": {
+        "vertices": [
+          [
+            30.0,
+            49.99986206896551
+          ],
+          [
+            30.0,
+            70.00013793103449
+          ],
+          [
+            40.0,
+            60.0
+          ]
+        ],
+        "coordinate_rounding_pixels": 0.001
+      },
+      "method": "Parse actual SVG polygon, invert graph coordinates and compute shoelace area.",
+      "computed": 100.00137931034442,
+      "exact_or_repr": "100.00137931034442",
+      "declared": 100,
+      "tolerance": 0.002,
+      "absolute_error": 0.0013793103444186272,
+      "status": "passed"
+    }
+  ]
+}

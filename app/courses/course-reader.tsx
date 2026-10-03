@@ -1,4 +1,5 @@
 import type {Lesson} from "./course-types";
+import Image from 'next/image';
 import {CourseText,Formula} from "./course-text";
 import styles from "./courses.module.css";
 export default function CourseReader({lesson}:{lesson:Lesson}) {
@@ -10,6 +11,12 @@ export default function CourseReader({lesson}:{lesson:Lesson}) {
       <h2 id={`section-${i}`}>{section.heading}</h2>
       {section.paragraphs.map((text,j)=><p key={j}><CourseText text={text}/></p>)}
       {section.formulas?.map((formula,j)=><Formula key={j} source={formula} block/>)}
+      {section.figure&&<figure className={styles.figure}>
+        {/* The full-size labelled plot scrolls with keyboard on a narrow screen. */}
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+        <div className={styles.tableScroll} role="region" aria-label={section.figure.caption} tabIndex={0}><Image className={styles.figureImage} src={section.figure.src} width={720} height={420} alt={section.figure.alt} unoptimized/></div>
+        <figcaption><CourseText text={section.figure.caption}/> · <a href={section.figure.src} target="_blank" rel="noreferrer">查看原尺寸图</a></figcaption>
+      </figure>}
       {/* A labelled scroll region needs keyboard focus to scroll wide tables. */}
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
       {section.table&&<div className={styles.tableScroll} tabIndex={0} role="region" aria-label={section.table.caption}><table><caption>{section.table.caption}</caption><thead><tr>{section.table.headers.map(x=><th key={x} scope="col">{x}</th>)}</tr></thead><tbody>{section.table.rows.map((row,j)=><tr key={j}>{row.map((x,k)=><td key={k}><CourseText text={x}/></td>)}</tr>)}</tbody></table></div>}

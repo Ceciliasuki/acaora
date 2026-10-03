@@ -55,6 +55,7 @@
 .study a,.overview a { color:#315679;text-underline-offset:3px; }
 .lessonTitle { font-size:clamp(1.5rem,2.5vw,2rem);line-height:1.5;letter-spacing:-0.02em;text-wrap:balance; }
 .completed { padding:0.6rem;color:#215734; }
+.figure { margin:1.8rem 0; }.figureImage { width:100%;min-width:640px;height:auto;display:block;background:#fff; }.figure figcaption { font-size:0.9rem;line-height:1.8;margin-top:0.6rem;color:#546175; }
 .offline { background:#fff6e9;border-left:3px solid #b28544;padding:0.7rem 1rem;line-height:1.8; }
 .overview a:focus-visible,.study a:focus-visible,.catalog button:focus-visible,.directory summary:focus-visible,.status button:focus-visible,.reset button:focus-visible { outline:3px solid #456e9b;outline-offset:3px; }
 @media (max-width:1000px) { .catalog,.study { grid-template-columns:minmax(0,1fr);gap:24px; }.courseList { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }.study nav { border-bottom:1px solid #d8e1ec;padding-bottom:0.5rem; } }

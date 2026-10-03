@@ -1,95 +1,110 @@
 {
   "courseId": "ECON-204",
-  "status": "draft",
+  "status": "checked",
   "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "review": "docs/course-reviews/ECON-204.md",
+  "reviewDate": "2026-10-03",
+  "reviewLevel": "Agent content and calculation review; no instructor or learning-outcome validation",
   "targets": [
     {
       "target": "最优化预备与市场",
       "lessonIds": [
         "lesson-1"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "本科中级微观的最优化前置；正文明确目标、约束、KKT/角点、包络及非负交易均衡。",
+      "status": "checked"
     },
     {
       "target": "偏好效用与消费选择",
       "lessonIds": [
         "lesson-2"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的偏好、效用与消费者选择；正文推导Cobb–Douglas、替代/互补，配套原创预算切图及分层练习。",
+      "status": "checked"
     },
     {
       "target": "需求与显示偏好",
       "lessonIds": [
         "lesson-3"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的需求与显示偏好；正文分开弹性、正常/Giffen、可负担性、严格循环与GARP，明确Afriat仅介绍结论和条件。",
+      "status": "checked"
     },
     {
       "target": "斯勒茨基与对偶",
       "lessonIds": [
         "lesson-4"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的Slutsky与消费者福利；正文从对偶/包络推导Shephard/Roy/Slutsky，并计算CV、EV与剩余区别。",
+      "status": "checked"
     },
     {
       "target": "跨期与不确定性",
       "lessonIds": [
         "lesson-5"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开范围的跨期与不确定性；正文推导现值/Euler、借贷角点、vNM/Jensen/风险指标和公平保险，作业独立解加载费部分保险。",
+      "status": "checked"
     },
     {
       "target": "生产与成本",
       "lessonIds": [
         "lesson-6"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的生产与成本；正文区分边际/规模报酬，推导条件投入、短长期包络、MC/AC和可避免成本。",
+      "status": "checked"
     },
     {
       "target": "竞争与垄断",
       "lessonIds": [
         "lesson-7"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的竞争与垄断；正文含供给/停产/进入、MR与弹性、税归宿和福利，并严格分段正交易/无交易。",
+      "status": "checked"
     },
     {
       "target": "寡头博弈与要素市场",
       "lessonIds": [
-        "lesson-8"
+        "lesson-8",
+        "lesson-8-factor"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的寡头、博弈与要素市场；拆两节分别推导Nash、Cournot/Bertrand/承诺，MRP、统一支付MCL、最低工资段落；不将路径IC当完整均衡。",
+      "status": "checked"
     },
     {
       "target": "一般均衡与福利",
       "lessonIds": [
         "lesson-9"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的交换与福利；正文给禀赋预算/归一/Walras/出清、契约与效率、两福利定理条件及实施/分配限制。",
+      "status": "checked"
     },
     {
       "target": "外部性与公共品",
       "lessonIds": [
         "lesson-10"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的外部性与公共品；正文从净剩余推导社会量、Pigou/产权条件、Samuelson垂直加总、贡献均衡与财政转移。",
+      "status": "checked"
     },
     {
       "target": "信息经济学与综合政策",
       "lessonIds": [
         "lesson-11"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "basis": "公开大纲的信息问题；正文区分逆向选择/信号/道德风险，PC/IC、信念/离轨与平局，综合政策训练要求数据与识别证据。",
+      "status": "checked"
     }
   ]
 }

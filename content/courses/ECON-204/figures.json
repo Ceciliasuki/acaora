@@ -1,0 +1,84 @@
+{
+  "courseId": "ECON-204",
+  "figures": [
+    {
+      "file": "consumer-budget.svg",
+      "domain": {
+        "xMax": 55,
+        "yMax": 110
+      },
+      "curves": [
+        {
+          "equation": "y=100-2x",
+          "from": 0,
+          "to": 50
+        },
+        {
+          "equation": "y=1250/x",
+          "from": 12.5,
+          "to": 50
+        }
+      ],
+      "points": [
+        [
+          25,
+          50
+        ]
+      ],
+      "budget": {
+        "m": 100,
+        "px": 2,
+        "py": 1
+      },
+      "utility": "sqrt(x*y)"
+    },
+    {
+      "file": "market-tax.svg",
+      "domain": {
+        "xMax": 60,
+        "yMax": 120
+      },
+      "curves": [
+        {
+          "equation": "p=100-q"
+        },
+        {
+          "equation": "p=20+q"
+        },
+        {
+          "equation": "p=40+q"
+        }
+      ],
+      "points": [
+        [
+          40,
+          60
+        ],
+        [
+          30,
+          70
+        ],
+        [
+          30,
+          50
+        ]
+      ],
+      "tax": 20,
+      "dwl": 100,
+      "triangle": [
+        [
+          30,
+          50
+        ],
+        [
+          30,
+          70
+        ],
+        [
+          40,
+          60
+        ]
+      ]
+    }
+  ]
+}

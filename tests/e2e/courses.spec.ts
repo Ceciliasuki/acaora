@@ -90,3 +90,21 @@ test('@a11y COURSE-09 inference lecture and final assessment stay readable on mo
   await page.screenshot({path:`test-results/course-STAT-201-${name}-375.png`});
  }
 });
+test('COURSE-10 consumer diagram, zero-trade boundary and chapter practice work in the preset micro course',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.goto('/courses/ECON-204/lesson-2');
+ const diagram=page.getByRole('img',{name:/预算线2x/});
+ await expect(diagram).toBeVisible();expect(await diagram.evaluate(img=>(img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+ await page.goto('/courses/ECON-204/lesson-7');
+ const boundary=page.getByRole('region',{name:/第 4 题/});await boundary.getByLabel('输入数值答案').fill('0');await boundary.getByRole('button',{name:'检查答案'}).click();await expect(boundary).toContainText('回答正确');
+ await page.goto('/courses/ECON-204/assessments/chapter-5');
+ const insurance=page.getByRole('region',{name:/第 4 题/});await insurance.getByLabel('输入数值答案').fill('10.400811771689499');await insurance.getByRole('button',{name:'检查答案'}).click();await expect(insurance).toContainText('回答正确');
+ await page.reload();await expect(insurance.getByLabel('输入数值答案')).toHaveValue('10.400811771689499');
+});
+test('@a11y COURSE-11 original economic plots scroll with keyboard and stay inside the mobile page',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.setViewportSize({width:375,height:900});await page.goto('/courses/ECON-204/lesson-7');
+ const plot=page.getByRole('region',{name:/原创教学图：从量税/});await plot.scrollIntoViewIfNeeded();await plot.focus();await expect(plot).toBeFocused();
+ await page.keyboard.press('ArrowRight');await expect.poll(()=>plot.evaluate(element=>element.scrollLeft)).toBeGreaterThan(0);
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+ await page.screenshot({path:'test-results/course-ECON-204-tax-375.png'});
+});
