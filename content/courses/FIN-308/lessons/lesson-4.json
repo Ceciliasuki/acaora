@@ -1,0 +1,120 @@
+{
+  "id": "lesson-4",
+  "courseId": "FIN-308",
+  "chapterId": "chapter-4",
+  "title": "利率平价与远期价格",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "FIN-308-l4-q1",
+    "FIN-308-l4-q2",
+    "FIN-308-l4-q3"
+  ],
+  "objectives": [
+    "区分CIP与UIP",
+    "计算同期限远期",
+    "解释套利约束和预测"
+  ],
+  "prerequisites": [
+    "前面核心课节；微观供需、宏观IS/LM和利息终值。"
+  ],
+  "sections": [
+    {
+      "heading": "相同期限与可融资条件",
+      "paragraphs": [
+        "即期e与远期F均为本币/外币，i、i*是同一期限的本外币简单收益率。将一单位本币本国投资得到1+i；换为1/e外币、投资后远期换回得到F(1+i*)/e。无风险匹配、可借贷交割、无成本和无约束时CIP给F=e(1+i)/(1+i*)。",
+        "年利率和半年合约需先换同期限收益率，复利、日数和借贷报价也需一致。实际信用、保证金、价差、限额和资产负债表约束可能留下基差。BIS 2016历史研究讨论套保需求与套利限制，不给当前报价或可执行收益。"
+      ],
+      "formulas": [
+        "1+i=\\frac{F}{e}(1+i^*),\\qquad F=e\\frac{1+i}{1+i^*}"
+      ]
+    },
+    {
+      "heading": "远期不等于预期未来即期",
+      "paragraphs": [
+        "UIP把未套保外币资产的预期本币回报与国内回报联系，需要风险中性等条件；未来e不确定、风险溢价和预期误差会影响。它不是锁定交割的CIP，也不提供确定获利。",
+        "即使F由无套利关系决定，F仍不是必然未来即期价。套利核查要用实际可成交借贷和买卖方向；教材中间价计算只是模型基准。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "同期限CIP基准",
+      "problem": "构造即期e=7本币/外币，一期本币收益4%、外币收益2%，按理想CIP求F。",
+      "steps": [
+        "国内终值1.04；外币路线终值F×1.02/7。",
+        "相等给F=7×1.04/1.02=364/51≈7.137255本币/外币。",
+        "远期外币升水约1.960784%，不表示未来即期必到这个值。"
+      ],
+      "conclusion": "远期模型价格与未来随机报价不同。",
+      "calculationId": "FIN-308-example-4"
+    }
+  ],
+  "questions": [
+    {
+      "id": "FIN-308-l4-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "区分CIP与UIP",
+      "prompt": "哪一关系用远期合约锁定换回价格？",
+      "options": [
+        {
+          "id": "a",
+          "text": "CIP。"
+        },
+        {
+          "id": "b",
+          "text": "UIP。"
+        },
+        {
+          "id": "c",
+          "text": "PPP必然锁价。"
+        }
+      ],
+      "answer": "a",
+      "explanation": "CIP是有套保的收益匹配。",
+      "hint": "未来交割是否已约定价格？",
+      "level": "基础"
+    },
+    {
+      "id": "FIN-308-l4-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "计算同期限远期",
+      "prompt": "e=10本币/外币，同期限本币收益3%、外币1%，理想CIP的F是多少？",
+      "answer": 10.198019801980198,
+      "tolerance": 0.000001,
+      "explanation": "10×1.03/1.01=1030/101≈10.198020。",
+      "hint": "利率已为同一期限，别另乘年数。",
+      "level": "核心"
+    },
+    {
+      "id": "FIN-308-l4-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "解释套利约束和预测",
+      "prompt": "理论CIP与报价不同，能否直接向普通用户承诺套利收益？",
+      "answer": "不能。要核可成交借贷利率、买卖价差、信用、交割、保证金和限额；差异可能由风险与资产负债表约束产生。",
+      "explanation": "模型恒等式不是可执行策略或收益承诺。",
+      "hint": "能否以列出的每个价格真实完成全流程？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "收益匹配、同期限、风险与交易约束缺一不可。"
+  ],
+  "sources": [
+    {
+      "title": "上海交通大学公开International Economics 2大纲（2020）",
+      "url": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "note": "一页概览仅作国际金融主题定位，不认证本站教学标准。讲义、题目和数字为原创构造。"
+    },
+    {
+      "title": "BIS Covered interest parity lost（2016-09-18）",
+      "url": "https://www.bis.org/publ/qtrpdf/r_qt1609e.htm",
+      "note": "历史研究说明套保需求、风险和资产负债表约束；不是当前基差报价或无风险收益推荐。"
+    }
+  ]
+}

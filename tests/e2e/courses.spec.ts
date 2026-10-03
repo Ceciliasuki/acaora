@@ -2,6 +2,15 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-17 finance lessons keep one quote direction and restore forward-hedging practice',async({page})=>{
+ await installApiMocks(page,{signedIn:true});
+ for(let i=1;i<=9;i++){await page.goto(`/courses/FIN-308/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}
+ await page.goto('/courses/FIN-308/assessments/case-study');const q=page.locator('[aria-labelledby="title-FIN-308-case-receipt"]');await q.getByLabel('输入数值答案').fill('714000');await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');await page.reload();await expect(q.getByLabel('输入数值答案')).toHaveValue('714000');
+ await page.setViewportSize({width:375,height:900});await page.goto('/courses/FIN-308/lesson-4');await expect(page.locator('math').first()).toBeAttached();
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);await page.screenshot({path:'test-results/course-FIN-308-375.png'});
+});
+
 test('COURSE-16 trade lessons distinguish welfare transfers and support a simple original tariff case',async({page})=>{
  await installApiMocks(page,{signedIn:true});
  for(let i=1;i<=9;i++){await page.goto(`/courses/TRADE-305/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}

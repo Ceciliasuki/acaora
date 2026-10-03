@@ -976,24 +976,26 @@
     "chapters": [
       {
         "id": "chapter-1",
-        "title": "宏观预备与国际收支",
+        "title": "国际收支与对外资产",
         "lessons": [
           {
             "id": "lesson-1",
-            "title": "宏观预备与国际收支",
+            "title": "国际收支与对外资产",
             "level": "预备",
+            "optional": false,
             "prerequisites": []
           }
         ]
       },
       {
         "id": "chapter-2",
-        "title": "汇率报价与实际汇率",
+        "title": "汇率报价、交叉与实际汇率",
         "lessons": [
           {
             "id": "lesson-2",
-            "title": "汇率报价与实际汇率",
+            "title": "汇率报价、交叉与实际汇率",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-1"
             ]
@@ -1002,12 +1004,13 @@
       },
       {
         "id": "chapter-3",
-        "title": "PPP与汇率价格",
+        "title": "购买力平价与价格水平",
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "PPP与汇率价格",
+            "title": "购买力平价与价格水平",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-2"
             ]
@@ -1016,12 +1019,13 @@
       },
       {
         "id": "chapter-4",
-        "title": "CIP与UIP",
+        "title": "利率平价与远期价格",
         "lessons": [
           {
             "id": "lesson-4",
-            "title": "CIP与UIP",
+            "title": "利率平价与远期价格",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-3"
             ]
@@ -1030,12 +1034,13 @@
       },
       {
         "id": "chapter-5",
-        "title": "货币模型与超调",
+        "title": "汇率调整与收支机制",
         "lessons": [
           {
             "id": "lesson-5",
-            "title": "货币模型与超调",
+            "title": "汇率调整与收支机制",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-4"
             ]
@@ -1044,12 +1049,13 @@
       },
       {
         "id": "chapter-6",
-        "title": "弹性吸收与货币分析",
+        "title": "开放经济政策模型",
         "lessons": [
           {
             "id": "lesson-6",
-            "title": "弹性吸收与货币分析",
+            "title": "开放经济政策模型",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-5"
             ]
@@ -1058,12 +1064,13 @@
       },
       {
         "id": "chapter-7",
-        "title": "开放经济政策",
+        "title": "汇率制度与货币体系",
         "lessons": [
           {
             "id": "lesson-7",
-            "title": "开放经济政策",
+            "title": "汇率制度与货币体系",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-6"
             ]
@@ -1072,12 +1079,13 @@
       },
       {
         "id": "chapter-8",
-        "title": "汇率制度与三元悖论",
+        "title": "外汇敞口与风险管理",
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "汇率制度与三元悖论",
+            "title": "外汇敞口与风险管理",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-7"
             ]
@@ -1086,56 +1094,15 @@
       },
       {
         "id": "chapter-9",
-        "title": "国际货币体系",
+        "title": "危机、错配与国际流动",
         "lessons": [
           {
             "id": "lesson-9",
-            "title": "国际货币体系",
-            "level": "核心",
+            "title": "危机、错配与国际流动",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-8"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-10",
-        "title": "危机与资本流动",
-        "lessons": [
-          {
-            "id": "lesson-10",
-            "title": "危机与资本流动",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-9"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-11",
-        "title": "外汇风险管理",
-        "lessons": [
-          {
-            "id": "lesson-11",
-            "title": "外汇风险管理",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-10"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-12",
-        "title": "综合分析与证据",
-        "lessons": [
-          {
-            "id": "lesson-12",
-            "title": "综合分析与证据",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-11"
             ]
           }
         ]
