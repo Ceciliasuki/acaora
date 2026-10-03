@@ -1,0 +1,1225 @@
+[
+  {
+    "code": "STAT-201",
+    "name": "概率论与数理统计",
+    "track": "统计学",
+    "prerequisites": [
+      "微积分",
+      "线性代数基础"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立概率论与数理统计的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "数学预备与概率建模",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "数学预备与概率建模",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "条件概率与独立",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "条件概率与独立",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "离散与连续分布",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "离散与连续分布",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "联合分布与变量变换",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "联合分布与变量变换",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "期望方差与相关",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "期望方差与相关",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "极限定理与抽样分布",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "极限定理与抽样分布",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "点估计与估计量评价",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "点估计与估计量评价",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "区间估计与样本量",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "区间估计与样本量",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "检验与功效",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "检验与功效",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "非参数与拟合检验",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "非参数与拟合检验",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "方差分析与回归衔接",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "方差分析与回归衔接",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "ECON-204",
+    "name": "微观经济学",
+    "track": "经济学",
+    "prerequisites": [
+      "经济学原理",
+      "微积分与最优化"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立微观经济学的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "最优化预备与市场",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "最优化预备与市场",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "偏好效用与消费选择",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "偏好效用与消费选择",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "需求与显示偏好",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "需求与显示偏好",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "斯勒茨基与对偶",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "斯勒茨基与对偶",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "跨期与不确定性",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "跨期与不确定性",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "生产与成本",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "生产与成本",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "竞争与垄断",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "竞争与垄断",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "寡头博弈与要素市场",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "寡头博弈与要素市场",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "一般均衡与福利",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "一般均衡与福利",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "外部性与公共品",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "外部性与公共品",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "信息经济学与综合政策",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "信息经济学与综合政策",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "STAT-302",
+    "name": "回归分析",
+    "track": "统计学",
+    "prerequisites": [
+      "微积分",
+      "高等代数",
+      "概率统计"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立回归分析的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "矩阵预备与统计模型",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "矩阵预备与统计模型",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "简单回归",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "简单回归",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "多元回归与投影",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "多元回归与投影",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "区间估计与联合检验",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "区间估计与联合检验",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "定性变量与函数形式",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "定性变量与函数形式",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "残差诊断与影响点",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "残差诊断与影响点",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "GLS与误差结构",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "GLS与误差结构",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "多项式与变量选择",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "多项式与变量选择",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "岭回归与主成分回归",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "岭回归与主成分回归",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "稳健回归",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "稳健回归",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "非线性与广义线性模型",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "非线性与广义线性模型",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-12",
+        "title": "预测验证与完整报告",
+        "lessons": [
+          {
+            "id": "lesson-12",
+            "title": "预测验证与完整报告",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-11"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "ECON-301",
+    "name": "计量经济学",
+    "track": "经济学",
+    "prerequisites": [
+      "概率统计",
+      "线性代数",
+      "回归",
+      "微观与宏观基础"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立计量经济学的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "识别与反事实",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "识别与反事实",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "OLS与设定偏误",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "OLS与设定偏误",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "GLS与稳健推断",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "GLS与稳健推断",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "似然与LR/Wald/LM",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "似然与LR/Wald/LM",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "IV与联立模型",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "IV与联立模型",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "面板与聚类",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "面板与聚类",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "DID与事件研究",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "DID与事件研究",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "实验与断点",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "实验与断点",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "ARMA与VAR",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "ARMA与VAR",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "单位根与协整",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "单位根与协整",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "离散选择与样本选择",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "离散选择与样本选择",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-12",
+        "title": "GMM与动态面板",
+        "lessons": [
+          {
+            "id": "lesson-12",
+            "title": "GMM与动态面板",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-11"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-13",
+        "title": "完整实证报告",
+        "lessons": [
+          {
+            "id": "lesson-13",
+            "title": "完整实证报告",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-12"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "STAT-306",
+    "name": "多元统计分析",
+    "track": "统计学",
+    "prerequisites": [
+      "概率统计",
+      "高等代数",
+      "回归"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立多元统计分析的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "矩阵预备与多元数据",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "矩阵预备与多元数据",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "多元正态与Wishart",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "多元正态与Wishart",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "Hotelling与MANOVA",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "Hotelling与MANOVA",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "多元线性模型",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "多元线性模型",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "SVD与主成分",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "SVD与主成分",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "双标图与对应分析",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "双标图与对应分析",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "因子分析与旋转",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "因子分析与旋转",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "典型相关与结构方程",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "典型相关与结构方程",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "距离与多维标度",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "距离与多维标度",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "聚类分析",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "聚类分析",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "判别分析与分类验证",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "判别分析与分类验证",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "TRADE-305",
+    "name": "国际贸易学",
+    "track": "经济学",
+    "prerequisites": [
+      "微观经济学",
+      "基础代数与微积分"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立国际贸易学的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "贸易问题与比较优势",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "贸易问题与比较优势",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "李嘉图模型",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "李嘉图模型",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "特定要素与分配",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "特定要素与分配",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "H-O与要素价格",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "H-O与要素价格",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "标准贸易与贸易条件",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "标准贸易与贸易条件",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "规模经济与产业内贸易",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "规模经济与产业内贸易",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "异质企业与跨国投资",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "异质企业与跨国投资",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "关税配额与福利",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "关税配额与福利",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "有效保护与倾销",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "有效保护与倾销",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "引力模型与贸易识别",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "引力模型与贸易识别",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "制度协定与全球价值链",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "制度协定与全球价值链",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-12",
+        "title": "贸易政策综合评估",
+        "lessons": [
+          {
+            "id": "lesson-12",
+            "title": "贸易政策综合评估",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-11"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "FIN-308",
+    "name": "国际金融",
+    "track": "经济学",
+    "prerequisites": [
+      "微观经济学",
+      "宏观经济学",
+      "概率统计"
+    ],
+    "description": "通过理论讲解、关键推导、完整例题与分层练习，建立国际金融的本科核心知识体系。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "宏观预备与国际收支",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "宏观预备与国际收支",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "汇率报价与实际汇率",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "汇率报价与实际汇率",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "PPP与汇率价格",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "PPP与汇率价格",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "CIP与UIP",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "CIP与UIP",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "货币模型与超调",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "货币模型与超调",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "弹性吸收与货币分析",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "弹性吸收与货币分析",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "开放经济政策",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "开放经济政策",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "汇率制度与三元悖论",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "汇率制度与三元悖论",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "国际货币体系",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "国际货币体系",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "危机与资本流动",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "危机与资本流动",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "外汇风险管理",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "外汇风险管理",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-12",
+        "title": "综合分析与证据",
+        "lessons": [
+          {
+            "id": "lesson-12",
+            "title": "综合分析与证据",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-11"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

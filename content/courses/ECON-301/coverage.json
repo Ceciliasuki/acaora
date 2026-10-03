@@ -1,0 +1,111 @@
+{
+  "courseId": "ECON-301",
+  "status": "draft",
+  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "targets": [
+    {
+      "target": "识别与反事实",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "OLS与设定偏误",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "GLS与稳健推断",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "似然与LR/Wald/LM",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "IV与联立模型",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "面板与聚类",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "DID与事件研究",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "实验与断点",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "ARMA与VAR",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "单位根与协整",
+      "lessonIds": [
+        "lesson-10"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "离散选择与样本选择",
+      "lessonIds": [
+        "lesson-11"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "GMM与动态面板",
+      "lessonIds": [
+        "lesson-12"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "完整实证报告",
+      "lessonIds": [
+        "lesson-13"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    }
+  ]
+}

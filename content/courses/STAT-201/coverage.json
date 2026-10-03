@@ -1,0 +1,95 @@
+{
+  "courseId": "STAT-201",
+  "status": "draft",
+  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "targets": [
+    {
+      "target": "数学预备与概率建模",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "条件概率与独立",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "离散与连续分布",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "联合分布与变量变换",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "期望方差与相关",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "极限定理与抽样分布",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "点估计与估计量评价",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "区间估计与样本量",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "检验与功效",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "非参数与拟合检验",
+      "lessonIds": [
+        "lesson-10"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "方差分析与回归衔接",
+      "lessonIds": [
+        "lesson-11"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    }
+  ]
+}

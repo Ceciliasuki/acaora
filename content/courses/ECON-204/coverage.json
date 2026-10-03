@@ -1,0 +1,95 @@
+{
+  "courseId": "ECON-204",
+  "status": "draft",
+  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "targets": [
+    {
+      "target": "最优化预备与市场",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "偏好效用与消费选择",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "需求与显示偏好",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "斯勒茨基与对偶",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "跨期与不确定性",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "生产与成本",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "竞争与垄断",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "寡头博弈与要素市场",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "一般均衡与福利",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "外部性与公共品",
+      "lessonIds": [
+        "lesson-10"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "信息经济学与综合政策",
+      "lessonIds": [
+        "lesson-11"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    }
+  ]
+}

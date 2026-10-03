@@ -1,0 +1,103 @@
+{
+  "courseId": "STAT-302",
+  "status": "draft",
+  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "targets": [
+    {
+      "target": "矩阵预备与统计模型",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "简单回归",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "多元回归与投影",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "区间估计与联合检验",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "定性变量与函数形式",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "残差诊断与影响点",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "GLS与误差结构",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "多项式与变量选择",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "岭回归与主成分回归",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "稳健回归",
+      "lessonIds": [
+        "lesson-10"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "非线性与广义线性模型",
+      "lessonIds": [
+        "lesson-11"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    },
+    {
+      "target": "预测验证与完整报告",
+      "lessonIds": [
+        "lesson-12"
+      ],
+      "source": "待逐项映射公开大纲与补足目标",
+      "status": "draft"
+    }
+  ]
+}
