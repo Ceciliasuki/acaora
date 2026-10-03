@@ -1,95 +1,88 @@
 {
   "courseId": "STAT-306",
-  "status": "draft",
-  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
   "targets": [
     {
-      "target": "矩阵预备与多元数据",
+      "topic": "多元数据、矩阵与预处理",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "一行一个对象，一列一个变量；预处理也是训练的一部分。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-1"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "多元正态与Wishart",
+      "topic": "多元正态与线性变换",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "联合分布不是各列分别的分布；选学：Wishart与均值独立性。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-2"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "Hotelling与MANOVA",
+      "topic": "均值向量检验与MANOVA",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "一次检验一个向量；多组响应与MANOVA；选学：多元线性模型。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-3"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "多元线性模型",
+      "topic": "主成分、SVD与解释方差",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "最大方差方向；从SVD到得分和重建。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-4"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "SVD与主成分",
+      "topic": "因子分析与旋转解释",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "共同因子模型；旋转保留什么。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-5"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "双标图与对应分析",
+      "topic": "距离、尺度与异常点",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "欧氏距离和协方差距离；异常不总是错误。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-6"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "因子分析与旋转",
+      "topic": "聚类与结构验证",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "K-means优化什么；层次方法与验证。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-7"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "典型相关与结构方程",
+      "topic": "判别分类与独立评估",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "LDA与QDA的条件；从拟合到独立评估。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-8"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "距离与多维标度",
+      "topic": "典型相关与多维标度",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "典型相关不是两列逐一配对；MDS与对应分析；选学：结构方程与路径含义。逐项条件与解释核查见课程审查记录。",
       "lessonIds": [
         "lesson-9"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "聚类分析",
-      "lessonIds": [
-        "lesson-10"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "判别分析与分类验证",
-      "lessonIds": [
-        "lesson-11"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     }
   ]
 }

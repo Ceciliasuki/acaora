@@ -2,6 +2,20 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-15 multivariate lessons preserve a held-out classification error and readable matrix formulas',async({page})=>{
+ await installApiMocks(page,{signedIn:true});
+ for(let i=1;i<=9;i++){await page.goto(`/courses/STAT-306/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);await expect(page.locator('math').first()).toBeAttached();}
+ await page.goto('/courses/STAT-306/assessments/case-study');const q=page.locator('[aria-labelledby="title-STAT-306-case-accuracy"]');
+ await q.getByLabel('输入数值答案').fill('0.75');await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');
+ await page.getByText('参考：案例参考流程',{exact:true}).click();await expect(page.getByText(/第三条类0被误判/)).toBeVisible();
+ await page.reload();await expect(q.getByLabel('输入数值答案')).toHaveValue('0.75');
+ await page.setViewportSize({width:375,height:900});await page.goto('/courses/STAT-306/lesson-3');
+ const formula=page.getByRole('region',{name:'数学公式，可横向滚动',exact:true}).first();await formula.scrollIntoViewIfNeeded();await formula.focus();await expect(formula).toBeFocused();await page.keyboard.press('ArrowRight');
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+ await page.screenshot({path:'test-results/course-STAT-306-375.png'});
+});
+
 test('COURSE-14 econometrics includes an honest small-sample case with optional reference steps',async({page})=>{
  await installApiMocks(page,{signedIn:true});
  for(let i=1;i<=10;i++){await page.goto(`/courses/ECON-301/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}

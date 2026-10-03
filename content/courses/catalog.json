@@ -683,24 +683,26 @@
     "chapters": [
       {
         "id": "chapter-1",
-        "title": "矩阵预备与多元数据",
+        "title": "多元数据、矩阵与预处理",
         "lessons": [
           {
             "id": "lesson-1",
-            "title": "矩阵预备与多元数据",
+            "title": "多元数据、矩阵与预处理",
             "level": "预备",
+            "optional": false,
             "prerequisites": []
           }
         ]
       },
       {
         "id": "chapter-2",
-        "title": "多元正态与Wishart",
+        "title": "多元正态与线性变换",
         "lessons": [
           {
             "id": "lesson-2",
-            "title": "多元正态与Wishart",
+            "title": "多元正态与线性变换",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-1"
             ]
@@ -709,12 +711,13 @@
       },
       {
         "id": "chapter-3",
-        "title": "Hotelling与MANOVA",
+        "title": "均值向量检验与MANOVA",
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "Hotelling与MANOVA",
+            "title": "均值向量检验与MANOVA",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-2"
             ]
@@ -723,12 +726,13 @@
       },
       {
         "id": "chapter-4",
-        "title": "多元线性模型",
+        "title": "主成分、SVD与解释方差",
         "lessons": [
           {
             "id": "lesson-4",
-            "title": "多元线性模型",
+            "title": "主成分、SVD与解释方差",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-3"
             ]
@@ -737,12 +741,13 @@
       },
       {
         "id": "chapter-5",
-        "title": "SVD与主成分",
+        "title": "因子分析与旋转解释",
         "lessons": [
           {
             "id": "lesson-5",
-            "title": "SVD与主成分",
+            "title": "因子分析与旋转解释",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-4"
             ]
@@ -751,12 +756,13 @@
       },
       {
         "id": "chapter-6",
-        "title": "双标图与对应分析",
+        "title": "距离、尺度与异常点",
         "lessons": [
           {
             "id": "lesson-6",
-            "title": "双标图与对应分析",
+            "title": "距离、尺度与异常点",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-5"
             ]
@@ -765,12 +771,13 @@
       },
       {
         "id": "chapter-7",
-        "title": "因子分析与旋转",
+        "title": "聚类与结构验证",
         "lessons": [
           {
             "id": "lesson-7",
-            "title": "因子分析与旋转",
+            "title": "聚类与结构验证",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-6"
             ]
@@ -779,12 +786,13 @@
       },
       {
         "id": "chapter-8",
-        "title": "典型相关与结构方程",
+        "title": "判别分类与独立评估",
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "典型相关与结构方程",
+            "title": "判别分类与独立评估",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-7"
             ]
@@ -793,42 +801,15 @@
       },
       {
         "id": "chapter-9",
-        "title": "距离与多维标度",
+        "title": "典型相关与多维标度",
         "lessons": [
           {
             "id": "lesson-9",
-            "title": "距离与多维标度",
-            "level": "核心",
+            "title": "典型相关与多维标度",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-8"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-10",
-        "title": "聚类分析",
-        "lessons": [
-          {
-            "id": "lesson-10",
-            "title": "聚类分析",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-9"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-11",
-        "title": "判别分析与分类验证",
-        "lessons": [
-          {
-            "id": "lesson-11",
-            "title": "判别分析与分类验证",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-10"
             ]
           }
         ]

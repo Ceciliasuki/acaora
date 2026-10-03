@@ -1,0 +1,117 @@
+{
+  "id": "lesson-2",
+  "courseId": "STAT-306",
+  "chapterId": "chapter-2",
+  "title": "多元正态与线性变换",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "STAT-306-l2-q1",
+    "STAT-306-l2-q2",
+    "STAT-306-l2-q3"
+  ],
+  "objectives": [
+    "理解联合正态与协方差",
+    "计算线性组合方差",
+    "限定独立与不相关的关系"
+  ],
+  "prerequisites": [
+    "前面核心课节；多元推断需概率统计的抽样分布。"
+  ],
+  "sections": [
+    {
+      "heading": "联合分布不是各列分别的分布",
+      "paragraphs": [
+        "X~N_p(μ,Σ)表示所有线性组合aᵀX为相应正态变量。Σ正定时密度为(2π)^(−p/2)|Σ|^(−1/2) exp[−(x−μ)ᵀΣ⁻¹(x−μ)/2]；半正定奇异情形可有退化正态，但没有上述普通p维密度。",
+        "E(AX+b)=Aμ+b，Cov(AX+b)=AΣAᵀ，线性变换仍联合正态，可能降秩退化。aᵀX的方差为aᵀΣa，不能只把各分量方差相加而忘记协方差。",
+        "联合正态下零协方差支持相应子向量独立；仅各边缘分别正态或一般零相关不够。整体分布条件与单列图形相似不能混同。"
+      ],
+      "formulas": [
+        "\\operatorname{Var}(a^\\top X)=a^\\top\\Sigma a"
+      ]
+    },
+    {
+      "heading": "选学：Wishart与均值独立性",
+      "optional": true,
+      "paragraphs": [
+        "独立同分布多元正态样本中，(n−1)S服从W_p(Σ,n−1)，样本均值与S独立。这是T²等精确推断的基础；有效自由度与可逆条件仍需检查。",
+        "Wishart描述正态平方和矩阵，不应当成任意相关数据协方差的精确分布；此处介绍结果与用途，未完整证明矩阵分布理论。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "两维和的波动",
+      "problem": "Σ=[[1,0.5],[0.5,2]]，求X₁+X₂的方差。",
+      "steps": [
+        "线性组合向量a=(1,1)。",
+        "aᵀΣa=1+2+2×0.5=4。",
+        "即使各变量的单位相同，遗漏协方差项也会把波动低估为3。"
+      ],
+      "conclusion": "线性组合需要完整协方差结构。",
+      "calculationId": "STAT-306-example-2"
+    }
+  ],
+  "questions": [
+    {
+      "id": "STAT-306-l2-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "理解联合正态与协方差",
+      "prompt": "两个变量边缘都正态且相关为零，是否已证明独立？",
+      "options": [
+        {
+          "id": "a",
+          "text": "证明。"
+        },
+        {
+          "id": "b",
+          "text": "不一定，还需联合正态等充分条件。"
+        },
+        {
+          "id": "c",
+          "text": "相关为零不可能。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "边缘形状不确定完整联合分布。",
+      "hint": "检查“联合”条件。",
+      "level": "基础"
+    },
+    {
+      "id": "STAT-306-l2-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "计算线性组合方差",
+      "prompt": "Σ=[[4,1],[1,9]]，X₁−X₂的方差是多少？",
+      "answer": 11,
+      "tolerance": 0.000001,
+      "explanation": "4+9−2×1=11。",
+      "hint": "组合向量为(1,−1)。",
+      "level": "核心"
+    },
+    {
+      "id": "STAT-306-l2-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "限定独立与不相关的关系",
+      "prompt": "把一个二维正态变量投影为一维后，能否仍使用原二维密度和行列式？",
+      "answer": "不能。变换后的分布维度和协方差变了；使用一维均值与方差，或明确退化支持上的分布。",
+      "explanation": "降维可能使嵌入空间中的协方差奇异，不能照搬满维密度。",
+      "hint": "变换矩阵的秩是多少？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "线性变换保留正态结构，但维度与可逆性必须更新。"
+  ],
+  "sources": [
+    {
+      "title": "中国科学技术大学公开多元统计课程资料",
+      "url": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "note": "2026春资料作为方法范围参考；未把学位层级或全部教学内容等同于本站简化课程。正文与数据原创。"
+    }
+  ]
+}
