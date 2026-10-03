@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { listCourses, loadLesson, validateLesson } from '../app/courses/course-content.mjs';
+import { listCourses, loadLesson, validateLesson, validateCatalog } from '../app/courses/course-content.mjs';
 test('catalog contains all seven existing course codes', () => {
   assert.deepEqual(listCourses().map(c=>c.code).sort(), ['STAT-201','STAT-302','STAT-306','ECON-301','ECON-204','TRADE-305','FIN-308'].sort());
 });
@@ -24,4 +24,15 @@ test('valid schemas are accepted and malformed collections produce diagnostics',
   for(const key of ['sections','questions','objectives','examples','sources']) {
     const lesson=validLesson();lesson[key]={};assert.doesNotThrow(()=>validateLesson(lesson));assert.ok(validateLesson(lesson).length>0);
   }
+});
+test('malformed tables and choice options cannot reach the renderer',()=>{
+ const lesson=validLesson();lesson.sections[0].table={caption:'test',headers:{},rows:[]};assert.ok(validateLesson(lesson).length);
+ lesson.sections[0].table={caption:'test',headers:['a','b'],rows:[['missing cell']]};assert.ok(validateLesson(lesson).length);
+ lesson.questions[0]={...lesson.questions[0],type:'choice',answer:'a',options:[null,{id:'a',text:'test'}]};assert.doesNotThrow(()=>assert.ok(validateLesson(lesson).length));
+});
+test('catalog prerequisites must be known and acyclic, while stable IDs remain unique',()=>{
+ assert.deepEqual(validateCatalog(listCourses()),[]);
+ const catalog=structuredClone(listCourses());const first=catalog[0].chapters[0].lessons[0];first.prerequisites=['lesson-2'];assert.ok(validateCatalog(catalog).some(e=>e.includes('循环')));
+ first.prerequisites=['unknown'];assert.ok(validateCatalog(catalog).length);
+ first.prerequisites=[];catalog[0].chapters[1].lessons[0].id=first.id;assert.ok(validateCatalog(catalog).length);
 });

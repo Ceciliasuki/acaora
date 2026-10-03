@@ -1,10 +1,10 @@
 import {readFile} from 'node:fs/promises';
-import {listCourses,loadLesson,loadAssessment} from '../app/courses/course-content.mjs';
+import {listCourses,loadLesson,loadAssessment,validateCatalog} from '../app/courses/course-content.mjs';
 import path from 'node:path';
 const selected=process.argv[2];
 const courses=listCourses();
 if(selected&&!courses.some(c=>c.code===selected)) throw new Error('未知课程');
-const failures=[];
+const failures=validateCatalog(courses);
 const allIds=new Set();
 let lessons=0,questions=0;
 for(const course of courses.filter(c=>!selected||c.code===selected)) {

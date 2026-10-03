@@ -1,0 +1,41 @@
+{
+  "method": "Independent Python enumeration and exact Fraction arithmetic",
+  "checks": [
+    {
+      "id": "STAT-201-example-1-1",
+      "method": "Enumerate all ten unordered committees; students 0,1 are statistics.",
+      "computed": 0.6,
+      "exact": "3/5",
+      "declared": 0.6,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-1-2",
+      "method": "Enumerate all four biased independent-coin outcomes using exact fractions.",
+      "computed": 0.96,
+      "exact": "24/25",
+      "declared": 0.96,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l1-q3",
+      "method": "Construct ten equally weighted points and count a set union directly.",
+      "computed": 0.6,
+      "exact": "3/5",
+      "declared": 0.6,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l1-q4",
+      "method": "Enumerate all 45 ball pairs; balls 0..3 are red.",
+      "computed": 0.5333333333333333,
+      "exact": "8/15",
+      "declared": 0.5333333333333333,
+      "absolute_error": 0.0,
+      "status": "passed"
+    }
+  ]
+}

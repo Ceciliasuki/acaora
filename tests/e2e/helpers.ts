@@ -1,4 +1,5 @@
 import { expect, type Page, type Route } from "@playwright/test";
+import type {CourseSnapshot,CourseOperation} from '../../app/courses/course-types';
 
 export type MockProject = {
   id: string;
@@ -24,6 +25,9 @@ export type MockState = {
   failPaperDelete: boolean;
   requestBodies: unknown[];
   requests: string[];
+  courseRecords:Record<string,CourseSnapshot>;
+  courseSyncStatus:number;
+  courseSyncDelayMs:number;
 };
 
 const user = { id: "user-e2e", email: "student@example.com" };
@@ -50,6 +54,9 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
     failPaperDelete: initial.failPaperDelete ?? false,
     requestBodies: [],
     requests: [],
+    courseRecords:structuredClone(initial.courseRecords??{}),
+    courseSyncStatus:initial.courseSyncStatus??200,
+    courseSyncDelayMs:initial.courseSyncDelayMs??0,
   };
 
   await page.route("**/api/**", async (route) => {
@@ -60,6 +67,21 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
 
     if (url.pathname === "/api/version") return json(route, { commit: "e2e-fixed-commit", buildTime: "2026-08-16T08:00:00.000Z", environment: "test" });
     if (url.pathname === "/api/auth/status") return json(route, { configured: true });
+    const courseMatch=url.pathname.match(/^\/api\/courses\/([^/]+)\/progress$/);
+    if(courseMatch) {
+      if(!state.signedIn)return privateJson(route,{error:'请先登录。'},401);
+      const ownerId=state.userId,courseId=courseMatch[1],recordKey=JSON.stringify([ownerId,courseId]);
+      const snapshot=state.courseRecords[recordKey]??{courseId,generation:1,completedLessonIds:[],lastLessonId:null,attempts:[]};
+      if(request.method()==='GET')return privateJson(route,{ownerId,snapshot});
+      const body=request.postDataJSON() as CourseOperation;state.requestBodies.push(body);
+      if(state.courseSyncDelayMs)await new Promise(resolve=>setTimeout(resolve,state.courseSyncDelayMs));
+      if(state.courseSyncStatus!==200)return privateJson(route,{error:'模拟课程存储不可用。'},state.courseSyncStatus);
+      if(body.ownerId!==ownerId)return privateJson(route,{error:'账号不一致。'},400);
+      if(body.generation!==snapshot.generation)return privateJson(route,{ownerId,snapshot},409);
+      if(request.method()==='POST')state.courseRecords[recordKey]={courseId,generation:snapshot.generation+1,completedLessonIds:[],lastLessonId:null,attempts:[]};
+      else state.courseRecords[recordKey]={...snapshot,completedLessonIds:[...new Set([...snapshot.completedLessonIds,...body.completedLessonIds])],lastLessonId:body.lastLessonId??snapshot.lastLessonId,attempts:[...new Map([...snapshot.attempts,...body.attempts].map(a=>[a.id,a])).values()]};
+      return privateJson(route,{ownerId,snapshot:state.courseRecords[recordKey]});
+    }
     if (url.pathname === "/api/auth/session") return privateJson(route, { configured: true, user: state.signedIn ? { ...user, id: state.userId } : null });
     if (url.pathname === "/api/auth/login") {
       const body = request.postDataJSON() as { password?: string };

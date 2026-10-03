@@ -11,6 +11,7 @@ export function useCourseProgress(courseId:string) {
  const [snapshot,setSnapshot]=useState<CourseSnapshot>(empty(courseId));
  const [status,setStatus]=useState<ProgressState>('loading');
  const [ownerId,setOwnerId]=useState<string|null>(null);
+ const [initialized,setInitialized]=useState(false);
  const owner=useRef<string|null>(null);
  const current=useRef<CourseSnapshot>(empty(courseId));
  const epoch=useRef(0);
@@ -56,13 +57,13 @@ export function useCourseProgress(courseId:string) {
     try {
       const user=await getCurrentUser();if(disposed||token!==epoch.current)return;
       owner.current=user?.id??null;
-      if(!user){setOwnerId(null);setSnapshot(empty(courseId));setStatus('anonymous');return;}
+      if(!user){setOwnerId(null);setSnapshot(empty(courseId));setStatus('anonymous');setInitialized(true);return;}
       const local=await loadLocalCourse(user.id,courseId);if(disposed||token!==epoch.current)return;
       current.current=local??empty(courseId);setOwnerId(user.id);setSnapshot(current.current);setStatus('local');
       const response=await authFetch(endpoint);if(disposed||token!==epoch.current)return;
       const body=await response.json() as Envelope;
-      if(response.status===401||body.snapshot&&body.ownerId!==user.id){owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('signed-out');return;}
-      if(!response.ok||!body.snapshot){setStatus('pending');return;}
+      if(response.status===401||body.snapshot&&body.ownerId!==user.id){owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('signed-out');setInitialized(true);return;}
+      if(!response.ok||!body.snapshot){setStatus('pending');setInitialized(true);return;}
       const remote=body.snapshot;
       await serialize(async()=>{
        if(disposed||token!==epoch.current)return;
@@ -71,10 +72,10 @@ export function useCourseProgress(courseId:string) {
        for(const op of queued.filter(op=>op.generation!==remote.generation))await removeCourseOperation(op.operationId);
        await saveLocalCourse(user.id,merged);current.current=merged;setSnapshot(merged);
       });
-      if(!disposed&&token===epoch.current){setStatus('synced');void flush();}
-    }catch{if(!disposed&&token===epoch.current)setStatus(owner.current?'pending':'anonymous');}
+      if(!disposed&&token===epoch.current){setStatus('synced');setInitialized(true);void flush();}
+    }catch{if(!disposed&&token===epoch.current){setStatus(owner.current?'pending':'anonymous');setInitialized(true);}}
   }
-  function changed(){epoch.current++;owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('loading');void load();}
+  function changed(){epoch.current++;owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('loading');setInitialized(false);void load();}
   function online(){void flush();}
   void load();window.addEventListener(authChangeEvent,changed);window.addEventListener('online',online);
   return()=>{disposed=true;sessionEpoch.current++;owner.current=null;window.removeEventListener(authChangeEvent,changed);window.removeEventListener('online',online);};
@@ -109,5 +110,5 @@ export function useCourseProgress(courseId:string) {
    });
   }catch{if(epoch.current===token)setStatus('pending');}
  },[courseId,endpoint,serialize]);
- return {ownerId,snapshot,status,record,reset,retry:flush};
+ return {ownerId,initialized,snapshot,status,record,reset,retry:flush};
 }

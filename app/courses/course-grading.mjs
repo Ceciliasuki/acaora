@@ -11,10 +11,12 @@ export function gradeQuestion(question, rawAnswer) {
   }
   return { status: correct ? "correct" : "incorrect", feedback: correct ? "回答正确。请继续检查解题条件。" : "答案还不一致，可以先看提示再试一次。" };
 }
+let lastCreatedAt=0;
 export function createQuestionAttempt(question, answer, viewedSolution) {
   const value=String(answer??'').trim();
   if(!value&&!viewedSolution) return null;
-  return {id:globalThis.crypto.randomUUID(),questionId:question.id,questionVersion:question.version,answer:value,viewedSolution:Boolean(viewedSolution),createdAt:Date.now()};
+  lastCreatedAt=Math.max(Date.now(),lastCreatedAt+1);
+  return {id:globalThis.crypto.randomUUID(),questionId:question.id,questionVersion:question.version,answer:value,viewedSolution:Boolean(viewedSolution),createdAt:lastCreatedAt};
 }
 export function latestQuestionAttempt(question, attempts) {
   return attempts.filter(a=>a.questionId===question.id&&a.questionVersion===question.version).sort((a,b)=>b.createdAt-a.createdAt)[0]??null;

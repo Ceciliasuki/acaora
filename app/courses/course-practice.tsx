@@ -1,14 +1,15 @@
 "use client";
 import {useState} from "react";
 import type {Attempt,Question} from "./course-types";
-import {gradeQuestion,createQuestionAttempt} from "./course-grading.mjs";
+import {gradeQuestion,createQuestionAttempt,latestQuestionAttempt} from "./course-grading.mjs";
 import {CourseText} from "./course-text";
 import styles from "./courses.module.css";
-function PracticeQuestion({question,index,onAttempt}:{question:Question;index:number;onAttempt:(attempt:Attempt)=>void}) {
-  const [answer,setAnswer]=useState("");
+function PracticeQuestion({question,index,onAttempt,attempts}:{question:Question;index:number;onAttempt:(attempt:Attempt)=>void;attempts:Attempt[]}) {
+  const prior=latestQuestionAttempt(question,attempts);
+  const [answer,setAnswer]=useState(prior?.answer??"");
   const [feedback,setFeedback]=useState<ReturnType<typeof gradeQuestion>|null>(null);
   const [hint,setHint]=useState(false);
-  const [solution,setSolution]=useState(false);
+  const [solution,setSolution]=useState(prior?.viewedSolution??false);
   function submit(event:React.FormEvent) {
     event.preventDefault();
     const result=gradeQuestion(question,answer);setFeedback(result);
@@ -32,6 +33,6 @@ function PracticeQuestion({question,index,onAttempt}:{question:Question;index:nu
     {solution&&<div className={styles.solution}><h4>{question.type==="open"?"参考答案与评分要点":"答案与解析"}</h4><p><CourseText text={question.type==="choice"?(question.options?.find(o=>o.id===question.answer)?.text??""):String(question.answer)}/></p><p><CourseText text={question.explanation}/></p>{question.type==="open"&&<p className={styles.muted}>请逐项核对条件、推导和解释；本站不对开放题自动评分。</p>}</div>}
   </section>;
 }
-export default function CoursePractice({questions,onAttempt}:{questions:Question[];onAttempt:(attempt:Attempt)=>void}) {
-  return <section aria-labelledby="practice"><h2 id="practice">分层练习</h2><p className={styles.muted}>先独立作答，再查看提示与解析。练习记录与手动完成阅读分别保存。</p>{questions.map((question,i)=><PracticeQuestion key={`${question.id}-${question.version}`} question={question} index={i} onAttempt={onAttempt}/>)}</section>;
+export default function CoursePractice({questions,onAttempt,attempts=[]}:{questions:Question[];onAttempt:(attempt:Attempt)=>void;attempts?:Attempt[]}) {
+  return <section aria-labelledby="practice"><h2 id="practice">分层练习</h2><p className={styles.muted}>先独立作答，再查看提示与解析。练习记录与手动完成阅读分别保存。</p>{questions.map((question,i)=><PracticeQuestion key={`${question.id}-${question.version}`} question={question} index={i} onAttempt={onAttempt} attempts={attempts}/>)}</section>;
 }

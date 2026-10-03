@@ -32,3 +32,8 @@ test('a new question version does not inherit a previously correct attempt',()=>
   assert.equal(latestQuestionAttempt({id:'q',version:2},[old]),null);
   assert.equal(latestQuestionAttempt({id:'q',version:1},[old]),old);
 });
+test('two actions in one millisecond remain ordered for answer restoration',()=>{
+ const original=Date.now;const fixed=original();Date.now=()=>fixed;
+ try {const q={id:'q',version:1};const first=createQuestionAttempt(q,'0',false),second=createQuestionAttempt(q,'1',true);assert.ok(second.createdAt>first.createdAt);assert.equal(latestQuestionAttempt(q,[first,second]),second);}
+ finally {Date.now=original;}
+});
