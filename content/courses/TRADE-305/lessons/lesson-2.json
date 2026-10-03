@@ -1,0 +1,115 @@
+{
+  "id": "lesson-2",
+  "courseId": "TRADE-305",
+  "chapterId": "chapter-2",
+  "title": "李嘉图模型与工资",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "TRADE-305-l2-q1",
+    "TRADE-305-l2-q2",
+    "TRADE-305-l2-q3"
+  ],
+  "objectives": [
+    "写出竞争成本条件",
+    "计算专业化下的工资",
+    "检查价格与专业化边界"
+  ],
+  "prerequisites": [
+    "前面核心课节与微观经济学的竞争、最优化和消费者/生产者剩余。"
+  ],
+  "sections": [
+    {
+      "heading": "工资来自商品价格与单位劳动产出",
+      "paragraphs": [
+        "仅劳动要素、竞争和充分就业下，单位成本w a_i。生产商品时价格等于该成本；若价格低于成本则该部门不生产。不能同时强行给两个商品价格和一个工资，再忽略部门退出。",
+        "本国出口X、外国出口Y需w_H a_HX≤w_F a_FX且w_F a_FY≤w_H a_HY，因此a_FY/a_HY≤w_H/w_F≤a_FX/a_HX；严格内部通常支持两国各自专业化。工资高可以与竞争力并存，因为生产率也高。"
+      ],
+      "formulas": [
+        "\\frac{a_{FY}}{a_{HY}}\\leq\\frac{w_H}{w_F}\\leq\\frac{a_{FX}}{a_{HX}}"
+      ]
+    },
+    {
+      "heading": "模型比较的是实际购买力",
+      "paragraphs": [
+        "专业化下w_H=p_X/a_HX、w_F=p_Y/a_FY。实际工资w/p_X、w/p_Y分别表示每小时可购多少商品；两个货币工资不能在未统一货币和价格时直接比较。",
+        "世界相对需求、劳动规模和运输约束决定均衡相对价格。比较优势相同但价格在端点时，某国可能同时生产两商品，不能机械套完全专业化的数量。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "同一价格下的工资比",
+      "problem": "本国单位劳动需求(1,2)，外国(6,3)，商品价格p_X=p_Y=1，按本国只生产X、外国只生产Y。求工资比。",
+      "steps": [
+        "本国工资w_H=1/1=1，外国w_F=1/3。",
+        "比值w_H/w_F=3，落在3/2=1.5与6/1=6之间。",
+        "该价格支持指定专业化，但是否为世界均衡仍需商品需求和劳动总量。"
+      ],
+      "conclusion": "竞争力由工资与生产率共同决定。",
+      "calculationId": "TRADE-305-example-2"
+    }
+  ],
+  "questions": [
+    {
+      "id": "TRADE-305-l2-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "写出竞争成本条件",
+      "prompt": "高工资出口国必然无法竞争吗？",
+      "options": [
+        {
+          "id": "a",
+          "text": "必然。"
+        },
+        {
+          "id": "b",
+          "text": "不必然，还需比较工资乘单位劳动需求。"
+        },
+        {
+          "id": "c",
+          "text": "工资与成本无关。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "单位成本同时含工资和生产率。",
+      "hint": "单位成本是多少？",
+      "level": "基础"
+    },
+    {
+      "id": "TRADE-305-l2-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "计算专业化下的工资",
+      "prompt": "本国只产X且a_HX=2，外国只产Y且a_FY=3，p_X=p_Y=1。w_H/w_F是多少？",
+      "answer": 1.5,
+      "tolerance": 0.000001,
+      "explanation": "(1/2)/(1/3)=1.5。",
+      "hint": "先分别算工资。",
+      "level": "核心"
+    },
+    {
+      "id": "TRADE-305-l2-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "检查价格与专业化边界",
+      "prompt": "若相对价格恰等于本国自给机会成本，为什么不能断言本国一定完全专业化？",
+      "answer": "本国两个部门每单位劳动收入相同，存在不完全专业化或多种供给组合；世界清算与规模决定具体生产。",
+      "explanation": "边界不等式与严格内部情形不同。",
+      "hint": "哪个部门每小时价值更高？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "先检查成本不等式，再解释工资与真实消费。"
+  ],
+  "sources": [
+    {
+      "title": "上海交通大学公开国际贸易课程大纲（2020）",
+      "url": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "note": "作为经典主题定位参考；原大纲为英文课程，不能据此认证本站课程层级。讲义、题目和数字原创。"
+    }
+  ]
+}

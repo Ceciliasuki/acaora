@@ -1,103 +1,88 @@
 {
   "courseId": "TRADE-305",
-  "status": "draft",
-  "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
   "targets": [
     {
-      "target": "贸易问题与比较优势",
+      "topic": "比较优势与贸易收益",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "效率高不等于所有商品都有比较优势；生产与消费可在不同组合。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-1"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "李嘉图模型",
+      "topic": "李嘉图模型与工资",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "工资来自商品价格与单位劳动产出；模型比较的是实际购买力。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-2"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "特定要素与分配",
+      "topic": "特定要素与收入分配",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "短期要素不能全部跨部门流动；短期分配与长期流动区别。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-3"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "H-O与要素价格",
+      "topic": "要素禀赋与商品价格",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "要素密集度和条件；先把价格冲击与数量冲击分开。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-4"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "标准贸易与贸易条件",
+      "topic": "标准贸易、增长与贸易条件",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "生产收入与消费选择；偏向增长不是必然贫困化。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-5"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "规模经济与产业内贸易",
+      "topic": "关税、配额与福利",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "小国关税的价格与数量；图形、配额与大国。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-6"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "异质企业与跨国投资",
+      "topic": "规模经济与保护的边界",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "规模经济可以改变贸易来源；名义税率不等于增加值保护。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-7"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "关税配额与福利",
+      "topic": "贸易制度、流动与政策论证",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "政策工具需要相同目标比较；商品流动与要素跨境流动。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-8"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     },
     {
-      "target": "有效保护与倾销",
+      "topic": "企业差异、引力与价值链",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "从代表企业到出口选择；引力和全球价值链是不同问题。范围与条件核查见逐门审查。",
       "lessonIds": [
         "lesson-9"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "引力模型与贸易识别",
-      "lessonIds": [
-        "lesson-10"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "制度协定与全球价值链",
-      "lessonIds": [
-        "lesson-11"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
-    },
-    {
-      "target": "贸易政策综合评估",
-      "lessonIds": [
-        "lesson-12"
-      ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "status": "checked"
     }
   ]
 }

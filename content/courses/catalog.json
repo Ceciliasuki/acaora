@@ -829,24 +829,26 @@
     "chapters": [
       {
         "id": "chapter-1",
-        "title": "贸易问题与比较优势",
+        "title": "比较优势与贸易收益",
         "lessons": [
           {
             "id": "lesson-1",
-            "title": "贸易问题与比较优势",
+            "title": "比较优势与贸易收益",
             "level": "预备",
+            "optional": false,
             "prerequisites": []
           }
         ]
       },
       {
         "id": "chapter-2",
-        "title": "李嘉图模型",
+        "title": "李嘉图模型与工资",
         "lessons": [
           {
             "id": "lesson-2",
-            "title": "李嘉图模型",
+            "title": "李嘉图模型与工资",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-1"
             ]
@@ -855,12 +857,13 @@
       },
       {
         "id": "chapter-3",
-        "title": "特定要素与分配",
+        "title": "特定要素与收入分配",
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "特定要素与分配",
+            "title": "特定要素与收入分配",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-2"
             ]
@@ -869,12 +872,13 @@
       },
       {
         "id": "chapter-4",
-        "title": "H-O与要素价格",
+        "title": "要素禀赋与商品价格",
         "lessons": [
           {
             "id": "lesson-4",
-            "title": "H-O与要素价格",
+            "title": "要素禀赋与商品价格",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-3"
             ]
@@ -883,12 +887,13 @@
       },
       {
         "id": "chapter-5",
-        "title": "标准贸易与贸易条件",
+        "title": "标准贸易、增长与贸易条件",
         "lessons": [
           {
             "id": "lesson-5",
-            "title": "标准贸易与贸易条件",
+            "title": "标准贸易、增长与贸易条件",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-4"
             ]
@@ -897,12 +902,13 @@
       },
       {
         "id": "chapter-6",
-        "title": "规模经济与产业内贸易",
+        "title": "关税、配额与福利",
         "lessons": [
           {
             "id": "lesson-6",
-            "title": "规模经济与产业内贸易",
+            "title": "关税、配额与福利",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-5"
             ]
@@ -911,12 +917,13 @@
       },
       {
         "id": "chapter-7",
-        "title": "异质企业与跨国投资",
+        "title": "规模经济与保护的边界",
         "lessons": [
           {
             "id": "lesson-7",
-            "title": "异质企业与跨国投资",
+            "title": "规模经济与保护的边界",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-6"
             ]
@@ -925,12 +932,13 @@
       },
       {
         "id": "chapter-8",
-        "title": "关税配额与福利",
+        "title": "贸易制度、流动与政策论证",
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "关税配额与福利",
+            "title": "贸易制度、流动与政策论证",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-7"
             ]
@@ -939,56 +947,15 @@
       },
       {
         "id": "chapter-9",
-        "title": "有效保护与倾销",
+        "title": "企业差异、引力与价值链",
         "lessons": [
           {
             "id": "lesson-9",
-            "title": "有效保护与倾销",
-            "level": "核心",
+            "title": "企业差异、引力与价值链",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-8"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-10",
-        "title": "引力模型与贸易识别",
-        "lessons": [
-          {
-            "id": "lesson-10",
-            "title": "引力模型与贸易识别",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-9"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-11",
-        "title": "制度协定与全球价值链",
-        "lessons": [
-          {
-            "id": "lesson-11",
-            "title": "制度协定与全球价值链",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-10"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-12",
-        "title": "贸易政策综合评估",
-        "lessons": [
-          {
-            "id": "lesson-12",
-            "title": "贸易政策综合评估",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-11"
             ]
           }
         ]

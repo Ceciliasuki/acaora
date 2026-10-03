@@ -1,0 +1,115 @@
+{
+  "id": "lesson-4",
+  "courseId": "TRADE-305",
+  "chapterId": "chapter-4",
+  "title": "要素禀赋与商品价格",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "TRADE-305-l4-q1",
+    "TRADE-305-l4-q2",
+    "TRADE-305-l4-q3"
+  ],
+  "objectives": [
+    "限定H-O与价格定理条件",
+    "求解要素报酬",
+    "区分禀赋与价格冲击"
+  ],
+  "prerequisites": [
+    "前面核心课节与微观经济学的竞争、最优化和消费者/生产者剩余。"
+  ],
+  "sections": [
+    {
+      "heading": "要素密集度和条件",
+      "paragraphs": [
+        "经典H-O以两国两商品两要素、相同技术、竞争、恒定规模报酬、适当偏好和无要素密集度逆转等条件，联系相对要素丰裕与相对密集商品出口。丰裕和密集是相对概念，不能只看一国人口或资本绝对数量。",
+        "两商品均生产、技术和商品价格适当可比时，零利润把商品价格连接到要素报酬；要素价格均等化还需共同多样化锥等条件，贸易不保证现实工资跨国相等。Stolper–Samuelson在相应两部门内点条件下，商品相对价格上升提高其密集要素的实际回报，降低另一要素；不能无条件外推。"
+      ],
+      "formulas": [
+        "\\begin{pmatrix}2&1\\\\1&2\\end{pmatrix}\\begin{pmatrix}w\\\\r\\end{pmatrix}=\\begin{pmatrix}p_X\\\\p_Y\\end{pmatrix}"
+      ]
+    },
+    {
+      "heading": "先把价格冲击与数量冲击分开",
+      "paragraphs": [
+        "用固定系数技术演示零利润代数：X用2L+1K，Y用1L+2K，生产时2w+r=p_X、w+2r=p_Y。这是简化的系数模型，不代替完整可替代技术的证明。",
+        "固定商品价格、两部门内点时，Rybczynski讨论一个要素增加的产出调整。上述技术下L=100、K=80给X=40、Y=20；L增至110而K不变，X=46⅔、Y=16⅔。不应把增加劳动称所有部门同比扩张；若某产出变负，原内点已失效。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "商品价格与要素收入",
+      "problem": "技术为X用2L+K、Y用L+2K。p_X从3升到3.3，p_Y保持3，两部门继续生产。求新工资w。",
+      "steps": [
+        "联立2w+r=3.3、w+2r=3。",
+        "得w=1.2、r=0.9；原价格(3,3)给两者均1。",
+        "工资升20%，资本报酬降10%；w/p_X也由1/3升到1.2/3.3，说明购买力仍须按商品核对。"
+      ],
+      "conclusion": "这是明确技术和内点条件下的结果。",
+      "calculationId": "TRADE-305-example-4"
+    }
+  ],
+  "questions": [
+    {
+      "id": "TRADE-305-l4-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "限定H-O与价格定理条件",
+      "prompt": "国际贸易是否无条件使各国要素价格完全相等？",
+      "options": [
+        {
+          "id": "a",
+          "text": "无条件。"
+        },
+        {
+          "id": "b",
+          "text": "不，技术、生产范围与贸易条件等很关键。"
+        },
+        {
+          "id": "c",
+          "text": "只取决于国家面积。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "经典定理有严格范围。",
+      "hint": "各国是否都生产同样商品？",
+      "level": "基础"
+    },
+    {
+      "id": "TRADE-305-l4-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "求解要素报酬",
+      "prompt": "同样技术，p_X=3.6、p_Y=3，两部门生产。工资w是多少？",
+      "answer": 1.4,
+      "tolerance": 0.000001,
+      "explanation": "2w+r=3.6，w+2r=3；消元得3w=4.2。",
+      "hint": "联立两个零利润条件。",
+      "level": "核心"
+    },
+    {
+      "id": "TRADE-305-l4-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "区分禀赋与价格冲击",
+      "prompt": "禀赋变化解出负的某部门产量，应如何处理？",
+      "answer": "不能保留负产量。已超出两部门内点/多样化范围，应求专业化角点并更新价格和要素回报条件。",
+      "explanation": "理论成立范围不能由线性软件解替代。",
+      "hint": "所有数量是否非负且可行？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "定理的条件与冲击类型先于方向判断。"
+  ],
+  "sources": [
+    {
+      "title": "上海交通大学公开国际贸易课程大纲（2020）",
+      "url": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "note": "作为经典主题定位参考；原大纲为英文课程，不能据此认证本站课程层级。讲义、题目和数字原创。"
+    }
+  ]
+}

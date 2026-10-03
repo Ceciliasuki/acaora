@@ -2,6 +2,17 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-16 trade lessons distinguish welfare transfers and support a simple original tariff case',async({page})=>{
+ await installApiMocks(page,{signedIn:true});
+ for(let i=1;i<=9;i++){await page.goto(`/courses/TRADE-305/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}
+ await page.goto('/courses/TRADE-305/assessments/case-study');
+ const q=page.locator('[aria-labelledby="title-TRADE-305-case-dwl"]');await q.getByLabel('输入数值答案').fill('100');await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');await page.reload();await expect(q.getByLabel('输入数值答案')).toHaveValue('100');
+ await page.setViewportSize({width:375,height:900});await page.goto('/courses/TRADE-305/lesson-6');await expect(page.getByRole('img',{name:/小国关税/})).toBeVisible();
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+ await page.getByRole('img',{name:/小国关税/}).scrollIntoViewIfNeeded();await page.screenshot({path:'test-results/course-TRADE-305-375.png'});
+});
+
 test('COURSE-15 multivariate lessons preserve a held-out classification error and readable matrix formulas',async({page})=>{
  await installApiMocks(page,{signedIn:true});
  for(let i=1;i<=9;i++){await page.goto(`/courses/STAT-306/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);await expect(page.locator('math').first()).toBeAttached();}
