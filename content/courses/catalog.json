@@ -41,10 +41,18 @@
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "离散与连续分布",
+            "title": "离散分布与模型选择",
             "level": "核心",
             "prerequisites": [
               "lesson-2"
+            ]
+          },
+          {
+            "id": "lesson-3-continuous",
+            "title": "连续分布、分布函数与标准化",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
             ]
           }
         ]
@@ -58,7 +66,7 @@
             "title": "联合分布与变量变换",
             "level": "核心",
             "prerequisites": [
-              "lesson-3"
+              "lesson-3-continuous"
             ]
           }
         ]

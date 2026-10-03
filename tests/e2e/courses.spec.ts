@@ -60,3 +60,33 @@ for(const width of [1440,375])test(`@a11y COURSE-07 ${width}px lesson has no ser
  const results=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(results.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
  await page.screenshot({path:`test-results/course-lesson-${width}.png`,fullPage:true});
 });
+test('COURSE-08 complete probability course includes inference and assessed questions with review links',async({page})=>{
+ const state=await installApiMocks(page,{signedIn:true});
+ await page.goto('/courses/STAT-201/lesson-7');
+ await expect(page.getByRole('heading',{name:'进阶：截断样本需要条件密度',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'例 3 · 固定门槛截断的速率估计',exact:true})).toBeVisible();
+ await page.goto('/courses/STAT-201/assessments/chapter-11');
+ await expect(page.getByRole('region',{name:/第 8 题/})).toBeVisible();
+ await page.goto('/courses/STAT-201/assessments/final');
+ await expect(page.getByRole('region',{name:/第 12 题/})).toBeVisible();
+ const calculation=page.getByRole('region',{name:/第 3 题/});
+ await calculation.getByLabel('输入数值答案').fill('0.3');await calculation.getByRole('button',{name:'检查答案'}).click();
+ await expect(calculation).toContainText('答案还不一致');
+ await expect.poll(()=>state.courseRecords[JSON.stringify([state.userId,'STAT-201'])]?.attempts.some(a=>a.questionId==='STAT-201-final-q3')).toBe(true);
+ await page.goto('/courses/STAT-201/review');
+ await page.getByRole('link',{name:'回到题目',exact:true}).click();
+ await expect(page).toHaveURL(/\/assessments\/final#title-STAT-201-final-q3$/);
+ await expect(calculation.getByLabel('输入数值答案')).toHaveValue('0.3');
+ await calculation.getByLabel('输入数值答案').fill('0.2');await calculation.getByRole('button',{name:'检查答案'}).click();
+ await expect(calculation).toContainText('回答正确');
+ expect(state.requests.some(x=>x.includes('/api/papers/ai'))).toBe(false);
+});
+test('@a11y COURSE-09 inference lecture and final assessment stay readable on mobile',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.setViewportSize({width:375,height:900});
+ for(const [name,url] of [['inference','/courses/STAT-201/lesson-8'],['final','/courses/STAT-201/assessments/final']]){
+  await page.goto(url);await expect(page.getByRole('button',{name:'查看解析'}).first()).toBeVisible();
+  const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+  const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+  await page.screenshot({path:`test-results/course-STAT-201-${name}-375.png`});
+ }
+});

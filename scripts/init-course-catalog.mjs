@@ -12,6 +12,9 @@ const catalog=definitions.map(([code,name,track,prerequisites,titles])=>({
  code,name,track,prerequisites,description:"通过理论讲解、关键推导、完整例题与分层练习，建立"+name+"的本科核心知识体系。",
  chapters:titles.map((title,i)=>({id:"chapter-"+(i+1),title,lessons:[{id:"lesson-"+(i+1),title,level:i===0?"预备":"核心",prerequisites:i?["lesson-"+i]:[]}]}))
 }));
+const probability=catalog.find(c=>c.code==='STAT-201');
+probability.chapters[2].lessons=[{id:'lesson-3',title:'离散分布与模型选择',level:'核心',prerequisites:['lesson-2']},{id:'lesson-3-continuous',title:'连续分布、分布函数与标准化',level:'核心',prerequisites:['lesson-3']}];
+probability.chapters[3].lessons[0].prerequisites=['lesson-3-continuous'];
 mkdirSync("content/courses",{recursive:true});writeFileSync("content/courses/catalog.json",JSON.stringify(catalog,null,2)+"\n");
 for(const course of catalog) {
  const dir="content/courses/"+course.code;mkdirSync(dir,{recursive:true});

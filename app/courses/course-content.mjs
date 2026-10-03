@@ -74,6 +74,9 @@ export async function loadLesson(courseId,lessonId) {
     return lesson.courseId!==courseId || lesson.id!==lessonId || validateLesson(lesson).length ? null : lesson;
   } catch(error) { if(error.code==="ENOENT") return null; throw error; }
 }
+export async function availableLessonIds(course) {
+ return (await Promise.all(course.chapters.flatMap(c=>c.lessons.map(async lesson=>(await loadLesson(course.code,lesson.id))?lesson.id:null)))).filter(id=>id!==null);
+}
 export async function loadAssessment(courseId,assessmentId) {
   if(!listCourses().some(c=>c.code===courseId) || !/^(midterm|final|chapter-\d+)$/.test(assessmentId)) return null;
   try {

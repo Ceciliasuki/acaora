@@ -1,95 +1,110 @@
 {
   "courseId": "STAT-201",
-  "status": "draft",
+  "status": "checked",
   "reference": "docs/superpowers/specs/2026-10-02-course-academic-benchmarks.md",
+  "review": "docs/course-reviews/STAT-201.md",
+  "reviewDate": "2026-10-03",
+  "reviewLevel": "Agent content and calculation review; no instructor or learning-outcome validation",
   "targets": [
     {
       "target": "数学预备与概率建模",
       "lessonIds": [
         "lesson-1"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "数学先修与概率公理作为平台预备；对应讲义的样本空间、公理、计数及边界，练习覆盖机制检查。",
+      "status": "checked"
     },
     {
       "target": "条件概率与独立",
       "lessonIds": [
         "lesson-2"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "概率理论的条件概率、独立、全概率与Bayes；正文含完整推导、联合/逆概率区分与条件独立反例。",
+      "status": "checked"
     },
     {
       "target": "离散与连续分布",
       "lessonIds": [
-        "lesson-3"
+        "lesson-3",
+        "lesson-3-continuous"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的随机变量与分布；分为离散机制与连续密度两节，覆盖CDF、支持、归一化、常见模型与标准化。",
+      "status": "checked"
     },
     {
       "target": "联合分布与变量变换",
       "lessonIds": [
         "lesson-4"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的随机向量与变量函数；正文含边缘、条件、独立、单/多支变换和二维Jacobian；例题积分独立复算。",
+      "status": "checked"
     },
     {
       "target": "期望方差与相关",
       "lessonIds": [
         "lesson-5"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "概率数字特征主线；正文含可积条件、矩、协方差、相关、条件期望、全方差及不等式，反例核对独立边界。",
+      "status": "checked"
     },
     {
       "target": "极限定理与抽样分布",
       "lessonIds": [
         "lesson-6"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "推断前置的极限定理与抽样分布；正文分开弱大数/CLT与正态有限样本t、卡方、F，并核查依赖和重尾限制。",
+      "status": "checked"
     },
     {
       "target": "点估计与估计量评价",
       "lessonIds": [
         "lesson-7"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的参数估计与估计量评价；正文推导矩/MLE、支持边界、偏差/MSE、一致性与正则信息；进阶分别推导右删失和固定阈值截断。",
+      "status": "checked"
     },
     {
       "target": "区间估计与样本量",
       "lessonIds": [
         "lesson-8"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的区间估计及样本量；正文由枢轴反解均值/方差区间，讲解配对/Welch、Wilson边界及精度规划。",
+      "status": "checked"
     },
     {
       "target": "检验与功效",
       "lessonIds": [
         "lesson-9"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的假设检验；平台补足p值、区间对应、备择功效推导、规划与多重性，有限样本和渐近似然比条件分开。",
+      "status": "checked"
     },
     {
       "target": "非参数与拟合检验",
       "lessonIds": [
         "lesson-10"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的拟合检验与秩和检验；正文含符号、符号秩、Mann–Whitney、交换/置换和Pearson自由度，明确检验目标与条件。",
+      "status": "checked"
     },
     {
       "target": "方差分析与回归衔接",
       "lessonIds": [
         "lesson-11"
       ],
-      "source": "待逐项映射公开大纲与补足目标",
-      "status": "draft"
+      "source": "https://math.pku.edu.cn/bks/sykc/148679.htm",
+      "basis": "公开范围的单/双因素方差分析与回归；正文推导平方和、交互、重复/非平衡限制、OLS及预测区间，附原创数据与完整报告训练。",
+      "status": "checked"
     }
   ]
 }
