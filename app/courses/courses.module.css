@@ -1,0 +1,32 @@
+.reader { max-width: 76ch; font-size: 1.02rem; line-height: 1.95; overflow-wrap: anywhere; color: #233047; }
+.reader section { margin: 2.5rem 0; scroll-margin-top: 1.5rem; }
+.reader h2 { font-size: 1.35rem; line-height: 1.5; color: #152137; margin-bottom: 1rem; }
+.reader h3 { font-size: 1.1rem; }
+.reader p { margin: 0.9rem 0; }
+.reader li { margin: 0.5rem 0; }
+.muted { color: #546175; font-size: 0.9rem; line-height: 1.7; }
+.example { padding: 1rem 1.4rem; margin: 1.2rem 0; border-left: 3px solid #94acc7; background: #f4f7fa; }
+.formula { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 0.6rem 0; }
+.mathError { color: #924322; overflow-wrap: anywhere; }
+.tableScroll { overflow-x: auto; max-width: 100%; border: 1px solid #d8e1ec; padding: 0.5rem; }
+.tableScroll table { border-collapse: collapse; width: 100%; min-width: 420px; }
+.tableScroll th, .tableScroll td { text-align: left; padding: 0.7rem; border-bottom: 1px solid #d8e1ec; }
+.tableScroll caption { text-align: left; font-weight: 600; padding: 0.6rem; }
+.references { border-top: 1px solid #d8e1ec; padding-top: 1rem; font-size: 0.9rem; color: #546175; }
+.references summary { cursor: pointer; font-weight: 600; color: #233047; }
+.question { margin: 1.6rem 0; padding: 1.2rem; background: #fff; border: 1px solid #d8e1ec; border-radius: 10px; line-height: 1.8; max-width: 76ch; }
+.question h3 { font-size: 1.02rem; }
+.level { color: #546175; font-size: 0.8rem; font-weight: 400; padding-left: 0.5rem; }
+.question input[type="text"], .question textarea { width: 100%; padding: 0.7rem; margin-top: 0.4rem; border: 1px solid #7c8da5; border-radius: 5px; font: inherit; color: #233047; background: #fff; }
+.question fieldset { border: 0; padding: 0; }
+.option { display: flex; gap: 0.7rem; align-items: baseline; min-height: 44px; padding: 0.5rem; cursor: pointer; }
+.option input { flex: 0 0 auto; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.8rem; }
+.actions button { border: 1px solid #b6c5d7; border-radius: 6px; background: #f4f7fa; color: #233047; padding: 0.5rem 0.9rem; min-height: 44px; font: inherit; cursor: pointer; }
+.actions button[type="submit"] { background: #253e5b; border-color: #253e5b; color: #fff; }
+.actions button:disabled { opacity: 0.65; cursor: default; }
+.actions button:focus-visible, .question input:focus-visible, .question textarea:focus-visible, .references summary:focus-visible, .tableScroll:focus-visible { outline: 3px solid #456e9b; outline-offset: 3px; }
+.feedback { color: #215734; }.incorrect { color: #98422f; }
+.hint, .solution { border-top: 1px solid #d8e1ec; padding-top: 0.8rem; margin-top: 1rem; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media (max-width: 600px) { .reader { font-size: 1rem; } .question { padding: 1rem; } .example { padding: 0.8rem; } }
