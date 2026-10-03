@@ -1,0 +1,567 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "ECON-301-example-1",
+      "inputs": {
+        "effects": [
+          0,
+          2,
+          4,
+          6
+        ]
+      },
+      "method": "Aggregate complete constructed potential-effect vector.",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 3,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l1-q2",
+      "inputs": {
+        "effects": [
+          -1,
+          1,
+          3
+        ]
+      },
+      "method": "Mean of explicit teaching potential effects.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-2",
+      "inputs": {
+        "beta": 2,
+        "gamma": 3,
+        "varX": 4,
+        "covXZ": 2
+      },
+      "method": "Solve omitted-model population normal equation from complete-model moments.",
+      "computed": 3.5,
+      "exact_or_repr": "3.5",
+      "declared": 3.5,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l2-q2",
+      "inputs": {
+        "beta": 1,
+        "gamma": 2,
+        "varX": 2,
+        "covXZ": 1
+      },
+      "method": "Solve population projection normal equation.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-3",
+      "inputs": {
+        "estimate": 2,
+        "null": 0,
+        "se": 0.5
+      },
+      "method": "Standardize estimate-minus-null by the given standard error.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l3-q2",
+      "inputs": {
+        "estimate": 2,
+        "se": 0.5,
+        "z": 1.96
+      },
+      "method": "Linear endpoint transformation using the specifically provided rounded z value.",
+      "computed": 2.98,
+      "exact_or_repr": "2.98",
+      "declared": 2.98,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-4",
+      "inputs": {
+        "z": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "x": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "y": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "intercept": true
+      },
+      "method": "Project actual explanatory design onto instruments then fit second-stage coefficients.",
+      "computed": 1.5000000000000004,
+      "exact_or_repr": "1.5000000000000004",
+      "declared": 1.5,
+      "tolerance": 1e-09,
+      "absolute_error": 4.440892098500626e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l4-q2",
+      "inputs": {
+        "covZY": 6,
+        "covZX": 3
+      },
+      "method": "Solve scalar external-instrument population moment equation.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-5",
+      "inputs": {
+        "x": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "y": [
+          [
+            1.0,
+            3.0
+          ],
+          [
+            5.0,
+            7.0
+          ]
+        ],
+        "time_effect": false
+      },
+      "method": "Demean actual two-unit panel and solve within regression.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l5-q2",
+      "inputs": {
+        "delta_x": [
+          1,
+          2
+        ],
+        "delta_y": [
+          2,
+          3
+        ],
+        "common_time_effect": false
+      },
+      "method": "Solve explicitly intercept-free differenced design.",
+      "computed": 1.5999999999999996,
+      "exact_or_repr": "1.5999999999999996",
+      "declared": 1.6,
+      "tolerance": 1e-06,
+      "absolute_error": 4.440892098500626e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-6",
+      "inputs": {
+        "control_pre": 10,
+        "control_post": 12,
+        "treated_pre": 12,
+        "treated_post": 17
+      },
+      "method": "Solve saturated four-cell treatment-by-period regression rather than repeated subtraction.",
+      "computed": 3.0000000000000013,
+      "exact_or_repr": "3.0000000000000013",
+      "declared": 3,
+      "tolerance": 1e-09,
+      "absolute_error": 1.3322676295501878e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l6-q2",
+      "inputs": {
+        "control_pre": 8,
+        "control_post": 11,
+        "treated_pre": 10,
+        "treated_post": 16
+      },
+      "method": "Saturated four-cell least squares interaction.",
+      "computed": 3.0000000000000027,
+      "exact_or_repr": "3.0000000000000027",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 2.6645352591003757e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-7",
+      "inputs": {
+        "cutoff": 50,
+        "left_mean": "x-30",
+        "right_mean": "x-27"
+      },
+      "method": "Independently reconstruct both given local mean functions and evaluate cutoff limits.",
+      "computed": 3.000000000000008,
+      "exact_or_repr": "3.000000000000008",
+      "declared": 3,
+      "tolerance": 1e-09,
+      "absolute_error": 7.993605777301127e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l7-q2",
+      "inputs": {
+        "assigned_treatment_mean": 6,
+        "assigned_control_mean": 4
+      },
+      "method": "Assigned-treatment mean contrast.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-8",
+      "inputs": {
+        "intercept": 1,
+        "phi": 0.5,
+        "current": 6
+      },
+      "method": "Evaluate original AR transition row at current state.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-AR-mean",
+      "inputs": {
+        "intercept": 1,
+        "phi": 0.5
+      },
+      "method": "Solve stationary expectation fixed point.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l8-q2",
+      "inputs": {
+        "phi": 0.5,
+        "innovation_variance": 3
+      },
+      "method": "Solve stationary covariance Lyapunov equation with scientific linear algebra.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-9",
+      "inputs": {
+        "successes": 3,
+        "n": 5,
+        "null_p": 0.5
+      },
+      "method": "Optimize actual binomial probability then compare null and fitted log likelihoods.",
+      "computed": 0.20135513550688833,
+      "exact_or_repr": "0.20135513550688833",
+      "declared": 0.20135513550688877,
+      "tolerance": 1e-09,
+      "absolute_error": 4.440892098500626e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-Bernoulli-mle",
+      "inputs": {
+        "successes": 3,
+        "n": 5
+      },
+      "method": "Scientific binomial-likelihood optimization.",
+      "computed": 0.6000000004307541,
+      "exact_or_repr": "0.6000000004307541",
+      "declared": 0.6,
+      "tolerance": 1e-07,
+      "absolute_error": 4.3075409905668494e-10,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l9-q2",
+      "inputs": {
+        "successes": 7,
+        "n": 10
+      },
+      "method": "Numerically optimize the original binomial likelihood.",
+      "computed": 0.7000003694659545,
+      "exact_or_repr": "0.7000003694659545",
+      "declared": 0.7,
+      "tolerance": 1e-06,
+      "absolute_error": 3.6946595449727226e-07,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-example-10",
+      "inputs": {
+        "observations": [
+          1,
+          2,
+          3
+        ],
+        "weight": 2
+      },
+      "method": "Numerically minimize stated sample-moment distance.",
+      "computed": 1.9999999999999998,
+      "exact_or_repr": "1.9999999999999998",
+      "declared": 2,
+      "tolerance": 1e-09,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-l10-q2",
+      "inputs": {
+        "observations": [
+          2,
+          4,
+          6
+        ],
+        "weight": 1
+      },
+      "method": "Numerically minimize positive-weight single sample-moment distance.",
+      "computed": 3.9999999999999996,
+      "exact_or_repr": "3.9999999999999996",
+      "declared": 4,
+      "tolerance": 1e-06,
+      "absolute_error": 4.440892098500626e-16,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-case-did",
+      "inputs": {
+        "records": [
+          {
+            "unit": "1",
+            "treated": "1",
+            "time": "0",
+            "outcome": "10"
+          },
+          {
+            "unit": "1",
+            "treated": "1",
+            "time": "1",
+            "outcome": "11"
+          },
+          {
+            "unit": "2",
+            "treated": "1",
+            "time": "0",
+            "outcome": "12"
+          },
+          {
+            "unit": "2",
+            "treated": "1",
+            "time": "1",
+            "outcome": "17"
+          },
+          {
+            "unit": "3",
+            "treated": "1",
+            "time": "0",
+            "outcome": "14"
+          },
+          {
+            "unit": "3",
+            "treated": "1",
+            "time": "1",
+            "outcome": "23"
+          },
+          {
+            "unit": "4",
+            "treated": "0",
+            "time": "0",
+            "outcome": "8"
+          },
+          {
+            "unit": "4",
+            "treated": "0",
+            "time": "1",
+            "outcome": "6"
+          },
+          {
+            "unit": "5",
+            "treated": "0",
+            "time": "0",
+            "outcome": "10"
+          },
+          {
+            "unit": "5",
+            "treated": "0",
+            "time": "1",
+            "outcome": "12"
+          },
+          {
+            "unit": "6",
+            "treated": "0",
+            "time": "0",
+            "outcome": "12"
+          },
+          {
+            "unit": "6",
+            "treated": "0",
+            "time": "1",
+            "outcome": "18"
+          }
+        ],
+        "design_rank": 8,
+        "changes": {
+          "1": 1.0,
+          "2": 5.0,
+          "3": 9.0,
+          "4": -2.0,
+          "5": 2.0,
+          "6": 6.0
+        }
+      },
+      "method": "Read CSV, construct actual individual/time design and estimate interaction; cross-check paired group-change contrast.",
+      "computed": 2.9999999999999942,
+      "exact_or_repr": "2.9999999999999942",
+      "declared": 3,
+      "tolerance": 1e-06,
+      "absolute_error": 5.773159728050814e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-case-contrast",
+      "inputs": {
+        "treated_changes": [
+          1.0,
+          5.0,
+          9.0
+        ],
+        "control_changes": [
+          -2.0,
+          2.0,
+          6.0
+        ]
+      },
+      "method": "Compare paired mean-change estimator and full panel design coefficient.",
+      "computed": 3.0,
+      "exact_or_repr": "3.0",
+      "declared": 2.9999999999999942,
+      "tolerance": 1e-12,
+      "absolute_error": 5.773159728050814e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-case-change-variance",
+      "inputs": {
+        "changes": [
+          1.0,
+          5.0,
+          9.0
+        ],
+        "ddof": 1
+      },
+      "method": "Sample variance of actual treated paired changes from CSV.",
+      "computed": 16.0,
+      "exact_or_repr": "16.0",
+      "declared": 16,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-case-ci-lower",
+      "inputs": {
+        "treated": [
+          1.0,
+          5.0,
+          9.0
+        ],
+        "control": [
+          -2.0,
+          2.0,
+          6.0
+        ],
+        "df": 4.0,
+        "se": 3.265986323710904
+      },
+      "method": "Welch quantile and variance from fixed paired changes, under explicitly stated independent normal-change illustration.",
+      "computed": -6.067831742110082,
+      "exact_or_repr": "-6.067831742110082",
+      "declared": -6.0678317421100765,
+      "tolerance": 1e-09,
+      "absolute_error": 5.329070518200751e-15,
+      "status": "passed"
+    },
+    {
+      "id": "ECON-301-case-ci-upper",
+      "inputs": {
+        "treated": [
+          1.0,
+          5.0,
+          9.0
+        ],
+        "control": [
+          -2.0,
+          2.0,
+          6.0
+        ],
+        "df": 4.0,
+        "se": 3.265986323710904
+      },
+      "method": "Upper endpoint from the same actual teaching data and conditional Welch model.",
+      "computed": 12.067831742110071,
+      "exact_or_repr": "12.067831742110071",
+      "declared": 12.067831742110076,
+      "tolerance": 1e-09,
+      "absolute_error": 5.329070518200751e-15,
+      "status": "passed"
+    }
+  ]
+}

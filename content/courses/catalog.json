@@ -521,24 +521,26 @@
     "chapters": [
       {
         "id": "chapter-1",
-        "title": "识别与反事实",
+        "title": "经济问题、反事实与识别",
         "lessons": [
           {
             "id": "lesson-1",
-            "title": "识别与反事实",
+            "title": "经济问题、反事实与识别",
             "level": "预备",
+            "optional": false,
             "prerequisites": []
           }
         ]
       },
       {
         "id": "chapter-2",
-        "title": "OLS与设定偏误",
+        "title": "OLS和遗漏变量偏差",
         "lessons": [
           {
             "id": "lesson-2",
-            "title": "OLS与设定偏误",
+            "title": "OLS和遗漏变量偏差",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-1"
             ]
@@ -547,12 +549,13 @@
       },
       {
         "id": "chapter-3",
-        "title": "GLS与稳健推断",
+        "title": "推断、聚类和模型设定",
         "lessons": [
           {
             "id": "lesson-3",
-            "title": "GLS与稳健推断",
+            "title": "推断、聚类和模型设定",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-2"
             ]
@@ -561,12 +564,13 @@
       },
       {
         "id": "chapter-4",
-        "title": "似然与LR/Wald/LM",
+        "title": "工具变量与两阶段估计",
         "lessons": [
           {
             "id": "lesson-4",
-            "title": "似然与LR/Wald/LM",
+            "title": "工具变量与两阶段估计",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-3"
             ]
@@ -575,12 +579,13 @@
       },
       {
         "id": "chapter-5",
-        "title": "IV与联立模型",
+        "title": "面板与个体固定效应",
         "lessons": [
           {
             "id": "lesson-5",
-            "title": "IV与联立模型",
+            "title": "面板与个体固定效应",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-4"
             ]
@@ -589,12 +594,13 @@
       },
       {
         "id": "chapter-6",
-        "title": "面板与聚类",
+        "title": "DID与政策评估",
         "lessons": [
           {
             "id": "lesson-6",
-            "title": "面板与聚类",
+            "title": "DID与政策评估",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-5"
             ]
@@ -603,12 +609,13 @@
       },
       {
         "id": "chapter-7",
-        "title": "DID与事件研究",
+        "title": "实验与断点的识别边界",
         "lessons": [
           {
             "id": "lesson-7",
-            "title": "DID与事件研究",
+            "title": "实验与断点的识别边界",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-6"
             ]
@@ -617,12 +624,13 @@
       },
       {
         "id": "chapter-8",
-        "title": "实验与断点",
+        "title": "时间序列与伪回归",
         "lessons": [
           {
             "id": "lesson-8",
-            "title": "实验与断点",
+            "title": "时间序列与伪回归",
             "level": "核心",
+            "optional": false,
             "prerequisites": [
               "lesson-7"
             ]
@@ -631,12 +639,13 @@
       },
       {
         "id": "chapter-9",
-        "title": "ARMA与VAR",
+        "title": "似然检验和离散选择",
         "lessons": [
           {
             "id": "lesson-9",
-            "title": "ARMA与VAR",
-            "level": "核心",
+            "title": "似然检验和离散选择",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-8"
             ]
@@ -645,56 +654,15 @@
       },
       {
         "id": "chapter-10",
-        "title": "单位根与协整",
+        "title": "GMM与动态面板入门",
         "lessons": [
           {
             "id": "lesson-10",
-            "title": "单位根与协整",
-            "level": "核心",
+            "title": "GMM与动态面板入门",
+            "level": "进阶",
+            "optional": true,
             "prerequisites": [
               "lesson-9"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-11",
-        "title": "离散选择与样本选择",
-        "lessons": [
-          {
-            "id": "lesson-11",
-            "title": "离散选择与样本选择",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-10"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-12",
-        "title": "GMM与动态面板",
-        "lessons": [
-          {
-            "id": "lesson-12",
-            "title": "GMM与动态面板",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-11"
-            ]
-          }
-        ]
-      },
-      {
-        "id": "chapter-13",
-        "title": "完整实证报告",
-        "lessons": [
-          {
-            "id": "lesson-13",
-            "title": "完整实证报告",
-            "level": "核心",
-            "prerequisites": [
-              "lesson-12"
             ]
           }
         ]

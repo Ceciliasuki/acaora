@@ -2,6 +2,21 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-14 econometrics includes an honest small-sample case with optional reference steps',async({page})=>{
+ await installApiMocks(page,{signedIn:true});
+ for(let i=1;i<=10;i++){await page.goto(`/courses/ECON-301/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}
+ await page.goto('/courses/ECON-301/assessments/case-study');
+ await expect(page.getByRole('heading',{name:'案例参考流程',exact:true})).toBeHidden();
+ const q=page.locator('[aria-labelledby="title-ECON-301-case-did"]');await q.getByLabel('输入数值答案').fill('3');await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');
+ await page.getByText('参考：案例参考流程',{exact:true}).click();
+ await expect(page.getByText(/\[−6.067832,12.067832\]/)).toBeVisible();
+ await page.reload();await expect(q.getByLabel('输入数值答案')).toHaveValue('3');
+ await page.setViewportSize({width:375,height:900});await page.goto('/courses/ECON-301/lesson-6');
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
+ const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+ await page.screenshot({path:'test-results/course-ECON-301-375.png'});
+});
+
 test('COURSE-13 regression core, elective and original-data scenario remain simple and restorable',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true});
  for(let i=1;i<=10;i++){
