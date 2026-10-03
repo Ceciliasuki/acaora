@@ -2,6 +2,13 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
+test('COURSE-18 every checked comprehensive case is reachable directly from the main course centre',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.goto('/courses');
+ for(const [code,name] of [['STAT-201','概率论与数理统计'],['ECON-204','微观经济学'],['STAT-302','回归分析'],['ECON-301','计量经济学'],['STAT-306','多元统计分析'],['TRADE-305','国际贸易学'],['FIN-308','国际金融']]){
+  await page.getByRole('button',{name:`${code} ${name}`,exact:true}).click();await expect(page.getByRole('link',{name:'综合案例',exact:true})).toHaveAttribute('href',`/courses/${code}/assessments/case-study`);
+ }
+});
+
 test('COURSE-17 finance lessons keep one quote direction and restore forward-hedging practice',async({page})=>{
  await installApiMocks(page,{signedIn:true});
  for(let i=1;i<=9;i++){await page.goto(`/courses/FIN-308/lesson-${i}`);await expect(page.locator('form:visible')).toHaveCount(3);}

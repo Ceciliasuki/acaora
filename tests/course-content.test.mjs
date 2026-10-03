@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {readFileSync} from 'node:fs';
 import { listCourses, loadLesson, validateLesson, validateCatalog } from '../app/courses/course-content.mjs';
+test('production build gates all curated content before compiling the deployment',()=>{
+ const scripts=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8')).scripts;
+ assert.ok(scripts.build.startsWith('node scripts/check-course-content.mjs && '));
+});
 test('catalog contains all seven existing course codes', () => {
   assert.deepEqual(listCourses().map(c=>c.code).sort(), ['STAT-201','STAT-302','STAT-306','ECON-301','ECON-204','TRADE-305','FIN-308'].sort());
 });
