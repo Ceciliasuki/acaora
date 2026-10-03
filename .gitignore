@@ -52,3 +52,4 @@ yarn-error.log*
 __pycache__/
 # generated agent hook (installed by skill tooling, not part of the project)
 .codex/hooks.json
+supabase/.temp/

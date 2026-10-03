@@ -25,7 +25,7 @@ importers:
         version: 0.5.23
       drizzle-orm:
         specifier: 0.45.2
-        version: 0.45.2
+        version: 0.45.2(@electric-sql/pglite@0.5.8)
       katex:
         specifier: 0.19.0
         version: 0.19.0
@@ -54,6 +54,9 @@ importers:
       '@cloudflare/vite-plugin':
         specifier: 1.37.1
         version: 1.37.1(vite@8.0.13(@types/node@22.19.19)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12))(workerd@1.20260515.1)(wrangler@4.92.0)
+      '@electric-sql/pglite':
+        specifier: 0.5.8
+        version: 0.5.8
       '@eslint/js':
         specifier: 9.39.4
         version: 9.39.4
@@ -286,6 +289,9 @@ packages:
     resolution: {integrity: sha512-703RN/3OdsRD5mtse2HBX7Um7xwaP9tlswEG6svOtjqokXoX7rJdQj7DyabD2I+xk22RgaIIU+R6BHgkpZGB/w==}
     engines: {node: '>=0.8'}
     hasBin: true
+
+  '@electric-sql/pglite@0.5.8':
+    resolution: {integrity: sha512-n9tsbUOhwx2epK1V0ZG9Ar4SHWUju04dhmzZXiSBXwBoleOvIfals33NAaWgagQVAL4Rbvx/Ptsu3P+pA09f6Q==}
 
   '@emnapi/core@1.10.0':
     resolution: {integrity: sha512-yq6OkJ4p82CAfPl0u9mQebQHKPJkY7WrIuk205cTYnYe+k2Z8YBh11FrbRG/H6ihirqcacOgl2BIO8oyMQLeXw==}
@@ -4952,6 +4958,8 @@ snapshots:
 
   '@e965/xlsx@0.20.3': {}
 
+  '@electric-sql/pglite@0.5.8': {}
+
   '@emnapi/core@1.10.0':
     dependencies:
       '@emnapi/wasi-threads': 1.2.1
@@ -6755,7 +6763,9 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.12
 
-  drizzle-orm@0.45.2: {}
+  drizzle-orm@0.45.2(@electric-sql/pglite@0.5.8):
+    optionalDependencies:
+      '@electric-sql/pglite': 0.5.8
 
   dunder-proto@1.0.1:
     dependencies:

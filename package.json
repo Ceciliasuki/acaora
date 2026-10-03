@@ -44,6 +44,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
     "@cloudflare/vite-plugin": "1.37.1",
+    "@electric-sql/pglite": "0.5.8",
     "@eslint/js": "9.39.4",
     "@lhci/cli": "0.15.1",
     "@next/eslint-plugin-next": "16.3.1",

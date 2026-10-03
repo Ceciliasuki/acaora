@@ -10,6 +10,8 @@ export default function CourseReader({lesson}:{lesson:Lesson}) {
       <h2 id={`section-${i}`}>{section.heading}</h2>
       {section.paragraphs.map((text,j)=><p key={j}><CourseText text={text}/></p>)}
       {section.formulas?.map((formula,j)=><Formula key={j} source={formula} block/>)}
+      {/* A labelled scroll region needs keyboard focus to scroll wide tables. */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
       {section.table&&<div className={styles.tableScroll} tabIndex={0} role="region" aria-label={section.table.caption}><table><caption>{section.table.caption}</caption><thead><tr>{section.table.headers.map(x=><th key={x} scope="col">{x}</th>)}</tr></thead><tbody>{section.table.rows.map((row,j)=><tr key={j}>{row.map((x,k)=><td key={k}><CourseText text={x}/></td>)}</tr>)}</tbody></table></div>}
     </section>)}
     <section aria-labelledby="examples"><h2 id="examples">完整例题</h2>{lesson.examples.map((example,i)=><div className={styles.example} key={example.title}>
