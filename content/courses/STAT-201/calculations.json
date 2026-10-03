@@ -1,0 +1,1522 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "STAT-201-example-1-1",
+      "inputs": {
+        "students": 5,
+        "statistics_students": 2,
+        "sample": 2
+      },
+      "method": "Enumerate ten unordered committees; students 0,1 are statistics.",
+      "computed": 0.6,
+      "exact_or_repr": "3/5",
+      "declared": 0.6,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-1-2",
+      "inputs": {
+        "success_probability": 0.8,
+        "trials": 2
+      },
+      "method": "Enumerate biased independent-coin outcomes with exact fractions.",
+      "computed": 0.96,
+      "exact_or_repr": "24/25",
+      "declared": 0.96,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l1-q3",
+      "inputs": {
+        "A": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "B": [
+          0,
+          1,
+          2,
+          4,
+          5
+        ],
+        "space_size": 10
+      },
+      "method": "Count a set union in a ten-point space.",
+      "computed": 0.6,
+      "exact_or_repr": "3/5",
+      "declared": 0.6,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l1-q4",
+      "inputs": {
+        "balls": 10,
+        "red": 4,
+        "sample": 2
+      },
+      "method": "Enumerate 45 ball pairs.",
+      "computed": 0.5333333333333333,
+      "exact_or_repr": "8/15",
+      "declared": 0.5333333333333333,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-2-1",
+      "inputs": {
+        "population": 10000,
+        "diseased": 200,
+        "true_positive": 180,
+        "false_positive": 490
+      },
+      "method": "Construct a 10000-person joint frequency table; divide diseased positives by all positives.",
+      "computed": 0.26865671641791045,
+      "exact_or_repr": "18/67",
+      "declared": 0.26865671641791045,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-2-2",
+      "inputs": {
+        "balls": 10,
+        "red": 4,
+        "sample": 2
+      },
+      "method": "Enumerate unordered ball pairs instead of multiplying sequential conditional probabilities.",
+      "computed": 0.13333333333333333,
+      "exact_or_repr": "2/15",
+      "declared": 0.13333333333333333,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l2-q3",
+      "inputs": {
+        "products": 1000,
+        "A_products": 300,
+        "A_defects": 6,
+        "B_defects": 28
+      },
+      "method": "Count origins among a constructed 1000-product defect table.",
+      "computed": 0.17647058823529413,
+      "exact_or_repr": "3/17",
+      "declared": 0.17647058823529413,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l2-q4",
+      "inputs": {
+        "space_size": 10,
+        "A_points": 5,
+        "B_points": 4,
+        "intersection": 1
+      },
+      "method": "Construct one A-and-B point among four B points in a ten-point space.",
+      "computed": 0.25,
+      "exact_or_repr": "1/4",
+      "declared": 0.25,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3-1",
+      "inputs": {
+        "success_probability": 0.2,
+        "trials": 5,
+        "at_most": 1
+      },
+      "method": "Enumerate all 32 sequences, weighted using exact Fraction arithmetic.",
+      "computed": 0.73728,
+      "exact_or_repr": "2304/3125",
+      "declared": 0.73728,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3-2",
+      "inputs": {
+        "rate_per_hour": 2,
+        "window_hours": 1
+      },
+      "method": "Integrate the exponential waiting density over times exceeding the event window.",
+      "computed": 0.13533528323661265,
+      "exact_or_repr": "0.13533528323661265",
+      "declared": 0.1353352832366127,
+      "tolerance": 1e-10,
+      "absolute_error": 5.551115123125783e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3-2-half",
+      "inputs": {
+        "rate_per_hour": 2,
+        "window_hours": 0.5
+      },
+      "method": "Integrate the same waiting density over times exceeding half an hour.",
+      "computed": 0.3678794411714423,
+      "exact_or_repr": "0.3678794411714423",
+      "declared": 0.36787944117144233,
+      "tolerance": 1e-10,
+      "absolute_error": 5.551115123125783e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l3-q3",
+      "inputs": {
+        "success_probability": 0.2,
+        "trials": 5,
+        "exact_successes": 2
+      },
+      "method": "Weighted enumeration, independent of the combination-count formula.",
+      "computed": 0.2048,
+      "exact_or_repr": "128/625",
+      "declared": 0.2048,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l3-q4",
+      "inputs": {
+        "products": 8,
+        "defective": 3,
+        "sample": 2
+      },
+      "method": "Directly count pairs containing a defective product.",
+      "computed": 0.6428571428571429,
+      "exact_or_repr": "9/14",
+      "declared": 0.6428571428571429,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3c-1",
+      "inputs": {
+        "density": "x/2 on (0,2)",
+        "lower": 0.5,
+        "upper": 1.5
+      },
+      "method": "Numerical quadrature of the declared density, separate from the authored CDF calculation.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3c-1-normalization",
+      "inputs": {
+        "density": "x/2 on (0,2)"
+      },
+      "method": "Numerically integrate density over its full support.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-3c-2",
+      "inputs": {
+        "mean": 100,
+        "standard_deviation": 15,
+        "interval": [
+          85,
+          115
+        ]
+      },
+      "method": "Integrate the unstandardized normal density rather than subtracting tabulated Phi values.",
+      "computed": 0.6826894921370861,
+      "exact_or_repr": "0.6826894921370861",
+      "declared": 0.682689492,
+      "tolerance": 1e-09,
+      "absolute_error": 1.3708612023322075e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l3c-q3",
+      "inputs": {
+        "rate_per_minute": 0.5,
+        "threshold_minutes": 3
+      },
+      "method": "Numerical tail integration instead of direct survival formula.",
+      "computed": 0.22313016014842985,
+      "exact_or_repr": "0.22313016014842985",
+      "declared": 0.22313016014842982,
+      "tolerance": 1e-06,
+      "absolute_error": 2.7755575615628914e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l3c-q4",
+      "inputs": {
+        "support": [
+          2,
+          6
+        ],
+        "interval": [
+          3,
+          5
+        ]
+      },
+      "method": "Numerical integration of uniform density on the requested subinterval.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-4-1",
+      "inputs": {
+        "joint_density": 2,
+        "event_boundary": "x+y<=0.5",
+        "x>=0": true,
+        "y>=0": true
+      },
+      "method": "Two-dimensional numerical integration over the actual event triangle.",
+      "computed": 0.25,
+      "exact_or_repr": "0.25",
+      "declared": 0.25,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-4-1-normalization",
+      "inputs": {
+        "joint_density": 2,
+        "support_boundary": "x+y<1"
+      },
+      "method": "Integrate joint density over full triangular support.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-4-2",
+      "inputs": {
+        "X_support": [
+          -1,
+          1
+        ],
+        "transform": "Y=X^2",
+        "threshold": 0.25
+      },
+      "method": "Integrate original X density over both preimage branches.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-4-2-normalization",
+      "inputs": {
+        "Y_support": [
+          0,
+          1
+        ],
+        "density": "1/(2*sqrt(y))"
+      },
+      "method": "Quadrature of the transformed density at its integrable singular boundary.",
+      "computed": 0.9999999999999992,
+      "exact_or_repr": "0.9999999999999992",
+      "declared": 1,
+      "tolerance": 1e-10,
+      "absolute_error": 7.771561172376096e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l4-q3",
+      "inputs": {
+        "joint_counts": {
+          "00": 2,
+          "01": 3,
+          "10": 1,
+          "11": 4
+        }
+      },
+      "method": "Conditional frequency from a ten-point joint table.",
+      "computed": 0.8,
+      "exact_or_repr": "4/5",
+      "declared": 0.8,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l4-q4",
+      "inputs": {
+        "X_support": [
+          -1,
+          1
+        ],
+        "transform": "Y=X^2",
+        "threshold": 0.36
+      },
+      "method": "Integrate the original X density over the event preimage.",
+      "computed": 0.6,
+      "exact_or_repr": "0.6",
+      "declared": 0.6,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-5-1",
+      "inputs": {
+        "x": [
+          -1.0,
+          0.0,
+          1.0
+        ],
+        "y": [
+          1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "method": "Direct weighted centered products on the three-point support.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-5-2",
+      "inputs": {
+        "values": [
+          50.0,
+          70.0,
+          70.0,
+          90.0
+        ],
+        "equal_probability": 0.25
+      },
+      "method": "Direct variance of an explicit four-point distribution, not the total-variance formula.",
+      "computed": 200.0,
+      "exact_or_repr": "200.0",
+      "declared": 200,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l5-q3",
+      "inputs": {
+        "covariance": [
+          [
+            4.0,
+            1.0
+          ],
+          [
+            1.0,
+            9.0
+          ]
+        ],
+        "transform": [
+          2,
+          -1
+        ]
+      },
+      "method": "Direct variance of transformed finite points whose covariance equals the input.",
+      "computed": 21.0,
+      "exact_or_repr": "21.0",
+      "declared": 21,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l5-q4",
+      "inputs": {
+        "variance": 4,
+        "squared_threshold": 16
+      },
+      "method": "Exact second-moment threshold ratio from Markov on squared deviation.",
+      "computed": 0.25,
+      "exact_or_repr": "1/4",
+      "declared": 0.25,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-6-1",
+      "inputs": {
+        "population_mean": 50,
+        "population_sd": 10,
+        "n": 25,
+        "interval": [
+          48,
+          52
+        ]
+      },
+      "method": "Numerical quadrature of the exact sample-mean density.",
+      "computed": 0.682689492137086,
+      "exact_or_repr": "0.682689492137086",
+      "declared": 0.682689492,
+      "tolerance": 1e-09,
+      "absolute_error": 1.370860092109183e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-6-2",
+      "inputs": {
+        "sample": [
+          2.0,
+          4.0,
+          6.0
+        ],
+        "population_variance": 4
+      },
+      "method": "Direct residual sum of squares divided by the declared population variance.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l6-q3",
+      "inputs": {
+        "n": 64,
+        "individual_variance": 16
+      },
+      "method": "Sum the 64 independent scaled-observation variances, then take square root.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l6-q4",
+      "inputs": {
+        "sample": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "ddof": 1
+      },
+      "method": "NumPy sample variance with explicit degrees of freedom.",
+      "computed": 1.6666666666666667,
+      "exact_or_repr": "1.6666666666666667",
+      "declared": 1.6666666666666667,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-7-1",
+      "inputs": {
+        "times": [
+          1.0,
+          2.0,
+          3.0,
+          4.0
+        ],
+        "events": [
+          1,
+          1,
+          0,
+          1
+        ],
+        "rate_bounds": [
+          0.001,
+          2
+        ]
+      },
+      "method": "Numerically optimize the per-record censored log likelihood, rather than using d/total formula.",
+      "computed": 0.29999999920143955,
+      "exact_or_repr": "0.29999999920143955",
+      "declared": 0.3,
+      "tolerance": 1e-08,
+      "absolute_error": 7.985604399962654e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-7-2",
+      "inputs": {
+        "n": 5,
+        "true_variance": 1,
+        "df": 4
+      },
+      "method": "Integrate the MLE squared estimation error against its exact scaled chi-square law.",
+      "computed": 0.36000000000000004,
+      "exact_or_repr": "0.36000000000000004",
+      "declared": 0.36,
+      "tolerance": 1e-09,
+      "absolute_error": 5.551115123125783e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-7-2-unbiased",
+      "inputs": {
+        "n": 5,
+        "true_variance": 1,
+        "df": 4
+      },
+      "method": "Integrate unbiased estimator squared error independently.",
+      "computed": 0.49999999999999994,
+      "exact_or_repr": "0.49999999999999994",
+      "declared": 0.5,
+      "tolerance": 1e-09,
+      "absolute_error": 5.551115123125783e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-7-3",
+      "inputs": {
+        "sample": [
+          3.0,
+          4.0,
+          5.0
+        ],
+        "left_truncation": 2,
+        "conditional_on_sample_count": 3
+      },
+      "method": "SciPy exponential distribution fit with fixed truncation location; separately verify the conditional density normalization.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-7-3-normalization",
+      "inputs": {
+        "rate": 0.5,
+        "left_truncation": 2
+      },
+      "method": "Integrate original density divided by truncation survival probability.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-10,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l7-q3",
+      "inputs": {
+        "n": 4,
+        "observed_maximum": 8
+      },
+      "method": "Compute expected normalized maximum by quadrature and invert to construct the unbiased multiplier.",
+      "computed": 10.0,
+      "exact_or_repr": "10.0",
+      "declared": 10,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l7-q4",
+      "inputs": {
+        "errors": [
+          -0.7472135954999579,
+          0.14721359549995794
+        ],
+        "equal_probability": 0.5
+      },
+      "method": "Direct squared error of a two-point estimator with the declared mean error and variance.",
+      "computed": 0.29,
+      "exact_or_repr": "0.29",
+      "declared": 0.29,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-8-1",
+      "inputs": {
+        "n": 25,
+        "sample_mean": 100,
+        "sample_sd": 10,
+        "confidence": 0.95
+      },
+      "method": "SciPy t inverse CDF, independently recomputing the interval half width.",
+      "computed": 4.127797123256049,
+      "exact_or_repr": "4.127797123256049",
+      "declared": 4.127797124,
+      "tolerance": 2e-09,
+      "absolute_error": 7.439506788387007e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-8-2",
+      "inputs": {
+        "n": 20,
+        "successes": 0,
+        "confidence": 0.95
+      },
+      "method": "Root finding of the score acceptance boundary for zero successes, separate from Wilson closed form.",
+      "computed": 0.16112515805286218,
+      "exact_or_repr": "0.16112515805286218",
+      "declared": 0.161125158,
+      "tolerance": 1e-09,
+      "absolute_error": 5.286218685007782e-11,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l8-q3",
+      "inputs": {
+        "planning_z": 1.96,
+        "sigma": 10,
+        "max_half_width": 2
+      },
+      "method": "Integer sample-size search verified against requested half width.",
+      "computed": 97.0,
+      "exact_or_repr": "97",
+      "declared": 97,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l8-q4",
+      "inputs": {
+        "n": [
+          10,
+          10
+        ],
+        "sample_variance": [
+          4,
+          9
+        ]
+      },
+      "method": "Sum individual scaled observation variances in independent groups.",
+      "computed": 1.140175425099138,
+      "exact_or_repr": "1.140175425099138",
+      "declared": 1.140175425099138,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ci-t-coverage",
+      "inputs": {
+        "df": 24,
+        "confidence": 0.95
+      },
+      "method": "Numerical integration verifies exact t pivot interval coverage, not a Monte Carlo claim.",
+      "computed": 0.9500000000000016,
+      "exact_or_repr": "0.9500000000000016",
+      "declared": 0.95,
+      "tolerance": 1e-10,
+      "absolute_error": 1.6653345369377348e-15,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ci-variance-coverage",
+      "inputs": {
+        "df": 9,
+        "confidence": 0.95
+      },
+      "method": "Numerical integration verifies chi-square pivot coverage and endpoint order.",
+      "computed": 0.95,
+      "exact_or_repr": "0.95",
+      "declared": 0.95,
+      "tolerance": 1e-10,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-9-1",
+      "inputs": {
+        "null_mean": 100,
+        "sigma": 10,
+        "n": 25,
+        "sample_mean": 104
+      },
+      "method": "Integrate both sample-mean tails in original units under H0.",
+      "computed": 0.04550026389635816,
+      "exact_or_repr": "0.04550026389635816",
+      "declared": 0.045500264,
+      "tolerance": 1e-09,
+      "absolute_error": 1.0364183816724548e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-9-2",
+      "inputs": {
+        "null_mean": 0,
+        "true_mean": 0.5,
+        "sigma": 1,
+        "n": 25,
+        "alpha": 0.05
+      },
+      "method": "Integrate the rejection region in original units under the planned alternative.",
+      "computed": 0.8037649400154937,
+      "exact_or_repr": "0.8037649400154937",
+      "declared": 0.803764941,
+      "tolerance": 2e-09,
+      "absolute_error": 9.845062542979122e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l9-q3",
+      "inputs": {
+        "sigma": 6,
+        "n": 36,
+        "sample_mean": 12,
+        "null_mean": 10
+      },
+      "method": "Construct mean variance from 36 independent observations before computing z.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l9-q4",
+      "inputs": {
+        "family_error": 0.05,
+        "tests": 5
+      },
+      "method": "Exact allocation of family error budget across five tests.",
+      "computed": 0.01,
+      "exact_or_repr": "1/100",
+      "declared": 0.01,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-10-1",
+      "inputs": {
+        "n": 8,
+        "positive": 7
+      },
+      "method": "Enumerate all 256 fair sign assignments and count both extreme tails.",
+      "computed": 0.0703125,
+      "exact_or_repr": "9/128",
+      "declared": 0.0703125,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-10-2",
+      "inputs": {
+        "observed": [
+          8,
+          10,
+          12
+        ],
+        "expected": [
+          10,
+          10,
+          10
+        ]
+      },
+      "method": "SciPy Pearson statistic from count vectors.",
+      "computed": 0.8,
+      "exact_or_repr": "0.8",
+      "declared": 0.8,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-10-2-p",
+      "inputs": {
+        "statistic": 0.8,
+        "df": 2
+      },
+      "method": "SciPy chi-square survival probability.",
+      "computed": 0.6703200460356394,
+      "exact_or_repr": "0.6703200460356394",
+      "declared": 0.670320046,
+      "tolerance": 1e-09,
+      "absolute_error": 3.5639491358097075e-11,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l10-q3",
+      "inputs": {
+        "n": 5,
+        "positive": 5
+      },
+      "method": "Enumerate fair sign assignments instead of binomial tail formula.",
+      "computed": 0.0625,
+      "exact_or_repr": "1/16",
+      "declared": 0.0625,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l10-q4",
+      "inputs": {
+        "observed": [
+          25,
+          15
+        ],
+        "expected": [
+          20,
+          20
+        ]
+      },
+      "method": "SciPy Pearson statistic from two count vectors.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-11-1",
+      "inputs": {
+        "groups": [
+          [
+            1.0,
+            2.0,
+            3.0
+          ],
+          [
+            3.0,
+            4.0,
+            5.0
+          ],
+          [
+            5.0,
+            6.0,
+            7.0
+          ]
+        ]
+      },
+      "method": "SciPy one-way ANOVA, independently from the displayed group sum-of-squares arithmetic.",
+      "computed": 12.0,
+      "exact_or_repr": "12.0",
+      "declared": 12,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-11-1-p",
+      "inputs": {
+        "groups": [
+          [
+            1.0,
+            2.0,
+            3.0
+          ],
+          [
+            3.0,
+            4.0,
+            5.0
+          ],
+          [
+            5.0,
+            6.0,
+            7.0
+          ]
+        ]
+      },
+      "method": "SciPy F survival probability for the actual data.",
+      "computed": 0.008000000000000002,
+      "exact_or_repr": "0.008000000000000002",
+      "declared": 0.008,
+      "tolerance": 1e-10,
+      "absolute_error": 1.734723475976807e-18,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-11-2",
+      "inputs": {
+        "x": [
+          0.0,
+          1.0,
+          2.0,
+          3.0
+        ],
+        "y": [
+          1.0,
+          2.0,
+          2.0,
+          5.0
+        ]
+      },
+      "method": "Matrix least squares and inverse Gram covariance, separate from centered scalar formulas.",
+      "computed": 0.4242640687119285,
+      "exact_or_repr": "0.4242640687119285",
+      "declared": 0.424264069,
+      "tolerance": 1e-09,
+      "absolute_error": 2.8807151108978246e-10,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-example-11-2-slope",
+      "inputs": {
+        "x": [
+          0.0,
+          1.0,
+          2.0,
+          3.0
+        ],
+        "y": [
+          1.0,
+          2.0,
+          2.0,
+          5.0
+        ]
+      },
+      "method": "Matrix least-squares slope.",
+      "computed": 1.2000000000000002,
+      "exact_or_repr": "1.2000000000000002",
+      "declared": 1.2,
+      "tolerance": 1e-12,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l11-q3",
+      "inputs": {
+        "groups": 4,
+        "group_sizes": [
+          5,
+          5,
+          5,
+          5
+        ]
+      },
+      "method": "Residual dimension from the rank of a four-group indicator design.",
+      "computed": 16.0,
+      "exact_or_repr": "16",
+      "declared": 16,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-l11-q4",
+      "inputs": {
+        "x": [
+          1,
+          2,
+          3
+        ],
+        "y": [
+          2,
+          3,
+          5
+        ]
+      },
+      "method": "Matrix least squares instead of authored Sxy/Sxx formula.",
+      "computed": 1.5000000000000007,
+      "exact_or_repr": "1.5000000000000007",
+      "declared": 1.5,
+      "tolerance": 1e-06,
+      "absolute_error": 6.661338147750939e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch1-q3",
+      "inputs": {
+        "students": 6,
+        "first_major": 3,
+        "draw": 2
+      },
+      "method": "Enumerate unordered pairs and count matching majors.",
+      "computed": 0.4,
+      "exact_or_repr": "2/5",
+      "declared": 0.4,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch1-q4",
+      "inputs": {
+        "A": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "B": [
+          0,
+          1,
+          6
+        ],
+        "space": 10
+      },
+      "method": "Count symmetric-difference points in a constructed probability space.",
+      "computed": 0.5,
+      "exact_or_repr": "1/2",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch2-q3",
+      "inputs": {
+        "A_return": 4,
+        "A_other": 36,
+        "B_return": 3,
+        "B_other": 57
+      },
+      "method": "Count returns in a 100-item joint frequency table.",
+      "computed": 0.07,
+      "exact_or_repr": "7/100",
+      "declared": 0.07,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch2-q4",
+      "inputs": {
+        "A_return": 4,
+        "A_other": 36,
+        "B_return": 3,
+        "B_other": 57
+      },
+      "method": "Conditional channel frequencies among returned items.",
+      "computed": 0.5714285714285714,
+      "exact_or_repr": "4/7",
+      "declared": 0.5714285714285714,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch3-q3",
+      "inputs": {
+        "n": 4,
+        "p": 0.5,
+        "successes": 1
+      },
+      "method": "Enumerate all four-coin sequences.",
+      "computed": 0.25,
+      "exact_or_repr": "1/4",
+      "declared": 0.25,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch3-q4",
+      "inputs": {
+        "rate": 2,
+        "deadline": 0.5
+      },
+      "method": "Integrate waiting-time density to the requested deadline.",
+      "computed": 0.6321205588285578,
+      "exact_or_repr": "0.6321205588285578",
+      "declared": 0.6321205588285577,
+      "tolerance": 1e-06,
+      "absolute_error": 1.1102230246251565e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch4-q3",
+      "inputs": {
+        "density": 1,
+        "event": "x+y<=1"
+      },
+      "method": "Integrate event triangle inside a unit-square density.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch4-q4",
+      "inputs": {
+        "original_support": [
+          0,
+          2
+        ],
+        "transform": "X/2",
+        "new_support": [
+          0,
+          1
+        ]
+      },
+      "method": "New uniform density from its support length, cross-checking original-variable linear transform.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch5-q3",
+      "inputs": {
+        "var_X": 3,
+        "var_Y": 5,
+        "transform": "X+2Y"
+      },
+      "method": "Direct variance over an explicit independent finite joint distribution.",
+      "computed": 23.0,
+      "exact_or_repr": "23.0",
+      "declared": 23,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch5-q4",
+      "inputs": {
+        "conditional_means": [
+          4,
+          8
+        ],
+        "weights": [
+          0.25,
+          0.75
+        ]
+      },
+      "method": "Average a four-point mixture with declared class frequencies.",
+      "computed": 7.0,
+      "exact_or_repr": "7",
+      "declared": 7,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch6-q3",
+      "inputs": {
+        "population_variance": 9,
+        "n": 100,
+        "threshold": 0.5
+      },
+      "method": "Exact Markov ratio on the squared sample-mean deviation.",
+      "computed": 0.36,
+      "exact_or_repr": "9/25",
+      "declared": 0.36,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch6-q4",
+      "inputs": {
+        "sample": [
+          3,
+          5,
+          7,
+          9
+        ],
+        "ddof": 1
+      },
+      "method": "NumPy sample variance, explicit df.",
+      "computed": 6.666666666666667,
+      "exact_or_repr": "6.666666666666667",
+      "declared": 6.666666666666667,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch7-q3",
+      "inputs": {
+        "counts": [
+          0,
+          1,
+          2,
+          1,
+          6
+        ]
+      },
+      "method": "Numerically maximize Poisson likelihood for the actual count vector.",
+      "computed": 1.99999998464073,
+      "exact_or_repr": "1.99999998464073",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 1.535927007800808e-08,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch7-q4",
+      "inputs": {
+        "n": 3,
+        "true_variance": 4,
+        "df": 2
+      },
+      "method": "Integrate variance MLE against its exact scaled chi-square law.",
+      "computed": 2.6666666666666665,
+      "exact_or_repr": "2.6666666666666665",
+      "declared": 2.6666666666666665,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch8-q3",
+      "inputs": {
+        "z": 1.96,
+        "planning_p": 0.5,
+        "half_width": 0.05
+      },
+      "method": "Integer search for the first sample size satisfying the stated approximate proportion half width.",
+      "computed": 385.0,
+      "exact_or_repr": "385",
+      "declared": 385,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch8-q4",
+      "inputs": {
+        "sigma": 4,
+        "n": 16,
+        "z": 2
+      },
+      "method": "Sum scaled-observation variances, then construct the specified-z half width.",
+      "computed": 2.0,
+      "exact_or_repr": "2.0",
+      "declared": 2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch9-q3",
+      "inputs": {
+        "null_mean": 5,
+        "sigma": 5,
+        "n": 25,
+        "sample_mean": 7
+      },
+      "method": "Numerically integrate null sample-mean tails in original units.",
+      "computed": 0.04550026389635199,
+      "exact_or_repr": "0.04550026389635199",
+      "declared": 0.04550026389635839,
+      "tolerance": 1e-06,
+      "absolute_error": 6.3976601794024646e-15,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch9-q4",
+      "inputs": {
+        "family_error": 0.05,
+        "tests": 20
+      },
+      "method": "Exact allocation of family error across twenty tests.",
+      "computed": 0.0025,
+      "exact_or_repr": "1/400",
+      "declared": 0.0025,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch10-q3",
+      "inputs": {
+        "absolute_differences": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "signs": [
+          "+",
+          "-",
+          "+",
+          "-"
+        ]
+      },
+      "method": "SciPy ranking followed by positive-rank sum.",
+      "computed": 4.0,
+      "exact_or_repr": "4.0",
+      "declared": 4,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch10-q4",
+      "inputs": {
+        "rows": 3,
+        "columns": 4
+      },
+      "method": "Dimension of residual cell space after row/column nuisance effects.",
+      "computed": 6.0,
+      "exact_or_repr": "6",
+      "declared": 6,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch11-q3",
+      "inputs": {
+        "SSB": 18,
+        "SSW": 9,
+        "k": 3,
+        "N": 12
+      },
+      "method": "Compute separate between/within mean squares from input sums and dimensions.",
+      "computed": 9.0,
+      "exact_or_repr": "9.0",
+      "declared": 9,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch11-q4",
+      "inputs": {
+        "A_levels": 2,
+        "B_levels": 3,
+        "repeats": 4
+      },
+      "method": "Residual dimension from six-cell full factorial design with four repeats.",
+      "computed": 18.0,
+      "exact_or_repr": "18",
+      "declared": 18,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-ch11-q6",
+      "inputs": {
+        "cell_means_A_rows_B_columns": [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            7
+          ]
+        ]
+      },
+      "method": "Finite double difference of cell means for the open interaction interpretation task.",
+      "computed": 2.0,
+      "exact_or_repr": "2",
+      "declared": 2,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-midterm-q3",
+      "inputs": {
+        "balls": 12,
+        "red": 5,
+        "draw": 2
+      },
+      "method": "Enumerate all 66 pairs and count two red balls.",
+      "computed": 0.15151515151515152,
+      "exact_or_repr": "5/33",
+      "declared": 0.15151515151515152,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-midterm-q4",
+      "inputs": {
+        "variance": 25,
+        "n": 100
+      },
+      "method": "Sum independent scaled-observation variances.",
+      "computed": 0.49999999999999994,
+      "exact_or_repr": "0.49999999999999994",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 5.551115123125783e-17,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-final-q3",
+      "inputs": {
+        "events": 10,
+        "total_exposure": 50
+      },
+      "method": "Numerically optimize censored log likelihood from aggregate exposure.",
+      "computed": 0.19999999575479124,
+      "exact_or_repr": "0.19999999575479124",
+      "declared": 0.2,
+      "tolerance": 1e-06,
+      "absolute_error": 4.245208767850173e-09,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-final-q4",
+      "inputs": {
+        "SSB": 24,
+        "SSW": 12,
+        "k": 3,
+        "N": 15
+      },
+      "method": "Independent ANOVA dimension/mean-square calculation.",
+      "computed": 12.0,
+      "exact_or_repr": "12.0",
+      "declared": 12,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-201-case-se",
+      "inputs": {
+        "observations": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "ddof": 1
+      },
+      "method": "NumPy sample standard deviation divided by root sample size.",
+      "computed": 0.6454972243679028,
+      "exact_or_repr": "0.6454972243679028",
+      "declared": 0.6454972243679028,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    }
+  ]
+}

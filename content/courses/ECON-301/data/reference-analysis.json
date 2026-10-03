@@ -1,0 +1,23 @@
+{
+  "data": "policy-panel.csv",
+  "paired_changes": {
+    "1": 1.0,
+    "2": 5.0,
+    "3": 9.0,
+    "4": -2.0,
+    "5": 2.0,
+    "6": 6.0
+  },
+  "treatment_change_mean": 5.0,
+  "control_change_mean": 2.0,
+  "did": 2.9999999999999942,
+  "welch_df": 4.0,
+  "welch_se": 3.265986323710904,
+  "welch_95_interval": [
+    -6.067831742110082,
+    12.067831742110071
+  ],
+  "non_significant_interval_preserved": true,
+  "inference_conditions": "Independent normal unit changes across and within groups; teaching illustration only.",
+  "identification": "Parallel untreated trends, no anticipation/interference and appropriate composition remain assumptions; one pre-period cannot establish pre-trends."
+}

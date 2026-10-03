@@ -1,0 +1,125 @@
+{
+  "id": "lesson-7",
+  "courseId": "FIN-308",
+  "chapterId": "chapter-7",
+  "title": "汇率制度与货币体系",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "FIN-308-l7-q1",
+    "FIN-308-l7-q2",
+    "FIN-308-l7-q3"
+  ],
+  "objectives": [
+    "理解制度选择的约束",
+    "核算干预与冲销",
+    "联系历史与当代边界"
+  ],
+  "prerequisites": [
+    "前面核心课节；微观供需、宏观IS/LM和利息终值。"
+  ],
+  "sections": [
+    {
+      "heading": "三元约束和制度不是两个标签",
+      "paragraphs": [
+        "固定汇率、自由资本流动和独立货币政策在经典条件下不能同时完全实现，称不可能三角。实际管理浮动、资本措施、金融摩擦和风险使政策组合有程度差异，不能仅以官方标签推断真实独立性。",
+        "维持固定价位会用外汇资产交易影响基础货币；冲销以国内资产操作抵消基础货币变化，但其有效性和持续性取决于替代性、资本流动、成本与政策可信度，并不消除所有约束。"
+      ],
+      "formulas": [
+        "\\Delta B=\\Delta NFA+\\Delta NDA\\quad\\text{（本币计价的交易变化）}"
+      ]
+    },
+    {
+      "heading": "历史安排有明确时间",
+      "paragraphs": [
+        "1944年布雷顿森林会议设计国际机构和固定但可调整的货币安排。1971年8月15日美国宣布停止储备美元兑黄金，美元与黄金链接基础被打破；两事件已对照联储历史和IMF历史展览。",
+        "这一历史定位不是完整国际货币体系史，也不能代表各国当前汇率制度。金本位、储备货币、国际流动性和协调问题可延伸阅读；当代制度或储备比例应核发布年份，不从历史课生成当前事实。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "基础货币与冲销操作",
+      "problem": "构造央行买入外汇资产折合100本币，其他条件不变，并卖出国内资产100本币。两操作的基础货币净变化是多少？",
+      "steps": [
+        "买外汇资产支付本币，使基础货币+100。",
+        "卖国内资产收回本币，使基础货币−100。",
+        "净0是会计冲销，不证明汇率、风险、成本或资本流动没有影响。"
+      ],
+      "conclusion": "冲销的记账效果与政策有效性不同。",
+      "calculationId": "FIN-308-example-7"
+    }
+  ],
+  "questions": [
+    {
+      "id": "FIN-308-l7-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "理解制度选择的约束",
+      "prompt": "经典不可能三角能否在所有条件下同时完全满足三个目标？",
+      "options": [
+        {
+          "id": "a",
+          "text": "能。"
+        },
+        {
+          "id": "b",
+          "text": "不能，但现实制度有程度差异。"
+        },
+        {
+          "id": "c",
+          "text": "只需忽略预期。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "固定、自由流动与独立政策形成约束。",
+      "hint": "哪个目标或条件会调整？",
+      "level": "基础"
+    },
+    {
+      "id": "FIN-308-l7-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "核算干预与冲销",
+      "prompt": "央行买外汇折合80本币，再卖国内资产50本币，其他不变。基础货币净变化是多少本币？",
+      "answer": 30,
+      "tolerance": 0.000001,
+      "explanation": "+80−50=+30。",
+      "hint": "核资产交易的货币方向。",
+      "level": "核心"
+    },
+    {
+      "id": "FIN-308-l7-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "联系历史与当代边界",
+      "prompt": "基础货币已完全冲销，能否断言固定汇率可以无限期保持且无成本？",
+      "answer": "不能。还需储备、资产替代性、利息成本、预期与资本流动条件，记账冲销不保证政策可持续。",
+      "explanation": "历史安排也需区分时期和制度。",
+      "hint": "谁承担风险与资产收益差？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "制度选择、央行账和历史时间共同解释政策。"
+  ],
+  "sources": [
+    {
+      "title": "上海交通大学公开International Economics 2大纲（2020）",
+      "url": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "note": "一页概览仅作国际金融主题定位，不认证本站教学标准。讲义、题目和数字为原创构造。"
+    },
+    {
+      "title": "Federal Reserve History：Creation of the Bretton Woods System",
+      "url": "https://www.federalreservehistory.org/essays/bretton-woods-created",
+      "note": "核对1944年会议及固定但可调整制度的历史定位。"
+    },
+    {
+      "title": "IMF Money Matters：Bretton Woods System Collapses",
+      "url": "https://www.imf.org/external/np/exr/center/mm/eng/mm_sc_05.htm",
+      "note": "核对1971-08-15停止美元兑黄金历史事件；没有以此代表各国当前制度。"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "data": "classification.csv",
+  "training_center": [
+    1.3333333333333333,
+    1.3333333333333333
+  ],
+  "class_means": [
+    [
+      0.3333333333333333,
+      0.3333333333333333
+    ],
+    [
+      2.3333333333333335,
+      2.3333333333333335
+    ]
+  ],
+  "pooled_covariance": [
+    [
+      0.33333333333333337,
+      -0.16666666666666669
+    ],
+    [
+      -0.16666666666666669,
+      0.33333333333333337
+    ]
+  ],
+  "priors": [
+    0.5,
+    0.5
+  ],
+  "training_PCA_variances": [
+    2.533333333333333,
+    0.4000000000000001
+  ],
+  "training_PCA_first_fraction": 0.8636363636363636,
+  "test_predictions": [
+    0,
+    1,
+    1,
+    1
+  ],
+  "test_truth": [
+    0,
+    1,
+    0,
+    1
+  ],
+  "test_accuracy": 0.75,
+  "scope": "Four constructed test records; no future-accuracy or causal claim; test labels were never used to fit."
+}

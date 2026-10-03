@@ -1,0 +1,5 @@
+world_price,tariff,demand_intercept,demand_slope,supply_intercept,supply_slope
+40,0,100,-1,-20,1
+40,5,100,-1,-20,1
+40,10,100,-1,-20,1
+40,40,100,-1,-20,1

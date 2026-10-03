@@ -1,0 +1,113 @@
+{
+  "id": "lesson-9",
+  "courseId": "ECON-301",
+  "chapterId": "chapter-9",
+  "title": "似然检验和离散选择",
+  "level": "进阶",
+  "version": 1,
+  "status": "checked",
+  "format": "guided",
+  "coreQuestionIds": [
+    "ECON-301-l9-q1",
+    "ECON-301-l9-q2",
+    "ECON-301-l9-q3"
+  ],
+  "objectives": [
+    "理解似然和检验条件",
+    "计算Bernoulli估计",
+    "解释离散选择与受限样本"
+  ],
+  "prerequisites": [
+    "回归课程的模型与推断基础；前面的核心计量课节。"
+  ],
+  "sections": [
+    {
+      "heading": "似然从观测模型构造",
+      "paragraphs": [
+        "独立Bernoulli样本有s次成功、n−s次失败，对数似然ℓ(p)=s log p+(n−s)log(1−p)。内部解得p̂=s/n；全成功/失败时应处理参数边界，而不是强行求内点导数。",
+        "LR=2(ℓ_U−ℓ_R)，Wald衡量无约束估计距限制的协方差标准化距离，LM利用受限拟合下的得分与信息。通常的卡方渐近近似要求识别、光滑、内点及信息等正则条件；边界、弱识别和极小样本不能照搬。"
+      ]
+    },
+    {
+      "heading": "离散选择与样本选择",
+      "paragraphs": [
+        "logit与probit把线性索引映射为0到1的概率。logit系数对log赔率解释，probit概率用标准正态CDF；概率边际效应依当前协变量，不是恒定系数本身。",
+        "完全分离可能使普通logit没有有限MLE。受限结果、删失、截断与仅观察被选择样本是不同机制，需按实际观测规则写似然或识别模型。",
+        "选择模型中的排除变量、分布假设和识别不能由软件默认提供；不能只加一个选择校正项就宣称所有选择偏差被解决。"
+      ]
+    }
+  ],
+  "examples": [
+    {
+      "title": "五次二元观测的似然比较",
+      "problem": "五个独立Bernoulli观测有三次成功。计算MLE和检验p=0.5的LR。",
+      "steps": [
+        "s=3、n=5，内部MLE为3/5=0.6。",
+        "无约束ℓ=3log0.6+2log0.4，受限ℓ=5log0.5。",
+        "LR=2[3log0.6+2log0.4−5log0.5]≈0.201355136。n=5时不靠卡方大样本近似保证精确检验。"
+      ],
+      "conclusion": "似然统计量可计算，推断近似仍要另核查。",
+      "calculationId": "ECON-301-example-9"
+    }
+  ],
+  "questions": [
+    {
+      "id": "ECON-301-l9-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "理解似然和检验条件",
+      "prompt": "参数位于边界时，常规LR卡方渐近结论是否总可直接套用？",
+      "options": [
+        {
+          "id": "a",
+          "text": "总可。"
+        },
+        {
+          "id": "b",
+          "text": "不可，正则内点条件可能失败。"
+        },
+        {
+          "id": "c",
+          "text": "LR必定为负。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "参照分布可能改变；需要适当边界理论或其他方法。",
+      "hint": "约束改变了局部参数空间。",
+      "level": "基础"
+    },
+    {
+      "id": "ECON-301-l9-q2",
+      "version": 1,
+      "type": "numeric",
+      "objective": "计算Bernoulli估计",
+      "prompt": "十个独立Bernoulli观测有七次成功，p∈[0,1]的MLE是多少？",
+      "answer": 0.7,
+      "tolerance": 0.000001,
+      "explanation": "内部解为成功数/总数=7/10。",
+      "hint": "先检查是否全成功或全失败。",
+      "level": "核心"
+    },
+    {
+      "id": "ECON-301-l9-q3",
+      "version": 1,
+      "type": "open",
+      "objective": "解释离散选择与受限样本",
+      "prompt": "调查只记录工资高于某门槛的人，却按完整总体工资分布写似然，哪里有问题？",
+      "answer": "这是按结果截断的观察机制，应使用给定超过门槛的条件密度并计入入样概率；完整总体似然忽略选择。",
+      "explanation": "明确门槛、样本如何入选和目标；不能把未观察的人当没有工资。",
+      "hint": "入样条件是否与响应有关？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "观测规则、参数空间和识别先于似然计算。"
+  ],
+  "sources": [
+    {
+      "title": "华中科技大学经济学院计量经济学教学大纲",
+      "url": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "note": "经典主题范围参考；本站核心/选学安排与原创内容不代表全大纲复刻或院校认证。"
+    }
+  ]
+}

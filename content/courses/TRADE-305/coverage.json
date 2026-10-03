@@ -1,0 +1,88 @@
+{
+  "courseId": "TRADE-305",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
+  "targets": [
+    {
+      "topic": "比较优势与贸易收益",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "效率高不等于所有商品都有比较优势；生产与消费可在不同组合。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "李嘉图模型与工资",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "工资来自商品价格与单位劳动产出；模型比较的是实际购买力。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "特定要素与收入分配",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "短期要素不能全部跨部门流动；短期分配与长期流动区别。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "要素禀赋与商品价格",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "要素密集度和条件；先把价格冲击与数量冲击分开。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "标准贸易、增长与贸易条件",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "生产收入与消费选择；偏向增长不是必然贫困化。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "关税、配额与福利",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "小国关税的价格与数量；图形、配额与大国。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "规模经济与保护的边界",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "规模经济可以改变贸易来源；名义税率不等于增加值保护。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "贸易制度、流动与政策论证",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "政策工具需要相同目标比较；商品流动与要素跨境流动。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "企业差异、引力与价值链",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201229/1609213536208073400.pdf",
+      "basis": "从代表企业到出口选择；引力和全球价值链是不同问题。范围与条件核查见逐门审查。",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "status": "checked"
+    }
+  ]
+}

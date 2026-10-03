@@ -1,0 +1,1113 @@
+[
+  {
+    "code": "STAT-201",
+    "name": "概率论与数理统计",
+    "track": "统计学",
+    "prerequisites": [
+      "微积分",
+      "线性代数基础"
+    ],
+    "description": "按顺序学习概率论与数理统计的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "数学预备与概率建模",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "数学预备与概率建模",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "条件概率与独立",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "条件概率与独立",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "离散与连续分布",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "离散分布与模型选择",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          },
+          {
+            "id": "lesson-3-continuous",
+            "title": "连续分布、分布函数与标准化",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "联合分布与变量变换",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "联合分布与变量变换",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3-continuous"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "期望方差与相关",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "期望方差与相关",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "极限定理与抽样分布",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "极限定理与抽样分布",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "点估计与估计量评价",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "点估计与估计量评价",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "区间估计与样本量",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "区间估计与样本量",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "检验与功效",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "检验与功效",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "非参数与拟合检验",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "非参数与拟合检验",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "方差分析与回归衔接",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "方差分析与回归衔接",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "ECON-204",
+    "name": "微观经济学",
+    "track": "经济学",
+    "prerequisites": [
+      "经济学原理",
+      "微积分与最优化"
+    ],
+    "description": "按顺序学习微观经济学的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "最优化预备与市场",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "最优化预备与市场",
+            "level": "预备",
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "偏好效用与消费选择",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "偏好效用与消费选择",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "需求与显示偏好",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "需求与显示偏好",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "斯勒茨基与对偶",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "斯勒茨基与对偶",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "跨期与不确定性",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "跨期与不确定性",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "生产与成本",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "生产与成本",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "竞争与垄断",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "竞争与垄断",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "寡头博弈与要素市场",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "寡头竞争与博弈均衡",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-7"
+            ]
+          },
+          {
+            "id": "lesson-8-factor",
+            "title": "要素市场与买方势力",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "一般均衡与福利",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "一般均衡与福利",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-8-factor"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "外部性与公共品",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "外部性与公共品",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-11",
+        "title": "信息经济学与综合政策",
+        "lessons": [
+          {
+            "id": "lesson-11",
+            "title": "信息经济学与综合政策",
+            "level": "核心",
+            "prerequisites": [
+              "lesson-10"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "STAT-302",
+    "name": "回归分析",
+    "track": "统计学",
+    "prerequisites": [
+      "微积分",
+      "高等代数",
+      "概率统计"
+    ],
+    "description": "按顺序学习回归分析的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "从数据到线性模型",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "从数据到线性模型",
+            "level": "预备",
+            "optional": false,
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "简单回归与最小二乘",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "简单回归与最小二乘",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "多元回归与条件解释",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "多元回归与条件解释",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "区间估计和联合检验",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "区间估计和联合检验",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "类别变量、交互和函数形式",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "类别变量、交互和函数形式",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "残差诊断与影响点",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "残差诊断与影响点",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "异方差与相关误差",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "异方差与相关误差",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "模型选择和预测验证",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "模型选择和预测验证",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "正则化与稳健拟合",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "正则化与稳健拟合",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "非线性与广义线性模型",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "非线性与广义线性模型",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "ECON-301",
+    "name": "计量经济学",
+    "track": "经济学",
+    "prerequisites": [
+      "概率统计",
+      "线性代数",
+      "回归",
+      "微观与宏观基础"
+    ],
+    "description": "按顺序学习计量经济学的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "经济问题、反事实与识别",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "经济问题、反事实与识别",
+            "level": "预备",
+            "optional": false,
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "OLS和遗漏变量偏差",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "OLS和遗漏变量偏差",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "推断、聚类和模型设定",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "推断、聚类和模型设定",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "工具变量与两阶段估计",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "工具变量与两阶段估计",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "面板与个体固定效应",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "面板与个体固定效应",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "DID与政策评估",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "DID与政策评估",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "实验与断点的识别边界",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "实验与断点的识别边界",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "时间序列与伪回归",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "时间序列与伪回归",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "似然检验和离散选择",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "似然检验和离散选择",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-10",
+        "title": "GMM与动态面板入门",
+        "lessons": [
+          {
+            "id": "lesson-10",
+            "title": "GMM与动态面板入门",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-9"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "STAT-306",
+    "name": "多元统计分析",
+    "track": "统计学",
+    "prerequisites": [
+      "概率统计",
+      "高等代数",
+      "回归"
+    ],
+    "description": "按顺序学习多元统计分析的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "多元数据、矩阵与预处理",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "多元数据、矩阵与预处理",
+            "level": "预备",
+            "optional": false,
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "多元正态与线性变换",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "多元正态与线性变换",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "均值向量检验与MANOVA",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "均值向量检验与MANOVA",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "主成分、SVD与解释方差",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "主成分、SVD与解释方差",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "因子分析与旋转解释",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "因子分析与旋转解释",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "距离、尺度与异常点",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "距离、尺度与异常点",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "聚类与结构验证",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "聚类与结构验证",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "判别分类与独立评估",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "判别分类与独立评估",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "典型相关与多维标度",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "典型相关与多维标度",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "TRADE-305",
+    "name": "国际贸易学",
+    "track": "经济学",
+    "prerequisites": [
+      "微观经济学",
+      "基础代数与微积分"
+    ],
+    "description": "按顺序学习国际贸易学的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "比较优势与贸易收益",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "比较优势与贸易收益",
+            "level": "预备",
+            "optional": false,
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "李嘉图模型与工资",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "李嘉图模型与工资",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "特定要素与收入分配",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "特定要素与收入分配",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "要素禀赋与商品价格",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "要素禀赋与商品价格",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "标准贸易、增长与贸易条件",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "标准贸易、增长与贸易条件",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "关税、配额与福利",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "关税、配额与福利",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "规模经济与保护的边界",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "规模经济与保护的边界",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "贸易制度、流动与政策论证",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "贸易制度、流动与政策论证",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "企业差异、引力与价值链",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "企业差异、引力与价值链",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  },
+  {
+    "code": "FIN-308",
+    "name": "国际金融",
+    "track": "经济学",
+    "prerequisites": [
+      "微观经济学",
+      "宏观经济学",
+      "概率统计"
+    ],
+    "description": "按顺序学习国际金融的核心知识，每节配一个例题和三道练习；拓展材料可按需要展开。",
+    "chapters": [
+      {
+        "id": "chapter-1",
+        "title": "国际收支与对外资产",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "国际收支与对外资产",
+            "level": "预备",
+            "optional": false,
+            "prerequisites": []
+          }
+        ]
+      },
+      {
+        "id": "chapter-2",
+        "title": "汇率报价、交叉与实际汇率",
+        "lessons": [
+          {
+            "id": "lesson-2",
+            "title": "汇率报价、交叉与实际汇率",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-1"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-3",
+        "title": "购买力平价与价格水平",
+        "lessons": [
+          {
+            "id": "lesson-3",
+            "title": "购买力平价与价格水平",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-2"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-4",
+        "title": "利率平价与远期价格",
+        "lessons": [
+          {
+            "id": "lesson-4",
+            "title": "利率平价与远期价格",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-3"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-5",
+        "title": "汇率调整与收支机制",
+        "lessons": [
+          {
+            "id": "lesson-5",
+            "title": "汇率调整与收支机制",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-4"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-6",
+        "title": "开放经济政策模型",
+        "lessons": [
+          {
+            "id": "lesson-6",
+            "title": "开放经济政策模型",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-7",
+        "title": "汇率制度与货币体系",
+        "lessons": [
+          {
+            "id": "lesson-7",
+            "title": "汇率制度与货币体系",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-6"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-8",
+        "title": "外汇敞口与风险管理",
+        "lessons": [
+          {
+            "id": "lesson-8",
+            "title": "外汇敞口与风险管理",
+            "level": "核心",
+            "optional": false,
+            "prerequisites": [
+              "lesson-7"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "chapter-9",
+        "title": "危机、错配与国际流动",
+        "lessons": [
+          {
+            "id": "lesson-9",
+            "title": "危机、错配与国际流动",
+            "level": "进阶",
+            "optional": true,
+            "prerequisites": [
+              "lesson-8"
+            ]
+          }
+        ]
+      }
+    ],
+    "format": "guided"
+  }
+]

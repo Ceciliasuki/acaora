@@ -1,0 +1,88 @@
+{
+  "courseId": "FIN-308",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
+  "targets": [
+    {
+      "topic": "国际收支与对外资产",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "居民身份与双重记录；账户余额不是福利评分。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "汇率报价、交叉与实际汇率",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "全文统一本币/外币；实际汇率还含价格水平。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "购买力平价与价格水平",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "价格套利是有条件基准；基准不是短期预测承诺。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "利率平价与远期价格",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "相同期限与可融资条件；远期不等于预期未来即期。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "汇率调整与收支机制",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "贸易量反应不是即时给定；吸收与货币提供不同视角；选学：粘性价格与超调。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "开放经济政策模型",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "IS、LM与资本流动；联立方程要有可行价格。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "汇率制度与货币体系",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "三元约束和制度不是两个标签；历史安排有明确时间。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "外汇敞口与风险管理",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "先列币种、金额与期限；锁定不是保证比不套保赚更多。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "危机、错配与国际流动",
+      "source": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20201208/1607416208839091572.pdf",
+      "basis": "净头寸不足以描述风险；国际支持与压力测试的边界。条件、报价与来源核查见逐门审查。",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "status": "checked"
+    }
+  ]
+}

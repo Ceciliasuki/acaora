@@ -1,0 +1,508 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "FIN-308-example-1",
+      "inputs": {
+        "net_asset_acquisition": 5,
+        "net_liability_incurrence": 23
+      },
+      "method": "Exact separate financial asset and liability transaction accounting under declared BPM6 convention.",
+      "computed": -18.0,
+      "exact_or_repr": "-18",
+      "declared": -18,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-NEO",
+      "inputs": {
+        "CA": -20,
+        "KA": 2,
+        "FA": -18
+      },
+      "method": "Compute residual financial minus current/capital account, not the opposite convention.",
+      "computed": 0.0,
+      "exact_or_repr": "0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l1-q2",
+      "inputs": {
+        "assets": 12,
+        "liabilities": 20
+      },
+      "method": "Exact net acquisition minus net incurrence.",
+      "computed": -8.0,
+      "exact_or_repr": "-8",
+      "declared": -8,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-2",
+      "inputs": {
+        "CNY_per_USD": "7",
+        "USD_per_EUR": "1.2"
+      },
+      "method": "Follow two unit-compatible currency conversions starting from one EUR.",
+      "computed": 8.4,
+      "exact_or_repr": "8.4",
+      "declared": 8.4,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l2-q2",
+      "inputs": {
+        "CNY_per_USD": "7.2",
+        "foreign_basket_USD": 100,
+        "domestic_basket_CNY": 600
+      },
+      "method": "Convert identical foreign basket to domestic units then divide domestic price.",
+      "computed": 1.2,
+      "exact_or_repr": "1.2",
+      "declared": 1.2,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-inverse-percent",
+      "inputs": {
+        "original_quotes": [
+          7,
+          8
+        ]
+      },
+      "method": "Compute actual inverse-quote percentage when original rises 7 to 8.",
+      "computed": -0.125,
+      "exact_or_repr": "-1/8",
+      "declared": -0.125,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-3",
+      "inputs": {
+        "domestic_prices": [
+          "700",
+          "735.00"
+        ],
+        "foreign_prices": [
+          "100",
+          "102.00"
+        ]
+      },
+      "method": "Reprice both original baskets independently and take unit-compatible price ratio.",
+      "computed": 7.205882352941177,
+      "exact_or_repr": "7.205882352941176470588235294",
+      "declared": 7.205882352941177,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l3-q2",
+      "inputs": {
+        "domestic_prices": [
+          600,
+          660
+        ],
+        "foreign_prices": [
+          100,
+          100
+        ]
+      },
+      "method": "Absolute ratio from independently repriced base baskets.",
+      "computed": 6.6,
+      "exact_or_repr": "6.6",
+      "declared": 6.6,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-4",
+      "inputs": {
+        "spot_domestic_per_foreign": 7,
+        "domestic_period_return": 0.04,
+        "foreign_period_return": 0.02
+      },
+      "method": "Numerically equate actual maturity cash flows on domestic deposit and fully covered foreign route.",
+      "computed": 7.137254901960785,
+      "exact_or_repr": "7.137254901960785",
+      "declared": 7.137254901960785,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-CIP-routes",
+      "inputs": {
+        "forward": 7.137254901960785,
+        "spot": 7,
+        "foreign_return": 0.02
+      },
+      "method": "Check both complete maturity cash-flow routes after numerical solution.",
+      "computed": 1.0400000000000003,
+      "exact_or_repr": "1.0400000000000003",
+      "declared": 1.04,
+      "tolerance": 1e-12,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l4-q2",
+      "inputs": {
+        "spot": 10,
+        "domestic_period_return": 0.03,
+        "foreign_period_return": 0.01
+      },
+      "method": "Cash-flow root with separate foreign conversion and maturity settlement.",
+      "computed": 10.198019801980198,
+      "exact_or_repr": "10.198019801980198",
+      "declared": 10.198019801980198,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-5",
+      "inputs": {
+        "Y": 1000,
+        "C": 600,
+        "I": 200,
+        "G": 150
+      },
+      "method": "Exact original expenditure accounting, limited to NX.",
+      "computed": 50.0,
+      "exact_or_repr": "50",
+      "declared": 50,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l5-q2",
+      "inputs": {
+        "Y": 800,
+        "A": 830
+      },
+      "method": "Exact income minus declared domestic absorption.",
+      "computed": -30.0,
+      "exact_or_repr": "-30",
+      "declared": -30,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-6",
+      "inputs": {
+        "coefficient_matrix": [
+          [
+            0.4,
+            10.0,
+            -20.0
+          ],
+          [
+            0.5,
+            -20.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ],
+        "rhs": [
+          100,
+          150,
+          0.05
+        ]
+      },
+      "method": "Solve all three actual IS/LM/world-interest constraints simultaneously.",
+      "computed": 302.0,
+      "exact_or_repr": "302.0",
+      "declared": 302,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-MF-quote",
+      "inputs": {
+        "rhs": [
+          100,
+          150,
+          0.05
+        ]
+      },
+      "method": "Check positive domestic/foreign quote from full system.",
+      "computed": 1.065,
+      "exact_or_repr": "1.065",
+      "declared": 1.065,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l6-q2",
+      "inputs": {
+        "coefficient_matrix": [
+          [
+            0.4,
+            10.0,
+            -20.0
+          ],
+          [
+            0.5,
+            -20.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ],
+        "rhs": [
+          100,
+          160,
+          0.05
+        ]
+      },
+      "method": "Resolve full original equilibrium after money-input change.",
+      "computed": 322.0,
+      "exact_or_repr": "322.0",
+      "declared": 322,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-MF-float-change",
+      "inputs": {
+        "rhs": [
+          100,
+          160,
+          0.05
+        ]
+      },
+      "method": "New equilibrium quote under explicitly floating constraints.",
+      "computed": 1.4650000000000003,
+      "exact_or_repr": "1.4650000000000003",
+      "declared": 1.465,
+      "tolerance": 1e-12,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-MF-residual",
+      "inputs": {
+        "solution": [
+          302.0,
+          0.04999999999999989,
+          1.065
+        ]
+      },
+      "method": "Check all original equation residuals rather than isolated output.",
+      "computed": 1.4211288389453755e-14,
+      "exact_or_repr": "1.4211288389453755e-14",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 1.4211288389453755e-14,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-7",
+      "inputs": {
+        "foreign_asset_purchase_domestic": 100,
+        "domestic_asset_sale": 100
+      },
+      "method": "Exact central-bank asset transaction balance, excluding valuation.",
+      "computed": 0.0,
+      "exact_or_repr": "0",
+      "declared": 0,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l7-q2",
+      "inputs": {
+        "foreign_asset_purchase_domestic": 80,
+        "domestic_asset_sale": 50
+      },
+      "method": "Exact base-money transaction accounting.",
+      "computed": 30.0,
+      "exact_or_repr": "30",
+      "declared": 30,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-scenario-0-combined",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "6.8"
+      },
+      "method": "Read actual CSV; separately convert underlying receipt and settle short-foreign forward payoff, then sum.",
+      "computed": 714000.0,
+      "exact_or_repr": "714000.00",
+      "declared": 714000,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-scenario-1-combined",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.14"
+      },
+      "method": "Read actual CSV; separately convert underlying receipt and settle short-foreign forward payoff, then sum.",
+      "computed": 714000.0,
+      "exact_or_repr": "714000.00",
+      "declared": 714000,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-scenario-2-combined",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.5"
+      },
+      "method": "Read actual CSV; separately convert underlying receipt and settle short-foreign forward payoff, then sum.",
+      "computed": 714000.0,
+      "exact_or_repr": "714000.00",
+      "declared": 714000,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-8",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "6.8"
+      },
+      "method": "Complete maturity flow route on original fixed scenario CSV.",
+      "computed": 714000.0,
+      "exact_or_repr": "714000.00",
+      "declared": 714000,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l8-q2",
+      "inputs": {
+        "USD_amount": "50000",
+        "CNY_per_USD": "7.1"
+      },
+      "method": "Exact matching long-foreign forward payment obligation.",
+      "computed": 355000.0,
+      "exact_or_repr": "355000.0",
+      "declared": 355000,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-case-receipt",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.5"
+      },
+      "method": "Independent underlying and forward settlement in adverse comparison scenario.",
+      "computed": 714000.0,
+      "exact_or_repr": "714000.00",
+      "declared": 714000,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-scenario-profit-low",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "6.8"
+      },
+      "method": "Keep favorable forward comparison scenario.",
+      "computed": 34000.0,
+      "exact_or_repr": "34000.00",
+      "declared": 34000,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-scenario-profit-high",
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.5"
+      },
+      "method": "Keep unfavorable forward comparison scenario; no filtering.",
+      "computed": -36000.0,
+      "exact_or_repr": "-36000.00",
+      "declared": -36000,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-example-9",
+      "inputs": {
+        "USD_principal": "100000",
+        "CNY_per_USD": [
+          7,
+          8
+        ]
+      },
+      "method": "Separately revalue unchanged foreign principal at two quotes.",
+      "computed": 100000.0,
+      "exact_or_repr": "100000",
+      "declared": 100000,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "FIN-308-l9-q2",
+      "inputs": {
+        "USD_principal": "50000",
+        "CNY_per_USD": [
+          "6",
+          "6.6"
+        ]
+      },
+      "method": "Subtract complete original and stressed domestic liability values.",
+      "computed": 30000.0,
+      "exact_or_repr": "30000.0",
+      "declared": 30000,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    }
+  ]
+}

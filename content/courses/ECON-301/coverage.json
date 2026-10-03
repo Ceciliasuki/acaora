@@ -1,0 +1,97 @@
+{
+  "courseId": "ECON-301",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
+  "targets": [
+    {
+      "topic": "经济问题、反事实与识别",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：同一个对象的两种结果；识别先于估计，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "OLS和遗漏变量偏差",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：OLS条件与经济识别；改善设定要服务于目标，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "推断、聚类和模型设定",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：系数与协方差各有条件；GLS与检验不能补救识别，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "工具变量与两阶段估计",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：工具同时需要相关与有效；强工具也可能无效，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "面板与个体固定效应",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：去掉不随时间变化的个体项；随机效应与误差层级，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "DID与政策评估",
+      "source": "https://mixtape.scunning.com/09-difference_in_differences",
+      "basis": "正文：四个均值与一个反事实趋势；趋势图不是自动认证；选学：不同处理时点，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。现代DID补充来自开放教材正文；多时点扩展以原始论文摘要为阅读入口，不归称华科大纲原文。",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "实验与断点的识别边界",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：随机实验识别什么；断点利用阈值附近的可比性，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "时间序列与伪回归",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：AR(1)从递推与误差开始；趋势数据与长期关系；选学：ARMA与VAR，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "似然检验和离散选择",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：似然从观测模型构造；离散选择与样本选择，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "GMM与动态面板入门",
+      "source": "https://eco.hust.edu.cn/rcpy/jpkc1/jljjx/jxdg.htm",
+      "basis": "正文：矩条件与加权距离；动态面板没有自动有效的滞后工具，有完整教学例题、条件和三题练习；按批准的核心与选学范围组织，不声称大学全大纲等效。",
+      "lessonIds": [
+        "lesson-10"
+      ],
+      "status": "checked"
+    }
+  ]
+}
