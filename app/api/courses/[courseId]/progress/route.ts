@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server';
 import {authError,privateNoStore,readRequestSession,supabaseRest} from '../../../auth/_shared';
 import {listCourses,loadLesson,loadAssessment} from '../../../../courses/course-content.mjs';
 import {validateCourseOperation} from '../../../../courses/course-request.mjs';
-import {gradeQuestion} from '../../../../courses/course-grading.mjs';
+import {gradeStoredAttempt} from '../../../../courses/course-grading.mjs';
 import type {CourseOperation,CourseSnapshot,CourseSummary,Question} from '../../../../courses/course-types';
 type Context={params:Promise<{courseId:string}>};
 const json=(payload:unknown,status=200)=>privateNoStore(NextResponse.json(payload,{status}));
@@ -48,7 +48,7 @@ async function handle(request:Request,context:Context,action:'read'|'sync'|'rese
    const op=body as CourseOperation;
    const snapshot=await rpc('sync_course_progress',session.accessToken,{p_course:courseId,p_generation:op.generation,p_completed:op.completedLessonIds,p_last:op.lastLessonId,p_attempts:op.attempts});
    // Scores are derived from the published question, never accepted from a client.
-   const results=op.attempts.map(a=>({id:a.id,...gradeQuestion(questions.get(a.questionId)!,a.answer)}));
+   const results=op.attempts.map(a=>({id:a.id,...gradeStoredAttempt(questions.get(a.questionId)!,a)}));
    return json({ownerId:session.user.id,snapshot,results});
   } catch(error) {
    if(error instanceof Error&&error.message==='GENERATION_CONFLICT')return json({ownerId:session.user.id,error:'该课程已在其他设备重置，采用云端新进度。',snapshot:await rpc('read_course_progress',session.accessToken,{p_course:courseId})},409);

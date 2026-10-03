@@ -13,7 +13,7 @@ export function validateCourseOperation(value,ownerId,course,questions) {
   if(!attempt||!uuid(attempt.id)||ids.has(attempt.id)){errors.push('尝试标识无效或重复');continue;}
   ids.add(attempt.id);
   const question=questions.get(attempt.questionId);
-  if(!question||attempt.questionVersion!==question.version)errors.push('题目或版本不在内容清单中');
+  if(!question||!Number.isSafeInteger(attempt.questionVersion)||attempt.questionVersion<1||attempt.questionVersion>question.version)errors.push('题目或版本不在内容清单中');
   if(typeof attempt.answer!=='string'||attempt.answer.length>8000||typeof attempt.viewedSolution!=='boolean'||!Number.isSafeInteger(attempt.createdAt)||attempt.createdAt<0||attempt.createdAt>8640000000000000)errors.push('作答记录无效');
  }
  return errors;

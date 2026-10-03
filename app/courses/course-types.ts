@@ -5,4 +5,4 @@ export type Lesson = { id: string; courseId: string; title: string; chapterId: s
 export type CourseSummary = { code: string; name: string; format?:'guided'; track: "统计学" | "经济学"; description: string; prerequisites: string[]; chapters: { id: string; title: string; lessons: { id: string; title: string; level: string; optional?:boolean }[] }[] };
 export type Attempt = { id: string; questionId: string; questionVersion: number; answer: string; viewedSolution: boolean; createdAt: number };
 export type CourseSnapshot = { courseId: string; generation: number; completedLessonIds: string[]; lastLessonId: string | null; attempts: Attempt[] };
-export type CourseOperation = CourseSnapshot & { ownerId: string; operationId: string };
+export type CourseOperation = CourseSnapshot & { ownerId: string; operationId: string; sequence?:number };

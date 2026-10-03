@@ -12,6 +12,9 @@ export function gradeQuestion(question, rawAnswer) {
   return { status: correct ? "correct" : "incorrect", feedback: correct ? "回答正确。请继续检查解题条件。" : "答案还不一致，可以先看提示再试一次。" };
 }
 let lastCreatedAt=0;
+export function gradeStoredAttempt(question,attempt) {
+  return attempt.questionVersion===question.version?gradeQuestion(question,attempt.answer):{status:'stale',feedback:'题目已更新，原答案保留，请按当前题目重新作答。'};
+}
 export function createQuestionAttempt(question, answer, viewedSolution) {
   const value=String(answer??'').trim();
   if(!value&&!viewedSolution) return null;

@@ -1,4 +1,9 @@
 export function courseStorageKey(ownerId,courseId) { return JSON.stringify([ownerId,courseId]); }
+export function orderCourseQueue(operations) {
+  // Pre-upgrade entries have no recoverable navigation timestamp. Send them
+  // before newly sequenced entries so new navigation remains the final position.
+  return [...operations].sort((a,b)=>(a.sequence??0)-(b.sequence??0));
+}
 export function mergeCourseSnapshot(local,remote) {
   if(local.courseId!==remote.courseId)throw new Error('不能合并不同课程');
   if(local.generation!==remote.generation)return local.generation>remote.generation?local:remote;

@@ -10,3 +10,9 @@ test('operation whitelist rejects foreign identities, invalid lesson IDs, versio
 test('malformed untrusted input returns diagnostics rather than throwing',()=>{
  for(const value of [null,[],{},'invalid',{...valid(),attempts:[null]},{...valid(),completedLessonIds:{} }])assert.doesNotThrow(()=>assert.ok(validateCourseOperation(value,'a',course,questions).length));
 });
+
+test('published question revisions preserve historical attempts without accepting future versions',()=>{
+ const revised=new Map([['STAT-201-q',{version:2}]]);
+ assert.deepEqual(validateCourseOperation(valid(),'a',course,revised),[]);
+ for(const version of [0,-1,1.5,3]) {const op=valid();op.attempts[0].questionVersion=version;assert.ok(validateCourseOperation(op,'a',course,revised).length);}
+});

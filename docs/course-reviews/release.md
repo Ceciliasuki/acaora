@@ -19,18 +19,24 @@
 ## 本地证据
 
 - 全七门内容/数学/数值证据门槛通过；生产build先执行门槛，防止发布未检查内容。
-- Node22.11.0/pnpm10.26.1；typecheck、全lint、64 unit、标准Next production build通过。
-- 61项完整确定性mock E2E在production build上通过：课程、同步、认证、论文、项目、导航、手机溢出和WCAG serious/critical smoke。
+- Node22.11.0/pnpm10.26.1；typecheck、全lint、66 unit、标准Next production build通过。
+- 65项完整确定性mock E2E和9项视觉检查在最终production build上同一次无重试运行74/74通过：课程、同步、认证、论文、项目、导航、手机溢出和WCAG serious/critical smoke。
 - SYNC-01两个独立浏览器存储共享同账户云模型，合并不同课节并恢复作答；SYNC-02断网作答在本机持久化，恢复页面网络但云写503后刷新仍在，重试补发；SYNC-03另一设备重置后旧队列不恢复旧进度；SYNC-04题目版本不匹配进入复习。另测换账号、401/503队列保留、看解析/开放自查。完整断网加载未缓存的新页面不支持，当前已加载内容可作答。
 - PGlite真实PostgreSQL角色/RLS/函数验证通过；不把单进程引擎证据等同于生产HTTP或多连接验证。
 - 逐门打开课节/案例，并人工查看375px内容截图；公式MathML、键盘横向滚动、数据/图原尺寸入口核查。课程目录视觉基线已按实际变更更新并查看，9项全站视觉基线通过，未修改其他八个基线。
 
 ## 上线证据与边界
 
-生产Supabase pxbcigfzcsfkttzmiork在本轮只读复核为ACTIVE_HEALTHY，PG17.6.1.155；尚未应用课程迁移。当前正式站/api/version为04e66587d760615a49ad815832e831d4839fabfe。
+生产Supabase pxbcigfzcsfkttzmiork在本轮复核为ACTIVE_HEALTHY，PG17.6.1.155；新增课程迁移已应用。两个课程表均启用RLS，anon不能读取，两类身份不交叉，三个RPC为security invoker，anon不能执行，authenticated显式授权。当前正式站/api/version为04e66587d760615a49ad815832e831d4839fabfe。
 
-待完成：整支独立代码审阅、生产新增课程表/RPC及RLS复核、真实账户HTTP/多连接同步、GitHub PR当前HEAD CI、合并、EdgeOne部署和精确SHA核对。待完成项不是通过。生产课程表以新增方式实现，原论文/项目数据不迁移不删除；旧生产SHA为回退点，若回退网站可保留新增课程表以免丢学习记录。
+整支独立代码审阅完成：Critical 0，Important 3，Minor 0，Declined to judge 0。旧题版本导致队列阻塞、读取/重置失败时错误重试及随机UUID使离线导航回退均已修复。旧答案按原版本保留，不按当前题目评分；重试实际联机，重置意图本机持久化；IndexedDB事务分配单调顺序。新增验证观察RED到GREEN，专项7项和全量65项通过。已存在且未升级的无时间戳旧队列无法倒推准确导航先后，先发送旧队列再发新顺序记录；不修改历史答案。
 
-发布前审查发现主目录未传综合案例状态，COURSE-18实际RED后修复，七门入口GREEN；完整production E2E正在重跑。SYNC-02初次全量运行出现测试竞态：云服务提前恢复导致自动同步先于手动重试，按钮已消失。测试改为等待实际503响应后恢复服务，三次无重试专项运行通过，未放宽等待或修改产品逻辑。
+真实生产GoTrue/PostgREST验收33项通过：两个普通测试身份、三次独立登录、实际并发HTTP合并、重复尝试幂等、冲突事务回滚、跨账号SELECT为空/伪造INSERT被拒、anon拒绝、重置代次防止复活。未使用service_role验证权限。测试身份由管理员临时创建且邮箱预确认，不发邮件、不改全局认证策略，故不证明邮件收件/注册回调。上线后仍须同源网站Cookie路径及测试身份清理。
+
+Security Advisors未报告课程RLS问题，保留既有[密码泄露保护未开启](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN；本次不改全站认证策略。Performance Advisors给出三个[尚未使用索引](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO（两论文、一个刚建课程索引），不把刚建/低流量索引当删除依据。
+
+待完成：最终当前HEAD GitHub CI、合并、EdgeOne部署、同源账户课程HTTP与精确SHA核对。待完成项不是通过。生产课程表以新增方式实现，原论文/项目数据不迁移不删除；旧生产SHA为回退点，若回退网站可保留新增课程表以免丢学习记录。
+
+发布前审查发现主目录未传综合案例状态，COURSE-18实际RED后修复，七门入口GREEN；最终完整production E2E已通过。SYNC-02初次全量运行出现测试竞态：云服务提前恢复导致自动同步先于手动重试，按钮已消失。测试改为等待实际503响应后恢复服务，三次无重试专项运行通过，未放宽等待。
 
 本报告将补入实际发布证据。专用测试身份只用于构造课程记录；邮件收件、全国网络、学科专家审阅、长期教学效果仍需各自独立证据，不由此发布验收推定。

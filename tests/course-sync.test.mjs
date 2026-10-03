@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {mergeCourseSnapshot,flushCourseQueue,courseStorageKey} from '../app/courses/course-sync.mjs';
+import {mergeCourseSnapshot,flushCourseQueue,courseStorageKey,orderCourseQueue} from '../app/courses/course-sync.mjs';
 const snapshot=(more={})=>({courseId:'STAT-201',generation:1,completedLessonIds:[],lastLessonId:null,attempts:[],...more});
 const operation=(more={})=>({...snapshot(),ownerId:'a',operationId:'operation',...more});
 test('concurrent completion and attempt sets merge idempotently',()=>{
@@ -45,4 +45,10 @@ test('switching accounts during snapshot persistence leaves the original queue i
  let current=true;const removed=[];
  const result=await flushCourseQueue({ownerId:'a',operations:[operation()],isCurrent:()=>current,send:async()=>({status:200,snapshot:snapshot()}),onSnapshot:async()=>{current=false;},remove:async(id)=>removed.push(id)});
  assert.equal(result,'signed-out');assert.deepEqual(removed,[]);
+});
+
+test('durable sequence restores navigation order despite random operation IDs',()=>{
+ const first=operation({operationId:'ffffffff',sequence:1,lastLessonId:'lesson-1'});
+ const second=operation({operationId:'11111111',sequence:2,lastLessonId:'lesson-2'});
+ assert.deepEqual(orderCourseQueue([second,first]),[first,second]);
 });

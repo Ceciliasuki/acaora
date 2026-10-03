@@ -27,6 +27,7 @@ export type MockState = {
   requests: string[];
   courseRecords:Record<string,CourseSnapshot>;
   courseSyncStatus:number;
+  courseReadStatus:number;
   courseSyncDelayMs:number;
 };
 
@@ -56,6 +57,7 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
     requests: [],
     courseRecords:structuredClone(initial.courseRecords??{}),
     courseSyncStatus:initial.courseSyncStatus??200,
+    courseReadStatus:initial.courseReadStatus??200,
     courseSyncDelayMs:initial.courseSyncDelayMs??0,
   };
 
@@ -72,7 +74,7 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
       if(!state.signedIn)return privateJson(route,{error:'请先登录。'},401);
       const ownerId=state.userId,courseId=courseMatch[1],recordKey=JSON.stringify([ownerId,courseId]);
       const snapshot=state.courseRecords[recordKey]??{courseId,generation:1,completedLessonIds:[],lastLessonId:null,attempts:[]};
-      if(request.method()==='GET')return privateJson(route,{ownerId,snapshot});
+      if(request.method()==='GET')return state.courseReadStatus===200?privateJson(route,{ownerId,snapshot}):privateJson(route,{error:'模拟读取失败。'},state.courseReadStatus);
       const body=request.postDataJSON() as CourseOperation;state.requestBodies.push(body);
       if(state.courseSyncDelayMs)await new Promise(resolve=>setTimeout(resolve,state.courseSyncDelayMs));
       if(state.courseSyncStatus!==200)return privateJson(route,{error:'模拟课程存储不可用。'},state.courseSyncStatus);

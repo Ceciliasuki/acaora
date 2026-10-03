@@ -3,9 +3,9 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import {authChangeEvent,authFetch,getCurrentUser} from '../lib/auth-client';
 import type {Attempt,CourseOperation,CourseSnapshot} from './course-types';
 import {flushCourseQueue,mergeCourseSnapshot} from './course-sync.mjs';
-import {loadLocalCourse,persistCourseOperation,readCourseQueue,removeCourseOperation,saveLocalCourse} from './course-storage';
+import {loadLocalCourse,persistCourseOperation,readCourseQueue,removeCourseOperation,saveLocalCourse,loadCourseReset,saveCourseReset} from './course-storage';
 const empty=(courseId:string):CourseSnapshot=>({courseId,generation:1,completedLessonIds:[],lastLessonId:null,attempts:[]});
-type ProgressState='loading'|'anonymous'|'local'|'pending'|'synced'|'reset'|'signed-out'|'storage-error';
+type ProgressState='loading'|'anonymous'|'local'|'pending'|'read-error'|'reset-error'|'synced'|'reset'|'signed-out'|'storage-error';
 type Envelope={ownerId?:string;snapshot?:CourseSnapshot};
 export function useCourseProgress(courseId:string) {
  const [snapshot,setSnapshot]=useState<CourseSnapshot>(empty(courseId));
@@ -16,17 +16,38 @@ export function useCourseProgress(courseId:string) {
  const current=useRef<CourseSnapshot>(empty(courseId));
  const epoch=useRef(0);
  const busy=useRef(false);
+ const pendingReset=useRef<number|null>(null);
  const chain=useRef<Promise<unknown>>(Promise.resolve());
  const endpoint=`/api/courses/${courseId}/progress`;
  const serialize=useCallback(<T,>(work:()=>Promise<T>):Promise<T>=>{
    const next=chain.current.then(work);chain.current=next.catch(()=>{});return next;
  },[]);
- const flush=useCallback(async()=>{
+ const flush=useCallback(async function flushPending(){
   const user=owner.current,token=epoch.current;
   if(!user||busy.current)return;
   busy.current=true;
   const isCurrent=()=>owner.current===user&&epoch.current===token;
+  const resetGeneration=pendingReset.current;
   try {
+   // A retry must actually contact the cloud even when the upload queue is empty.
+   let response:Response,body:Envelope;
+   try {
+    response=await authFetch(endpoint,resetGeneration===null?undefined:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ownerId:user,generation:resetGeneration})});
+    body=await response.json() as Envelope;
+   }catch{if(isCurrent())setStatus(resetGeneration===null?'read-error':'reset-error');return;}
+   if(!isCurrent())return;
+   if(response.status===401||body.snapshot&&body.ownerId!==user){setStatus('signed-out');return;}
+   if(!(response.ok||resetGeneration!==null&&response.status===409)||!body.snapshot||body.ownerId!==user){setStatus(resetGeneration===null?'read-error':'reset-error');return;}
+   const remote=body.snapshot;
+   await serialize(async()=>{
+    if(!isCurrent())return;
+    for(const op of await readCourseQueue(user,courseId))if(op.generation!==remote.generation)await removeCourseOperation(op.operationId);
+    const next=resetGeneration===null?mergeCourseSnapshot(current.current,remote):remote;
+    await saveLocalCourse(user,next);
+    if(isCurrent()){current.current=next;setSnapshot(next);}
+   });
+   if(!isCurrent())return;
+   if(resetGeneration!==null){await saveCourseReset(user,courseId,null);if(isCurrent()){pendingReset.current=null;setStatus('reset');}return;}
    let again=true;
    while(again&&isCurrent()) {
    const operations=await readCourseQueue(user,courseId);if(!isCurrent())return;
@@ -47,23 +68,24 @@ export function useCourseProgress(courseId:string) {
    again=result==='synced'&&isCurrent()&&(await readCourseQueue(user,courseId)).length>0;
    }
   }catch{if(isCurrent())setStatus('storage-error');}
-  finally{busy.current=false;}
+  finally{busy.current=false;if(isCurrent()&&resetGeneration===null&&pendingReset.current!==null)void flushPending();}
  },[courseId,endpoint,serialize]);
  useEffect(()=>{
   let disposed=false;
   const sessionEpoch=epoch;
   async function load() {
-    const token=++epoch.current;owner.current=null;current.current=empty(courseId);
+    const token=++epoch.current;owner.current=null;pendingReset.current=null;current.current=empty(courseId);
     try {
       const user=await getCurrentUser();if(disposed||token!==epoch.current)return;
       owner.current=user?.id??null;
       if(!user){setOwnerId(null);setSnapshot(empty(courseId));setStatus('anonymous');setInitialized(true);return;}
       const local=await loadLocalCourse(user.id,courseId);if(disposed||token!==epoch.current)return;
+      const resetIntent=await loadCourseReset(user.id,courseId);if(disposed||token!==epoch.current)return;pendingReset.current=resetIntent;
       current.current=local??empty(courseId);setOwnerId(user.id);setSnapshot(current.current);setStatus('local');
       const response=await authFetch(endpoint);if(disposed||token!==epoch.current)return;
       const body=await response.json() as Envelope;
       if(response.status===401||body.snapshot&&body.ownerId!==user.id){owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('signed-out');setInitialized(true);return;}
-      if(!response.ok||!body.snapshot){setStatus('pending');setInitialized(true);return;}
+      if(!response.ok||!body.snapshot){setStatus('read-error');setInitialized(true);return;}
       const remote=body.snapshot;
       await serialize(async()=>{
        if(disposed||token!==epoch.current)return;
@@ -73,7 +95,7 @@ export function useCourseProgress(courseId:string) {
        await saveLocalCourse(user.id,merged);current.current=merged;setSnapshot(merged);
       });
       if(!disposed&&token===epoch.current){setStatus('synced');setInitialized(true);void flush();}
-    }catch{if(!disposed&&token===epoch.current){setStatus(owner.current?'pending':'anonymous');setInitialized(true);}}
+    }catch{if(!disposed&&token===epoch.current){setStatus(owner.current?'read-error':'anonymous');setInitialized(true);}}
   }
   function changed(){epoch.current++;owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('loading');setInitialized(false);void load();}
   function online(){void flush();}
@@ -97,18 +119,13 @@ export function useCourseProgress(courseId:string) {
  },[serialize,flush]);
  const reset=useCallback(async()=>{
   const user=owner.current,token=epoch.current;if(!user)return;
-  try{
-   const response=await authFetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ownerId:user,generation:current.current.generation})});
-   const body=await response.json() as Envelope;
-   if(epoch.current!==token||owner.current!==user)return;
-   if(![200,409].includes(response.status)||!body.snapshot||body.ownerId!==user){setStatus('pending');return;}
-   const remote=body.snapshot;
-   await serialize(async()=>{
-     if(epoch.current!==token||owner.current!==user)return;
-     for(const op of await readCourseQueue(user,courseId))if(op.generation!==remote.generation)await removeCourseOperation(op.operationId);
-     await saveLocalCourse(user,remote);current.current=remote;setSnapshot(remote);setStatus('reset');
-   });
-  }catch{if(epoch.current===token)setStatus('pending');}
- },[courseId,endpoint,serialize]);
+  const generation=current.current.generation;
+  try {
+   await saveCourseReset(user,courseId,generation);
+   if(owner.current!==user||epoch.current!==token)return;
+   pendingReset.current=generation;setStatus('reset-error');
+   await flush();
+  }catch{if(owner.current===user&&epoch.current===token)setStatus('storage-error');}
+ },[courseId,flush]);
  return {ownerId,initialized,snapshot,status,record,reset,retry:flush};
 }
