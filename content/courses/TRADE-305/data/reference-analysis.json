@@ -1,0 +1,81 @@
+{
+  "scenarios": [
+    {
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 0.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "autarky_price": 60.0,
+      "price": 40.0,
+      "consumption": 60.0,
+      "production": 20.0,
+      "imports": 40.0,
+      "consumer_change": -0.0,
+      "producer_change": 0.0,
+      "revenue": 0.0,
+      "national_change": 0.0
+    },
+    {
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 5.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "autarky_price": 60.0,
+      "price": 45.0,
+      "consumption": 55.0,
+      "production": 25.0,
+      "imports": 30.0,
+      "consumer_change": -287.50000000000006,
+      "producer_change": 112.5,
+      "revenue": 150.0,
+      "national_change": -25.000000000000057
+    },
+    {
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "autarky_price": 60.0,
+      "price": 50.0,
+      "consumption": 50.0,
+      "production": 30.0,
+      "imports": 20.0,
+      "consumer_change": -549.9999999999999,
+      "producer_change": 250.0,
+      "revenue": 200.0,
+      "national_change": -99.99999999999989
+    },
+    {
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 40.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "autarky_price": 60.0,
+      "price": 60.0,
+      "consumption": 40.0,
+      "production": 40.0,
+      "imports": 0.0,
+      "consumer_change": -1000.0,
+      "producer_change": 600.0000000000001,
+      "revenue": 0.0,
+      "national_change": -399.9999999999999
+    }
+  ],
+  "scope": "Original small-country competitive model, not observed policy evidence."
+}

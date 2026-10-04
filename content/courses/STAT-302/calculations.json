@@ -1,0 +1,588 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "STAT-302-example-1",
+      "inputs": {
+        "x": [
+          0,
+          1,
+          2
+        ],
+        "intercept": true
+      },
+      "method": "SVD rank of actual three-row design.",
+      "computed": 2.0,
+      "exact_or_repr": "2",
+      "declared": 2,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l1-q2",
+      "inputs": {
+        "n": 8,
+        "columns": [
+          "1",
+          "x",
+          "x^2"
+        ]
+      },
+      "method": "Residual subspace dimension from actual full-rank design.",
+      "computed": 5.0,
+      "exact_or_repr": "5",
+      "declared": 5,
+      "tolerance": 0,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-2",
+      "inputs": {
+        "x": [
+          1,
+          2,
+          3
+        ],
+        "y": [
+          2,
+          3,
+          5
+        ]
+      },
+      "method": "SciPy least squares on original paired data.",
+      "computed": 1.5,
+      "exact_or_repr": "1.5",
+      "declared": 1.5,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l2-q2",
+      "inputs": {
+        "x": [
+          0,
+          1,
+          2
+        ],
+        "y": [
+          1,
+          3,
+          4
+        ]
+      },
+      "method": "SciPy least squares rather than authored Sxy arithmetic.",
+      "computed": 1.4999999999999998,
+      "exact_or_repr": "1.4999999999999998",
+      "declared": 1.5,
+      "tolerance": 1e-06,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-3",
+      "inputs": {
+        "row": [
+          1,
+          2,
+          1
+        ],
+        "coefficients": [
+          1,
+          2,
+          3
+        ]
+      },
+      "method": "Independent row-vector coefficient multiplication.",
+      "computed": 8.0,
+      "exact_or_repr": "8",
+      "declared": 8,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l3-q2",
+      "inputs": {
+        "row": [
+          1,
+          4,
+          2
+        ],
+        "coefficients": [
+          2,
+          1.5,
+          -0.5
+        ]
+      },
+      "method": "Independent coefficient dot product.",
+      "computed": 7.0,
+      "exact_or_repr": "7.0",
+      "declared": 7,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-4",
+      "inputs": {
+        "train": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ],
+        "p": 2,
+        "df": 4
+      },
+      "method": "Read teaching CSV, solve least squares, estimate residual variance and covariance.",
+      "computed": 0.13502330360721743,
+      "exact_or_repr": "0.13502330360721743",
+      "declared": 0.13502330360721743,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-csv-intercept",
+      "inputs": {
+        "train": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ]
+      },
+      "method": "SciPy coefficient from actual CSV, compared with exact hand calculation.",
+      "computed": 0.8095238095238112,
+      "exact_or_repr": "0.8095238095238112",
+      "declared": 0.8095238095238095,
+      "tolerance": 1e-12,
+      "absolute_error": 1.6653345369377348e-15,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-csv-slope",
+      "inputs": {
+        "train": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ]
+      },
+      "method": "SciPy coefficient from actual CSV, compared with exact hand calculation.",
+      "computed": 0.9428571428571427,
+      "exact_or_repr": "0.9428571428571427",
+      "declared": 0.9428571428571428,
+      "tolerance": 1e-12,
+      "absolute_error": 1.1102230246251565e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-csv-sse",
+      "inputs": {
+        "train": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ]
+      },
+      "method": "Original-data residual norm squared.",
+      "computed": 1.276190476190477,
+      "exact_or_repr": "1.276190476190477",
+      "declared": 1.276190476190476,
+      "tolerance": 1e-12,
+      "absolute_error": 8.881784197001252e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l4-q2",
+      "inputs": {
+        "SSE_R": 30,
+        "SSE_U": 20,
+        "restrictions": 2,
+        "df": 10
+      },
+      "method": "Nested residual mean-square ratio.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-5",
+      "inputs": {
+        "x": 4,
+        "D": 1,
+        "coefficients": [
+          10,
+          3,
+          2,
+          1
+        ]
+      },
+      "method": "Construct actual categorical-interaction row and multiply.",
+      "computed": 28.0,
+      "exact_or_repr": "28",
+      "declared": 28,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l5-q2",
+      "inputs": {
+        "x": 4,
+        "D": 1,
+        "coefficients": [
+          5,
+          2,
+          3,
+          -1
+        ]
+      },
+      "method": "Construct categorical-interaction row.",
+      "computed": 12.0,
+      "exact_or_repr": "12",
+      "declared": 12,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-6",
+      "inputs": {
+        "x": [
+          0,
+          1,
+          2
+        ],
+        "intercept": true
+      },
+      "method": "QR column-space projection rather than scalar leverage formula.",
+      "computed": 0.8333333333333333,
+      "exact_or_repr": "0.8333333333333333",
+      "declared": 0.8333333333333334,
+      "tolerance": 1e-09,
+      "absolute_error": 1.1102230246251565e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l6-q2",
+      "inputs": {
+        "correlation_squared": 0.8
+      },
+      "method": "Diagonal of inverse standardized two-column correlation matrix.",
+      "computed": 4.999999999999998,
+      "exact_or_repr": "4.999999999999998",
+      "declared": 5,
+      "tolerance": 1e-06,
+      "absolute_error": 1.7763568394002505e-15,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-7",
+      "inputs": {
+        "y": [
+          1,
+          3
+        ],
+        "variances": [
+          1,
+          0.3333333333333333
+        ]
+      },
+      "method": "Whiten the original intercept-only model by known covariance and solve.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l7-q2",
+      "inputs": {
+        "y": [
+          2,
+          8
+        ],
+        "variances": [
+          1,
+          4
+        ]
+      },
+      "method": "Whiten model and solve least squares using inverse variance weights.",
+      "computed": 3.1999999999999993,
+      "exact_or_repr": "3.1999999999999993",
+      "declared": 3.2,
+      "tolerance": 1e-06,
+      "absolute_error": 8.881784197001252e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-8",
+      "inputs": {
+        "train_x": [
+          0,
+          1,
+          2
+        ],
+        "train_y": [
+          1,
+          2,
+          3
+        ],
+        "test_x": [
+          3,
+          4
+        ],
+        "test_y": [
+          3,
+          5
+        ]
+      },
+      "method": "Fit only training pairs, then predict fixed test pairs.",
+      "computed": 0.49999999999999867,
+      "exact_or_repr": "0.49999999999999867",
+      "declared": 0.5,
+      "tolerance": 1e-09,
+      "absolute_error": 1.3322676295501878e-15,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l8-q2",
+      "inputs": {
+        "actual": [
+          2,
+          5
+        ],
+        "predicted": [
+          3,
+          3
+        ]
+      },
+      "method": "Vector test squared-error aggregation.",
+      "computed": 2.5,
+      "exact_or_repr": "2.5",
+      "declared": 2.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-9",
+      "inputs": {
+        "x": [
+          -1,
+          0,
+          1
+        ],
+        "y": [
+          -1,
+          0,
+          1
+        ],
+        "lambda": 2
+      },
+      "method": "Numerically minimize the explicitly authored ridge objective.",
+      "computed": 0.4999999999999999,
+      "exact_or_repr": "0.4999999999999999",
+      "declared": 0.5,
+      "tolerance": 1e-09,
+      "absolute_error": 1.1102230246251565e-16,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l9-q2",
+      "inputs": {
+        "x": [
+          2
+        ],
+        "y": [
+          3
+        ],
+        "lambda": 2,
+        "xTy": 6,
+        "xTx": 4
+      },
+      "method": "Numerically minimize a compatible original ridge problem.",
+      "computed": 1.0,
+      "exact_or_repr": "1.0",
+      "declared": 1,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-example-10",
+      "inputs": {
+        "intercept": -2,
+        "coefficient": 1,
+        "x": 2
+      },
+      "method": "Scientific logistic-link implementation.",
+      "computed": 0.5,
+      "exact_or_repr": "0.5",
+      "declared": 0.5,
+      "tolerance": 1e-09,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-l10-q2",
+      "inputs": {
+        "linear_predictor": "log(3)"
+      },
+      "method": "Scientific logistic-link implementation.",
+      "computed": 0.75,
+      "exact_or_repr": "0.75",
+      "declared": 0.75,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "STAT-302-case-mse",
+      "inputs": {
+        "train": [
+          [
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ],
+          [
+            4.0,
+            4.0
+          ],
+          [
+            5.0,
+            6.0
+          ]
+        ],
+        "test": [
+          [
+            6.0,
+            6.0
+          ],
+          [
+            7.0,
+            8.0
+          ]
+        ],
+        "coefficients": [
+          0.8095238095238112,
+          0.9428571428571427
+        ],
+        "predictions": [
+          6.466666666666668,
+          7.40952380952381
+        ]
+      },
+      "method": "Read actual CSV, fit only its fixed train rows and predict untouched test rows.",
+      "computed": 0.28321995464852634,
+      "exact_or_repr": "0.28321995464852634",
+      "declared": 0.28321995464852634,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    }
+  ]
+}

@@ -24,7 +24,7 @@ async function ready(page: Page, path: string) {
   if (path === "/papers") await expect(page.getByText("云端记忆已同步")).toHaveCount(1);
   if (path === "/projects") await expect(page.getByRole("heading", { name: project.title })).toBeVisible();
   if (path === "/settings") await expect(page.locator("#settings-name")).toHaveValue("测试同学");
-  if (path === "/courses") await expect(page.getByText("deepseek-v4-flash", { exact: true })).toBeVisible();
+  if (path === "/courses") await expect(page.getByRole("heading", { name: "概率论与数理统计", exact: true })).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
 }
 

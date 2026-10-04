@@ -1,0 +1,198 @@
+{
+  "id": "lesson-4",
+  "courseId": "ECON-204",
+  "chapterId": "chapter-4",
+  "title": "斯勒茨基与对偶",
+  "level": "核心",
+  "version": 1,
+  "status": "checked",
+  "objectives": [
+    "由效用最大化与支出最小化建立消费者对偶",
+    "推导Slutsky并区分补偿替代与收入效应",
+    "计算货币福利指标并说明消费者剩余的限制"
+  ],
+  "prerequisites": [
+    "消费者需求、偏导、包络定理；局部非饱和和凹/凸条件。"
+  ],
+  "sources": [
+    {
+      "title": "上海交通大学《中级微观经济学》2021 课程大纲",
+      "url": "https://www.acem.sjtu.edu.cn/ueditor/jsp/upload/file/20210531/1622442626323003081.pdf",
+      "note": "经典主题范围参照，非当前年度认证；正文、图形和教学例题原创。"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "支出函数回答另一种约束问题",
+      "paragraphs": [
+        "间接效用 v(p,m)=max{u(x):p·x≤m,x≥0}。支出函数 e(p,u₀)=min{p·x:u(x)≥u₀,x≥0}，解 h(p,u₀) 是Hicks补偿需求。它固定效用目标而不是收入，不能把两个需求函数当同一个导数。",
+        "在正价格、局部非饱和及适当连续/凸性等条件下，e(p,v(p,m))=m、v(p,e(p,u₀))=u₀，对应选择有h(p,v(p,m))=x(p,m)。若饱和、不可达目标或不唯一需求，等式和导数需限制或用集合表述。",
+        "支出函数对价格一次齐次，对价格凹：它是各可行束线性支出的下包络。凹不意味着效用目标越高支出越低；价格方向和目标方向是不同变量。"
+      ],
+      "optional": false
+    },
+    {
+      "heading": "包络导数：Shephard 与 Roy",
+      "paragraphs": [
+        "可微且最优正则时，Shephard 引理给 ∂e/∂pᵢ=hᵢ(p,u₀)。价格提高一小单位时，最低支出的局部增量等于原最优购买量；最优束的间接变化由一阶最优条件消去。",
+        "消费者对偶的另一结果为 Roy 恒等式 xᵢ=−v_(pᵢ)/v_m，需可微且v_m>0。效用的严格递增表示变换同时缩放两个导数，比值不变。角点、拐点或多个最优可能需要广义导数，不能无条件代入。"
+      ],
+      "optional": true
+    },
+    {
+      "heading": "Slutsky 从复合函数求导",
+      "paragraphs": [
+        "从 hᵢ(p,u)=xᵢ(p,e(p,u)) 在固定u时对pⱼ求导，链式法则和Shephard得 h_(i,pⱼ)=x_(i,pⱼ)+x_(i,m)hⱼ。再在u=v(p,m)处代入hⱼ=xⱼ，得到Marshall价格效应=补偿替代效应−收入反应×原购买量。",
+        "价格凹的支出函数使补偿需求价格导数矩阵负半定，在可微条件下自身补偿价格效应不正；Hessian对称给净替代关系的对称性。正常品收入导数正，通常强化自身需求下降；强劣等收入效应可能抵消替代，才有Giffen。",
+        "Slutsky补偿（使旧束仍可负担）与Hicks补偿（保持效用）对有限变化不同，但在适当光滑条件下具有相同的一阶局部替代效应。本节的导数公式使用Hicks补偿，不将有限支出变化直接当导数。"
+      ],
+      "formulas": [
+        "\\frac{\\partial xᵢ}{\\partial pⱼ}=\\frac{\\partial hᵢ}{\\partial pⱼ}-xⱼ\\frac{\\partial xᵢ}{\\partial m}\\qquad u=v(p,m)"
+      ],
+      "optional": false
+    },
+    {
+      "heading": "补偿变差、等价变差与价格路径",
+      "paragraphs": [
+        "价格从p⁰到p¹、名义收入m不变，u⁰=v(p⁰,m)、u¹=v(p¹,m)。采用“损失为正”的约定：CV=e(p¹,u⁰)−m，EV=m−e(p⁰,u¹)。CV是新价格下为恢复旧效用要补多少，EV是在旧价格下可拿走多少造成同样损失。涨价时两者通常正，但并非通常相等。",
+        "Marshall消费者剩余变化是需求曲线下的面积变化。存在收入效应时，它一般不与CV/EV完全相等；准线性且计价品内点、收入效应为零时可精确对应。跨不同消费者比较仍需福利权重，收入分配不能靠一个面积自动解决。",
+        "本节货币指标约定先说明变化方向，不能用同一个负号描述涨价损失和补贴收益。大幅变化、角点和路径依赖要用完整支出函数，而不是把一阶Slutsky近似当精确总福利。"
+      ],
+      "optional": false
+    }
+  ],
+  "examples": [
+    {
+      "title": "Cobb–Douglas的支出与补偿需求",
+      "problem": "u=√(xy)，pₓ=4、pᵧ=1，目标u₀=10。求最低支出及补偿x。",
+      "steps": [
+        "目标xy≥100；成本4x+y，最优使用y=100/x，导数4−100/x²=0得x=5、y=20。",
+        "最低支出4×5+20=40；一般支出e(p,u)=2u√(pₓpᵧ)。",
+        "Shephard复核hₓ=u√(pᵧ/pₓ)=5；花费各半是该偏好结构的结果。"
+      ],
+      "conclusion": "支出最小化固定效用而非固定原收入。",
+      "calculationId": "ECON-204-example-4-1"
+    },
+    {
+      "title": "同一次涨价的三种货币损失",
+      "problem": "u=√(xy)、m=100，pᵧ=1，pₓ从1升至4。用损失为正的约定比较CV、EV与Marshall剩余损失。",
+      "steps": [
+        "旧需求(50,50)给u⁰=50，新需求(12.5,50)给u¹=25。",
+        "CV=e((4,1),50)−100=200−100=100；EV=100−e((1,1),25)=100−50=50。",
+        "Marshall x(p)=50/p，涨价面积损失∫₁⁴50/p dp=50log4≈69.314718。它处于两个指标之间，但三者不相等。"
+      ],
+      "conclusion": "收入效应使普通需求面积不能替代任意精确福利指标。",
+      "calculationId": "ECON-204-example-4-2"
+    }
+  ],
+  "questions": [
+    {
+      "id": "ECON-204-l4-q1",
+      "version": 1,
+      "type": "choice",
+      "objective": "由效用最大化与支出最小化建立消费者对偶",
+      "prompt": "Hicks需求在价格变化时保持哪项固定？",
+      "options": [
+        {
+          "id": "a",
+          "text": "名义收入。"
+        },
+        {
+          "id": "b",
+          "text": "目标效用。"
+        },
+        {
+          "id": "c",
+          "text": "原购买量。"
+        }
+      ],
+      "answer": "b",
+      "explanation": "补偿需求来自达到给定效用的最低支出问题。",
+      "hint": "区分两个对偶问题的约束。",
+      "level": "基础"
+    },
+    {
+      "id": "ECON-204-l4-q2",
+      "version": 1,
+      "type": "choice",
+      "objective": "推导Slutsky并区分补偿替代与收入效应",
+      "prompt": "在光滑标准条件下，自身补偿替代效应的符号通常为？",
+      "options": [
+        {
+          "id": "a",
+          "text": "不正。"
+        },
+        {
+          "id": "b",
+          "text": "总为正。"
+        },
+        {
+          "id": "c",
+          "text": "由收入效应决定而无需补偿问题。"
+        }
+      ],
+      "answer": "a",
+      "explanation": "支出函数价格凹，Hessian对角项不正。零也允许。",
+      "hint": "看价格方向的二阶导数。",
+      "level": "基础"
+    },
+    {
+      "id": "ECON-204-l4-q3",
+      "version": 1,
+      "type": "numeric",
+      "objective": "由效用最大化与支出最小化建立消费者对偶",
+      "prompt": "u=√(xy)，目标u=6，pₓ=1、pᵧ=4。最低支出是多少？",
+      "answer": 24,
+      "tolerance": 0.000001,
+      "explanation": "e=2×6×√4=24，补偿束x=12、y=3。",
+      "hint": "先求满足xy≥36的最低成本束。",
+      "level": "核心"
+    },
+    {
+      "id": "ECON-204-l4-q4",
+      "version": 1,
+      "type": "numeric",
+      "objective": "推导Slutsky并区分补偿替代与收入效应",
+      "prompt": "u=√(xy)、m=100、pₓ=pᵧ=1。补偿hₓ对pₓ的导数在当前效用处是多少？",
+      "answer": -25,
+      "tolerance": 0.000001,
+      "explanation": "u=50，hₓ=u√(pᵧ/pₓ)，导数−u√pᵧ/(2pₓ^(3/2))=−25。Marshall导数−50，收入项−x∂x/∂m=−25。",
+      "hint": "固定效用而非固定收入求导。",
+      "level": "核心"
+    },
+    {
+      "id": "ECON-204-l4-q5",
+      "version": 1,
+      "type": "open",
+      "objective": "推导Slutsky并区分补偿替代与收入效应",
+      "prompt": "用hᵢ(p,u)=xᵢ(p,e(p,u))推导Slutsky，解释每项保持固定的量。",
+      "answer": "固定u对价格微分，h价格导数=x价格导数+x收入导数×e价格导数；Shephard给e价格导数=hⱼ。评价在u=v(p,m)后hⱼ=xⱼ，整理得Marshall=Hicks−收入项。",
+      "explanation": "要点：链式法则、包络、评价点与固定量；不把收入项符号省略。",
+      "hint": "价格既直接改变x，也通过所需支出改变m。",
+      "level": "挑战"
+    },
+    {
+      "id": "ECON-204-l4-q6",
+      "version": 1,
+      "type": "open",
+      "objective": "计算货币福利指标并说明消费者剩余的限制",
+      "prompt": "为什么准线性内点条件下普通需求面积可精确度量价格福利，而一般有收入效应时不行？",
+      "answer": "准线性计价品吸收收入变化，其他品需求在内点不受收入影响，Marshall与Hicks价格路径相同，积分能对应货币补偿。一般补偿改变收入与需求，面积路径不同，CV/EV需支出函数；计价品角点也破坏简化。",
+      "explanation": "要点：收入效应为零、计价品内点、路径对应及边界；不说所有效用都一样。",
+      "hint": "补偿收入会不会改变该品需求？",
+      "level": "挑战"
+    }
+  ],
+  "summary": [
+    "Marshall固定收入，Hicks固定效用。",
+    "Shephard/Roy连接最优值与需求，须有正则条件。",
+    "Slutsky把补偿替代与收入反应分开。",
+    "CV、EV与普通剩余面积的约定和适用范围不同。"
+  ],
+  "format": "guided",
+  "coreQuestionIds": [
+    "ECON-204-l4-q1",
+    "ECON-204-l4-q3",
+    "ECON-204-l4-q6"
+  ]
+}

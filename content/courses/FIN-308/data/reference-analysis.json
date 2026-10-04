@@ -1,0 +1,36 @@
+{
+  "scenarios": [
+    {
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "6.8"
+      },
+      "unhedged_domestic": "680000.0",
+      "forward_domestic_profit": "34000.00",
+      "combined_domestic": "714000.00"
+    },
+    {
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.14"
+      },
+      "unhedged_domestic": "714000.00",
+      "forward_domestic_profit": "0.00",
+      "combined_domestic": "714000.00"
+    },
+    {
+      "inputs": {
+        "foreign_amount": "100000",
+        "forward_domestic_per_foreign": "7.14",
+        "spot_domestic_per_foreign": "7.5"
+      },
+      "unhedged_domestic": "750000.0",
+      "forward_domestic_profit": "-36000.00",
+      "combined_domestic": "714000.00"
+    }
+  ],
+  "quote": "CNY/USD, all synthetic",
+  "scope": "Fixed cash-flow amount/tenor, no fees or defaults; comparison is not an exchange-rate forecast or return guarantee."
+}

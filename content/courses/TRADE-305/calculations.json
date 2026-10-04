@@ -1,0 +1,643 @@
+{
+  "method": "Independent Python reference algorithms: exact enumeration, quadrature and scientific libraries.",
+  "checks": [
+    {
+      "id": "TRADE-305-example-1",
+      "inputs": {
+        "home": [
+          1,
+          2
+        ],
+        "foreign": [
+          6,
+          3
+        ]
+      },
+      "method": "Exact labor reallocation ratio in original technology.",
+      "computed": 0.5,
+      "exact_or_repr": "1/2",
+      "declared": 0.5,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l1-q2",
+      "inputs": {
+        "labor_X": 2,
+        "labor_Y": 4
+      },
+      "method": "Exact opportunity-cost ratio with Y/X units.",
+      "computed": 0.5,
+      "exact_or_repr": "1/2",
+      "declared": 0.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-2",
+      "inputs": {
+        "home_aX": 1,
+        "foreign_aY": 3,
+        "prices": [
+          1,
+          1
+        ]
+      },
+      "method": "Exact competitive wage from output price per labor requirement.",
+      "computed": 3.0,
+      "exact_or_repr": "3",
+      "declared": 3,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-wage-lower",
+      "inputs": {
+        "foreign_aY": 3,
+        "home_aY": 2
+      },
+      "method": "Derive foreign Y unit-cost inequality.",
+      "computed": 1.5,
+      "exact_or_repr": "3/2",
+      "declared": 1.5,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-wage-upper",
+      "inputs": {
+        "foreign_aX": 6,
+        "home_aX": 1
+      },
+      "method": "Derive home X unit-cost inequality.",
+      "computed": 6.0,
+      "exact_or_repr": "6",
+      "declared": 6,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l2-q2",
+      "inputs": {
+        "home_aX": 2,
+        "foreign_aY": 3,
+        "prices": [
+          1,
+          1
+        ]
+      },
+      "method": "Exact price/productivity wage ratio.",
+      "computed": 1.5,
+      "exact_or_repr": "3/2",
+      "declared": 1.5,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-3",
+      "inputs": {
+        "production": "sqrt(Lx),sqrt(Ly)",
+        "L": 100,
+        "prices": [
+          2,
+          1
+        ]
+      },
+      "method": "Root of marginal-value difference on actual resource interval; independently compare original objective optimum.",
+      "computed": 79.9999999999999,
+      "exact_or_repr": "79.9999999999999",
+      "declared": 80,
+      "tolerance": 1e-08,
+      "absolute_error": 9.947598300641403e-14,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-allocation-objective",
+      "inputs": {
+        "L": 100,
+        "prices": [
+          2,
+          1
+        ]
+      },
+      "method": "Check direct bounded optimization objective independently of marginal-condition root.",
+      "computed": 22.360679774997898,
+      "exact_or_repr": "22.360679774997898",
+      "declared": 22.360679774997898,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l3-q2",
+      "inputs": {
+        "L": 100,
+        "prices": [
+          1,
+          1
+        ]
+      },
+      "method": "Root of two original marginal-value schedules.",
+      "computed": 49.999999999999986,
+      "exact_or_repr": "49.999999999999986",
+      "declared": 50,
+      "tolerance": 1e-06,
+      "absolute_error": 1.4210854715202004e-14,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-4",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "prices": [
+          3.3,
+          3
+        ]
+      },
+      "method": "Solve actual two-good zero-profit equations.",
+      "computed": 1.2,
+      "exact_or_repr": "1.2",
+      "declared": 1.2,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-capital-return",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "prices": [
+          3.3,
+          3
+        ]
+      },
+      "method": "Check other factor from same independent system.",
+      "computed": 0.9,
+      "exact_or_repr": "0.9",
+      "declared": 0.9,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l4-q2",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "prices": [
+          3.6,
+          3
+        ]
+      },
+      "method": "Linear algebra on independently specified zero-profit inputs.",
+      "computed": 1.4000000000000001,
+      "exact_or_repr": "1.4000000000000001",
+      "declared": 1.4,
+      "tolerance": 1e-06,
+      "absolute_error": 2.220446049250313e-16,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-real-wage-X",
+      "inputs": {
+        "wage": 1.2,
+        "price_X": 3.3
+      },
+      "method": "Check wage purchase power in X after price change.",
+      "computed": 0.36363636363636365,
+      "exact_or_repr": "0.36363636363636365",
+      "declared": 0.36363636363636365,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-5",
+      "inputs": {
+        "export_quantity": 100,
+        "relative_price": "6/5"
+      },
+      "method": "Exact revenue budget expressed in import units.",
+      "computed": 120.0,
+      "exact_or_repr": "120",
+      "declared": 120,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l5-q2",
+      "inputs": {
+        "export_quantity": 60,
+        "relative_price": "3/2"
+      },
+      "method": "Exact import purchase capacity with given TOT.",
+      "computed": 90.0,
+      "exact_or_repr": "90",
+      "declared": 90,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-6",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Read fixed CSV, numerically solve autarky then integrate original demand/supply between prices and add domestic revenue.",
+      "computed": 99.99999999999989,
+      "exact_or_repr": "99.99999999999989",
+      "declared": 100,
+      "tolerance": 1e-08,
+      "absolute_error": 1.1368683772161603e-13,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l6-q2",
+      "inputs": {
+        "file": "policy-scenarios.csv",
+        "tariff": 5
+      },
+      "method": "Original schedules at bounded equilibrium price from actual input CSV.",
+      "computed": 30.0,
+      "exact_or_repr": "30.0",
+      "declared": 30,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-case-dwl",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Independent welfare integration on original policy case.",
+      "computed": 99.99999999999989,
+      "exact_or_repr": "99.99999999999989",
+      "declared": 100,
+      "tolerance": 1e-06,
+      "absolute_error": 1.1368683772161603e-13,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-case-consumer_change",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Separate incidence component from independent integration.",
+      "computed": -549.9999999999999,
+      "exact_or_repr": "-549.9999999999999",
+      "declared": -550,
+      "tolerance": 1e-12,
+      "absolute_error": 1.1368683772161603e-13,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-case-producer_change",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Separate incidence component from independent integration.",
+      "computed": 250.0,
+      "exact_or_repr": "250.0",
+      "declared": 250,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-case-revenue",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Separate incidence component from independent integration.",
+      "computed": 200.0,
+      "exact_or_repr": "200.0",
+      "declared": 200,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-case-imports",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 10.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Separate incidence component from independent integration.",
+      "computed": 20.0,
+      "exact_or_repr": "20.0",
+      "declared": 20,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-prohibitive-price",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 40.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Solve original autarky constraint, with nonnegative imports.",
+      "computed": 60.0,
+      "exact_or_repr": "60.0",
+      "declared": 60,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-prohibitive-imports",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 40.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Solve original autarky constraint, with nonnegative imports.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-prohibitive-revenue",
+      "inputs": {
+        "world_price": 40.0,
+        "tariff": 40.0,
+        "demand_intercept": 100.0,
+        "demand_slope": -1.0,
+        "supply_intercept": -20.0,
+        "supply_slope": 1.0
+      },
+      "method": "Solve original autarky constraint, with nonnegative imports.",
+      "computed": 0.0,
+      "exact_or_repr": "0.0",
+      "declared": 0,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-7",
+      "inputs": {
+        "output_price": 100,
+        "input_value": 60,
+        "output_tax": ".10",
+        "input_tax": ".05"
+      },
+      "method": "Exact before/after value-added budgets with taxed input cost.",
+      "computed": 0.175,
+      "exact_or_repr": "7/40",
+      "declared": 0.175,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l7-q2",
+      "inputs": {
+        "output_price": 100,
+        "input_value": 60,
+        "output_tax": ".10",
+        "input_tax": "0"
+      },
+      "method": "Exact value-added protection with zero input tariff.",
+      "computed": 0.25,
+      "exact_or_repr": "1/4",
+      "declared": 0.25,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-8",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "resources": [
+          110,
+          80
+        ]
+      },
+      "method": "Solve both actual resource constraints simultaneously.",
+      "computed": 46.666666666666664,
+      "exact_or_repr": "46.666666666666664",
+      "declared": 46.666666666666664,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l8-q2",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "resources": [
+          100,
+          80
+        ]
+      },
+      "method": "Independent baseline resource solve.",
+      "computed": 40.0,
+      "exact_or_repr": "40.0",
+      "declared": 40,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-output-Y",
+      "inputs": {
+        "technology": [
+          [
+            2.0,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "resources": [
+          110,
+          80
+        ]
+      },
+      "method": "Check other output and interior feasibility.",
+      "computed": 16.666666666666668,
+      "exact_or_repr": "16.666666666666668",
+      "declared": 16.666666666666668,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-example-9",
+      "inputs": {
+        "export": 100,
+        "direct_import_input": 60,
+        "indirect_import_input": 0
+      },
+      "method": "Exact single-stage production-value accounting under declared assumptions.",
+      "computed": 40.0,
+      "exact_or_repr": "40",
+      "declared": 40,
+      "tolerance": 1e-08,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-l9-q2",
+      "inputs": {
+        "export": 120,
+        "direct_import_input": 70,
+        "indirect_import_input": 0
+      },
+      "method": "Exact one-stage local value added.",
+      "computed": 50.0,
+      "exact_or_repr": "50",
+      "declared": 50,
+      "tolerance": 1e-06,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-actual-svg-area-0",
+      "inputs": {
+        "vertices": [
+          [
+            20.0,
+            40.0
+          ],
+          [
+            30.0,
+            40.0
+          ],
+          [
+            30.0,
+            50.0
+          ]
+        ]
+      },
+      "method": "Parse actual exported SVG, invert plotting transform and compute shoelace area.",
+      "computed": 50.0,
+      "exact_or_repr": "50.0",
+      "declared": 50,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    },
+    {
+      "id": "TRADE-305-actual-svg-area-1",
+      "inputs": {
+        "vertices": [
+          [
+            50.0,
+            40.0
+          ],
+          [
+            60.0,
+            40.0
+          ],
+          [
+            50.0,
+            50.0
+          ]
+        ]
+      },
+      "method": "Parse actual exported SVG, invert plotting transform and compute shoelace area.",
+      "computed": 50.0,
+      "exact_or_repr": "50.0",
+      "declared": 50,
+      "tolerance": 1e-12,
+      "absolute_error": 0.0,
+      "status": "passed"
+    }
+  ]
+}

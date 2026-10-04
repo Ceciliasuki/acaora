@@ -1,0 +1,88 @@
+{
+  "courseId": "STAT-306",
+  "status": "checked",
+  "scope": "按用户批准的核心课程与选学结构编写；公开大纲仅为主题范围参考，不声称全大纲等效。",
+  "targets": [
+    {
+      "topic": "多元数据、矩阵与预处理",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "一行一个对象，一列一个变量；预处理也是训练的一部分。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-1"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "多元正态与线性变换",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "联合分布不是各列分别的分布；选学：Wishart与均值独立性。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-2"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "均值向量检验与MANOVA",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "一次检验一个向量；多组响应与MANOVA；选学：多元线性模型。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-3"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "主成分、SVD与解释方差",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "最大方差方向；从SVD到得分和重建。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-4"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "因子分析与旋转解释",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "共同因子模型；旋转保留什么。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-5"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "距离、尺度与异常点",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "欧氏距离和协方差距离；异常不总是错误。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-6"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "聚类与结构验证",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "K-means优化什么；层次方法与验证。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-7"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "判别分类与独立评估",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "LDA与QDA的条件；从拟合到独立评估。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-8"
+      ],
+      "status": "checked"
+    },
+    {
+      "topic": "典型相关与多维标度",
+      "source": "http://staff.ustc.edu.cn/~ynyang/vector/Syllabus-MVA.html",
+      "basis": "典型相关不是两列逐一配对；MDS与对应分析；选学：结构方程与路径含义。逐项条件与解释核查见课程审查记录。",
+      "lessonIds": [
+        "lesson-9"
+      ],
+      "status": "checked"
+    }
+  ]
+}
