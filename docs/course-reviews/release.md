@@ -1,5 +1,7 @@
 # 七门简化课程发布验收
 
+2026-10-04完成发布：[正式课程中心](https://acaora.cn/courses)。EdgeOne部署dpndu4gal0go成功，正式站两次版本核对均为9401322bcbce74acf6324904e9249728b488da76，buildTime为2026-10-04T02:13:28.400Z。PR #8交付课程，PR #9修复EdgeOne文件打包；下列数量和测试分别说明范围，不相加作为教学质量分数。
+
 范围：2026-10-04用户批准的简化结构。每节默认核心讲解、一个完整例题、三题（概念/数值/解释）；更多内容折叠。每门只保留一个综合案例主入口，复习与重置位于学习记录。原概率/微观课节和题目ID、扩展内容、旧作业链接保留。课程无需上传资料或模型Key，开放题参考自查，不提供伪自动分数。
 
 | 课程 | 核心/选学课节 | 保留例题 | 默认课节题与案例题 | 全部保留题 | 独立数值检查 |
@@ -19,7 +21,7 @@
 ## 本地证据
 
 - 全七门内容/数学/数值证据门槛通过；生产build先执行门槛，防止发布未检查内容。
-- Node22.11.0/pnpm10.26.1；typecheck、全lint、66 unit、标准Next production build通过。
+- Node22.11.0/pnpm10.26.1；最终typecheck、全lint、68 unit、标准Next production build通过。
 - 65项完整确定性mock E2E和9项视觉检查在最终production build上同一次无重试运行74/74通过：课程、同步、认证、论文、项目、导航、手机溢出和WCAG serious/critical smoke。
 - SYNC-01两个独立浏览器存储共享同账户云模型，合并不同课节并恢复作答；SYNC-02断网作答在本机持久化，恢复页面网络但云写503后刷新仍在，重试补发；SYNC-03另一设备重置后旧队列不恢复旧进度；SYNC-04题目版本不匹配进入复习。另测换账号、401/503队列保留、看解析/开放自查。完整断网加载未缓存的新页面不支持，当前已加载内容可作答。
 - PGlite真实PostgreSQL角色/RLS/函数验证通过；不把单进程引擎证据等同于生产HTTP或多连接验证。
@@ -27,22 +29,28 @@
 
 ## 上线证据与边界
 
-生产Supabase pxbcigfzcsfkttzmiork在本轮复核为ACTIVE_HEALTHY，PG17.6.1.155；新增课程迁移已应用。两个课程表均启用RLS，anon不能读取，两类身份不交叉，三个RPC为security invoker，anon不能执行，authenticated显式授权。当前正式站/api/version为04e66587d760615a49ad815832e831d4839fabfe。
+生产Supabase pxbcigfzcsfkttzmiork在本轮复核为ACTIVE_HEALTHY，PG17.6.1.155；新增课程迁移已应用。两个课程表均启用RLS，anon不能读取，两类身份不交叉，三个RPC为security invoker，anon不能执行，authenticated显式授权。当前正式站/api/version为9401322bcbce74acf6324904e9249728b488da76。
 
 整支独立代码审阅完成：Critical 0，Important 3，Minor 0，Declined to judge 0。旧题版本导致队列阻塞、读取/重置失败时错误重试及随机UUID使离线导航回退均已修复。旧答案按原版本保留，不按当前题目评分；重试实际联机，重置意图本机持久化；IndexedDB事务分配单调顺序。新增验证观察RED到GREEN，专项7项和全量65项通过。已存在且未升级的无时间戳旧队列无法倒推准确导航先后，先发送旧队列再发新顺序记录；不修改历史答案。
 
-真实生产GoTrue/PostgREST验收33项通过：两个普通测试身份、三次独立登录、实际并发HTTP合并、重复尝试幂等、冲突事务回滚、跨账号SELECT为空/伪造INSERT被拒、anon拒绝、重置代次防止复活。未使用service_role验证权限。测试身份由管理员临时创建且邮箱预确认，不发邮件、不改全局认证策略，故不证明邮件收件/注册回调。上线后仍须同源网站Cookie路径及测试身份清理。
+真实生产GoTrue/PostgREST验收33项通过：两个普通测试身份、三次独立登录、实际并发HTTP合并、重复尝试幂等、冲突事务回滚、跨账号SELECT为空/伪造INSERT被拒、anon拒绝、重置代次防止复活。未使用service_role验证权限。测试身份由管理员临时创建且邮箱预确认，不发邮件、不改全局认证策略，故不证明邮件收件/注册回调。
 
-Security Advisors未报告课程RLS问题，保留既有[密码泄露保护未开启](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN；本次不改全站认证策略。Performance Advisors给出三个[尚未使用索引](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO（两论文、一个刚建课程索引），不把刚建/低流量索引当删除依据。
+上线后同源网站与真实浏览器验收62项通过：两个新普通测试身份、同一账号两个独立浏览器存储和另一账号存储；/api/auth/login的实际HttpOnly/Secure/SameSite=Lax Cookie；未登录拒绝、并发课节合并、尝试幂等、伪造账号和未来题目版本拒绝、重置与旧代次409；七门目录/案例入口；实际数值作答正确、标记已读、另一浏览器恢复答案和已读、刷新保留、另一账号为空；375px金融公式MathML和三题阅读无页面横向溢出。浏览器对supabase.co的直接请求为0，认证和课程同步走本站接口。所有测试会话登出，测试身份、会话、进度、答案按精确ID和唯一标记清理，复核计数均为0；临时凭据文件已移除。
 
-待完成：最终当前HEAD GitHub CI、合并、EdgeOne部署、同源账户课程HTTP与精确SHA核对。待完成项不是通过。生产课程表以新增方式实现，原论文/项目数据不迁移不删除；旧生产SHA为回退点，若回退网站可保留新增课程表以免丢学习记录。
+Security Advisors未报告课程RLS问题，保留既有[密码泄露保护未开启](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) WARN；本次不改全站认证策略。课程索引经实际查询已有使用统计，Performance Advisors仅剩两个既有论文索引的[尚未使用索引](https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index) INFO，不因低流量删除索引。
+
+发布门槛已完成：PR #9精确HEAD 2eb77c56d5db4dd38e7c664a1757c5fc3cbb73e4的[CI 37169982332](https://github.com/Ceciliasuki/acaora/actions/runs/37169982332)全部通过，65浏览器测试无重试；合并后9401322的[main CI 37170362547](https://github.com/Ceciliasuki/acaora/actions/runs/37170362547)同样全部通过、65浏览器测试无重试。实际EdgeOne打包/部署成功和同源网站62项检查通过。生产课程表以新增方式实现，原论文/项目数据未迁移或删除；旧生产04e66587d760615a49ad815832e831d4839fabfe为回退点，回退网站可保留新增课程表以免丢学习记录。
 
 发布前审查发现主目录未传综合案例状态，COURSE-18实际RED后修复，七门入口GREEN；最终完整production E2E已通过。SYNC-02初次全量运行出现测试竞态：云服务提前恢复导致自动同步先于手动重试，按钮已消失。测试改为等待实际503响应后恢复服务，三次无重试专项运行通过，未放宽等待。
 
-PR #8已合并为bda996131c9653d8cbfb5e58e007a572670e591d，PR HEAD 75fc1db和合并后main的完整GitHub CI均通过。EdgeOne自动部署dpu4tsvqkwhp在Next编译/类型检查/课程门槛成功后，适配器onBuild复制文件时失败：catalog.json unlink ENOENT。正式站保留旧版本，尚未确认新版本上线。
+首轮PR #8合并为bda996131c9653d8cbfb5e58e007a572670e591d，PR HEAD 75fc1db和合并后main的完整GitHub CI均通过。当时EdgeOne部署dpu4tsvqkwhp在Next编译/类型检查/课程门槛成功后，适配器onBuild复制文件时失败：catalog.json unlink ENOENT，旧版本继续服务。此失败已由下述PR #9修复。
 
-检查官方@edgeone/opennextjs-pages 0.2.10-beta.1的copyHandlerDependencies实现：将不同route的include globs展开后并行cp，没有去重。原配置把112个实际文件安排225次复制。修复为一个同时覆盖course与API路径的route glob，文件glob仅出现一次；回放适配器配置读取规则RED→GREEN，实际Next六个server traces均包含全部112课程文件，生产构建与68项unit通过。此修复需独立PR当前HEAD CI及EdgeOne实际发布后验收，不能以本地构建替代。
+检查官方@edgeone/opennextjs-pages 0.2.10-beta.1的copyHandlerDependencies实现：将不同route的include globs展开后并行cp，没有去重。原配置把112个实际文件安排225次复制。修复为一个同时覆盖course与API路径的route glob，文件glob仅出现一次；回放适配器配置读取规则RED→GREEN，实际Next六个server traces均包含全部112课程文件，生产构建与68项unit通过。修复后本地26项课程/同步浏览器测试无重试通过；PR #9已合并，EdgeOne dpndu4gal0go构建47秒、部署69秒，适配器打包及实际服务均通过。
 
 生产迁移由连接器记为20261003181910_curated_course_progress，与仓库SQL内容对应；勿在未核对迁移历史时重复执行。33项数据库HTTP验收后临时测试身份、会话、课程记录和答案均按精确ID/标记清理为0，未改真实用户数据。课程索引实际查询后已有使用统计，性能Advisors仅剩两个既有论文索引INFO。
 
-本报告将补入实际发布证据。专用测试身份只用于构造课程记录；邮件收件、全国网络、学科专家审阅、长期教学效果仍需各自独立证据，不由此发布验收推定。
+首次网页验收等待networkidle超时。诊断确认课程DOM约1.6秒可见、账号状态正常解析，但框架预加载其他工作区持续发请求；验收改等DOM及实际账号/同步状态，未延长失败超时，也未改产品代码。完整62项随后通过；未把首次中止计为通过。
+
+本地证据在outputs/：course-site-http-smoke.log、course-database-http-smoke.log、course-packaging-github-ci.log、course-main-github-ci.log，以及course-centre-live.png和course-finance-live-mobile.png。完整执行账本见execution-ledger.md，专属临时计划目录归档到outputs/course-release-evidence/；凭据不在归档中。
+
+专用测试身份只用于构造课程记录；邮件收件、全国网络、学科专家审阅、长期教学效果仍需各自独立证据，不由此发布验收推定。未改变部署区域、域名解析或全局认证策略。
