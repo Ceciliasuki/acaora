@@ -50,7 +50,7 @@ Surfaces (routes as shipped):
 - `/auth`, `/auth/reset`, `/auth/callback` account entry, password recovery, SSR mail callback
 - `/dashboard` workspace overview
 - `/courses` curated centre: seven guided courses, core/elective lessons, one worked example and three core exercises per lesson, one comprehensive case per course; account-scoped reading and practice records
-- `/papers` PaperLab: library, bilingual reader, paragraph guidance, AI studio, scholarly search
+- `/papers` PaperLab: library, continuous full-text reader with optional translations, reading-position notes and paragraph guidance, AI studio, scholarly search. Paragraph IDs anchor existing notes/AI evidence; reading does not require paragraph pagination. This is extracted text, not a reconstruction of the PDF's figures or original page layout.
 - `/data` DataLab: local dataset import, descriptive statistics, hypothesis tests, regression, visualisation
 - `/projects` project workspace: status, progress, tasks, notes, resources
 - `/settings` profile, password, AI key, privacy

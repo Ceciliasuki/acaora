@@ -4,9 +4,10 @@ import styles from "../focused-workspaces.module.css";
 
 import AppSidebar from "../components/app-sidebar";
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import AiStudio from "./ai-studio";
+import ContinuousReader from './continuous-reader';
 import type { AiMemory, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
 import { samplePaper } from "./paper-types";
 import { authFetch } from "../lib/auth-client";
@@ -33,6 +34,7 @@ export default function PaperLab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const translatorRef = useRef<TranslatorSession | null>(null);
   const [paper, setPaper] = useState<PaperRecord>(samplePaper);
+  const paperRef = useRef(paper);
   const [library, setLibrary] = useState<PaperRecord[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -62,15 +64,17 @@ export default function PaperLab() {
   const skipPersistRef = useRef(false);
   const dirtyRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
+  const [showTranslations, setShowTranslations] = useState(false);
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
   const activeParagraph = paper.paragraphs[activeIndex];
-  const sections = useMemo(() => [...new Set(paper.paragraphs.map((item) => item.section))], [paper.paragraphs]);
   const completion = paper.paragraphs.length
     ? Math.round((paper.paragraphs.filter((item) => item.read).length / paper.paragraphs.length) * 100)
     : 0;
   const insight = activeParagraph ? analyzeParagraph(activeParagraph) : null;
   const isEdge = typeof navigator !== "undefined" && /Edg\//.test(navigator.userAgent);
+
+  useEffect(() => {paperRef.current = paper;}, [paper]);
 
   const setCloudStatus = useCallback((next: typeof cloudState) => {
     cloudStateRef.current = next;
@@ -287,6 +291,11 @@ export default function PaperLab() {
     }));
   }
 
+  const selectParagraph = useCallback((index: number) => {
+    if (userIdRef.current) {dirtyRef.current = true; setCloudStatus('syncing');}
+    setPaper(current => ({...current, activeParagraph: index}));
+  }, [setCloudStatus]);
+
   async function handlePdf(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -343,6 +352,9 @@ export default function PaperLab() {
   async function translateParagraphs(mode: "current" | "all") {
     setMessage("");
     setTranslationProgress(0);
+    setTranslationState('working');
+    const sourceOwner = paper.ownerId ?? null;
+    const sourceUser = userIdRef.current;
     try {
       const translator = await ensureTranslator();
       const targets = mode === "current"
@@ -353,15 +365,19 @@ export default function PaperLab() {
         setMessage("所有段落已经完成翻译。" );
         return;
       }
-      let workingPaper = paper;
       for (let position = 0; position < targets.length; position += 1) {
-        const index = targets[position];
-        const translation = await translator.translate(workingPaper.paragraphs[index].original);
-        workingPaper = {
-          ...workingPaper,
-          paragraphs: workingPaper.paragraphs.map((paragraph, paragraphIndex) => paragraphIndex === index ? { ...paragraph, translation } : paragraph),
-        };
-        setPaper(workingPaper);
+        const target = paper.paragraphs[targets[position]];
+        const translation = await translator.translate(target.original);
+        if (paperRef.current.id !== paper.id || userIdRef.current !== sourceUser) {
+          setTranslationState('ready');
+          return;
+        }
+        // A delayed translation changes only its source paragraph. Reading,
+        // notes, title edits and account/paper switches may happen meanwhile.
+        updatePaper(current => current.id === paper.id && (current.ownerId ?? null) === sourceOwner ? {
+          ...current,
+          paragraphs: current.paragraphs.map(paragraph => paragraph.id === target.id && paragraph.original === target.original ? {...paragraph, translation} : paragraph),
+        } : current);
         setTranslationProgress(Math.round(((position + 1) / targets.length) * 100));
       }
       setTranslationState("done");
@@ -506,11 +522,7 @@ export default function PaperLab() {
           <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
-        {/* 2 · Publication Reader. One sheet of paper carries the paper itself: the
-            section line, the paragraph's number in the margin, the original as the
-            publication body and the device translation as its secondary layer. All
-            of the reader's real controls survive — the editable title, the file
-            name, paragraph stepping, bookmarks, the read toggle and translation. */}
+        {/* Full text is continuous; paragraph IDs still anchor notes and AI context. */}
         <section className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
           <div className="plab-reader-bar">
             <div className="paper-title-edit">
@@ -518,9 +530,8 @@ export default function PaperLab() {
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
             </div>
             <div className="reader-controls">
-              <button type="button" aria-label="上一段" disabled={activeIndex === 0} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.max(0, activeIndex - 1) }))}>←</button>
-              <span className="journal-num">{activeIndex + 1} / {paper.paragraphs.length}</span>
-              <button type="button" aria-label="下一段" disabled={activeIndex >= paper.paragraphs.length - 1} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: Math.min(current.paragraphs.length - 1, activeIndex + 1) }))}>→</button>
+              <span>全文阅读</span>
+              <button type="button" aria-pressed={showTranslations} onClick={() => setShowTranslations(value => !value)}>{showTranslations ? '隐藏译文' : '显示译文'}</button>
             </div>
             <div className="plab-reader-progress">
               <b className="journal-num">{completion}% 已读</b>
@@ -528,40 +539,22 @@ export default function PaperLab() {
             </div>
           </div>
 
-          <div className="plab-reader-scroll">
-            {sections.length > 0 && <div className="section-chips">{sections.map((section) => <button key={section} type="button" className={activeParagraph?.section === section ? "active" : ""} onClick={() => updatePaper((current) => ({ ...current, activeParagraph: current.paragraphs.findIndex((item) => item.section === section) }))}>{section}</button>)}</div>}
-
-            {activeParagraph ? <article className="plab-page">
-              {/* The marginal marker carries the same number the annotation rail
-                  opens with, so the reader's position and the rail are one object. */}
-              <div className="plab-page-meta">
-                <span className="plab-page-mark journal-num">{String(activeIndex + 1).padStart(2, "0")}</span>
-                <span className="journal-num">第 {activeParagraph.page} 页</span>
-                <strong>{activeParagraph.section}</strong>
-                <button className={activeParagraph.bookmarked ? "plab-bookmark plab-bookmark--on" : "plab-bookmark"} type="button" onClick={() => updateActiveParagraph({ bookmarked: !activeParagraph.bookmarked })}>{activeParagraph.bookmarked ? "★ 已收藏" : "☆ 收藏"}</button>
-              </div>
-              <div className="plab-body">
-                <span className="plab-layer-label">原文</span>
-                <p>{activeParagraph.original}</p>
-              </div>
-              <div className="plab-translation">
-                <span className="plab-layer-label">译文</span>
-                {activeParagraph.translation ? <p>{activeParagraph.translation}</p> : <div className="translation-placeholder"><strong>尚未翻译</strong><span>使用 Edge 内置模型，内容不会离开设备。</span><button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("current")}>翻译当前段落</button></div>}
-              </div>
-              <div className="paragraph-actions">
-                <button className={activeParagraph.read ? "done" : ""} type="button" onClick={() => updateActiveParagraph({ read: !activeParagraph.read })}>{activeParagraph.read ? "✓ 已读" : "标记为已读"}</button>
-                <button type="button" onClick={() => setMobilePanel("ai")}>DeepSeek 增强</button>
-                <button type="button" disabled={translationState === "unsupported" || translationState === "working"} onClick={() => void translateParagraphs("all")}>{translationState === "working" ? `翻译中 ${translationProgress}%` : "翻译全部未译段落"}</button>
-              </div>
-            </article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
-          </div>
+          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={mobilePanel} onSelect={selectParagraph} />
         </section>
 
         {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
         <aside className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
           <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span></div>
           {activeParagraph && <div className="plab-rail-block">
+            <p className="plab-reading-context">第 {activeIndex + 1} / {paper.paragraphs.length} 段 · 第 {activeParagraph.page} 页 · {activeParagraph.section}</p>
             <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
+            <div className="plab-rail-actions">
+              <button type="button" onClick={() => updateActiveParagraph({bookmarked: !activeParagraph.bookmarked})}>{activeParagraph.bookmarked ? '★ 已收藏' : '☆ 收藏'}</button>
+              <button type="button" onClick={() => updateActiveParagraph({read: !activeParagraph.read})}>{activeParagraph.read ? '✓ 已读' : '标记为已读'}</button>
+              <button type="button" onClick={() => setMobilePanel('ai')}>分析当前段落</button>
+              <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('current')}>翻译当前段落</button>
+              <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
+            </div>
           </div>}
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
