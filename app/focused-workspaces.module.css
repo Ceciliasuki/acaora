@@ -84,6 +84,21 @@
 .focused.focused :global(.plab-page) { margin: 0; padding: 26px; border: 0; border-radius: 0; box-shadow: none; }
 .focused.focused :global(.section-chips) { padding-inline: 26px; }
 .focused.focused :global(.plab-body p), .focused.focused :global(.plab-translation p) { font-size: 15px; line-height: 1.95; }
+.focused.focused :global(.reader-controls button) { width: auto; min-height: 40px; padding-inline: 12px; }
+.focused.focused :global(.plab-reader-scroll:focus-visible) { outline: 2px solid var(--brand); outline-offset: -2px; }
+.focused.focused :global(.plab-continuous-text .plab-body) { margin-top: 0; }
+.focused.focused :global(.plab-paragraph) { position: relative; margin-bottom: 22px; }
+.focused.focused :global(.plab-paragraph h2) { margin: 32px 0 16px; font-size: 17px; line-height: 1.6; font-weight: 600; }
+.focused.focused :global(.plab-paragraph:first-child h2) { margin-top: 0; }
+.focused.focused :global(.plab-paragraph p) { margin-block: 0; }
+.focused.focused :global(.plab-paragraph[data-active="true"]::before) { content: ''; position: absolute; top: 0; bottom: 0; left: -12px; width: 2px; background: var(--brand); opacity: .45; }
+.focused.focused :global(.plab-inline-translation) { margin-top: 12px; color: var(--text-2); }
+.focused.focused :global(.plab-inline-translation p) { color: var(--text-2); font-size: 14px; }
+.focused.focused :global(.plab-reading-context) { margin: 0 0 12px; font-size: 11px; line-height: 1.7; color: var(--text-2); }
+.focused.focused :global(.plab-rail-actions) { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.focused.focused :global(.plab-rail-actions button) { min-height: 40px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: rgb(255 255 255 / 76%); color: var(--text); font-size: 12px; cursor: pointer; }
+.focused.focused :global(.plab-rail-actions button:disabled) { opacity: .5; cursor: default; }
+.focused.focused :global(.plab-rail-actions button:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 .focused.focused :global(.plab-rail-head span) { font-size: 11px; }
 .focused.focused :global(.plab-rail-block) { padding: 16px 0; border: 0; }
 .focused.focused :global(.plab-rail-block textarea) { min-height: 260px; width: 100%; padding: 14px; border: 1px solid #fff; border-radius: 9px; background: rgb(255 255 255 / 72%); font-size: 12px; line-height: 2; }
@@ -116,6 +131,8 @@
   .focused.focused :global(.plab-rail) { max-height: 680px; overflow: auto; }
 }
 @media (max-width: 760px) {
+  .focused.focused :global(.paper-mobile-tabs) { position: sticky; top: 0; z-index: 5; flex-shrink: 0; padding-left: 44px; background: #ecf1f7; }
+  .focused.focused :global(.paper-mobile-tabs button) { min-height: 44px; }
   .focused.focused :global(.page-body) { padding-top: 12px; }
   .focused.focused :global(.course-workbench) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .focused.focused :global(.course-index) { padding: 0; }

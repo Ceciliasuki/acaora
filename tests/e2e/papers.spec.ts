@@ -188,6 +188,103 @@ const longPaperFixture = {
   }],
 };
 
+const continuousPaperFixture = {
+  ...longPaperFixture,
+  id: 'paper-continuous',
+  title: 'Continuous reading paper',
+  paragraphs: ['Introduction', 'Methods', 'Results'].map((section, index) => ({
+    ...longPaperFixture.paragraphs[0],
+    id: `continuous-${index}`,
+    page: index + 1,
+    section,
+    original: `${section}: ${longPaperFixture.paragraphs[0].original}`,
+    translation: `${section}译文。`,
+    note: `${section}原有笔记。`,
+  })),
+};
+
+test('PAPER-12 full text scrolls continuously and restores the current paragraph without losing notes', async ({ page }) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  const state = await installApiMocks(page, {signedIn: true, cloudPapers: [continuousPaperFixture]});
+  const sent = () => ([...state.requestBodies].reverse() as typeof continuousPaperFixture[]).find(p => p.id === continuousPaperFixture.id);
+  await page.goto('/papers');
+  await expect(page.getByLabel('论文标题')).toHaveValue(continuousPaperFixture.title);
+  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByText(paragraph.original, {exact: true})).toBeAttached();
+  await expect(page.getByRole('button', {name: '下一段', exact: true})).toHaveCount(0);
+  const reader = page.getByRole('region', {name: '论文正文', exact: true});
+  await reader.hover();
+  await page.mouse.wheel(0, 10_000);
+  await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
+  await page.getByLabel('段落笔记').fill('结果段新笔记。');
+  await page.getByRole('button', {name: '显示译文', exact: true}).click();
+  await expect(page.getByText('Results译文。', {exact: true})).toBeAttached();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('结果段新笔记。');
+  await expect.poll(() => sent()?.paragraphs[2].note).toBe('结果段新笔记。');
+  await expect.poll(async () => (await readSyncQueue(page)).length).toBe(0);
+  await page.reload();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('结果段新笔记。');
+  await expect.poll(() => reader.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+  await page.locator('.section-chips').getByRole('button', {name: 'Methods', exact: true}).click();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('Methods原有笔记。');
+  await page.getByRole('button', {name: '☆ 收藏', exact: true}).click();
+  await expect.poll(() => sent()?.paragraphs[1].bookmarked).toBe(true);
+  expect(sent()?.paragraphs[2].note).toBe('结果段新笔记。');
+  expect(sent()?.paragraphs.every(p => !p.read)).toBe(true);
+  await reader.screenshot({path: 'outputs/continuous-paper-reader-desktop.png'});
+});
+
+test('PAPER-13 mobile full-text scrolling keeps notes attached to the reading position', async ({page}) => {
+  await page.setViewportSize({width: 375, height: 812});
+  await installApiMocks(page, {signedIn: true, cloudPapers: [continuousPaperFixture]});
+  await page.goto('/papers');
+  await expect(page.getByLabel('论文标题')).toHaveValue(continuousPaperFixture.title);
+  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByText(paragraph.original, {exact: true})).toBeAttached();
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const panels = page.getByRole('tablist', {name: '论文工作台面板'});
+  await expect(panels).toBeInViewport();
+  const libraryTab = await panels.getByRole('tab', {name: '论文库', exact: true}).boundingBox();
+  const menu = await page.getByRole('button', {name: '打开主导航', exact: true}).boundingBox();
+  expect(libraryTab!.x).toBeGreaterThanOrEqual(menu!.x + menu!.width);
+  expect(libraryTab!.height).toBeGreaterThanOrEqual(44);
+  await panels.getByRole('tab', {name: '笔记', exact: true}).click();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
+  await page.getByLabel('段落笔记').fill('手机全文笔记。');
+  await panels.getByRole('tab', {name: '阅读', exact: true}).click();
+  await expect(page.getByText(continuousPaperFixture.paragraphs[2].original, {exact: true})).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  await page.screenshot({path: 'outputs/continuous-paper-reader-mobile.png'});
+});
+
+test('PAPER-14 delayed translation preserves later reading and notes and cannot reopen a different paper', async ({page}) => {
+  await page.addInitScript(() => {
+    const local = window as typeof window & {Translator?: unknown; finishTranslation?: (text: string) => void; translationCalls?: number};
+    local.translationCalls = 0;
+    local.Translator = {availability: async () => 'available', create: async () => ({translate: () => new Promise<string>(resolve => {local.translationCalls!++; local.finishTranslation = resolve;})})};
+  });
+  await installApiMocks(page, {signedIn: true, cloudPapers: [continuousPaperFixture, paperFixture]});
+  await page.goto('/papers');
+  await expect(page.getByLabel('论文标题')).toHaveValue(continuousPaperFixture.title);
+  await page.getByRole('button', {name: '翻译当前段落', exact: true}).click();
+  await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as typeof window & {translationCalls?: number}).translationCalls)).toBe(1);
+  await page.getByRole('region', {name: '论文正文', exact: true}).hover();
+  await page.mouse.wheel(0, 10_000);
+  await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
+  await page.getByLabel('段落笔记').fill('翻译期间新笔记。');
+  await page.evaluate(() => (window as typeof window & {finishTranslation: (text: string) => void}).finishTranslation('已完成首段翻译。'));
+  await expect(page.getByText('本地翻译已完成', {exact: true})).toBeVisible();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('翻译期间新笔记。');
+  await page.getByRole('button', {name: '翻译当前段落', exact: true}).click();
+  await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as typeof window & {translationCalls?: number}).translationCalls)).toBe(2);
+  await page.getByRole('button', {name: `${paperFixture.title} 1 段 · 已读 0%`, exact: true}).click();
+  await expect(page.getByLabel('论文标题')).toHaveValue(paperFixture.title);
+  await page.evaluate(() => (window as typeof window & {finishTranslation: (text: string) => void}).finishTranslation('另一篇的过期翻译。'));
+  await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeHidden();
+  await expect(page.getByLabel('论文标题')).toHaveValue(paperFixture.title);
+  await expect(page.getByLabel('段落笔记')).toHaveValue(paperFixture.paragraphs[0].note);
+});
+
 test("PAPER-10 a long paper stays bounded and switches to an unobstructed AI mode", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await installApiMocks(page, { signedIn: true, cloudPapers: [longPaperFixture] });
@@ -263,10 +360,10 @@ test("PAPER-11 mobile modes retain notes and return to the selected paragraph", 
   await page.goto("/papers");
   await expect(page.getByLabel("论文标题")).toHaveValue(paperFixture.title);
   const toolbar = await page.locator(".plab-reader-bar").boundingBox();
-  const next = await page.getByRole("button", { name: "下一段", exact: true }).boundingBox();
+  const next = await page.getByRole("button", { name: "显示译文", exact: true }).boundingBox();
   expect(toolbar).not.toBeNull();
   expect(next).not.toBeNull();
-  expect(next!.x + next!.width, "段落导航越过了移动端工具栏").toBeLessThanOrEqual(toolbar!.x + toolbar!.width + 1);
+  expect(next!.x + next!.width, "译文开关越过了移动端工具栏").toBeLessThanOrEqual(toolbar!.x + toolbar!.width + 1);
   const panels = page.getByRole("tablist", { name: "论文工作台面板" });
   await panels.getByRole("tab", { name: "笔记", exact: true }).click();
   await page.getByLabel("段落笔记").fill("移动端笔记。");
