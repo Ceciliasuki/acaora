@@ -72,16 +72,24 @@ export default function ContinuousReader({paperId, paragraphs, activeIndex, show
       if (nodes.length) select(atEnd ? nodes.length - 1 : index);
     };
     const schedule = () => {cancelAnimationFrame(frame); frame = requestAnimationFrame(trackPosition);};
+    let viewportWidth = window.innerWidth;
+    // A breakpoint can switch between document and inner-pane scrolling.
+    // A mobile browser toolbar changing only the height should not move the text.
+    const resize = () => {
+      if (window.innerWidth === viewportWidth) return;
+      viewportWidth = window.innerWidth;
+      cancelAnimationFrame(frame); position(currentRef.current);
+    };
     root.addEventListener('scroll', schedule, {passive: true});
     window.addEventListener('scroll', schedule, {passive: true});
-    window.addEventListener('resize', schedule);
-    // Restore only on mount/paper or mode change, not when scrolling changes the
+    window.addEventListener('resize', resize);
+    // This effect restores on mount/paper or mode change, not when scrolling changes the
     // active paragraph. Otherwise saving the position would pull the reader back.
     const restore = requestAnimationFrame(() => {if (currentRef.current > 0) position(currentRef.current);});
     return () => {
       cancelAnimationFrame(frame); cancelAnimationFrame(restore); cancelAnimationFrame(positionFrameRef.current);
       positioningRef.current = false;
-      root.removeEventListener('scroll', schedule); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', schedule);
+      root.removeEventListener('scroll', schedule); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', resize);
     };
   }, [paperId, paragraphs.length, mode, select, position]);
 

@@ -174,3 +174,41 @@
 @media (prefers-reduced-motion: reduce) {
   .focused.focused :global(.course-row) { transition: none; }
 }
+
+/* Reader-first desktop layout; mobile continues to use its existing panel tabs. */
+.focused.focused :global(.paper-layout-controls) { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: -10px 28px 14px; }
+.focused.focused :global(.paper-layout-controls > div) { display: flex; flex-wrap: wrap; gap: 8px; }
+.focused.focused :global(.paper-layout-controls button), .focused.focused :global(.paper-panel-close) { min-height: 40px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px; background: rgb(255 255 255 / 70%); color: var(--text-2); cursor: pointer; font-size: 12px; }
+.focused.focused :global(.paper-layout-controls button[aria-expanded="true"]), .focused.focused :global(.paper-layout-controls button[aria-pressed="true"]) { color: var(--brand); border-color: var(--brand); background: #fff; }
+.focused.focused :global(.paper-layout-controls button:focus-visible), .focused.focused :global(.paper-panel-close:focus-visible) { outline: 2px solid var(--brand); outline-offset: 3px; }
+.focused.focused :global(.paper-layout-controls > span) { font-size: 11px; color: var(--text-2); }
+.focused.focused :global(.paper-layout-controls[hidden]) { display: none; }
+.focused.focused :global(.paper-panel-close) { min-width: 40px; padding: 8px; margin-left: auto; }
+.focused.focused :global(.plab-index-head), .focused.focused :global(.plab-rail-head) { position: relative; }
+.focused.focused :global(.plab-rail-head .paper-panel-close) { position: absolute; top: 0; right: 0; }
+.focused.focused :global(.plab-rail-head) { padding-right: 44px; }
+.focused.focused :global(.plab-continuous-text) { max-width: none; }
+.focused.focused :global(.plab-continuous-text .plab-body) { max-width: 86ch; font-size: 16px; }
+.focused.focused :global(.plab-continuous-text .plab-body p) { font-size: 16px; }
+@media (min-width: 761px) {
+  .focused.focused :global(.plab-workbench) { grid-template-columns: minmax(0, 1fr); height: clamp(530px, calc(100dvh - 245px), 860px); }
+  .focused.focused :global(.plab-workbench[data-library-open="true"]) { grid-template-columns: 180px minmax(0, 1fr); }
+  .focused.focused :global(.plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 240px; }
+  .focused.focused :global(.plab-workbench[data-library-open="true"][data-notes-open="true"]) { grid-template-columns: 180px minmax(0, 1fr) 240px; }
+  .focused.focused :global(.plab-workbench[data-library-open="false"] > .plab-index), .focused.focused :global(.plab-workbench[data-notes-open="false"] > .plab-rail) { display: none; }
+  .focused.focused :global(.plab-index), .focused.focused :global(.plab-rail) { grid-column: auto; max-height: none; }
+  .focused.focused :global(.plab-index-list) { display: block; flex: 1; }
+  .focused.focused :global(.plab-reader) { height: auto; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .focused.focused :global(.plab-workbench[data-library-open="true"]) { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .focused.focused :global(.plab-workbench[data-library-open="true"][data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 220px; }
+  .focused.focused :global(.plab-workbench[data-library-open="true"] > .plab-index) { grid-column: 1 / -1; max-height: 190px; }
+  .focused.focused :global(.plab-workbench[data-library-open="true"] .plab-index-list) { display: flex; flex: none; overflow-x: auto; }
+  .focused.focused :global(.plab-reader), .focused.focused :global(.plab-rail) { max-height: 680px; }
+  .focused.focused :global(.plab-workbench[data-library-open="true"] > .plab-reader) { height: 680px; }
+}
+@media (max-width: 760px) {
+  .focused.focused :global(.paper-layout-controls), .focused.focused :global(.paper-panel-close) { display: none; }
+  .focused.focused :global(.plab-rail-head) { padding-right: 0; }
+}

@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { installApiMocks, makeTextPdf } from "./helpers";
 
+// Existing note/sync cases exercise the expanded workspace. Default collapsed
+// behavior and toggling are covered separately by paper-layout.spec.ts.
+test.beforeEach(async ({page}) => {
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('acaora:paper-panels')) localStorage.setItem('acaora:paper-panels', JSON.stringify({library:true,notes:true}));
+  });
+});
+
 const paperFixture = {
   id: "paper-cloud",
   fileName: "cloud-paper.pdf",
