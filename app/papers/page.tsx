@@ -354,6 +354,7 @@ export default function PaperLab() {
     setTranslationProgress(0);
     setTranslationState('working');
     const sourceOwner = paper.ownerId ?? null;
+    const sourceUser = userIdRef.current;
     try {
       const translator = await ensureTranslator();
       const targets = mode === "current"
@@ -367,7 +368,7 @@ export default function PaperLab() {
       for (let position = 0; position < targets.length; position += 1) {
         const target = paper.paragraphs[targets[position]];
         const translation = await translator.translate(target.original);
-        if (paperRef.current.id !== paper.id || userIdRef.current !== sourceOwner) {
+        if (paperRef.current.id !== paper.id || userIdRef.current !== sourceUser) {
           setTranslationState('ready');
           return;
         }

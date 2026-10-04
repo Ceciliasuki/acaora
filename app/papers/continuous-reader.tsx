@@ -64,7 +64,12 @@ export default function ContinuousReader({paperId, paragraphs, activeIndex, show
         if (nodes[mid].getBoundingClientRect().top <= anchor) {index = mid; low = mid + 1;}
         else high = mid - 1;
       }
-      if (nodes.length) select(index);
+      // A short final paragraph cannot reach the top anchor. At the end of a
+      // scrollable article, its final paragraph still owns notes and AI context.
+      const atEnd = pane
+        ? root.scrollTop > 0 && root.scrollTop + root.clientHeight >= root.scrollHeight - 1
+        : bounds.top < anchor && bounds.bottom <= window.innerHeight;
+      if (nodes.length) select(atEnd ? nodes.length - 1 : index);
     };
     const schedule = () => {cancelAnimationFrame(frame); frame = requestAnimationFrame(trackPosition);};
     root.addEventListener('scroll', schedule, {passive: true});
@@ -80,8 +85,16 @@ export default function ContinuousReader({paperId, paragraphs, activeIndex, show
     };
   }, [paperId, paragraphs.length, mode, select, position]);
 
-  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- The named scroll region needs native keyboard scrolling.
-  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0}
+  // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- The named reader supports keyboard scrolling and paragraph selection without pretending to be a different widget.
+  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End"
+    onKeyDown={event => {
+      if (event.target !== event.currentTarget || !paragraphs.length) return;
+      const index = event.key === 'Home' ? 0 : event.key === 'End' ? paragraphs.length - 1
+        : event.key === 'ArrowUp' ? Math.max(0, currentRef.current - 1)
+        : event.key === 'ArrowDown' ? Math.min(paragraphs.length - 1, currentRef.current + 1) : null;
+      if (index === null) return;
+      event.preventDefault(); select(index); position(index);
+    }}
     onPointerUp={event => {
       if (window.getSelection()?.isCollapsed === false) return;
       const node = (event.target as HTMLElement).closest<HTMLElement>('[data-paragraph-index]');

@@ -255,6 +255,31 @@ test('PAPER-13 mobile full-text scrolling keeps notes attached to the reading po
   await page.screenshot({path: 'outputs/continuous-paper-reader-mobile.png'});
 });
 
+test('PAPER-15 scrolling to a short conclusion selects its notes and restores them', async ({page}) => {
+  await page.setViewportSize({width: 1440, height: 900});
+  const paper = {...continuousPaperFixture, paragraphs: [...continuousPaperFixture.paragraphs.slice(0, 2),
+    {...continuousPaperFixture.paragraphs[2], original: 'Results: A short intermediate paragraph.', note: '中间短段笔记。'},
+    {...continuousPaperFixture.paragraphs[2], id: 'short-final', original: 'Results: A short concluding paragraph.'}]};
+  await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
+  await page.goto('/papers');
+  await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  const reader = page.getByRole('region', {name: '论文正文', exact: true});
+  await reader.hover();
+  await page.mouse.wheel(0, 10_000);
+  await expect(page.getByText(paper.paragraphs[3].original, {exact: true})).toBeInViewport();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
+  await page.getByLabel('段落笔记').fill('短结论笔记。');
+  await reader.press('ArrowUp');
+  await expect(page.getByLabel('段落笔记')).toHaveValue('中间短段笔记。');
+  await reader.press('End');
+  await expect(page.getByLabel('段落笔记')).toHaveValue('短结论笔记。');
+  await page.getByRole('navigation', {name: '论文章节'}).getByRole('button', {name: 'Introduction', exact: true}).click();
+  await page.getByRole('navigation', {name: '论文章节'}).getByRole('button', {name: 'Results', exact: true}).click();
+  await expect(page.getByLabel('段落笔记')).toHaveValue('中间短段笔记。');
+  await reader.press('End');
+  await expect(page.getByLabel('段落笔记')).toHaveValue('短结论笔记。');
+});
+
 test('PAPER-14 delayed translation preserves later reading and notes and cannot reopen a different paper', async ({page}) => {
   await page.addInitScript(() => {
     const local = window as typeof window & {Translator?: unknown; finishTranslation?: (text: string) => void; translationCalls?: number};
@@ -273,6 +298,8 @@ test('PAPER-14 delayed translation preserves later reading and notes and cannot 
   await page.getByLabel('段落笔记').fill('翻译期间新笔记。');
   await page.evaluate(() => (window as typeof window & {finishTranslation: (text: string) => void}).finishTranslation('已完成首段翻译。'));
   await expect(page.getByText('本地翻译已完成', {exact: true})).toBeVisible();
+  await page.getByRole('button', {name: '显示译文', exact: true}).click();
+  await expect(page.getByText('已完成首段翻译。', {exact: true})).toBeAttached();
   await expect(page.getByLabel('段落笔记')).toHaveValue('翻译期间新笔记。');
   await page.getByRole('button', {name: '翻译当前段落', exact: true}).click();
   await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeVisible();
@@ -283,6 +310,18 @@ test('PAPER-14 delayed translation preserves later reading and notes and cannot 
   await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeHidden();
   await expect(page.getByLabel('论文标题')).toHaveValue(paperFixture.title);
   await expect(page.getByLabel('段落笔记')).toHaveValue(paperFixture.paragraphs[0].note);
+});
+
+test('PAPER-16 a signed-in reader can translate the ownerless demonstration paper', async ({page}) => {
+  await page.addInitScript(() => {
+    (window as typeof window & {Translator?: unknown}).Translator = {availability: async () => 'available', create: async () => ({translate: async () => '示例论文重新翻译。'})};
+  });
+  await installApiMocks(page, {signedIn: true, cloudPapers: []});
+  await page.goto('/papers');
+  await page.getByRole('button', {name: '翻译当前段落', exact: true}).click();
+  await expect(page.getByText('本地翻译已完成', {exact: true})).toBeVisible();
+  await page.getByRole('button', {name: '显示译文', exact: true}).click();
+  await expect(page.getByText('示例论文重新翻译。', {exact: true})).toBeVisible();
 });
 
 test("PAPER-10 a long paper stays bounded and switches to an unobstructed AI mode", async ({ page }) => {
