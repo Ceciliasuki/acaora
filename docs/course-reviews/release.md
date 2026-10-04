@@ -39,4 +39,10 @@ Security Advisors未报告课程RLS问题，保留既有[密码泄露保护未�
 
 发布前审查发现主目录未传综合案例状态，COURSE-18实际RED后修复，七门入口GREEN；最终完整production E2E已通过。SYNC-02初次全量运行出现测试竞态：云服务提前恢复导致自动同步先于手动重试，按钮已消失。测试改为等待实际503响应后恢复服务，三次无重试专项运行通过，未放宽等待。
 
+PR #8已合并为bda996131c9653d8cbfb5e58e007a572670e591d，PR HEAD 75fc1db和合并后main的完整GitHub CI均通过。EdgeOne自动部署dpu4tsvqkwhp在Next编译/类型检查/课程门槛成功后，适配器onBuild复制文件时失败：catalog.json unlink ENOENT。正式站保留旧版本，尚未确认新版本上线。
+
+检查官方@edgeone/opennextjs-pages 0.2.10-beta.1的copyHandlerDependencies实现：将不同route的include globs展开后并行cp，没有去重。原配置把112个实际文件安排225次复制。修复为一个同时覆盖course与API路径的route glob，文件glob仅出现一次；回放适配器配置读取规则RED→GREEN，实际Next六个server traces均包含全部112课程文件，生产构建与68项unit通过。此修复需独立PR当前HEAD CI及EdgeOne实际发布后验收，不能以本地构建替代。
+
+生产迁移由连接器记为20261003181910_curated_course_progress，与仓库SQL内容对应；勿在未核对迁移历史时重复执行。33项数据库HTTP验收后临时测试身份、会话、课程记录和答案均按精确ID/标记清理为0，未改真实用户数据。课程索引实际查询后已有使用统计，性能Advisors仅剩两个既有论文索引INFO。
+
 本报告将补入实际发布证据。专用测试身份只用于构造课程记录；邮件收件、全国网络、学科专家审阅、长期教学效果仍需各自独立证据，不由此发布验收推定。

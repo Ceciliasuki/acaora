@@ -124,7 +124,9 @@ test('COURSE-03 unavailable sync preserves IndexedDB queue across refresh and ac
  await page.reload();await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
  state.userId='second-user';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
  await expect(page.getByRole('button',{name:'标记本节已读'})).toBeVisible();
+ const unavailable=page.waitForResponse(response=>response.url().endsWith('/api/courses/STAT-201/progress')&&response.request().method()==='PUT'&&response.request().postDataJSON()?.ownerId==='user-e2e'&&response.status()===503);
  state.userId='user-e2e';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+ await unavailable;
  await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
  await expect(page.getByText('本机记录已保留，等待云端同步。',{exact:true})).toBeVisible();
  state.courseSyncStatus=200;await page.getByRole('button',{name:'重试同步'}).click();
