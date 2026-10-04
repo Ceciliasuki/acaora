@@ -65,6 +65,26 @@ export default function PaperLab() {
   const dirtyRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
   const [showTranslations, setShowTranslations] = useState(false);
+  const [panels, setPanels] = useState({library: false, notes: false});
+  const libraryToggleRef = useRef<HTMLButtonElement>(null);
+  const notesToggleRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem('acaora:paper-panels') ?? 'null');
+        if (saved && typeof saved.library === 'boolean' && typeof saved.notes === 'boolean') setPanels({library: saved.library, notes: saved.notes});
+      } catch { /* Panel preferences are optional; reading works without storage. */ }
+    });
+    return () => {active = false;};
+  }, []);
+
+  function changePanels(next: typeof panels) {
+    setPanels(next);
+    try {localStorage.setItem('acaora:paper-panels', JSON.stringify(next));} catch { /* Keep the current session usable. */ }
+  }
 
   const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
   const activeParagraph = paper.paragraphs[activeIndex];
@@ -486,21 +506,31 @@ export default function PaperLab() {
         <button type="button" aria-pressed={mobilePanel === "search"} onClick={() => setMobilePanel("search")}>学术检索</button>
       </nav>
 
+      <div className="paper-layout-controls" hidden={mobilePanel === 'ai' || mobilePanel === 'search'}>
+        <div>
+          <button ref={libraryToggleRef} type="button" aria-controls="paper-library" aria-expanded={panels.library} onClick={() => changePanels({...panels, library: !panels.library})}>论文库</button>
+          <button ref={notesToggleRef} type="button" aria-controls="paper-notes" aria-expanded={panels.notes} onClick={() => changePanels({...panels, notes: !panels.notes})}>笔记</button>
+          <button type="button" aria-pressed={!panels.library && !panels.notes} onClick={() => changePanels({library: false, notes: !panels.library && !panels.notes})}>专注阅读</button>
+        </div>
+        <span role="status">{{ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState]}</span>
+      </div>
+
       <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
       </div>
 
-      <section className="plab-workbench" hidden={mobilePanel === "ai" || mobilePanel === "search"}>
+      <section className="plab-workbench" data-library-open={panels.library} data-notes-open={panels.notes} hidden={mobilePanel === "ai" || mobilePanel === "search"}>
         {!hydrated ? <ReadingSkeleton /> : <>
         {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
             rows, the title as the entry, and the reader's own progress beneath it.
             The row keeps its two real controls (open, delete) unchanged. */}
-        <aside className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
+        <aside id="paper-library" className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
           <div className="plab-index-head">
             <h2>论文库</h2>
             {/* An unread store has no count, so the index prints an absence rather
                 than a zero that would claim the library is empty. */}
             <span className="journal-num">{libraryError ? "—" : library.length}</span>
+            <button className="paper-panel-close" type="button" aria-label="收起论文库" onClick={() => {changePanels({...panels, library: false}); libraryToggleRef.current?.focus();}}>×</button>
           </div>
           {libraryError ? <p className="plab-index-error" role="alert">
             {libraryError}
@@ -539,12 +569,12 @@ export default function PaperLab() {
             </div>
           </div>
 
-          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={mobilePanel} onSelect={selectParagraph} />
+          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} onSelect={selectParagraph} />
         </section>
 
         {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
-        <aside className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span></div>
+        <aside id="paper-notes" className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
+          <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span><button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {changePanels({...panels, notes: false}); notesToggleRef.current?.focus();}}>×</button></div>
           {activeParagraph && <div className="plab-rail-block">
             <p className="plab-reading-context">第 {activeIndex + 1} / {paper.paragraphs.length} 段 · 第 {activeParagraph.page} 页 · {activeParagraph.section}</p>
             <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
