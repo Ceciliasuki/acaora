@@ -100,6 +100,17 @@
 .focused.focused :global(.plab-rail-actions button:disabled) { opacity: .5; cursor: default; }
 .focused.focused :global(.plab-rail-actions button:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 .focused.focused :global(.plab-rail-head span) { font-size: 11px; }
+.focused.focused :global(.paper-notes-summary) { margin-top: 14px; }
+.focused.focused :global(.paper-notes-summary button) { min-height: 40px; padding: 8px 10px; border: 1px solid var(--border-control); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; font-size: 12px; cursor: pointer; }
+.focused.focused :global(.paper-notes-summary button:hover:not(:disabled)) { border-color: var(--brand); color: var(--brand); }
+.focused.focused :global(.paper-notes-summary button:disabled) { opacity: .5; cursor: default; }
+.focused.focused :global(.paper-notes-summary section) { margin-top: 12px; padding-block: 14px; border-block: 1px solid var(--border); }
+.focused.focused :global(.paper-notes-summary-head) { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-size: 11px; color: var(--text-2); }
+.focused.focused :global(.paper-notes-summary h3) { margin: 20px 0 12px; font-size: 13px; }
+.focused.focused :global(.paper-notes-summary article) { padding: 12px 0; border-top: 1px solid var(--border); }
+.focused.focused :global(.paper-notes-summary blockquote) { margin: 12px 0; padding-left: 10px; border-left: 2px solid var(--border); color: var(--text-2); font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.focused.focused :global(.paper-notes-summary p) { font-size: 12px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (pointer: coarse) { .focused.focused :global(.paper-notes-summary button) { min-height: 44px; } }
 .focused.focused :global(.plab-rail-block) { padding: 16px 0; border: 0; }
 .focused.focused :global(.plab-rail-block textarea) { min-height: 260px; width: 100%; padding: 14px; border: 1px solid #fff; border-radius: 9px; background: rgb(255 255 255 / 72%); font-size: 12px; line-height: 2; }
 .focused.focused :global(.paper-hints) { border-top: 1px solid var(--border); padding-top: 18px; }

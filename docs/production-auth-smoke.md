@@ -2,6 +2,8 @@
 
 本清单用于正式 EdgeOne 域名和 Production Supabase 项目。旧报告中的 `INACTIVE` / paused 是历史文字，不能代表当前状态；实际状态必须重新验证。自动化 mock E2E 不能替代真实 Production smoke。
 
+2026-10-05 更新：这是测试流程模板，下面的空表不代表已执行。本次实际结果见 [真实使用验收](acceptance/2026-10-05-real-use.md)，当前基准见 [开发交接](current-handoff.md)。历史课程和论文发布使用临时普通账号验证了部分真实登录与同步，但未验证邮箱收件。数据库迁移先核对生产历史，不重复执行；末尾“迁移只是草案”的旧阶段文字仅作历史保留。
+
 ## 前置门槛
 
 - EdgeOne Production 已确认绑定 `Ceciliasuki/acaora`、`main`、`pnpm build` 和稳定 HTTPS `SITE_URL`。

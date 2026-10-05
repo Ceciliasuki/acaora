@@ -2,13 +2,15 @@
 
 面向大学生的开源智能学习与研究平台，把课程学习、论文研究、数据分析和项目管理放在同一个工作台中。
 
+开发接手先读 [当前交接](docs/current-handoff.md)；最新真实使用验收见 [2026-10-05 记录](docs/acceptance/2026-10-05-real-use.md)。历史设计稿和阶段性待发布记录不代表当前线上状态。
+
 [![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build&output-directory=.next&env=SITE_URL%2CSUPABASE_URL%2CSUPABASE_PUBLISHABLE_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL%2CACAORA_ENVIRONMENT)
 
 ## 主要功能
 
 - 学习总览：统一查看课程、研究任务和近期进度。
 - 课程中心：七门安排好的课程，无需导入资料或填写模型 Key。每节默认核心讲解、一个完整例题和三道练习；扩展内容可选展开，每门一个综合案例。
-- PaperLab：检索英文论文，导入 PDF 后在宽阅读区连续阅读已提取的全文；论文库和笔记按需展开，可切换专注阅读。可显示译文，并按阅读位置保存笔记、收藏与分析。
+- PaperLab：检索英文论文，导入 PDF 后连续阅读提取文本，也可查看当前设备保存的原 PDF 图表与版式；旧论文需重新选择原文件一次。论文库和笔记按需展开，译文、笔记、收藏与分析随阅读位置保存。
 - AI 研究助手：支持摘要、方法审查、复现路线和基于原文的问答。
 - DataLab：为应用统计学和经济学课程提供数据分析工作区。
 - 项目空间：管理课程项目、研究计划和阶段性成果。
