@@ -12,8 +12,7 @@ type Props = {
   activeParagraph?: Paragraph;
   activeIndex: number;
   mobileVisible: boolean;
-  onSave: (memory: AiMemory) => void;
-  onTranslation: (translation: string) => void;
+  onResult: (result: AiSavedResult, source: PaperRecord, paragraph?: Paragraph) => void;
   onSearchQuery: (query: string) => void;
 };
 
@@ -27,7 +26,7 @@ const actionMeta: Record<AiAction, { label: string; kicker: string; description:
   search: { label: "检索策略", kicker: "SEARCH STRATEGY", description: "把研究主题拆成英文检索式、关键词和纳排标准。", button: "生成检索方案" },
 };
 
-export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onSave, onTranslation, onSearchQuery }: Props) {
+export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onResult, onSearchQuery }: Props) {
   const [action, setAction] = useState<AiAction>("paragraph");
   const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
   const [question, setQuestion] = useState("这篇论文的统计方法是否足以支持其主要结论？");
@@ -85,13 +84,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
       const total = payload.usage?.total_tokens;
       setUsage(`${payload.model ?? "DeepSeek"}${total ? ` · ${total.toLocaleString()} tokens` : ""}`);
 
-      if (action === "translate" && typeof payload.result.translation === "string") {
-        onTranslation(payload.result.translation);
-      } else {
-        const current: AiMemory = paper.aiMemory ?? { paragraph: {}, chats: [] };
-        const next = saveResult(current, saved, activeParagraph?.id);
-        onSave(next);
-      }
+      onResult(saved, paper, activeParagraph);
       if (action === "search" && typeof payload.result.english_query === "string") {
         onSearchQuery(payload.result.english_query);
       }
@@ -176,7 +169,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
   );
 }
 
-function saveResult(memory: AiMemory, result: AiSavedResult, paragraphId?: string): AiMemory {
+export function saveResult(memory: AiMemory, result: AiSavedResult, paragraphId?: string): AiMemory {
   if (result.action === "paragraph" && paragraphId) return { ...memory, paragraph: { ...memory.paragraph, [paragraphId]: result } };
   if (result.action === "summary") return { ...memory, summary: result };
   if (result.action === "audit") return { ...memory, audit: result };

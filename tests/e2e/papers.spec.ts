@@ -31,6 +31,7 @@ const paperFixture = {
 test("PAPER-01 imports and parses a text PDF locally", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true });
   await page.goto("/papers");
+  await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "reproducible-study.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect(page.getByText(/已读取 \d+ 个段落，原始 PDF 未上传。/)).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("reproducible-study.pdf", { exact: true })).toBeVisible();
@@ -40,6 +41,7 @@ test("PAPER-01 imports and parses a text PDF locally", async ({ page }) => {
 test("PAPER-02 failed upload remains queued across reload", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, failPaperSync: true });
   await page.goto("/papers");
+  await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "queued.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect(page.getByText(/云同步暂不可用/)).toBeVisible({ timeout: 30_000 });
   await page.reload();
@@ -131,6 +133,7 @@ test("PAPER-06 account switch does not expose or upload another account's local 
 test("PAPER-07 edit during an in-flight upload remains queued until the newer version is sent", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, paperSyncDelayMs: 1_000 });
   await page.goto("/papers");
+  await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "race.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect.poll(() => state.requests.filter((request) => request === "PUT /api/cloud/papers").length).toBeGreaterThan(0);
   await page.getByRole("textbox", { name: "论文标题" }).fill("Edited while uploading");
@@ -141,6 +144,7 @@ test("PAPER-07 edit during an in-flight upload remains queued until the newer ve
 test("PAPER-08 oversized memory stays local and does not retry until edited", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, paperSyncStatus: 413 });
   await page.goto("/papers");
+  await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "large.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect.poll(async () => (await readSyncQueue(page))[0]?.blockedReason).toBe("too-large");
   const writesBefore = state.requests.filter((request) => request === "PUT /api/cloud/papers").length;

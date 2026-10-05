@@ -8,7 +8,11 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import ContinuousReader from './continuous-reader';
-import type { AiMemory, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
+import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
+import {saveResult} from './ai-studio';
+import {bodyFontSize, detectSection, inferPdfTitle, type PdfLine} from './pdf-text';
+import OriginalPdf from './original-pdf';
+import {savePaperPdf, deletePaperPdf} from './paper-original-storage';
 import { samplePaper } from "./paper-types";
 import { authFetch } from "../lib/auth-client";
 import { flushPaperSyncQueue, reconcileSnapshot } from "./paper-sync.mjs";
@@ -63,6 +67,7 @@ export default function PaperLab() {
   const syncNowRef = useRef<() => void>(() => undefined);
   const skipPersistRef = useRef(false);
   const dirtyRef = useRef(false);
+  const switchingRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
   const [showTranslations, setShowTranslations] = useState(false);
   const [panels, setPanels] = useState({library: false, notes: false});
@@ -245,13 +250,26 @@ export default function PaperLab() {
       void authFetch("/api/auth/session").then(async (response) => {
         if (!response.ok) return;
         const session = await response.json() as { user?: { id: string } | null };
+        const previousOwner = userIdRef.current;
         signedInRef.current = Boolean(session.user);
         userIdRef.current = session.user?.id ?? null;
-        dirtyRef.current = false;
+        if (previousOwner !== userIdRef.current) {
+          dirtyRef.current = false;
+          skipPersistRef.current = true;
+          setPaper(samplePaper);
+          setLibrary([]);
+        }
         if (session.user) {
           await refreshCloud();
           void syncNow();
-        } else setCloudStatus("guest");
+        } else {
+          const guest = await getPaperLibrary();
+          if (userIdRef.current !== null) return;
+          setLibrary(guest);
+          skipPersistRef.current = true;
+          setPaper(guest[0] ?? samplePaper);
+          setCloudStatus("guest");
+        }
       }).catch(() => setCloudStatus("error"));
     };
     window.addEventListener("offline", offline);
@@ -285,10 +303,12 @@ export default function PaperLab() {
       return;
     }
     const handle = window.setTimeout(() => {
+      if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
       const updated = { ...paper, ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
       const persist = signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated);
       void persist.then(() => {
-        dirtyRef.current = false;
+        if ((paper.ownerId ?? null) !== userIdRef.current) return;
+        if (paperRef.current === paper) dirtyRef.current = false;
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
         if (signedInRef.current) void syncNow();
       }).catch(() => setCloudStatus("error"));
@@ -320,6 +340,7 @@ export default function PaperLab() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {setMessage('请选择不超过 50 MB 的 PDF。'); return;}
     if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
       setMessage("请选择 PDF 格式的英文论文。" );
       return;
@@ -327,18 +348,25 @@ export default function PaperLab() {
     setExtracting(true);
     setExtractProgress(0);
     setMessage("正在设备本地解析论文……");
+    const sourceUser = userIdRef.current;
     try {
-      const extracted = await extractPdf(file, setExtractProgress);
+      const extracted = {...await extractPdf(file, setExtractProgress), ownerId: sourceUser ?? undefined};
+      if (sourceUser !== userIdRef.current) throw new Error('账户已切换，请重新导入。');
+      await persistCurrentPaper();
+      if (sourceUser !== userIdRef.current) throw new Error('账户已切换，请重新导入。');
       skipPersistRef.current = true;
       setPaper(extracted);
       setSearchQuery(extracted.title);
       if (signedInRef.current) {
-        extracted.ownerId = userIdRef.current ?? undefined;
         await savePaperAndQueue(extracted);
       }
       else await savePaper(extracted);
+      let originalSaved = true;
+      try {await savePaperPdf(extracted.id, sourceUser, file);}
+      catch {originalSaved = false;}
+      if (sourceUser !== userIdRef.current) throw new Error('账户已切换，导入记录仍按原账号保存在设备中。');
       setLibrary((current) => [extracted, ...current.filter((item) => item.id !== extracted.id)]);
-      setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。`);
+      setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。${originalSaved ? '' : '设备空间不足或存储不可用；查看原 PDF 时请重新选择文件。'}`);
       setMobilePanel("reader");
       if (signedInRef.current) void syncNow();
     } catch (error) {
@@ -453,6 +481,7 @@ export default function PaperLab() {
     try {
       if (signedInRef.current && userIdRef.current) await deletePaperAndQueue(record.id, Date.now(), userIdRef.current);
       else await deletePaper(record.id);
+      await deletePaperPdf(record.id, record.ownerId ?? null);
       const remaining = library.filter((item) => item.id !== record.id);
       setLibrary(remaining);
       if (paper.id === record.id) {
@@ -466,10 +495,54 @@ export default function PaperLab() {
     } catch { setMessage("删除未完成，请重试。" ); }
   }
 
-  function openPaper(record: PaperRecord) {
-    setPaper(record);
-    setSearchQuery(record.title);
-    setMobilePanel("reader");
+  async function openPaper(record: PaperRecord) {
+    if (switchingRef.current || record.id === paperRef.current.id || (record.ownerId ?? null) !== userIdRef.current) return;
+    switchingRef.current = true;
+    const owner = userIdRef.current;
+    try {
+      let opened: PaperRecord;
+      let source: PaperRecord;
+      do {
+        source = await persistCurrentPaper();
+        // eslint-disable-next-line react-hooks/purity -- User-triggered async transition; this function is never called during render.
+        opened = {...record, updatedAt: Date.now() + 1};
+        await (signedInRef.current ? savePaperAndQueue(opened) : savePaper(opened));
+        if (userIdRef.current !== owner) throw new Error('账户已切换。');
+      } while (paperRef.current !== source);
+      setLibrary(items => [opened, ...items.filter(item => item.id !== opened.id)]);
+      skipPersistRef.current = true;
+      setPaper(opened);
+      setSearchQuery(record.title);
+      setMobilePanel("reader");
+    } catch { setMessage('保存未完成，暂未切换论文。请重试。'); }
+    finally { switchingRef.current = false; }
+  }
+
+  async function persistCurrentPaper(): Promise<PaperRecord> {
+    const current = paperRef.current;
+    const owner = userIdRef.current;
+    if (current.id === samplePaper.id || (current.ownerId ?? null) !== owner) return current;
+    // eslint-disable-next-line react-hooks/purity -- Only invoked by import/switch handlers, never while rendering.
+    const updated = {...current, updatedAt: Date.now()};
+    await (signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated));
+    if (userIdRef.current !== owner) throw new Error('账户已切换。');
+    if (paperRef.current !== current) return persistCurrentPaper();
+    setLibrary(items => [updated, ...items.filter(item => item.id !== updated.id)]);
+    if (paperRef.current === current) dirtyRef.current = false;
+    if (signedInRef.current) void syncNow();
+    return current;
+  }
+
+  function applyAiResult(result: AiSavedResult, source: PaperRecord, paragraph?: Paragraph) {
+    if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
+    updatePaper(current => {
+      if (current.id !== source.id || current.ownerId !== source.ownerId) return current;
+      if (paragraph && !current.paragraphs.some(p => p.id === paragraph.id && p.original === paragraph.original)) return current;
+      if (result.action === 'translate' && paragraph && typeof result.data.translation === 'string') {
+        return {...current, paragraphs: current.paragraphs.map(p => p.id === paragraph.id ? {...p, translation: result.data.translation as string} : p)};
+      }
+      return {...current, aiMemory: saveResult(current.aiMemory ?? {paragraph: {}, chats: []}, result, paragraph?.id)};
+    });
   }
 
   return (
@@ -491,10 +564,10 @@ export default function PaperLab() {
             <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
           </div>
           <button className="plab-tool" type="button" onClick={() => setMobilePanel("search")}>检索论文</button>
-          <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+          <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>
             {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
           </button>
-          <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" onChange={handlePdf} />
+          <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" disabled={!hydrated || extracting} onChange={handlePdf} />
         </div>
       </header>
 
@@ -541,7 +614,7 @@ export default function PaperLab() {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
               const current = record.id === paper.id;
               return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
-                <button className="plab-index-open" type="button" onClick={() => openPaper(record)}>
+                <button className="plab-index-open" type="button" onClick={() => void openPaper(record)}>
                   <strong>{record.title}</strong>
                   <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
                 </button>
@@ -549,7 +622,7 @@ export default function PaperLab() {
               </article>;
             }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
           </div>
-          <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仍不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 不会保存；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
+          <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仅保存在当前设备，不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 仅保存在当前设备；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
 
         {/* Full text is continuous; paragraph IDs still anchor notes and AI context. */}
@@ -558,6 +631,10 @@ export default function PaperLab() {
             <div className="paper-title-edit">
               <span className="journal-num">{paper.fileName}</span>
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
+          {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} onRepair={(source, title, sections) => {
+            if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
+            updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
+          }} />}
             </div>
             <div className="reader-controls">
               <span>全文阅读</span>
@@ -603,9 +680,10 @@ export default function PaperLab() {
           activeParagraph={activeParagraph}
           activeIndex={activeIndex}
           mobileVisible={mobilePanel === "ai"}
-          onSave={(aiMemory: AiMemory) => updatePaper((current) => ({ ...current, aiMemory }))}
-          onTranslation={(translation) => updateActiveParagraph({ translation })}
+          key={`${paper.ownerId ?? 'guest'}:${paper.id}`}
+          onResult={applyAiResult}
           onSearchQuery={(query) => {
+            if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
             setSearchQuery(query);
             setSearchResults([]);
             setSearchMessage("");
@@ -768,40 +846,44 @@ async function extractPdf(file: File, onProgress: (progress: number) => void): P
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
   const buffer = new Uint8Array(await file.arrayBuffer());
-  const document = await pdfjs.getDocument({ data: buffer }).promise;
+  const loadingTask = pdfjs.getDocument({data: buffer});
+  try {
+  const document = await loadingTask.promise;
   const paragraphs: Paragraph[] = [];
   let currentSection = "Introduction";
   let inferredTitle = file.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ");
+  let reachedReferences = false;
 
   for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
     const page = await document.getPage(pageNumber);
     const content = await page.getTextContent();
     const items = content.items
       .filter((item): item is typeof item & { str: string; transform: number[] } => "str" in item && typeof item.str === "string" && Array.isArray(item.transform))
-      .map((item) => ({ text: item.str.trim(), x: item.transform[4] ?? 0, y: Math.round(item.transform[5] ?? 0) }))
+      .map((item) => ({ text: item.str.trim(), x: item.transform[4] ?? 0, y: Math.round(item.transform[5] ?? 0), size: Math.hypot(item.transform[2], item.transform[3]) }))
       .filter((item) => item.text);
-    const lineMap = new Map<number, { text: string; x: number }[]>();
-    items.forEach((item) => lineMap.set(item.y, [...(lineMap.get(item.y) ?? []), { text: item.text, x: item.x }]));
+    const lineMap = new Map<number, typeof items>();
+    items.forEach((item) => lineMap.set(item.y, [...(lineMap.get(item.y) ?? []), item]));
     const lines = [...lineMap.entries()]
       .sort(([left], [right]) => right - left)
-      .map(([, line]) => line.sort((left, right) => left.x - right.x).map((item) => item.text).join(" ").replace(/\s+/g, " ").trim())
-      .filter(Boolean);
+      .map(([y, line]): PdfLine => ({y, size: Math.max(...line.map(item => item.size)), text: line.sort((left, right) => left.x - right.x).map((item) => item.text).join(" ").replace(/\s+/g, " ").trim()}))
+      .filter(line => line.text);
 
     if (pageNumber === 1) {
-      const titleCandidate = lines.find((line) => line.length >= 24 && line.length <= 220 && !/abstract|doi|journal|university|department/i.test(line));
-      if (titleCandidate) inferredTitle = titleCandidate;
+      inferredTitle = inferPdfTitle(lines, inferredTitle);
     }
 
     let accumulator = "";
-    for (const line of lines) {
-      const section = detectSection(line);
+    const bodySize = bodyFontSize(lines);
+    for (const {text: line, size} of lines) {
+      if (reachedReferences) break;
+      const section = detectSection(line, size > bodySize + .5);
       if (section) {
         if (accumulator.length > 80) paragraphs.push(makeParagraph(accumulator, pageNumber, currentSection));
         accumulator = "";
+        if (['References', 'Acknowledgements', 'Supplementary Materials'].includes(section)) {reachedReferences = true; break;}
         currentSection = section;
         continue;
       }
-      if (/^(references|acknowledg(e)?ments|supplementary materials?)$/i.test(line)) break;
       accumulator = `${accumulator} ${line}`.trim();
       if (accumulator.length > 520 && /[.!?)]$/.test(line)) {
         paragraphs.push(makeParagraph(accumulator, pageNumber, currentSection));
@@ -824,23 +906,11 @@ async function extractPdf(file: File, onProgress: (progress: number) => void): P
     activeParagraph: 0,
     paragraphs: filtered,
   };
+  } finally {await loadingTask.destroy();}
 }
 
 function makeParagraph(original: string, page: number, section: string): Paragraph {
   return { id: crypto.randomUUID(), page, section, original: original.replace(/\s+/g, " ").trim(), translation: "", note: "", bookmarked: false, read: false };
-}
-
-function detectSection(line: string) {
-  const normalized = line.replace(/^\d+[.)]?\s*/, "").trim();
-  const sections: [RegExp, string][] = [
-    [/^abstract$/i, "Abstract"],
-    [/^(introduction|background)$/i, "Introduction"],
-    [/^(methods?|materials and methods?|methodology|study design)$/i, "Methods"],
-    [/^results?$/i, "Results"],
-    [/^(discussion|discussion and conclusions?)$/i, "Discussion"],
-    [/^conclusions?$/i, "Conclusion"],
-  ];
-  return sections.find(([pattern]) => pattern.test(normalized))?.[1] ?? "";
 }
 
 function analyzeParagraph(paragraph: Paragraph) {

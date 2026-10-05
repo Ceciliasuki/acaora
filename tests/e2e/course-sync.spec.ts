@@ -1,4 +1,4 @@
-import {expect,test} from '@playwright/test';
+import {expect,test,type Request} from '@playwright/test';
 import {installApiMocks} from './helpers';
 
 test('SYNC-01 separate browser stores merge different lessons and restore attempts',async({browser})=>{
@@ -20,9 +20,24 @@ test('SYNC-02 disconnected work survives refreshed page when cloud remains unava
  await page.route('**/api/courses/FIN-308/progress',route=>route.abort('internetdisconnected'));
  await context.setOffline(true);await q.getByRole('button',{name:'检查答案'}).click();await expect(q).toContainText('回答正确');await expect(page.getByText('云端记录暂未读取成功，本机记录已保留。',{exact:true})).toBeVisible();
  state.courseSyncStatus=503;await context.setOffline(false);await page.unroute('**/api/courses/FIN-308/progress');
- const unavailable=page.waitForResponse(response=>response.url().endsWith('/api/courses/FIN-308/progress')&&response.request().method()==='PUT'&&response.status()===503);
+ // The online event can finish an old document's PUT during reload. Only the
+ // refreshed document's failed upload proves its durable queue was restored.
+ let reloadStarted=false;const reloadRequests=new Set<Request>();
+ const trackReload=(request:Request)=>{
+  if(request.isNavigationRequest()&&request.url().endsWith('/courses/FIN-308/lesson-8'))reloadStarted=true;
+  if(reloadStarted)reloadRequests.add(request);
+ };
+ page.on('request',trackReload);
+ const unavailable=page.waitForResponse(response=>reloadRequests.has(response.request())&&response.url().endsWith('/api/courses/FIN-308/progress')&&response.request().method()==='PUT'&&response.status()===503);
  await page.reload();await unavailable;await expect(q.getByLabel('输入数值答案')).toHaveValue('355000');await expect(page.getByText('本机记录已保留，等待云端同步。',{exact:true})).toBeVisible();
- state.courseSyncStatus=200;await page.getByRole('button',{name:'重试同步'}).click();await expect.poll(()=>state.courseRecords[JSON.stringify([state.userId,'FIN-308'])]?.attempts.some(x=>x.answer==='355000')).toBe(true);
+ page.off('request',trackReload);
+ // Restore the mock service when the retry is actually clicked. Restoring it
+ // earlier allows an automatic upload to remove the button before this click.
+ await page.exposeFunction('restoreCourseSync',()=>{state.courseSyncStatus=200;});
+ await page.evaluate(()=>document.addEventListener('click',()=>{
+  void (window as unknown as {restoreCourseSync:()=>Promise<void>}).restoreCourseSync();
+ },{capture:true,once:true}));
+ await page.getByRole('button',{name:'重试同步'}).click();await expect.poll(()=>state.courseRecords[JSON.stringify([state.userId,'FIN-308'])]?.attempts.some(x=>x.answer==='355000')).toBe(true);
 });
 
 test('SYNC-03 reset on another device prevents a stale durable queue restoring old progress',async({browser})=>{
