@@ -10,8 +10,9 @@ import AiStudio from "./ai-studio";
 import ContinuousReader from './continuous-reader';
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
 import {saveResult} from './ai-studio';
-import {bodyFontSize, detectSection, inferPdfTitle, type PdfLine} from './pdf-text';
+import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines} from './pdf-text';
 import OriginalPdf from './original-pdf';
+import NotesSummary from './notes-summary';
 import {savePaperPdf, deletePaperPdf} from './paper-original-storage';
 import { samplePaper } from "./paper-types";
 import { authFetch } from "../lib/auth-client";
@@ -70,6 +71,8 @@ export default function PaperLab() {
   const switchingRef = useRef(false);
   const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
   const [showTranslations, setShowTranslations] = useState(false);
+  const [citationJump, setCitationJump] = useState<{index: number; id: number; paperId: string; ownerId?: string} | null>(null);
+  const [pdfRequest, setPdfRequest] = useState<{page: number; id: number; paperId: string; ownerId?: string} | undefined>();
   const [panels, setPanels] = useState({library: false, notes: false});
   const libraryToggleRef = useRef<HTMLButtonElement>(null);
   const notesToggleRef = useRef<HTMLButtonElement>(null);
@@ -336,6 +339,14 @@ export default function PaperLab() {
     setPaper(current => ({...current, activeParagraph: index}));
   }, [setCloudStatus]);
 
+  function jumpToParagraph(index: number, originalPdf = false) {
+    if (index < 0 || index >= paper.paragraphs.length) return;
+    selectParagraph(index);
+    setMobilePanel('reader');
+    setCitationJump(previous => ({index, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
+    if (originalPdf) setPdfRequest(previous => ({page: paper.paragraphs[index].page, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
+  }
+
   async function handlePdf(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -355,6 +366,7 @@ export default function PaperLab() {
       await persistCurrentPaper();
       if (sourceUser !== userIdRef.current) throw new Error('账户已切换，请重新导入。');
       skipPersistRef.current = true;
+      setCitationJump(null); setPdfRequest(undefined);
       setPaper(extracted);
       setSearchQuery(extracted.title);
       if (signedInRef.current) {
@@ -486,6 +498,7 @@ export default function PaperLab() {
       setLibrary(remaining);
       if (paper.id === record.id) {
         skipPersistRef.current = true;
+        setCitationJump(null); setPdfRequest(undefined);
         setPaper(remaining[0] ?? samplePaper);
       }
       if (signedInRef.current) {
@@ -511,6 +524,7 @@ export default function PaperLab() {
       } while (paperRef.current !== source);
       setLibrary(items => [opened, ...items.filter(item => item.id !== opened.id)]);
       skipPersistRef.current = true;
+      setCitationJump(null); setPdfRequest(undefined);
       setPaper(opened);
       setSearchQuery(record.title);
       setMobilePanel("reader");
@@ -631,7 +645,7 @@ export default function PaperLab() {
             <div className="paper-title-edit">
               <span className="journal-num">{paper.fileName}</span>
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
-          {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} onRepair={(source, title, sections) => {
+          {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
             if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
             updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
           }} />}
@@ -646,12 +660,13 @@ export default function PaperLab() {
             </div>
           </div>
 
-          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} onSelect={selectParagraph} />
+          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} />
         </section>
 
         {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
         <aside id="paper-notes" className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
           <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span><button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {changePanels({...panels, notes: false}); notesToggleRef.current?.focus();}}>×</button></div>
+          <NotesSummary key={paper.id} paper={paper} onSelect={jumpToParagraph} />
           {activeParagraph && <div className="plab-rail-block">
             <p className="plab-reading-context">第 {activeIndex + 1} / {paper.paragraphs.length} 段 · 第 {activeParagraph.page} 页 · {activeParagraph.section}</p>
             <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
@@ -682,6 +697,7 @@ export default function PaperLab() {
           mobileVisible={mobilePanel === "ai"}
           key={`${paper.ownerId ?? 'guest'}:${paper.id}`}
           onResult={applyAiResult}
+          onCitation={jumpToParagraph}
           onSearchQuery={(query) => {
             if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
             setSearchQuery(query);
@@ -858,15 +874,10 @@ async function extractPdf(file: File, onProgress: (progress: number) => void): P
     const page = await document.getPage(pageNumber);
     const content = await page.getTextContent();
     const items = content.items
-      .filter((item): item is typeof item & { str: string; transform: number[] } => "str" in item && typeof item.str === "string" && Array.isArray(item.transform))
-      .map((item) => ({ text: item.str.trim(), x: item.transform[4] ?? 0, y: Math.round(item.transform[5] ?? 0), size: Math.hypot(item.transform[2], item.transform[3]) }))
+      .filter((item): item is typeof item & { str: string; transform: number[]; width: number } => "str" in item && 'width' in item && typeof item.str === "string" && Array.isArray(item.transform))
+      .map((item) => ({ text: item.str.trim(), x: item.transform[4] ?? 0, y: Math.round(item.transform[5] ?? 0), width: item.width, size: Math.hypot(item.transform[2], item.transform[3]) }))
       .filter((item) => item.text);
-    const lineMap = new Map<number, typeof items>();
-    items.forEach((item) => lineMap.set(item.y, [...(lineMap.get(item.y) ?? []), item]));
-    const lines = [...lineMap.entries()]
-      .sort(([left], [right]) => right - left)
-      .map(([y, line]): PdfLine => ({y, size: Math.max(...line.map(item => item.size)), text: line.sort((left, right) => left.x - right.x).map((item) => item.text).join(" ").replace(/\s+/g, " ").trim()}))
-      .filter(line => line.text);
+    const lines = readingOrderLines(items, page.getViewport({scale: 1}).width);
 
     if (pageNumber === 1) {
       inferredTitle = inferPdfTitle(lines, inferredTitle);

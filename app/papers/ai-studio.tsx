@@ -14,6 +14,7 @@ type Props = {
   mobileVisible: boolean;
   onResult: (result: AiSavedResult, source: PaperRecord, paragraph?: Paragraph) => void;
   onSearchQuery: (query: string) => void;
+  onCitation: (index: number, originalPdf?: boolean) => void;
 };
 
 const actionMeta: Record<AiAction, { label: string; kicker: string; description: string; button: string }> = {
@@ -26,7 +27,7 @@ const actionMeta: Record<AiAction, { label: string; kicker: string; description:
   search: { label: "检索策略", kicker: "SEARCH STRATEGY", description: "把研究主题拆成英文检索式、关键词和纳排标准。", button: "生成检索方案" },
 };
 
-export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onResult, onSearchQuery }: Props) {
+export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onResult, onSearchQuery, onCitation }: Props) {
   const [action, setAction] = useState<AiAction>("paragraph");
   const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
   const [question, setQuestion] = useState("这篇论文的统计方法是否足以支持其主要结论？");
@@ -160,7 +161,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
             {working ? <span className="ai-doc-working" aria-hidden="true" /> : null}
           </div>
           {result
-            ? <><ResultView data={result.data} /><p className="ai-doc-foot">生成于 {new Date(result.createdAt).toLocaleString("zh-CN")} · AI 内容可能出错，请回到引用段落核对。</p></>
+            ? <><ResultView data={result.data} paper={paper} onCitation={onCitation} /><p className="ai-doc-foot">生成于 {new Date(result.createdAt).toLocaleString("zh-CN")} · AI 内容可能出错，请回到引用段落核对。</p></>
             : <p className="ai-doc-idle">选择一种分析方式，再针对当前论文运行；结果会保存在这篇论文的记忆里，可随时回看。</p>}
         </section>}
         <p className="ai-provenance">AI 结果保存在论文记忆中，可能出错，请核对原文。</p>
@@ -195,20 +196,31 @@ function buildRelevantContext(paper: PaperRecord, question: string) {
   return ranked.map(({ paragraph, index }) => `[P${index + 1} | ${paragraph.section} | page ${paragraph.page}] ${paragraph.original}`).join("\n\n");
 }
 
-function ResultView({ data }: { data: Record<string, unknown> }) {
-  return <div className="ai-doc-body">{Object.entries(data).map(([key, value]) => <ResultField key={key} label={prettyLabel(key)} value={value} />)}</div>;
+type CitationProps = {paper: PaperRecord; onCitation: Props['onCitation']};
+
+function CitationText({text, paper, onCitation}: CitationProps & {text: string}) {
+  return <>{text.split(/(\bP\d+\b)/g).map((part, index) => {
+    if (!/^P\d+$/.test(part)) return part;
+    const paragraphIndex = Number(part.slice(1)) - 1;
+    if (!Number.isSafeInteger(paragraphIndex) || paragraphIndex < 0 || paragraphIndex >= paper.paragraphs.length) return <span className="ai-citation-invalid" key={index}>{part}（无对应段落）</span>;
+    return <span className="ai-citation" key={index}><button type="button" aria-label={`查看原文 ${part}`} onClick={() => onCitation(paragraphIndex)}>{part}</button>{paper.id !== 'sample-paper' && <button type="button" className="ai-citation-page" aria-label={`查看 ${part} 对应原 PDF 第 ${paper.paragraphs[paragraphIndex].page} 页`} onClick={() => onCitation(paragraphIndex, true)}>原页</button>}</span>;
+  })}</>;
 }
 
-function ResultField({ label, value }: { label: string; value: unknown }) {
+function ResultView({ data, ...citation }: { data: Record<string, unknown> } & CitationProps) {
+  return <div className="ai-doc-body">{Object.entries(data).map(([key, value]) => <ResultField key={key} label={prettyLabel(key)} value={value} {...citation} />)}</div>;
+}
+
+function ResultField({ label, value, ...citation }: { label: string; value: unknown } & CitationProps) {
   if (value === null || value === undefined || value === "") return null;
   if (Array.isArray(value)) {
-    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-list">{value.map((item, index) => typeof item === "object" && item !== null ? <div className="ai-doc-object" key={index}>{Object.entries(item as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div> : <p key={index}><i />{String(item)}</p>)}</div></section>;
+    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-list">{value.map((item, index) => typeof item === "object" && item !== null ? <div className="ai-doc-object" key={index}>{Object.entries(item as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} {...citation} />)}</div> : <p key={index}><i /><CitationText text={String(item)} {...citation} /></p>)}</div></section>;
   }
   if (typeof value === "object") {
-    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-object">{Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} />)}</div></section>;
+    return <section className="ai-doc-field"><h4>{label}</h4><div className="ai-doc-object">{Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => <ResultField key={childKey} label={prettyLabel(childKey)} value={childValue} {...citation} />)}</div></section>;
   }
   const long = String(value).length > 100;
-  return <section className={`ai-doc-field ${long ? "ai-doc-field--wide" : ""}`}><h4>{label}</h4><p>{String(value)}</p></section>;
+  return <section className={`ai-doc-field ${long ? "ai-doc-field--wide" : ""}`}><h4>{label}</h4><p><CitationText text={String(value)} {...citation} /></p></section>;
 }
 
 function prettyLabel(key: string) {

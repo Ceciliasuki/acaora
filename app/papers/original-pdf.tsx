@@ -4,12 +4,12 @@ import {useEffect, useRef, useState, type ChangeEvent} from 'react';
 import type {PDFDocumentProxy} from 'pdfjs-dist';
 import type {PaperRecord} from './paper-types';
 import {getPaperPdf, savePaperPdf} from './paper-original-storage';
-import {bodyFontSize, detectSection, inferPdfTitle, type PdfLine} from './pdf-text';
+import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines, type PdfLine} from './pdf-text';
 import styles from './original-pdf.module.css';
 
-type Props = {paper: PaperRecord; onRepair: (source: PaperRecord, title: string, sections: string[]) => void};
+type Props = {paper: PaperRecord; request?: {page: number; id: number}; onRequestHandled: () => void; onRepair: (source: PaperRecord, title: string, sections: string[]) => void};
 
-export default function OriginalPdf({paper, onRepair}: Props) {
+export default function OriginalPdf({paper, request, onRequestHandled, onRepair}: Props) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<Blob | null>(null);
   const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
@@ -17,11 +17,37 @@ export default function OriginalPdf({paper, onRepair}: Props) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [width, setWidth] = useState(800);
+  const [pageWidth, setPageWidth] = useState(612);
+  const [zoom, setZoom] = useState<number | 'fit'>('fit');
   const dialogRef = useRef<HTMLDialogElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mountedRef = useRef(true);
+  const historyKey = `acaora:pdf-view:${JSON.stringify([paper.ownerId ?? null, paper.id])}`;
+  const fitScale = Math.min(2, width / pageWidth);
+
+  function restoreView(target?: number) {
+    let saved: {page?: number; zoom?: number | 'fit'} = {};
+    try {saved = JSON.parse(localStorage.getItem(historyKey) ?? '{}') ?? {};} catch { /* Device preferences are optional. */ }
+    setPageNumber(target ?? (Number.isInteger(saved.page) && saved.page! > 0 ? saved.page! : paper.paragraphs[paper.activeParagraph]?.page ?? 1));
+    setZoom(typeof saved.zoom === 'number' && Number.isFinite(saved.zoom) ? Math.max(.25, Math.min(3, saved.zoom)) : 'fit');
+    setError(''); setOpen(true);
+  }
+
+  useEffect(() => {
+    if (!request) return;
+    let active = true;
+    void Promise.resolve().then(() => {if (active) {restoreView(request.page); onRequestHandled();}});
+    return () => {active = false;};
+    // A citation explicitly requests a page; ordinary paper edits must not reopen the dialog.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [request]);
+
+  useEffect(() => {
+    if (!open || !pdf) return;
+    try {localStorage.setItem(historyKey, JSON.stringify({page: pageNumber, zoom}));} catch { /* Reading still works without history storage. */ }
+  }, [historyKey, open, pdf, pageNumber, zoom]);
 
   useEffect(() => {mountedRef.current = true; return () => {mountedRef.current = false;};}, []);
 
@@ -60,9 +86,11 @@ export default function OriginalPdf({paper, onRepair}: Props) {
     const canvas = canvasRef.current;
     void pdf.getPage(pageNumber).then(page => {
       if (!active) return;
-      const scale = Math.min(2, width / page.getViewport({scale: 1}).width);
+      const baseWidth = page.getViewport({scale: 1}).width;
+      setPageWidth(baseWidth);
+      const scale = zoom === 'fit' ? Math.min(2, width / baseWidth) : zoom;
       const viewport = page.getViewport({scale});
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      const ratio = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(16_000_000 / (viewport.width * viewport.height)));
       canvas.width = Math.ceil(viewport.width * ratio);
       canvas.height = Math.ceil(viewport.height * ratio);
       canvas.style.width = `${viewport.width}px`;
@@ -71,7 +99,7 @@ export default function OriginalPdf({paper, onRepair}: Props) {
       return render.promise;
     }).catch(caught => {if (active && caught?.name !== 'RenderingCancelledException') setError('这一页未能显示，请切换页面重试。');});
     return () => {active = false; render?.cancel();};
-  }, [pdf, pageNumber, width]);
+  }, [pdf, pageNumber, width, zoom]);
 
   async function attach(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0];
@@ -87,19 +115,23 @@ export default function OriginalPdf({paper, onRepair}: Props) {
       loadingTask = pdfjs.getDocument({data: new Uint8Array(await selected.arrayBuffer())});
       document = await loadingTask.promise;
       const pages: PdfLine[][] = [];
+      const legacyText: string[] = [];
       for (let number = 1; number <= document.numPages; number++) {
         const content = await (await document.getPage(number)).getTextContent();
+        const items = content.items.filter((item): item is typeof item & {str: string; transform: number[]; width: number} => 'str' in item && 'width' in item && Boolean(item.str.trim())).map(item => ({text: item.str.trim(), size: Math.hypot(item.transform[2], item.transform[3]), x: item.transform[4], y: Math.round(item.transform[5]), width: item.width}));
         const lines = new Map<number, {text: string; size: number; x: number}[]>();
         for (const item of content.items) {
           if (!('str' in item) || !item.str.trim()) continue;
           const y = Math.round(item.transform[5]);
           lines.set(y, [...(lines.get(y) ?? []), {text: item.str.trim(), size: Math.hypot(item.transform[2], item.transform[3]), x: item.transform[4]}]);
         }
-        pages.push([...lines].sort(([a], [b]) => b - a).map(([y, items]) => ({y, size: Math.max(...items.map(item => item.size)), text: items.sort((a, b) => a.x - b.x).map(item => item.text).join(' ').replace(/\s+/g, ' ').trim()})));
+        legacyText.push([...lines].sort(([a], [b]) => b - a).map(([, items]) => items.sort((a, b) => a.x - b.x).map(item => item.text).join(' ')).join(' '));
+        pages.push(readingOrderLines(items, (await document.getPage(number)).getViewport({scale: 1}).width));
       }
       const text = pages.flat().map(line => line.text).join(' ').replace(/\s+/g, ' ');
       const anchors = paper.paragraphs.slice(0, 3).map(p => p.original.replace(/\s+/g, ' ').slice(0, 100));
-      if (!anchors.some(anchor => anchor.length >= 24 && text.includes(anchor))) throw new Error('文件内容与这篇论文不匹配，请选择导入时使用的原 PDF。');
+      const oldText = legacyText.join(' ').replace(/\s+/g, ' ');
+      if (!anchors.some(anchor => anchor.length >= 24 && (text.includes(anchor) || oldText.includes(anchor)))) throw new Error('文件内容与这篇论文不匹配，请选择导入时使用的原 PDF。');
       await savePaperPdf(paper.id, paper.ownerId ?? null, selected);
       if (!mountedRef.current) return;
       setFile(selected);
@@ -125,12 +157,18 @@ export default function OriginalPdf({paper, onRepair}: Props) {
   }
 
   return <>
-    <button type="button" onClick={() => {setPageNumber(paper.paragraphs[paper.activeParagraph]?.page ?? 1); setOpen(true);}}>查看原 PDF</button>
+    <button type="button" onClick={() => restoreView()}>查看原 PDF</button>
     {open && <dialog ref={dialogRef} className={styles.dialog} aria-label="原 PDF" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
       <header className={styles.header}><strong>原 PDF</strong><button type="button" aria-label="关闭原 PDF" onClick={() => setOpen(false)}>关闭</button></header>
       <p className={styles.privacy}>原文件只保存在当前设备，不上传；清除浏览器数据后需重新选择。</p>
       <div className={styles.controls}>
         {pdf && <><button type="button" disabled={pageNumber <= 1} onClick={() => setPageNumber(n => n - 1)}>上一页</button><label>页码 <input type="number" min={1} max={pdf.numPages} aria-label="原 PDF 页码" value={pageNumber} onChange={e => setPageNumber(Math.max(1, Math.min(pdf.numPages, Number(e.target.value) || 1)))} /> / {pdf.numPages}</label><button type="button" disabled={pageNumber >= pdf.numPages} onClick={() => setPageNumber(n => n + 1)}>下一页</button></>}
+        {pdf && <div className={styles.zoom} aria-label="原 PDF 缩放">
+          <button type="button" aria-label="缩小原 PDF" disabled={zoom !== 'fit' && zoom <= .25} onClick={() => setZoom(Math.max(.25, (zoom === 'fit' ? fitScale : zoom) - .25))}>−</button>
+          <output aria-label="原 PDF 缩放比例">{Math.round((zoom === 'fit' ? fitScale : zoom) * 100)}%</output>
+          <button type="button" aria-label="放大原 PDF" disabled={zoom !== 'fit' && zoom >= 3} onClick={() => setZoom(Math.min(3, (zoom === 'fit' ? fitScale : zoom) + .25))}>+</button>
+          <button type="button" aria-pressed={zoom === 'fit'} onClick={() => setZoom('fit')}>适合宽度</button>
+        </div>}
         <button type="button" disabled={busy} onClick={() => inputRef.current?.click()}>{busy ? '正在检查原文件…' : file ? '重新选择原 PDF' : '选择原 PDF'}</button>
         <input ref={inputRef} type="file" hidden accept="application/pdf,.pdf" aria-label="选择当前论文的原 PDF" onChange={attach} />
       </div>

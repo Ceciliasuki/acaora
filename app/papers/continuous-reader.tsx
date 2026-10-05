@@ -10,9 +10,10 @@ type Props = {
   showTranslations: boolean;
   mode: string;
   onSelect: (index: number) => void;
+  jump?: {index: number; id: number} | null;
 };
 
-export default function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect}: Props) {
+export default function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef(activeIndex);
   const positioningRef = useRef(false);
@@ -43,6 +44,12 @@ export default function ContinuousReader({paperId, paragraphs, activeIndex, show
       positionFrameRef.current = requestAnimationFrame(() => {positioningRef.current = false;});
     });
   }, []);
+
+  useEffect(() => {
+    if (!jump || jump.index >= paragraphs.length) return;
+    const frame = requestAnimationFrame(() => {position(jump.index); rootRef.current?.focus({preventScroll: true});});
+    return () => cancelAnimationFrame(frame);
+  }, [jump, paragraphs.length, position]);
 
   useEffect(() => {
     const root = rootRef.current;
