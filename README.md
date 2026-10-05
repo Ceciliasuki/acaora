@@ -2,6 +2,8 @@
 
 面向大学生的开源智能学习与研究平台，把课程学习、论文研究、数据分析和项目管理放在同一个工作台中。
 
+开发接手先读 [当前交接](docs/current-handoff.md)；最新真实使用验收见 [2026-10-05 记录](docs/acceptance/2026-10-05-real-use.md)。历史设计稿和阶段性待发布记录不代表当前线上状态。
+
 [![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?repository-url=https%3A%2F%2Fgithub.com%2FCeciliasuki%2Facaora&repository-name=acaora&project-name=acaora&install-command=pnpm%20install%20--frozen-lockfile&build-command=pnpm%20run%20build&output-directory=.next&env=SITE_URL%2CSUPABASE_URL%2CSUPABASE_PUBLISHABLE_KEY%2CDEEPSEEK_API_KEY%2CDEEPSEEK_MODEL%2CACAORA_ENVIRONMENT)
 
 ## 主要功能
