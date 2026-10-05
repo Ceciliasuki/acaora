@@ -5,8 +5,8 @@
 ## 开发基准
 
 - 主工作区：`C:\Users\Cecilia\Documents\Projects\acaora`，后续开发优先使用这里。
-- 本地 `main` 已快进到正式发布提交 `f873000fb4c25d0ea995cf1d8ba84b45e7c4e1f7`；远端 `origin/main` 与正式站 `/api/version` 一致。
-- 本次分支：`codex/project-handoff-2026-10-05`，基于该发布提交，整合课程证据并修复真实验收发现的 PaperLab 问题。上线状态与新验证结果见 [论文修复记录](releases/2026-10-05-paper-fixes.md)，不要把本地修复当作已部署。
+- 本次开发前的正式基准为 `f873000fb4c25d0ea995cf1d8ba84b45e7c4e1f7`。后续正式版本请以 `origin/main` 和正式站 `/api/version` 的完整 SHA 核对，不沿用本文的历史基准当作当前版本。
+- 本次分支：`codex/project-handoff-2026-10-05`，整合课程证据、修复真实验收发现的 PaperLab 问题，并按用户授权发布优先阅读工具。实现与验证见 [阅读工具记录](releases/2026-10-05-reading-tools.md)及[论文修复记录](releases/2026-10-05-paper-fixes.md)；合并及 CI 状态以 [PR #12](https://github.com/Ceciliasuki/acaora/pull/12) 为准。
 - 原 `codex/curated-courses` 规划分支和其他工作树完整保留。`C:\Users\Cecilia\.codex\worktrees\curated-courses\acaora` 的 `codex/paper-reading-space` 是历史实施与证据工作区，不再作为新的默认开发入口。
 - 使用 Node 22.11.0 / pnpm 10.26.1；主目录已按当前锁文件安装依赖。新代码必须先阅读本机 `node_modules/next/dist/docs/` 对应指南。
 - 原始本地交接备份与工作树清单位于忽略目录 `outputs/handoff-2026-10-05/`。没有删除或归档其他工作树，没有重跑数据库迁移。
@@ -25,6 +25,7 @@
 - [连续阅读发布记录](releases/2026-10-04-continuous-reader.md)：PR #10、25 项真实普通账号检查，包含已知边界。
 - [加宽阅读区发布记录](releases/2026-10-04-paper-reading-space.md)：PR #11、14 项匿名正式站检查；不能替代当前用户账号验收。
 - [2026-10-05 真实使用验收](acceptance/2026-10-05-real-use.md)：本次新执行的检查、阻碍与尚未验证项。
+- [2026-10-05 阅读工具](releases/2026-10-05-reading-tools.md)：PDF 缩放续读、引用回跳、笔记导出、普通双栏排序和 UI 细节的实现与验证；[界面复核](acceptance/2026-10-05-ui-polish.md)明确已检查范围和未验证项。
 
 ## 当前待验收事项
 

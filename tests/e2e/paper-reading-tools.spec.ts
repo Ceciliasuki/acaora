@@ -122,6 +122,7 @@ test('notes export includes the latest unsaved note, chapter, page and original 
   expect(markdown).toContain('Statistical learning methods are widely used');
   expect(markdown).toContain('Fresh note before debounce **important**');
   expect(markdown).toContain('重点检查是否存在数据泄漏');
+  await page.screenshot({path: 'test-results/reading-tools-notes-desktop.png'});
 });
 
 test('two-column import reads the whole left column before the right column', async ({page}) => {
