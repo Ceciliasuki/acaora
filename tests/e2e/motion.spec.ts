@@ -25,6 +25,9 @@ test("the global light surface changes, pauses, and survives workspace navigatio
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.goto("/dashboard");
   const canvas = page.locator("body > .light-curtain canvas");
+  await expect(canvas).toHaveAttribute("data-motion", /paused|unavailable/);
+  test.skip(await canvas.getAttribute("data-motion") === "unavailable", "This browser cannot create a WebGL context; the static fallback is tested separately.");
+  await page.getByRole("button", { name: "开启背景动效" }).click();
   await expect(canvas).toHaveAttribute("data-motion", /running|unavailable/);
   test.skip(await canvas.getAttribute("data-motion") === "unavailable", "This browser cannot create a WebGL context; the static fallback is tested separately.");
   const firstFrame = await canvas.screenshot();

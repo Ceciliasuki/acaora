@@ -37,7 +37,9 @@ void main() {
 export default function LightCurtain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const elapsedRef = useRef(0);
-  const [paused, setPaused] = useState(false);
+  // Draw the existing light field once, then keep it still. Task interactions
+  // should not compete with a permanent full-screen shader. Motion is opt-in.
+  const [paused, setPaused] = useState(true);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -81,8 +83,8 @@ export default function LightCurtain() {
     const time = gl.getUniformLocation(program, "time");
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     let previous = 0;
-    let lastDraw = 0;
     let lost = false;
     const draw = () => {
       gl.uniform2f(resolution, canvas.width, canvas.height);
@@ -90,7 +92,7 @@ export default function LightCurtain() {
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     };
     const resize = () => {
-      const scale = Math.min(window.devicePixelRatio || 1, 1.25, 1600 / window.innerWidth);
+      const scale = Math.min(window.devicePixelRatio || 1, 1, 960 / window.innerWidth, 540 / window.innerHeight);
       canvas.width = Math.round(window.innerWidth * scale);
       canvas.height = Math.round(window.innerHeight * scale);
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -99,17 +101,24 @@ export default function LightCurtain() {
     const tick = (now: number) => {
       if (previous) elapsedRef.current += Math.min(now - previous, 100);
       previous = now;
-      if (now - lastDraw >= 1000 / 24) {
-        draw();
-        lastDraw = now;
-      }
-      frame = requestAnimationFrame(tick);
+      draw();
+      // Wake only for an actual frame, rather than running an empty callback
+      // at the monitor's refresh rate between low-frequency draws.
+      timer = setTimeout(() => {frame = requestAnimationFrame(tick);}, 1000 / 12);
     };
     const sync = () => {
       cancelAnimationFrame(frame);
+      clearTimeout(timer);
       previous = 0;
       canvas.dataset.motion = lost ? "unavailable" : motion.matches || paused ? "paused" : document.hidden ? "hidden" : "running";
       if (!lost && !motion.matches && !paused && !document.hidden) frame = requestAnimationFrame(tick);
+    };
+    const interact = () => {
+      if (paused || motion.matches || lost || document.hidden) return;
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+      previous = 0;
+      timer = setTimeout(sync, 700);
     };
     const contextLost = (event: Event) => {
       event.preventDefault();
@@ -123,12 +132,19 @@ export default function LightCurtain() {
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", sync);
     motion.addEventListener("change", sync);
+    document.addEventListener("wheel", interact, {passive: true});
+    document.addEventListener("touchmove", interact, {passive: true});
+    document.addEventListener("keydown", interact);
     canvas.addEventListener("webglcontextlost", contextLost);
     return () => {
       cancelAnimationFrame(frame);
+      clearTimeout(timer);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
+      document.removeEventListener("wheel", interact);
+      document.removeEventListener("touchmove", interact);
+      document.removeEventListener("keydown", interact);
       canvas.removeEventListener("webglcontextlost", contextLost);
       gl.deleteBuffer(buffer);
       shaders.forEach((shader) => gl.deleteShader(shader));
