@@ -16,8 +16,8 @@ import NotesSummary from './notes-summary';
 import {savePaperPdf, deletePaperPdf} from './paper-original-storage';
 import { samplePaper } from "./paper-types";
 import {restoreReadingPosition, useReadingPosition} from './use-reading-position';
-import { authFetch } from "../lib/auth-client";
-import { flushPaperSyncQueue, reconcileSnapshot } from "./paper-sync.mjs";
+import { authFetch, getCurrentUser } from "../lib/auth-client";
+import { flushPaperSyncQueue } from "./paper-sync.mjs";
 import type { RetryDecision } from "./paper-sync.mjs";
 
 type TranslatorSession = {
@@ -61,6 +61,7 @@ export default function PaperLab() {
      the count is unknown rather than zero, and the reader can retry the read. */
   const [libraryError, setLibraryError] = useState("");
   const [hydrationAttempt, setHydrationAttempt] = useState(0);
+  const hydrationEpochRef = useRef(0);
   const [cloudState, setCloudState] = useState<"checking" | "guest" | "syncing" | "offline" | "ready" | "error">("checking");
   const cloudStateRef = useRef(cloudState);
   const signedInRef = useRef(false);
@@ -123,16 +124,19 @@ export default function PaperLab() {
     if (!response.ok) throw new Error("无法获取云端论文记忆。");
     if (userIdRef.current !== userId) throw new Error("账户已切换。");
     const cloud = await response.json() as { papers?: PaperRecord[]; deletions?: Array<{ id: string; deletedAt: number }> };
-    const result = reconcileSnapshot({
-      localPapers: await getPaperLibrary(userId),
-      cloudPapers: (cloud.papers ?? []).map((paper) => ({ ...paper, ownerId: userId })),
-      deletions: cloud.deletions ?? [],
-      pending: await getPaperSyncOperations(userId),
-    });
-    await applyPaperSyncSnapshot(userId, result.papers, result.pending);
+    const currentAtMerge = paperRef.current;
+    const hadDraft = dirtyRef.current;
+    if (userIdRef.current !== userId) throw new Error("账户已切换。");
+    const result = await applyPaperSyncSnapshot(userId, cloud.papers ?? [], cloud.deletions ?? []);
+    if (userIdRef.current !== userId) throw new Error("账户已切换。");
     setLibrary(result.papers);
     setPaper((current) => {
-      const next = result.papers.find((item) => item.id === current.id) ?? result.papers[0] ?? samplePaper;
+      // The reader may already be editing its local copy while this GET waits.
+      // Keep an unsaved draft; the existing debounce will persist and queue it.
+      const matching = result.papers.find((item) => item.id === current.id);
+      if (matching && current.ownerId === userId && (dirtyRef.current || hadDraft || current !== currentAtMerge)) return current;
+      const next = matching ?? result.papers[0] ?? samplePaper;
+      if (!matching) dirtyRef.current = false;
       if (next !== current) skipPersistRef.current = true;
       return next;
     });
@@ -206,47 +210,53 @@ export default function PaperLab() {
   }, [syncNow]);
 
   useEffect(() => {
+    const hydrationEpoch = hydrationEpochRef;
+    const epoch = ++hydrationEpoch.current;
+    const isCurrent = () => hydrationEpoch.current === epoch;
+    let hasLocalRecords = false;
     void (async () => {
       setLibraryError("");
       try {
-        const sessionResponse = await authFetch("/api/auth/session");
-        if (!sessionResponse.ok) throw new Error("账户状态不可用。");
-        const session = await sessionResponse.json() as { user?: { id: string } | null };
-        signedInRef.current = Boolean(session.user);
-        userIdRef.current = session.user?.id ?? null;
+        const user = await getCurrentUser();
+        if (!isCurrent()) return;
+        signedInRef.current = Boolean(user);
+        userIdRef.current = user?.id ?? null;
         let records: PaperRecord[];
         try {
           records = await getPaperLibrary(userIdRef.current);
+          if (!isCurrent()) return;
         } catch {
           /* The device store itself could not be read: that is a failure, not an
              empty library, so the index reports it instead of showing "0 篇". */
+          if (!isCurrent()) return;
           setLibraryError("无法读取本机论文库。本次没有删除或覆盖任何记录，可以重试读取。");
           setCloudStatus(navigator.onLine ? "error" : "offline");
           return;
         }
-        if (session.user) {
+        hasLocalRecords = records.length > 0;
+        setLibrary(records);
+        skipPersistRef.current = true;
+        setPaper(records[0] ?? samplePaper);
+        if (records.length) setSearchQuery(records[0].title);
+        if (hasLocalRecords || !user) setHydrated(true);
+        if (user) {
+          setCloudStatus("syncing");
           records = await refreshCloud();
+          if (!isCurrent()) return;
+          if (!hasLocalRecords && records.length) setSearchQuery(records[0].title);
           void syncNow();
         } else {
-          const guestRecords = await getPaperLibrary();
-          setLibrary(guestRecords);
-          skipPersistRef.current = true;
-          setPaper(guestRecords[0] ?? samplePaper);
           setCloudStatus("guest");
         }
-        setLibrary(records);
-        if (records.length) {
-          skipPersistRef.current = true;
-          setPaper(records[0]);
-          setSearchQuery(records[0].title);
-        }
       } catch {
-        setLibraryError("无法读取论文库状态。请检查网络或账户状态后重试。");
+        if (!isCurrent()) return;
+        if (!hasLocalRecords) setLibraryError("无法读取论文库状态。请检查网络或账户状态后重试。");
         setCloudStatus(navigator.onLine ? "error" : "offline");
       } finally {
-        setHydrated(true);
+        if (isCurrent()) setHydrated(true);
       }
     })();
+    return () => { if (isCurrent()) hydrationEpoch.current++; };
   }, [hydrationAttempt, refreshCloud, setCloudStatus, syncNow]);
 
   useEffect(() => {
@@ -257,9 +267,11 @@ export default function PaperLab() {
       void syncNow();
     };
     const authChanged = () => {
+      const epoch = ++hydrationEpochRef.current;
       void authFetch("/api/auth/session").then(async (response) => {
-        if (!response.ok) return;
+        if (!response.ok) throw new Error("账户状态不可用。");
         const session = await response.json() as { user?: { id: string } | null };
+        if (hydrationEpochRef.current !== epoch) return;
         const previousOwner = userIdRef.current;
         signedInRef.current = Boolean(session.user);
         userIdRef.current = session.user?.id ?? null;
@@ -271,16 +283,18 @@ export default function PaperLab() {
         }
         if (session.user) {
           await refreshCloud();
+          if (hydrationEpochRef.current !== epoch) return;
           void syncNow();
         } else {
           const guest = await getPaperLibrary();
-          if (userIdRef.current !== null) return;
+          if (userIdRef.current !== null || hydrationEpochRef.current !== epoch) return;
           setLibrary(guest);
           skipPersistRef.current = true;
           setPaper(guest[0] ?? samplePaper);
           setCloudStatus("guest");
         }
-      }).catch(() => setCloudStatus("error"));
+        if (hydrationEpochRef.current === epoch) setHydrated(true);
+      }).catch(() => { if (hydrationEpochRef.current === epoch) {setCloudStatus("error"); setHydrated(true);} });
     };
     window.addEventListener("offline", offline);
     window.addEventListener("online", online);
@@ -315,8 +329,9 @@ export default function PaperLab() {
     const handle = window.setTimeout(() => {
       if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
       const updated = { ...withReadingPosition(paper), ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
-      const persist = signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated);
-      void persist.then(() => {
+      const persist = signedInRef.current ? savePaperAndQueue(updated, {requireExisting: true}) : savePaper(updated);
+      void persist.then((saved) => {
+        if (saved === false) return;
         if ((paper.ownerId ?? null) !== userIdRef.current) return;
         if (paperRef.current === paper) dirtyRef.current = false;
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
@@ -521,7 +536,8 @@ export default function PaperLab() {
         source = await persistCurrentPaper();
         // eslint-disable-next-line react-hooks/purity -- User-triggered async transition; this function is never called during render.
         opened = {...restoreReadingPosition(record), updatedAt: Date.now() + 1};
-        await (signedInRef.current ? savePaperAndQueue(opened) : savePaper(opened));
+        const saved = await (signedInRef.current ? savePaperAndQueue(opened, {requireExisting: true}) : savePaper(opened));
+        if (saved === false) throw new Error('论文已从本机删除。');
         if (userIdRef.current !== owner) throw new Error('账户已切换。');
       } while (paperRef.current !== source);
       setLibrary(items => [opened, ...items.filter(item => item.id !== opened.id)]);
@@ -540,7 +556,8 @@ export default function PaperLab() {
     if (current.id === samplePaper.id || (current.ownerId ?? null) !== owner) return current;
     // eslint-disable-next-line react-hooks/purity -- Only invoked by import/switch handlers, never while rendering.
     const updated = {...withReadingPosition(current), updatedAt: Date.now()};
-    await (signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated));
+    const saved = await (signedInRef.current ? savePaperAndQueue(updated, {requireExisting: true}) : savePaper(updated));
+    if (saved === false) throw new Error('论文已从本机删除。');
     if (userIdRef.current !== owner) throw new Error('账户已切换。');
     if (paperRef.current !== current) return persistCurrentPaper();
     setLibrary(items => [updated, ...items.filter(item => item.id !== updated.id)]);

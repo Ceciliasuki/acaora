@@ -5,7 +5,7 @@ import { ArrowRight, ChevronRight, FileText, Folder, Plus, Upload } from "lucide
 import { useEffect, useMemo, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
 import { Button } from "../components/ui";
-import { authFetch, signOut as signOutSession } from "../lib/auth-client";
+import { authFetch, getCurrentUser, signOut as signOutSession } from "../lib/auth-client";
 
 type Viewer = { id: string; email?: string } | null;
 type Project = { id: string; title: string; status?: string; updated_at?: string };
@@ -27,12 +27,10 @@ export default function DashboardPage() {
     let active = true;
     async function load() {
       try {
-        const response = await authFetch("/api/auth/session");
-        if (!response.ok) throw new Error("SESSION_LOAD_FAILED");
-        const session = await response.json() as { user?: Viewer };
+        const user = await getCurrentUser();
         if (!active) return;
-        setViewer(session.user ?? null);
-        if (!session.user) { setState("guest"); return; }
+        setViewer(user);
+        if (!user) { setState("guest"); return; }
         const [projectResponse, paperResponse] = await Promise.all([authFetch("/api/projects"), authFetch("/api/cloud/papers")]);
         if (!projectResponse.ok || !paperResponse.ok) throw new Error("WORKSPACE_LOAD_FAILED");
         const projectPayload = await projectResponse.json() as { projects?: Project[] };

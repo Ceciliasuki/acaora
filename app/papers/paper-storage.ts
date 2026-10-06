@@ -1,4 +1,5 @@
-import type { PaperRecord, PaperSyncOperation } from "./paper-types";
+import type { CloudDeletion, PaperRecord, PaperSyncOperation } from "./paper-types";
+import {reconcileSnapshot} from './paper-sync.mjs';
 
 const databaseName = "statlab-paper-memory";
 const storeName = "papers";
@@ -54,18 +55,30 @@ export async function deletePaper(id: string) {
   });
 }
 
-export async function savePaperAndQueue(paper: PaperRecord) {
+export async function savePaperAndQueue(paper: PaperRecord, options: {requireExisting?: boolean} = {}) {
   const database = await openDatabase();
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     const transaction = database.transaction([storeName, syncStoreName], "readwrite");
+    let saved = false;
     const syncStore = transaction.objectStore(syncStoreName);
     const existingRequest = syncStore.get(paper.id);
     existingRequest.onsuccess = () => {
       if ((existingRequest.result as PaperSyncOperation | undefined)?.type === "delete") return;
-      transaction.objectStore(storeName).put(paper);
-      syncStore.put({ id: paper.id, ownerId: paper.ownerId, type: "upsert", updatedAt: paper.updatedAt, paper, attempts: 0, nextAttemptAt: 0 } satisfies PaperSyncOperation);
+      const write = () => {
+        transaction.objectStore(storeName).put(paper);
+        syncStore.put({ id: paper.id, ownerId: paper.ownerId, type: "upsert", updatedAt: paper.updatedAt, paper, attempts: 0, nextAttemptAt: 0 } satisfies PaperSyncOperation);
+        saved = true;
+      };
+      if (options.requireExisting) {
+        // An edit queued behind a cloud deletion may update, but never recreate,
+        // an existing paper. Imports deliberately keep the creation path.
+        const record = transaction.objectStore(storeName).get(paper.id);
+        record.onsuccess = () => {
+          if (record.result && (record.result as PaperRecord).ownerId === paper.ownerId) write();
+        };
+      } else write();
     };
-    transaction.oncomplete = () => { database.close(); resolve(); };
+    transaction.oncomplete = () => { database.close(); resolve(saved); };
     transaction.onerror = () => { database.close(); reject(transaction.error); };
     transaction.onabort = () => { database.close(); reject(transaction.error); };
   });
@@ -114,29 +127,41 @@ export async function deletePaperSyncOperation(id: string) {
   });
 }
 
-export async function applyPaperSyncSnapshot(ownerId: string, papers: PaperRecord[], pending: PaperSyncOperation[]) {
+// Read, reconcile and write in one transaction. A note save must land entirely
+// before or after this merge, never between a stale read and its replacement.
+export async function applyPaperSyncSnapshot(ownerId: string, cloudPapers: PaperRecord[], deletions: CloudDeletion[]) {
   const database = await openDatabase();
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<ReturnType<typeof reconcileSnapshot>>((resolve, reject) => {
     const transaction = database.transaction([storeName, syncStoreName], "readwrite");
     const paperStore = transaction.objectStore(storeName);
     const syncStore = transaction.objectStore(syncStoreName);
     const papersRequest = paperStore.getAll();
     const syncRequest = syncStore.getAll();
-    papersRequest.onsuccess = () => {
-      const nextIds = new Set(papers.map((paper) => paper.id));
+    let localPapers: PaperRecord[] | undefined;
+    let pending: PaperSyncOperation[] | undefined;
+    let result: ReturnType<typeof reconcileSnapshot>;
+    const merge = () => {
+      if (!localPapers || !pending) return;
+      result = reconcileSnapshot({
+        localPapers: localPapers.filter(paper => paper.ownerId === ownerId),
+        cloudPapers: cloudPapers.map(paper => ({...paper, ownerId})),
+        deletions,
+        pending: pending.filter(operation => operation.ownerId === ownerId),
+      });
+      const nextIds = new Set(result.papers.map((paper) => paper.id));
       for (const oldPaper of papersRequest.result as PaperRecord[]) {
         if (oldPaper.ownerId === ownerId && !nextIds.has(oldPaper.id)) paperStore.delete(oldPaper.id);
       }
-      for (const paper of papers) paperStore.put(paper);
-    };
-    syncRequest.onsuccess = () => {
-      const nextIds = new Set(pending.map((operation) => operation.id));
+      for (const paper of result.papers) paperStore.put(paper);
+      const nextOperationIds = new Set(result.pending.map((operation) => operation.id));
       for (const oldOperation of syncRequest.result as PaperSyncOperation[]) {
-        if (oldOperation.ownerId === ownerId && !nextIds.has(oldOperation.id)) syncStore.delete(oldOperation.id);
+        if (oldOperation.ownerId === ownerId && !nextOperationIds.has(oldOperation.id)) syncStore.delete(oldOperation.id);
       }
-      for (const operation of pending) syncStore.put(operation);
+      for (const operation of result.pending) syncStore.put(operation);
     };
-    transaction.oncomplete = () => { database.close(); resolve(); };
+    papersRequest.onsuccess = () => {localPapers = papersRequest.result as PaperRecord[]; merge();};
+    syncRequest.onsuccess = () => {pending = syncRequest.result as PaperSyncOperation[]; merge();};
+    transaction.oncomplete = () => { database.close(); resolve(result); };
     transaction.onerror = () => { database.close(); reject(transaction.error); };
     transaction.onabort = () => { database.close(); reject(transaction.error); };
   });

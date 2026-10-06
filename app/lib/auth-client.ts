@@ -64,10 +64,21 @@ async function readJson<T>(response: Response): Promise<T> {
   return payload;
 }
 
-export async function getCurrentUser() {
-  const response = await authFetch("/api/auth/session");
-  const payload = await readJson<{ configured: boolean; user: AuthUser | null }>(response);
-  return payload.user;
+// Share only an in-flight read, never a completed authentication result.
+// A new auth event starts a fresh read even if an older one is still pending.
+let pendingUser: Promise<AuthUser | null> | undefined;
+if (typeof window !== "undefined") {
+  window.addEventListener(authChangeEvent, () => { pendingUser = undefined; });
+}
+
+export function getCurrentUser(): Promise<AuthUser | null> {
+  if (!pendingUser) {
+    pendingUser = authFetch("/api/auth/session")
+      .then(response => readJson<{ configured: boolean; user: AuthUser | null }>(response))
+      .then(payload => payload.user);
+  }
+  const request = pendingUser;
+  return request.finally(() => { if (pendingUser === request) pendingUser = undefined; });
 }
 
 export async function getAuthStatus() {
