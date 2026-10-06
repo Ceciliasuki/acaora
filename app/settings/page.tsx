@@ -51,10 +51,12 @@ export default function SettingsPage() {
       setLoading(true);
       setSessionError("");
       setAiKey(readAiKey());
-      const [versionResult, aiResult] = await Promise.allSettled([
+      // Metadata is independent of account fields; an unavailable model endpoint
+      // must not hold the entire settings form behind its network timeout.
+      void Promise.allSettled([
         fetch("/api/version", { cache: "no-store" }).then((response) => response.json() as Promise<BuildVersion>),
         fetch("/api/papers/ai", { cache: "no-store" }).then((response) => response.json() as Promise<{ model?: string }>),
-      ]);
+      ]).then(([versionResult, aiResult]) => {
       if (mounted) {
         if (versionResult.status === "fulfilled") {
           setVersion(versionResult.value);
@@ -68,6 +70,7 @@ export default function SettingsPage() {
         setAiModel(declared);
         setAiModelState(aiResult.status !== "fulfilled" ? "error" : declared ? "ready" : "fallback");
       }
+      });
 
       try {
         const user = await getCurrentUser();

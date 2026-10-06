@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Users, X, type LucideIcon } from "lucide-react";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { authFetch } from "../lib/auth-client";
+import { authFetch, getCurrentUser } from "../lib/auth-client";
 import { Button, Dialog, ErrorState } from "../components/ui";
 
 type Viewer = { id: string; email?: string } | null;
@@ -72,10 +72,8 @@ export default function ProjectsPage() {
   const activeCount = projects.filter((project) => project.status === "active").length;
 
   useEffect(() => {
-    void authFetch("/api/auth/session")
-      .then((response) => response.json())
-      .then(async (payload: { user?: Viewer }) => {
-        const user = payload.user ?? null;
+    void getCurrentUser()
+      .then(async (user) => {
         setViewer(user);
         if (!user) return;
         const response = await authFetch("/api/projects");
