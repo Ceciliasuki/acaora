@@ -1,17 +1,20 @@
 # ACAORA 当前开发与验收交接
 
-更新：2026-10-05（Asia/Shanghai）。本文件替代旧的 2026-09-16 Dashboard 原型交接，不把历史规划或待发布状态当作当前进度。
+更新：2026-10-06（Asia/Shanghai）。本文件替代旧的 2026-09-16 Dashboard 原型交接，不把历史规划或待发布状态当作当前进度。
 
 ## 开发基准
 
 - 主工作区：`C:\Users\Cecilia\Documents\Projects\acaora`，后续开发优先使用这里。
 - 本次开发前的正式基准为 `f873000fb4c25d0ea995cf1d8ba84b45e7c4e1f7`。后续正式版本请以 `origin/main` 和正式站 `/api/version` 的完整 SHA 核对，不沿用本文的历史基准当作当前版本。
 - 本次分支：`codex/project-handoff-2026-10-05`，整合课程证据、修复真实验收发现的 PaperLab 问题，并按用户授权发布优先阅读工具。实现与验证见 [阅读工具记录](releases/2026-10-05-reading-tools.md)及[论文修复记录](releases/2026-10-05-paper-fixes.md)；合并及 CI 状态以 [PR #12](https://github.com/Ceciliasuki/acaora/pull/12) 为准。
+- 2026-10-06 后续分支：`codex/performance-2026-10-06`，处理全站背景、阅读位置与重复账号请求开销；维护性及验收见流畅度记录。PR #12为上一个正式版本，当前版本须核对正式站 `/api/version`。
 - 原 `codex/curated-courses` 规划分支和其他工作树完整保留。`C:\Users\Cecilia\.codex\worktrees\curated-courses\acaora` 的 `codex/paper-reading-space` 是历史实施与证据工作区，不再作为新的默认开发入口。
 - 使用 Node 22.11.0 / pnpm 10.26.1；主目录已按当前锁文件安装依赖。新代码必须先阅读本机 `node_modules/next/dist/docs/` 对应指南。
 - 原始本地交接备份与工作树清单位于忽略目录 `outputs/handoff-2026-10-05/`。没有删除或归档其他工作树，没有重跑数据库迁移。
 
 ## 已上线范围
+
+当前性能优化的行为、维护性边界及验收见 [2026-10-06 流畅度记录](releases/2026-10-06-performance.md)。正式上线状态仍以PR合并及 `/api/version` 为准。
 
 - 域名：`https://acaora.cn`，认证和云同步走同源 API。当前连接可访问不等于全国网络可用。
 - 七门简化课程：64 核心课、7 选学课；每节默认核心讲解、一个例题、三道练习，每门一个综合案例。旧 ID 和扩展材料保留。开放题对照参考答案自查。

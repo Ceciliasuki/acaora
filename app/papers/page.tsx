@@ -15,6 +15,7 @@ import OriginalPdf from './original-pdf';
 import NotesSummary from './notes-summary';
 import {savePaperPdf, deletePaperPdf} from './paper-original-storage';
 import { samplePaper } from "./paper-types";
+import {restoreReadingPosition, useReadingPosition} from './use-reading-position';
 import { authFetch } from "../lib/auth-client";
 import { flushPaperSyncQueue, reconcileSnapshot } from "./paper-sync.mjs";
 import type { RetryDecision } from "./paper-sync.mjs";
@@ -94,7 +95,13 @@ export default function PaperLab() {
     try {localStorage.setItem('acaora:paper-panels', JSON.stringify(next));} catch { /* Keep the current session usable. */ }
   }
 
-  const activeIndex = Math.min(paper.activeParagraph, Math.max(0, paper.paragraphs.length - 1));
+  const commitReadingPosition = useCallback((paperId: string, ownerId: string | undefined, index: number) => {
+    const current = paperRef.current;
+    if (current.id === samplePaper.id || current.id !== paperId || current.ownerId !== ownerId || (ownerId ?? null) !== userIdRef.current || current.activeParagraph === index) return;
+    dirtyRef.current = true;
+    setPaper({...current, activeParagraph: index});
+  }, []);
+  const {activeIndex, select: selectParagraph, snapshot: withReadingPosition} = useReadingPosition(paper, commitReadingPosition);
   const activeParagraph = paper.paragraphs[activeIndex];
   const completion = paper.paragraphs.length
     ? Math.round((paper.paragraphs.filter((item) => item.read).length / paper.paragraphs.length) * 100)
@@ -307,7 +314,7 @@ export default function PaperLab() {
     }
     const handle = window.setTimeout(() => {
       if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
-      const updated = { ...paper, ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
+      const updated = { ...withReadingPosition(paper), ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
       const persist = signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated);
       void persist.then(() => {
         if ((paper.ownerId ?? null) !== userIdRef.current) return;
@@ -317,14 +324,14 @@ export default function PaperLab() {
       }).catch(() => setCloudStatus("error"));
     }, 450);
     return () => window.clearTimeout(handle);
-  }, [paper, hydrated, setCloudStatus, syncNow]);
+  }, [paper, hydrated, setCloudStatus, syncNow, withReadingPosition]);
 
   function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
     if (userIdRef.current) {
       dirtyRef.current = true;
       setCloudStatus("syncing");
     }
-    setPaper((current) => updater(current));
+    setPaper((current) => updater(withReadingPosition(current)));
   }
 
   function updateActiveParagraph(patch: Partial<Paragraph>) {
@@ -333,11 +340,6 @@ export default function PaperLab() {
       paragraphs: current.paragraphs.map((paragraph, index) => index === activeIndex ? { ...paragraph, ...patch } : paragraph),
     }));
   }
-
-  const selectParagraph = useCallback((index: number) => {
-    if (userIdRef.current) {dirtyRef.current = true; setCloudStatus('syncing');}
-    setPaper(current => ({...current, activeParagraph: index}));
-  }, [setCloudStatus]);
 
   function jumpToParagraph(index: number, originalPdf = false) {
     if (index < 0 || index >= paper.paragraphs.length) return;
@@ -518,7 +520,7 @@ export default function PaperLab() {
       do {
         source = await persistCurrentPaper();
         // eslint-disable-next-line react-hooks/purity -- User-triggered async transition; this function is never called during render.
-        opened = {...record, updatedAt: Date.now() + 1};
+        opened = {...restoreReadingPosition(record), updatedAt: Date.now() + 1};
         await (signedInRef.current ? savePaperAndQueue(opened) : savePaper(opened));
         if (userIdRef.current !== owner) throw new Error('账户已切换。');
       } while (paperRef.current !== source);
@@ -537,7 +539,7 @@ export default function PaperLab() {
     const owner = userIdRef.current;
     if (current.id === samplePaper.id || (current.ownerId ?? null) !== owner) return current;
     // eslint-disable-next-line react-hooks/purity -- Only invoked by import/switch handlers, never while rendering.
-    const updated = {...current, updatedAt: Date.now()};
+    const updated = {...withReadingPosition(current), updatedAt: Date.now()};
     await (signedInRef.current ? savePaperAndQueue(updated) : savePaper(updated));
     if (userIdRef.current !== owner) throw new Error('账户已切换。');
     if (paperRef.current !== current) return persistCurrentPaper();

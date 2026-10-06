@@ -1,6 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useRef} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
 import type {Paragraph} from './paper-types';
 
 type Props = {
@@ -13,12 +13,12 @@ type Props = {
   jump?: {index: number; id: number} | null;
 };
 
-export default function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump}: Props) {
+export default memo(function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef(activeIndex);
   const positioningRef = useRef(false);
   const positionFrameRef = useRef(0);
-  const sections = [...new Set(paragraphs.map(p => p.section))];
+  const sections = useMemo(() => [...new Set(paragraphs.map(p => p.section))], [paragraphs]);
 
   useEffect(() => {currentRef.current = activeIndex;}, [activeIndex]);
 
@@ -119,11 +119,20 @@ export default function ContinuousReader({paperId, paragraphs, activeIndex, show
       className={paragraphs[activeIndex]?.section === section ? 'active' : ''}
       onClick={() => {const index = paragraphs.findIndex(p => p.section === section); select(index); position(index);}}>{section}</button>)}</nav>}
     {paragraphs.length ? <article className="plab-page plab-continuous-text"><div className="plab-body">
-      {paragraphs.map((paragraph, index) => <div key={paragraph.id} className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={index === activeIndex}>
-        {(index === 0 || paragraphs[index - 1].section !== paragraph.section) && <h2>{paragraph.section}</h2>}
-        <p>{paragraph.original}</p>
-        {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
-      </div>)}
+      {paragraphs.map((paragraph, index) => <ReaderParagraph key={paragraph.id} paragraph={paragraph} index={index} active={index === activeIndex}
+        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} />)}
     </div></article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
   </div>;
-}
+});
+
+// Only the previous/current paragraph changes during reading. Stable text and
+// notes keep their existing objects, so React can skip the rest of the article.
+const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, startsSection, showTranslations}: {
+  paragraph: Paragraph; index: number; active: boolean; startsSection: boolean; showTranslations: boolean;
+}) {
+  return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active}>
+    {startsSection && <h2>{paragraph.section}</h2>}
+    <p>{paragraph.original}</p>
+    {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
+  </div>;
+});

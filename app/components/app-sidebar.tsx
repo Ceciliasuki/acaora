@@ -46,22 +46,25 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const [open, setOpen] = useState(false);
   const [isDrawer, setIsDrawer] = useState(false);
-  const [profile, setProfile] = useState({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
+  const [profile, setProfile] = useState<{initials: string; title: string; subtitle: string; avatarUrl: string} | null>(null);
+  const displayedProfile = profile ?? {initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl};
   const triggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let mounted = true;
+    let requestId = 0;
     async function loadProfile() {
+      const currentRequest = ++requestId;
       const user = await getCurrentUser().catch(() => null);
       const data = user ? await getProfile().catch(() => null) : null;
-      if (!mounted) return;
+      if (!mounted || currentRequest !== requestId) return;
       if (!user) {
-        setProfile({ initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl });
+        setProfile(null);
         return;
       }
-      const title = data?.display_name || user.email || profileTitle;
+      const title = data?.display_name || user.email || "Acaora 用户";
       setProfile({
         initials: String(title).slice(0, 2).toUpperCase(),
         title: String(title),
@@ -78,7 +81,7 @@ export default function AppSidebar({
       window.removeEventListener(authChangeEvent, reload);
       window.removeEventListener("acaora:profile-change", reload);
     };
-  }, [avatarUrl, initials, profileSubtitle, profileTitle]);
+  }, []);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 760px)");
@@ -154,8 +157,8 @@ export default function AppSidebar({
       </nav>
       <div className="student-sidebar-foot">
         <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料" onClick={() => setOpen(false)}>
-          {profile.avatarUrl ? <img src={profile.avatarUrl} width="72" height="72" alt="" /> : <b>{profile.initials}</b>}
-          <p><strong>{profile.title}</strong><small>{profile.subtitle}</small></p>
+          {displayedProfile.avatarUrl ? <img src={displayedProfile.avatarUrl} width="72" height="72" alt="" /> : <b>{displayedProfile.initials}</b>}
+          <p><strong>{displayedProfile.title}</strong><small>{displayedProfile.subtitle}</small></p>
         </Link>
       </div>
     </aside>
