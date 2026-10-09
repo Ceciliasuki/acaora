@@ -54,6 +54,12 @@ jobs:
 
       - name: Production build
         run: pnpm build
+        env:
+          NEXT_PRIVATE_STANDALONE: "true"
+          # Non-secret placeholders exercise cookie-dependent rendering without
+          # connecting to a real account or database during the build.
+          SUPABASE_URL: "https://prefetch-build-fixture.supabase.co"
+          SUPABASE_PUBLISHABLE_KEY: "sb_publishable_prefetch_build_fixture"
 
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
