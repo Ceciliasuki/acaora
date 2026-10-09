@@ -12,10 +12,8 @@ test('static CDN prefetch returns fresh segment trees and warm navigation needs 
     const request=route.request();const url=new URL(request.url());const headers=request.headers();
     if(headers.rsc!=='1') {await route.continue();return;}
     requests++;
-    const captures:Record<string,string>={};
     const matches=(rule:{regex:string;has?:{key:string;value:string}[]})=>new RegExp(rule.regex).test(url.pathname)&&(rule.has??[]).every(condition=>{
       const match=new RegExp(`^(?:${condition.value})$`).exec(headers[condition.key.toLowerCase()]??'');
-      if(match?.groups)Object.assign(captures,match.groups);
       return !!match;
     });
     const rewrite=manifest.rewrites.beforeFiles.find(matches);
@@ -23,7 +21,9 @@ test('static CDN prefetch returns fresh segment trees and warm navigation needs 
     for(const rule of manifest.headers.filter(matches))for(const header of rule.headers)responseHeaders[header.key.toLowerCase()]=header.value;
     let file:string;
     if(rewrite) {
-      const destination=rewrite.destination.replace(/:([A-Za-z]+)/g,(_:string,key:string)=>captures[key]);
+      // EdgeOne's deployed router did not resolve named header captures. Do
+      // not simulate Next's substitution here and hide that platform failure.
+      const destination=rewrite.destination;
       file=path.join('.next/static',destination.slice('/_next/static/'.length));
     } else file=path.join('.next/server/app',url.pathname==='/index'?'index.rsc':url.pathname+'.rsc');
     const body=await readFile(file,'utf8');

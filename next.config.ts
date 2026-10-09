@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 import {BUILD_COMMIT} from './app/generated/build-version';
-import {staticPrefetchRoutes, prefetchAssetDirectory} from './scripts/static-prefetch-routes.mjs';
+import {staticPrefetchEntries, prefetchAssetDirectory} from './scripts/static-prefetch-routes.mjs';
 
-const segmentRequest = [
+const segmentRequest = (segment: string) => [
   {type: 'header' as const, key: 'rsc', value: '1'},
-  {type: 'header' as const, key: 'next-router-segment-prefetch', value: '/(?<segment>[A-Za-z0-9_/@-]+)'},
+  {type: 'header' as const, key: 'next-router-segment-prefetch', value: `/${segment}`},
 ];
 
 const nextConfig: NextConfig = {
@@ -14,16 +14,16 @@ const nextConfig: NextConfig = {
   // Remove this compatibility layer when EdgeOne serves Next's segment files.
   // It uses public static pages only; authenticated APIs keep their own routes.
   async rewrites() {
-    return {beforeFiles: staticPrefetchRoutes.map(source => ({
+    return {beforeFiles: staticPrefetchEntries.map(({source, segment}) => ({
       source,
-      has: segmentRequest,
-      destination: `/_next/static/${BUILD_COMMIT}/${prefetchAssetDirectory}/${source === '/' ? 'index' : source.slice(1)}/:segment.rsc`,
+      has: segmentRequest(segment),
+      destination: `/_next/static/${BUILD_COMMIT}/${prefetchAssetDirectory}/${source.slice(1)}/${segment}.rsc`,
     })), afterFiles: [], fallback: []};
   },
   async headers() {
-    return staticPrefetchRoutes.map(source => ({
+    return staticPrefetchEntries.map(({source, segment}) => ({
       source,
-      has: segmentRequest,
+      has: segmentRequest(segment),
       headers: [
         {key: 'Content-Type', value: 'text/x-component'},
         {key: 'X-Nextjs-Postponed', value: '2'},
