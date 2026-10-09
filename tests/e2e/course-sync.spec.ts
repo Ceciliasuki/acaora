@@ -1,6 +1,40 @@
 import {expect,test,type Request} from '@playwright/test';
 import {installApiMocks} from './helpers';
 
+test('SYNC-08 reconnect waits for the returning account local snapshot before syncing',async({page})=>{
+ await page.addInitScript(()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete')!;
+  Object.defineProperty(IDBTransaction.prototype,'oncomplete',{
+   ...descriptor,
+   set(listener:((this:IDBTransaction,event:Event)=>unknown)|null){
+    descriptor.set!.call(this,listener?function(this:IDBTransaction,event:Event){
+     if(this.mode==='readonly'&&this.objectStoreNames.contains('snapshots')&&document.documentElement.dataset.holdCourseLoad==='yes'){
+      document.documentElement.dataset.courseLoadHeld='yes';
+      window.addEventListener('course-load-release',()=>{delete document.documentElement.dataset.holdCourseLoad;listener.call(this,event);},{once:true});
+     }else listener.call(this,event);
+    }:null);
+   },
+  });
+ });
+ const state=await installApiMocks(page,{signedIn:true,courseSyncStatus:503});
+ await page.goto('/courses/STAT-201/lesson-1');
+ await page.getByRole('button',{name:'标记本节已读'}).click();
+ await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
+ state.userId='second-user';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+ await expect(page.getByRole('button',{name:'标记本节已读'})).toBeEnabled();
+ await expect(page.getByText('本机记录已保留，等待云端同步。',{exact:true})).toBeVisible();
+ await page.evaluate(()=>{document.documentElement.dataset.holdCourseLoad='yes';});
+ state.userId='user-e2e';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.courseLoadHeld)).toBe('yes');
+ let reads=0;
+ page.on('request',request=>{if(request.method()==='GET'&&request.url().endsWith('/api/courses/STAT-201/progress'))reads++;});
+ await page.evaluate(()=>window.dispatchEvent(new Event('online')));
+ await page.waitForTimeout(250);
+ expect(reads,'cloud sync must wait while the returning account local snapshot is loading').toBe(0);
+ await page.evaluate(()=>window.dispatchEvent(new Event('course-load-release')));
+ await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
+});
+
 test('SYNC-01 separate browser stores merge different lessons and restore attempts',async({browser})=>{
  const a=await browser.newContext(),b=await browser.newContext();
  try {

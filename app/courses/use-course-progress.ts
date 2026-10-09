@@ -75,13 +75,16 @@ export function useCourseProgress(courseId:string) {
   const sessionEpoch=epoch;
   async function load() {
     const token=++epoch.current;owner.current=null;pendingReset.current=null;current.current=empty(courseId);
+    let authenticated=false;
     try {
       const user=await getCurrentUser();if(disposed||token!==epoch.current)return;
-      owner.current=user?.id??null;
       if(!user){setOwnerId(null);setSnapshot(empty(courseId));setStatus('anonymous');setInitialized(true);return;}
+      authenticated=true;
       const local=await loadLocalCourse(user.id,courseId);if(disposed||token!==epoch.current)return;
       const resetIntent=await loadCourseReset(user.id,courseId);if(disposed||token!==epoch.current)return;pendingReset.current=resetIntent;
-      current.current=local??empty(courseId);setOwnerId(user.id);setSnapshot(current.current);setStatus('local');
+      // Publish the owner only after restoring their state. Reconnects and
+      // effects from the previous render must not write an empty new snapshot.
+      current.current=local??empty(courseId);owner.current=user.id;setOwnerId(user.id);setSnapshot(current.current);setStatus('local');
       const response=await authFetch(endpoint);if(disposed||token!==epoch.current)return;
       const body=await response.json() as Envelope;
       if(disposed||token!==epoch.current)return;
@@ -100,7 +103,7 @@ export function useCourseProgress(courseId:string) {
        current.current=merged;setSnapshot(merged);
       });
       if(!disposed&&token===epoch.current){setStatus('synced');setInitialized(true);void flush();}
-    }catch{if(!disposed&&token===epoch.current){setStatus(owner.current?'read-error':'anonymous');setInitialized(true);}}
+    }catch{if(!disposed&&token===epoch.current){setStatus(authenticated?'read-error':'anonymous');setInitialized(true);}}
   }
   function changed(){epoch.current++;owner.current=null;setOwnerId(null);setSnapshot(empty(courseId));setStatus('loading');setInitialized(false);void load();}
   function online(){void flush();}
@@ -109,6 +112,7 @@ export function useCourseProgress(courseId:string) {
  },[courseId,endpoint,flush,serialize]);
  const record=useCallback(async(lessonId:string|null,attempt:Attempt|null,complete:boolean)=>{
   const user=owner.current,token=epoch.current;
+  if(!initialized||user!==ownerId)return;
   if(!user){setStatus('anonymous');return;}
   try {
    await serialize(async()=>{
@@ -121,7 +125,7 @@ export function useCourseProgress(courseId:string) {
    });
    void flush();
   }catch{if(owner.current===user&&epoch.current===token)setStatus('storage-error');}
- },[serialize,flush]);
+ },[ownerId,initialized,serialize,flush]);
  const reset=useCallback(async()=>{
   const user=owner.current,token=epoch.current;if(!user)return;
   const generation=current.current.generation;
