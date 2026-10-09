@@ -41,7 +41,15 @@ export function useCourseProgress(courseId:string) {
    const remote=body.snapshot;
    await serialize(async()=>{
     if(!isCurrent())return;
-    for(const op of await readCourseQueue(user,courseId))if(op.generation!==remote.generation)await removeCourseOperation(op.operationId);
+    const queued=await readCourseQueue(user,courseId);
+    if(!isCurrent())return;
+    for(const op of queued)if(op.generation!==remote.generation){
+     if(!isCurrent())return;
+     await removeCourseOperation(op.operationId);
+    }
+    // The queue read/removals can outlive an account switch. Never merge the
+    // new account's cleared ref into the old account's durable snapshot.
+    if(!isCurrent())return;
     const next=resetGeneration===null?mergeCourseSnapshot(current.current,remote):remote;
     await saveLocalCourse(user,next);
     if(isCurrent()){current.current=next;setSnapshot(next);}

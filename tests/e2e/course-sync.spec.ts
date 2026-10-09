@@ -1,6 +1,40 @@
 import {expect,test,type Request} from '@playwright/test';
 import {installApiMocks} from './helpers';
 
+test('SYNC-09 an old account queue read cannot overwrite its snapshot after an account switch',async({page})=>{
+ await page.addInitScript(()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete')!;
+  Object.defineProperty(IDBTransaction.prototype,'oncomplete',{
+   ...descriptor,
+   set(listener:((this:IDBTransaction,event:Event)=>unknown)|null){
+    descriptor.set!.call(this,listener?function(this:IDBTransaction,event:Event){
+     if(this.mode==='readonly'&&this.objectStoreNames.contains('queue')&&document.documentElement.dataset.holdCourseQueue==='yes'){
+      delete document.documentElement.dataset.holdCourseQueue;
+      document.documentElement.dataset.courseQueueHeld='yes';
+      window.addEventListener('course-queue-release',()=>listener.call(this,event),{once:true});
+     }else listener.call(this,event);
+    }:null);
+   },
+  });
+ });
+ const state=await installApiMocks(page,{signedIn:true,courseSyncStatus:503});
+ await page.goto('/courses/STAT-201/lesson-1');
+ await page.getByRole('button',{name:'标记本节已读'}).click();
+ await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'重试同步'})).toBeVisible();
+ await page.evaluate(()=>{document.documentElement.dataset.holdCourseQueue='yes';});
+ await page.getByRole('button',{name:'重试同步'}).click();
+ await expect.poll(()=>page.evaluate(()=>document.documentElement.dataset.courseQueueHeld)).toBe('yes');
+ state.userId='second-user';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+ await expect(page.getByRole('button',{name:'标记本节已读'})).toBeVisible();
+ await page.evaluate(()=>window.dispatchEvent(new Event('course-queue-release')));
+ await expect(page.getByRole('button',{name:'标记本节已读'})).toBeEnabled();
+ // IndexedDB transaction ordering makes the subsequent account load observe
+ // any stale write from the resumed queue read.
+ state.userId='user-e2e';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+ await expect(page.getByText('本节已读',{exact:true})).toBeVisible();
+});
+
 test('SYNC-08 reconnect waits for the returning account local snapshot before syncing',async({page})=>{
  await page.addInitScript(()=>{
   const descriptor=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete')!;
