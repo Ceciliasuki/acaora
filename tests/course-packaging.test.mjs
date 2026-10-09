@@ -44,6 +44,7 @@ test('segment rewrites cover only public static pages and reject traversal paths
  const rules=(await config.rewrites()).beforeFiles;
  assert.deepEqual(rules.map(r=>r.source),staticPrefetchRoutes);
  assert.ok(rules.every(r=>!r.source.startsWith('/api/')));
+ assert.equal(rules.some(r=>r.source==='/'),false,'cookie-dependent homepage must stay dynamic');
  const requestPattern=new RegExp('^(?:'+rules[0].has[1].value+')$');
  assert.ok(requestPattern.test('/papers/__PAGE__'));
  assert.ok(requestPattern.test('/_tree'));
