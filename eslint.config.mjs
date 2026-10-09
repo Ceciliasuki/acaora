@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     // Playwright reports contain bundled third-party JavaScript, not app source.
     "test-results/**",
     "playwright-report/**",
+    // Local diagnostic artifacts and downloaded adapters are not app source.
+    "outputs/**",
     "public/pdf.worker.min.js",
     "next-env.d.ts",
     /* Bundled third-party tooling shipped inside the vendored design skills
