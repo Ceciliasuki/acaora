@@ -14,7 +14,7 @@ test("production uses the standard Next.js pipeline", async () => {
   const packageJson = JSON.parse(await read("package.json"));
   const pnpmConfig = await read(".npmrc");
   assert.match(packageJson.scripts.dev, /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && next dev$/);
-  assert.match(packageJson.scripts.build, /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && next build$/);
+  assert.match(packageJson.scripts.build, /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && next build && node scripts\/prepare-static-prefetch\.mjs$/);
   assert.equal(packageJson.scripts.start, "next start");
   assert.match(packageJson.scripts["build:sites"], /generate-build-version\.mjs && node scripts\/prepare-pdf-worker\.mjs && vinext build$/);
   assert.equal(packageJson.dependencies["@swc/helpers"], "0.5.23");

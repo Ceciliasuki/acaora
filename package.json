@@ -10,7 +10,7 @@
     "build:metadata": "node scripts/generate-build-version.mjs",
     "build:assets": "node scripts/prepare-pdf-worker.mjs",
     "dev": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && next dev",
-    "build": "node scripts/check-course-content.mjs && node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && next build",
+    "build": "node scripts/check-course-content.mjs && node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && next build && node scripts/prepare-static-prefetch.mjs",
     "start": "next start",
     "dev:sites": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && vinext dev",
     "build:sites": "node scripts/generate-build-version.mjs && node scripts/prepare-pdf-worker.mjs && vinext build",
