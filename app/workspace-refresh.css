@@ -283,7 +283,7 @@ html:has(.settings-app.workspace-refresh) { scroll-behavior: smooth; }
   .workspace-refresh .plab-head-tools { width: 100%; }
   .workspace-refresh .translator-status { width: 100%; }
   .workspace-refresh.workspace-refresh .plab-shell .paper-workspace-nav { display: none; }
-  .workspace-refresh.workspace-refresh .plab-shell .paper-mobile-tabs { position: sticky; top: 64px; margin: 0 0 18px; padding: 5px; background: var(--surface); border-radius: 9px; }
+  .workspace-refresh.workspace-refresh .plab-shell .paper-mobile-tabs { position: sticky; top: 0; margin: 0 0 18px; padding: 5px 5px 5px 44px; background: var(--surface); border-radius: 9px; }
   .workspace-refresh .paper-mobile-tabs button { min-width: 0; min-height: 42px; padding: 8px 4px; font-size: 13px; border: 0; border-radius: 6px; }
   .workspace-refresh .paper-mobile-tabs button[aria-selected="true"] { background: var(--brand); color: var(--surface); }
   .workspace-refresh.workspace-refresh .plab-shell .plab-workbench { display: block; height: auto; border-radius: 10px; overflow: visible; }
