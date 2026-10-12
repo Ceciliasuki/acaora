@@ -14,9 +14,9 @@ const paper = {
     translation: '', note: '示例笔记：对照原文核查。', bookmarked: false, read: false})),
 };
 
-for (const width of [1440, 375]) {
+for (const width of [1440, 669, 375]) {
   test(`workspace redesign ${width}px preserves task access and captures proposed visuals`, async ({page}) => {
-    await page.setViewportSize({width, height: width === 375 ? 812 : 1000});
+    await page.setViewportSize({width, height: width === 375 ? 812 : width === 669 ? 751 : 1000});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await installApiMocks(page, {signedIn: true, projects: [project], cloudPapers: [paper]});
     const errors: string[] = [];

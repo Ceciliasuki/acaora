@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T09:11:03.739545+00:00",
+  "title": "Design System: Acaora 学曦",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 24px 70px rgba(10, 16, 32, .18)",
+        "purpose": "Real dialogs and overlays; current workspace fields carry no shadow."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Existing state-change easing."
+      },
+      {
+        "name": "selection-marker",
+        "value": "180ms",
+        "purpose": "Cancellable visual selection indicator; reduced motion displays the final state."
+      },
+      {
+        "name": "task-panel",
+        "value": "180ms",
+        "purpose": "Course and project field reveal."
+      },
+      {
+        "name": "paper-panel",
+        "value": "200ms",
+        "purpose": "Paper side-panel reveal."
+      },
+      {
+        "name": "dialog",
+        "value": "200ms",
+        "purpose": "Real dialog entry; not a route wait."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "workspace-compact",
+        "value": "1200px"
+      },
+      {
+        "name": "workspace-icon-rail",
+        "value": "1000px"
+      },
+      {
+        "name": "workspace-drawer",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Workspace primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing primary action, solid blue in the reconstructed workspaces.",
+      "html": "<button class=\"ds-primary\">保存</button>",
+      "css": ".ds-primary {min-height:44px;padding:0 16px;border:1px solid var(--brand);border-radius:var(--r-md);background:var(--brand);color:#fff;font:500 14px/1 var(--font-sans);cursor:pointer;transition:background-color 160ms ease;} .ds-primary:hover:not(:disabled) {background:var(--brand-hover);} .ds-primary:active:not(:disabled) {transform:scale(.985);} .ds-primary:focus-visible {outline:2px solid var(--brand);outline-offset:3px;} .ds-primary:disabled {opacity:.6;cursor:not-allowed;} @media(prefers-reduced-motion:reduce){.ds-primary{transition:none;}.ds-primary:active{transform:none;}}"
+    },
+    {
+      "name": "Workspace secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Inherited light secondary button; the stronger input-border token is not its current resting border.",
+      "html": "<button class=\"ds-secondary\">取消</button>",
+      "css": ".ds-secondary {min-height:44px;padding:0 16px;border:1px solid var(--border-strong);border-radius:var(--r-md);background:#fff;color:var(--text);font:500 14px/1 var(--font-sans);cursor:pointer;} .ds-secondary:hover:not(:disabled){border-color:var(--brand);color:var(--brand);} .ds-secondary:active:not(:disabled){transform:scale(.985);} .ds-secondary:focus-visible {outline:2px solid var(--brand);outline-offset:3px;} @media(prefers-reduced-motion:reduce){.ds-secondary:active{transform:none;}}"
+    },
+    {
+      "name": "Shared input",
+      "kind": "input",
+      "refersTo": "field-default",
+      "description": "Existing input primitive, label and error semantics remain owned by the product.",
+      "html": "<label for=\"ds-input\">项目名称</label><input id=\"ds-input\" class=\"ds-input\" value=\"研究项目\">",
+      "css": ".ds-input {display:block;width:100%;min-height:48px;padding:11px 13px;border:1px solid var(--border-control);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font:400 15px/1.5 var(--font-sans);} .ds-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-subtle);} .ds-input:focus-visible {outline:2px solid var(--brand);outline-offset:3px;} .ds-input[aria-invalid=\"true\"]{border-color:var(--danger);}"
+    },
+    {
+      "name": "Light workspace navigation",
+      "kind": "nav",
+      "description": "Real links carry aria-current; a blue marker supplements the tint.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"工作区\"><a href=\"/courses\" aria-current=\"page\">课程中心</a><a href=\"/papers\">论文研究</a></nav>",
+      "css": ".ds-nav {display:grid;gap:8px;} .ds-nav a {position:relative;display:flex;align-items:center;min-height:48px;padding:12px;border-radius:8px;color:#5e6877;text-decoration:none;font:400 14px var(--font-sans);} .ds-nav a:hover{background:var(--surface);} .ds-nav a[aria-current=\"page\"]{background:var(--brand-tint);color:var(--brand-on-subtle);} .ds-nav a[aria-current=\"page\"]::before{content:\"\";position:absolute;left:-14px;top:16px;bottom:16px;width:2px;background:var(--brand);} .ds-nav a:focus-visible {outline:2px solid var(--brand);outline-offset:3px;}"
+    },
+    {
+      "name": "Paper section selection",
+      "kind": "chip",
+      "description": "Existing reader section button, flat tint when selected.",
+      "html": "<button class=\"ds-section\" aria-pressed=\"true\">正文</button>",
+      "css": ".ds-section {min-height:32px;padding:6px 8px;border:0;border-radius:5px;background:transparent;color:#5e6877;font:400 12px var(--font-sans);cursor:pointer;} .ds-section[aria-pressed=\"true\"]{background:var(--brand-tint);color:var(--brand-on-subtle);} .ds-section:focus-visible {outline:2px solid var(--brand);outline-offset:3px;}"
+    },
+    {
+      "name": "Settings form sheet",
+      "kind": "custom",
+      "description": "Flat white field with 12px corners; structure is carried by the real form, not a shadow.",
+      "html": "<section class=\"ds-sheet\"><h2>账户</h2><p>账户设置</p></section>",
+      "css": ".ds-sheet {padding:32px;margin:0 0 20px;border:0;border-radius:12px;background:#fff;color:var(--text);font-family:var(--font-sans);} .ds-sheet h2{font-size:20px;font-weight:600;} .ds-sheet p{font-size:13px;line-height:1.75;} @media(max-width:760px){.ds-sheet{padding:24px 20px;}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Study Workbench",
+    "overview": "This is an extension of the incumbent world, not a new identity. `app/layout.tsx` imports `globals.css`, then the pre-existing `white-theme.css`, then scoped `workspace-refresh.css`. The later white-theme tokens are authoritative; the frontmatter records their effective values. A light curtain, transparent light navigation rail, blue actions and white task fields define the shipped world. The approved reconstruction covers app navigation, courses, papers, data, projects and settings. Original overview body, public landing and authentication remain outside this reconstruction; PRODUCT.md and product, data, accessibility and semantic contracts remain unchanged. See `docs/releases/2026-10-12-workspace-redesign.md` for scope and recoverable original code.",
+    "keyCharacteristics": [
+      "Light curtain and cool workspace; transparent light navigation rail and white task fields. Deep navy remains a token for genuinely inverse regions, not a navigation requirement.",
+      "One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).",
+      "Paper now uses the incumbent white `--surface-paper`; the earlier warm-paper material description is retained as superseded history.",
+      "System sans throughout; Georgia has been removed from page-level titles.",
+      "Page structure carries no elevation at all: full-bleed rule-separated bands hold the chrome, and the capped measure sits inside them.",
+      "A scholarly surface holds structure with rules, alignment and paper material instead: two clearly bounded premium surfaces is its guideline ceiling.",
+      "Borders plus the lightest shadow carry structure for controls and genuinely raised content; a page is never a stack of floating cards.",
+      "A numeric register reports the page's real state, and the dense tool surfaces are allowed to look like instruments rather than like marketing panels.",
+      "A surface never prints a number it has not read: unknown is `—`, never `0`.",
+      "Motion is restrained and always explains a state change.",
+      "Long-session legibility beats first-impression impact."
+    ],
+    "rules": [
+      {
+        "name": "The Uneven Density Rule",
+        "body": "Unified language, not unified structure; the approved task fields retain each tool’s density.",
+        "section": "layout"
+      },
+      {
+        "name": "The Unknown Is Not Zero Rule",
+        "body": "Unread values are unknown, never zero; failed, unread and empty states remain distinct.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do retain visible keyboard focus and all existing product, data and semantic contracts.",
+      "Do use PageHeader and each workspace’s actual task layout."
+    ],
+    "donts": [
+      "Don’t introduce route waits, continuous motion loops or scroll hijacking.",
+      "Don’t copy dashboard composition across tool workspaces.",
+      "Don’t canonize pre-existing out-of-scope visual drift."
+    ]
+  }
+}

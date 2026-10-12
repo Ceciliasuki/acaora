@@ -1,31 +1,32 @@
 ---
 name: Acaora 学曦
-description: Modern AI Workspace × Academic Productivity. Cool-neutral light workspace, one brand blue for product actions, one teal reserved for AI.
+description: The Study Workbench. Existing light workspace, blue product actions, task-specific white fields, and teal reserved for AI semantics.
 colors:
-  brand-blue: "#2f5ad4"
-  brand-blue-hover: "#2648ab"
-  brand-tint: "#eaefff"
-  brand-ink-on-tint: "#1f3f9e"
+  brand-blue: "#305fce"
+  brand-blue-hover: "#244dae"
+  brand-tint: "#edf2fc"
+  brand-ink-on-tint: "#284fa4"
   brand-on-dark: "#93b1fb"
   ai-ink: "#0b6f66"
   ai-tint: "#e4f6f3"
   ai-teal: "#14b8a6"
   ai-on-dark: "#5fe3cd"
   ai-ink-on-teal: "#0c2f2b"
-  app-background: "#f5f6f9"
+  app-background: "#ecf1f7"
   surface-white: "#ffffff"
-  surface-subtle: "#f8f9fb"
-  paper-surface: "#faf9f6"
+  surface-subtle: "#f6f7f9"
+  paper-surface: "#fff"
   deep-navy: "#121828"
   deep-navy-raised: "#1b2334"
-  ink-primary: "#131a2b"
-  ink-secondary: "#626978"
-  ink-faint: "#8a92a2"
+  ink-primary: "#242832"
+  ink-secondary: "#626975"
+  ink-faint: "#69717d"
+  workspace-muted: "#5e6877"
   ink-inverse: "#eef1f6"
   ink-inverse-secondary: "#96a0b3"
-  line-soft: "#e3e6ec"
-  line-strong: "#ced4e0"
-  line-control: "#7d8899"
+  line-soft: "#dce3ed"
+  line-strong: "#d5d8e0"
+  line-control: "#858d9a"
   line-inverse: "#2b3448"
   success: "#1a7a5a"
   success-tint: "#e6f5ef"
@@ -34,6 +35,16 @@ colors:
   danger: "#b3352b"
   danger-tint: "#fdecea"
 typography:
+  action-label:
+    fontSize: "14px"
+    fontWeight: 500
+    lineHeight: 1
+  workspace-heading:
+    fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "-0.025em"
   display:
     fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, Arial, sans-serif"
     fontSize: "30px"
@@ -72,6 +83,7 @@ typography:
     fontWeight: 500
     lineHeight: "24px"
 rounded:
+  workspace-sheet: "12px"
   paper-layer: "3px"
   xs: "6px"
   sm: "8px"
@@ -91,18 +103,16 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.brand-blue}"
-    textColor: "{colors.ink-inverse}"
+    textColor: "{colors.surface-white}"
+    typography: "{typography.action-label}"
     rounded: "{rounded.md}"
     padding: "0 16px"
     height: "44px"
-    fontSize: "14px"
-    fontWeight: 700
   button-primary-hover:
     backgroundColor: "{colors.brand-blue-hover}"
   button-secondary:
     backgroundColor: "{colors.surface-white}"
     textColor: "{colors.ink-primary}"
-    borderColor: "{colors.line-control}"
     rounded: "{rounded.md}"
     height: "44px"
   button-ghost:
@@ -117,18 +127,12 @@ components:
   field-default:
     backgroundColor: "{colors.surface-white}"
     textColor: "{colors.ink-primary}"
-    borderColor: "{colors.line-control}"
     rounded: "{rounded.sm}"
     padding: "11px 13px"
     height: "48px"
-    fontSize: "15px"
-  field-focus:
-    borderColor: "{colors.brand-blue}"
   card:
     backgroundColor: "{colors.surface-white}"
-    borderColor: "{colors.line-soft}"
     rounded: "{rounded.lg}"
-    padding: "24px"
   badge-info:
     backgroundColor: "{colors.brand-tint}"
     textColor: "{colors.brand-ink-on-tint}"
@@ -147,39 +151,31 @@ components:
     rounded: "{rounded.sm}"
   control-band:
     backgroundColor: "{colors.surface-white}"
-    borderColor: "{colors.line-soft}"
     textColor: "{colors.ink-primary}"
   segmented-filter-active:
     backgroundColor: "{colors.brand-tint}"
     textColor: "{colors.brand-ink-on-tint}"
     rounded: "{rounded.xs}"
   register-cell:
-    borderColor: "{colors.line-soft}"
     textColor: "{colors.ink-primary}"
-    fontSize: "28px"
   ruled-row:
-    borderColor: "{colors.line-soft}"
     textColor: "{colors.ink-primary}"
   status-bezel:
     backgroundColor: "{colors.surface-white}"
-    borderColor: "{colors.line-soft}"
     textColor: "{colors.ink-secondary}"
   state-note:
     textColor: "{colors.ink-secondary}"
   paper-field:
     backgroundColor: "{colors.paper-surface}"
-    borderColor: "{colors.line-soft}"
     rounded: "{rounded.sm}"
   paper-sheet:
     backgroundColor: "{colors.surface-white}"
-    borderColor: "{colors.line-strong}"
     rounded: "3px"
   contents-row:
     backgroundColor: "transparent"
     textColor: "{colors.ink-primary}"
     rounded: "0px"
   bibliographic-record:
-    borderColor: "{colors.line-soft}"
     textColor: "{colors.ink-primary}"
     rounded: "0px"
 ---
@@ -192,6 +188,10 @@ components:
 
 Approved as the internal design north star. It is taken from the product's own vocabulary (总览 / 论文工作台 / 数据工作台 / 项目工作台) rather than invented for this document. It exists to keep design decisions pointed at one idea, and it is not a marketing slogan, not user-facing copy, and not a line that appears in the interface.
 
+**Current source authority, reconciled 2026-10-12.** This is an extension of the incumbent world, not a new identity. `app/layout.tsx` imports `globals.css`, then the pre-existing `white-theme.css`, then scoped `workspace-refresh.css`. The later white-theme tokens are authoritative; the frontmatter records their effective values. A light curtain, transparent light navigation rail, blue actions and white task fields define the shipped world. The approved reconstruction covers app navigation, courses, papers, data, projects and settings. Original overview body, public landing and authentication remain outside this reconstruction; PRODUCT.md and product, data, accessibility and semantic contracts remain unchanged. See `docs/releases/2026-10-12-workspace-redesign.md` for scope and recoverable original code.
+
+**Preserved design history.** The following earlier dark-rail, working-band and warm-paper descriptions explain past decisions. Their palette, required shell geometry and page composition are superseded where they conflict with the current source authority and the scoped rules below. They are not instructions to restore navy navigation, a warm paper token or forced numeric registers. Historical palette: brand `#2f5ad4`, hover `#2648ab`, wash `#eaefff`, wash ink `#1f3f9e`, app field `#f5f6f9`, paper `#faf9f6`, ink `#131a2b`, secondary `#626978`. Their accessibility and data-truthfulness rationale still applies; old measured contrast ratios do not certify the current palette.
+
 Acaora is a workbench, not a stage. The surface is a cool, near-white working field with one saturated blue reserved for the actions a student actually takes, and a deep navy rail on the left that holds navigation and the paper library. Nothing on screen competes with the material being studied: the paper text, the table, the task list. The interface is designed to be looked at for two hours, not to be looked at once.
 
 The page language is the **working band** (仪表). A surface opens on a rule-separated control band, states its real numbers in a register, arranges its content in ruled rows and columns rather than in cards, and closes on a bezel of the facts that hold everywhere. The two dense tools, PaperLab and DataLab, keep their own three-column workbenches inside that frame: the frame is what unifies the product, not a shared card.
@@ -203,9 +203,9 @@ The product carries two visual registers that must never blur. Ordinary product 
 Density is deliberately uneven between surfaces. A reading tool and a statistics tool are allowed to be far denser than a settings page. What is unified is the design language: the same neutrals, the same type scale, the same radius and elevation logic, the same focus treatment. Page structure is not unified, and forcing it to be would damage the two tools that need density.
 
 **Key Characteristics:**
-- Light, cool, near-white workspace; deep navy for navigation and inverse panels.
+- Light curtain and cool workspace; transparent light navigation rail and white task fields. Deep navy remains a token for genuinely inverse regions, not a navigation requirement.
 - One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).
-- One warm neutral exists, and it is paper (`#faf9f6`, `--surface-paper`): publication objects, paper sheets and document edges only, never a page ground.
+- Paper now uses the incumbent white `--surface-paper`; the earlier warm-paper material description is retained as superseded history.
 - System sans throughout; Georgia has been removed from page-level titles.
 - Page structure carries no elevation at all: full-bleed rule-separated bands hold the chrome, and the capped measure sits inside them.
 - A scholarly surface holds structure with rules, alignment and paper material instead: two clearly bounded premium surfaces is its guideline ceiling.
@@ -220,11 +220,11 @@ Density is deliberately uneven between surfaces. A reading tool and a statistics
 A tight cool-neutral ramp with a single saturated blue and a single reserved teal; the palette is intentionally narrow so that the one accent that appears always means something.
 
 ### Primary
-- **Acaora Blue** (`#2f5ad4`, token `--brand`): the single product accent. Primary button fill, links, active and selected states, progress fill, current navigation marker, focus ring. Measures 5.94:1 as text on white. As a fill it carries the inverse label colour rather than pure white, and that actual pair (Ink Inverse on Acaora Blue) measures 5.25:1, still comfortably above the 4.5:1 body-text requirement.
-- **Acaora Blue Deep** (`#2648ab`, `--brand-hover`): hover and pressed state for blue-filled controls only.
-- **Acaora Blue Wash** (`#eaefff`, `--brand-subtle`): the selected background and the soft focus halo behind a focused control.
-- **Blue Ink on Wash** (`#1f3f9e`, `--brand-on-subtle`): text placed on the wash. 8.08:1.
-- **Blue on Deep Navy** (`#93b1fb`, `--brand-on-dark`): the brand accent as it appears inside the navy rail. Required because the main blue measures only 2.98:1 against deep navy and cannot be used there.
+- **Acaora Blue** (`#305fce`, token `--brand`): the single product accent. Primary button fill, links, active and selected states, progress fill, current navigation marker, focus ring. Measures 5.75:1 on white. Scoped primary actions carry the white label from white-theme.css, also 5.75:1.
+- **Acaora Blue Deep** (`#244dae`, `--brand-hover`): hover and pressed state for blue-filled controls only.
+- **Acaora Blue Wash** (`#edf2fc`, `--brand-subtle`): the selected background and the soft focus halo behind a focused control.
+- **Blue Ink on Wash** (`#284fa4`, `--brand-on-subtle`): text placed on the wash. 6.82:1.
+- **Blue on Deep Navy** (`#93b1fb`, `--brand-on-dark`): the retained brand accent for an actual inverse region. Retained for actual inverse regions; it is not the active colour of the light navigation rail.
 
 ### Secondary
 - **AI Ink** (`#0b6f66`, `--ai`): the AI-semantic ink colour for text and icons in AI regions on light grounds. 6.03:1 on white.
@@ -234,18 +234,18 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 - **AI Ink on Teal** (`#0c2f2b`, `--ai-ink-on-vivid`): the label colour on a solid teal fill. 5.79:1.
 
 ### Neutral
-- **App Field** (`#f5f6f9`, `--bg-app`): the page background for every workspace surface, and the mobile browser theme colour. Not pure white, so white surfaces can sit on it.
+- **App Field** (`#ecf1f7`, `--bg-app`): the token behind the existing light curtain and workspace fields. White task surfaces sit within that light world; this reconstruction does not replace the curtain asset.
 - **Surface White** (`#ffffff`, `--surface`): cards, panels, inputs, dialogs.
-- **Surface Subtle** (`#f8f9fb`, `--surface-2`): inset areas, table headers, secondary panels, segmented control troughs.
-- **Paper Surface** (`#faf9f6`, `--surface-paper`): the system's one warm neutral, and the material of a publication object. Allowed for publication objects, paper sheets, document edges and academic archival surfaces. Forbidden as a page background, as a generic card fill, in warning states, and on ordinary form controls. Deeper paper steps are mixed from this token with the ink ramp through `color-mix()`; no second warm palette and no additional warm hex exists.
-- **Deep Navy** (`#121828`, `--surface-inverse`): the left rail, the paper library, the AI studio panel, and any inverse panel. One value, not several near-blacks.
+- **Surface Subtle** (`#f6f7f9`, `--surface-2`): inset areas, table headers, secondary panels, segmented control troughs.
+- **Paper Surface** (`#fff`, `--surface-paper`): the current white-theme override for publication material and paper sheets. The warm-paper palette and its one-warm-neutral restriction below are superseded historical rationale, not a current requirement to reintroduce a warm colour.
+- **Deep Navy** (`#121828`, `--surface-inverse`): retained inverse-region token. The current rail and paper library are light; no general navigation or library requirement follows from this token. One value, not several near-blacks.
 - **Deep Navy Raised** (`#1b2334`, `--surface-inverse-2`): selected rows and secondary blocks inside an inverse surface.
-- **Ink Primary** (`#131a2b`, `--text`): body and headings. 17.35:1 on white.
-- **Ink Secondary** (`#626978`, `--text-2`): metadata, captions, secondary prose. 5.51:1 on white, 5.10:1 on the app field.
-- **Ink Faint** (`#8a92a2`, `--text-3`): large or decorative text only, 3.13:1, never body copy.
+- **Ink Primary** (`#242832`, `--text`): body and headings. 14.74:1 on white.
+- **Ink Secondary** (`#626975`, `--text-2`): metadata, captions, secondary prose. 5.53:1 on white, 4.87:1 on the app field.
+- **Ink Faint** (`#69717d`, `--text-3`): the current tertiary ink, 4.93:1 on white; hierarchy and contrast must still be checked on its actual ground.
 - **Ink Inverse** (`#eef1f6`, `--text-inverse`) and **Ink Inverse Secondary** (`#96a0b3`, `--text-inverse-2`): text on deep navy, at 15.63:1 and 6.72:1.
-- **Line Soft** (`#e3e6ec`, `--border`) and **Line Strong** (`#ced4e0`, `--border-strong`): decorative card and divider borders, and their hover/active step.
-- **Line Control** (`#7d8899`, `--border-control`): the border of an actual control (input, select, textarea, secondary button). Deliberately darker than Line Soft because a control boundary is a non-text UI element and must reach 3:1: it measures 3.59:1 on white and 3.32:1 on the app field.
+- **Line Soft** (`#dce3ed`, `--border`) and **Line Strong** (`#d5d8e0`, `--border-strong`): decorative card and divider borders, and their hover/active step.
+- **Line Control** (`#858d9a`, `--border-control`): the border of an actual control (input, select, textarea, secondary button). Deliberately darker than Line Soft because a control boundary is a non-text UI element and must reach 3:1: the current value measures 3.35:1 on white and 2.95:1 directly on the app field. The latter is pre-existing drift below the 3:1 control-boundary contract; it is not canonized as an acceptable pair and must not be inherited for a new control placed directly on that ground.
 - **Line Inverse** (`#2b3448`, `--border-inverse`): structure inside a navy panel.
 - **Success** (`#1a7a5a`), **Warning** (`#7a4e0f`), **Danger** (`#b3352b`) with washes (`#e6f5ef`, `#fdf4e4`, `#fdecea`): sync-complete, waiting/example-data, and delete/error states. There is deliberately no separate information colour; information reuses brand blue.
 
@@ -254,13 +254,15 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 
 **The AI Teal Containment Rule.** Teal appears only where the surface is about AI: the AI studio, AI-generated results, AI processing state. It never fills a normal business action, a course card, a project control, or a chart series. A scholarly surface, its paper material and its research records are not AI-semantic regions either: none of them may borrow teal to look technical, scientific or modern.
 
-**The Paper Containment Rule.** Paper Surface is a material, not a theme. It belongs to the publication object and the sheets inside it; it never becomes the page ground, never fills a generic card, never marks a warning, and never dresses an ordinary control. A surface that turns warm overall has misused the token, and any deeper paper tone is derived from it rather than added to the palette.
+**The Paper Containment Rule (historical warm-material rationale).** Paper Surface is a material, not a theme. It belongs to the publication object and the sheets inside it; it never becomes the page ground, never fills a generic card, never marks a warning, and never dresses an ordinary control. A surface that turns warm overall has misused the token, and any deeper paper tone is derived from it rather than added to the palette.
 
-**The Two Blues on Navy Rule.** Against deep navy, never use the main brand blue for text or marks (2.98:1). Use Blue on Deep Navy, or AI on Deep Navy inside AI regions.
+**The Two Blues on Navy Rule.** Against deep navy, use the light inverse accent for text; current main blue is 3.08:1 and does not meet the 4.5:1 body-text contract there. Use Blue on Deep Navy, or AI on Deep Navy inside AI regions.
 
 **The Light-Only Rule.** The product is light-mode only; there is no dark theme and none is planned. `color-scheme: light` is declared so browser chrome, form controls, and scrollbars do not invert on their own.
 
 ## Typography
+
+**Current workspace heading.** Approved reconstructed pages use a Chinese-compatible system sans heading at 600, 30px/1.3, -0.025em, stepping to 27px at 760px and below. Supporting header copy is 14px/1.7. The source scale below remains available for other roles; it does not force the former 18px working-band title onto these pages.
 
 **Display Font:** Segoe UI (with PingFang SC, Microsoft YaHei, Arial, sans-serif fallbacks)
 **Body Font:** the same system sans stack
@@ -302,6 +304,22 @@ Known migration gaps, stated rather than hidden so this record does not read as 
 
 ## Layout
 
+### Current approved workspace layout (2026-10-12)
+
+The reconstructed workspaces use a shared PageHeader with title, supporting copy and real actions, followed by the topology each task needs. The shell is capped at 1640px, has 24px outer margins and a 208px light rail with a 28px gap. Main content uses 16px horizontal padding. At 1200px the rail becomes 176px and the gap 18px; at 1000px through 761px it is a 72px icon rail; at 760px and below it is a 264px off-canvas drawer and content reserves 72px above the header. This is the scoped shell, not a global restyling of overview/public/auth bodies.
+
+- Courses: a 224px course index and a white syllabus/reading sheet; the index becomes a two-column selection grid at narrow widths.
+- Papers: mode navigation over the original/notes workbench; desktop keeps optional library and note rails, bounded reader height and readable prose (16px/1.9, up to 86ch). Mobile switches panels and lets the reading region flow in the document instead of stacking three constrained desktop columns.
+- Data: import and sample inspection precede one analysis field; wide tables retain horizontal scrolling. No conversion of data tables into decorative cards.
+- Projects: a 248px project index and task/editor field, narrowing to 210px at 1200px; at mobile width the project list scrolls horizontally above the selected project's actual tasks and notes.
+- Settings: a 156px section index beside separate white form sheets (132px at 1200px); mobile turns the index into horizontal links above the forms. No dashboard register is required here.
+
+The shared 4/8/12/16/24/32/48/64 spacing scale remains available. Scoped 28px gaps, 20px mobile sheet padding and 12px sheet radii are repeated source-derived extensions rather than reasons to migrate the styling architecture. Task fields remain distinct; no dashboard layout is cloned across the five workspaces.
+
+### Historical working-band layout (superseded on reconstructed pages)
+
+The following shell widths, required band sequence and migration status are preserved as past design rationale. Current scoped layout above takes precedence; the old tool-width and full-bleed rules are not instructions to undo the approved reconstruction.
+
 The shell is a two-column workspace: a fixed 248px navigation rail and a fluid working column. Below 1100px the rail collapses to an 88px icon rail, and below 760px it becomes an off-canvas drawer with a fixed trigger. The rail is the only persistent navigation; there is no top navigation bar in the workspace.
 
 Content width is capped per surface rather than globally: 1240px for overview-style pages (dashboard, courses, projects, settings) and 1680px for the two tool surfaces, PaperLab and DataLab, which must be allowed to use the full width of a laptop screen. The cap applies to the measure inside the bands; the band chrome itself always spans the full content column. Reading columns inside PaperLab are capped near 72 characters per column so bilingual text does not stretch to unreadable line lengths.
@@ -325,15 +343,21 @@ Responsive behaviour: desktop is the primary environment and must not be comprom
 
 ### Migration status
 
+App navigation and the five workspaces now use the approved light task layout above. The original overview body, public landing and authentication are outside this reconstruction. Their older design history and pre-existing visual/typographic gaps remain; this documentation pass neither re-audits nor repairs those surfaces. Original code remains recoverable through the tag and external bundle/source ZIP described in the release note. No production merge or release is implied by this design record.
+
+#### Earlier migration assessment (historical, not refreshed in this phase)
+
 The token layer is product-wide. The page language is not yet unified: the dashboard is now built in the Scholarly Luxe workspace language and is that language's reference implementation, while the course centre, the project workspace, settings, DataLab and PaperLab still use the working bands described above. Both are approved, and both are recorded here so neither reads as a leftover. The shell, the authentication pages and the public landing page are on neither list and still read as an earlier era; the App Shell review is deferred deliberately (see Scholarly Luxe Workspace below). The landing page additionally ships three things this record's own Don'ts forbid — a mock product preview standing in for a screenshot, a decorative command-key control that performs nothing, and a fabricated progress figure with a sparkline — and its hero is to be replaced by a real product screenshot once the owner selects one. These gaps are recorded so they are not mistaken for decisions.
 
 ## Elevation & Depth
+
+**Current scoped application.** Reconstructed task fields are white and flat: separation uses tone, spacing and rules, with no floating-card shadow on the main course sheet, paper workbench, analysis field or project workbench. The light rail is transparent and has no shell shadow. Dialogs retain real overlay elevation. The original border-led rationale and publication-object rules below remain historical guidance where the object exists; they do not require adding shadows to the reconstructed fields.
 
 The system is hybrid but border-led: structure comes from a 1px border, and shadow is a supporting cue rather than the primary signal. Surfaces are not floating cards. Panels sit flat at rest with a border and the lightest shadow; shadow increases only with real elevation, so the appearance of depth always corresponds to something actually being above the page. All three shadow values are tinted cool (towards the navy ink) rather than neutral black. The violet-tinted shadow family inherited from an earlier layer is retired and must not return.
 
 ### Shadow Vocabulary
 - **Resting structure** (`--shadow-1`, `0 1px 2px rgba(19, 26, 43, .05)`): controls, cards, and panels at rest, always alongside a border.
-- **Raised** (`--shadow-2`, `0 8px 24px rgba(19, 26, 43, .06)`): genuinely floating elements such as menus, popovers, and a selected card.
+- **Raised** (`--shadow-2`, `0 2px 6px rgb(24 32 48 / 3%), 0 16px 50px rgb(24 32 48 / 5%)`): genuinely floating elements such as menus, popovers, and a selected card.
 - **Overlay** (`--shadow-3`, `0 24px 70px rgba(10, 16, 32, .18)`): dialogs, drawers, and toasts only.
 
 ### Named Rules
@@ -346,6 +370,8 @@ The system is hybrid but border-led: structure comes from a 1px border, and shad
 **The Two Shadow Surfaces Rule.** A scholarly surface may raise at most two things, and they are always parts of one publication object: the paper field and the top sheet, both at the resting `--shadow-1`. Everything else on the surface is separated by tone, rules and spacing. This is a budget, not a licence: a third shadowed surface on a scholarly page is a defect, and glow or glass is never a substitute for depth.
 
 ## Shapes
+
+**Current scoped sheets.** Main white task fields use 12px corners; PaperLab becomes 10px on mobile. The rail and structural regions stay square/unbounded; local reader controls use 6–8px corners. The earlier generic 14/18px container defaults and Scholarly Radius Rule below do not override these approved task-specific sheets.
 
 Form language is soft-rectangular and consistent. Controls use the tighter radii and containers the softer ones: 6px for small marks, 8px for inputs and list rows, 10px for standard buttons and segmented controls, 14px for cards and panels, 18px for large workbench containers and dialogs. The rail and the workbench are the only large-radius containers; nested elements inside a panel step down rather than repeating the container radius.
 
@@ -365,8 +391,10 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 ## Components
 
 ### Buttons
+
+Scoped workspace primary actions use the solid current brand token and white text, without the pre-existing button shimmer, hover lift or added hover shadow. Press is a short `scale(.985)` feedback only; reduced-motion mode removes it.
 - **Shape:** 10px radius (`--r-md`), 44px minimum height, 16px horizontal padding.
-- **Primary:** Acaora Blue fill with Ink Inverse label (measured 5.25:1). Avoid placing two competing primary actions in the same action group or local context. A larger workspace may legitimately carry different primary actions in separate functional regions, and that is not a violation.
+- **Primary:** Acaora Blue fill with white label on reconstructed primary actions (measured 5.75:1). Avoid placing two competing primary actions in the same action group or local context. A larger workspace may legitimately carry different primary actions in separate functional regions, and that is not a violation.
 - **Secondary:** Surface White fill, Line Control border, Ink Primary label. The standard button in a workspace toolbar.
 - **Ghost:** no fill, Ink Secondary label, used for low-emphasis and icon-only actions.
 - **Danger:** Danger red fill, reserved for destructive confirmation.
@@ -378,13 +406,15 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **State:** selected state is always a fill change plus a text/weight change, never colour alone.
 
 ### Cards / Containers
+
+**Scope note:** reconstructed task fields use the flat 12px white sheet described in Shapes; the retained generic container defaults below are not their layout prescription. Deep Navy is no longer a rail or paper-library ground.
 - **Corner Style:** 14px (`--r-lg`) for cards and panels, 18px (`--r-xl`) for workbench containers and dialogs.
-- **Background:** Surface White on the app field; Surface Subtle for inset rows and table headers; Deep Navy for the rail, paper library, and AI studio.
+- **Background:** Surface White on the app field; Surface Subtle for inset rows and table headers. The former Deep Navy rail/library prescription is superseded; retained inverse tokens apply only where an actual inverse region exists.
 - **Shadow Strategy:** resting structure plus border (see Elevation).
 - **Border:** Line Soft, tested against a cool background. Border colour is always cool-tinted; a warm or pure-black border is not part of this system.
 - **Internal Padding:** 24px as the default panel padding, 16px for dense data panels. (The card primitive currently ships 22px; that value is neither on the spacing scale nor part of this record, and must be aligned to 24px during the phase that next touches it.)
 
-### Working bands
+### Working bands (historical, superseded on reconstructed pages)
 - **Control band:** Surface White ground closed by a 1px Line Soft border, 56px minimum height, its contents capped to the surface's measure. The page title, the surface's single filter and its single primary action live here. Nothing sits above it.
 - **Segmented filter:** a Surface Subtle trough at the 6px radius; the pressed segment is Brand Wash with Blue Ink on Wash and a semibold label. A filter that narrows a list is a labelled group of `aria-pressed` buttons, not a tablist — it switches no panel, and calling it one misleads assistive technology.
 - **Numeric register:** four or five equal cells divided by 1px vertical rules, each a 12px Line Soft label, a 28px tabular value and a one-line caption. A cell that reports a fact rather than a number drops to the card step (15px), so a phrase never has to pretend to be a metric. Every value is a real array length, a real stored status, or an honest absence.
@@ -394,14 +424,27 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **State note:** the empty and guest message lives in the content region as a heading, one paragraph, and buttons where the surface has real actions. It is never a dashed dropzone, and it never states a fact that a failed request did not establish — an unread list is unknown, not zero.
 
 ### Inputs / Fields
-- **Style:** Surface White fill, Line Control border at 3.59:1, 8px radius, 48px minimum height, 15px label-sized text inside.
+- **Style:** Surface White fill, Line Control border at 3.35:1 against white, 8px radius, 48px minimum height, 15px label-sized text inside.
 - **Focus:** border turns brand blue, a soft brand wash halo appears, and a 2px brand ring is drawn just outside the control. Because a shared control's own focus treatment must survive page-scoped styling, the primitive declares this ring itself rather than relying on a global outline rule.
 - **Error / Disabled:** invalid fields keep the Danger border and pair it with inline error text below the field; the error state is never signalled by colour alone. Disabled fields use a muted surface and reduced text emphasis. Labels sit above the field, and helper or error text sits below it; a placeholder is never used as the label.
 
 ### Navigation
+- **Style:** light transparent rail beside the task field; six existing destinations and the account block retain their real routes and semantics. Scoped items are at least 48px high, 14px labels and 18px Lucide icons. Rail widths and drawer behaviour are in Layout.
+- **States:** muted inactive labels; selected items use brand tint, brand ink and a short 2px blue marker. Hover uses the white surface. The current route retains `aria-current="page"`; state is not colour-only.
+- **Mobile treatment:** off-canvas light drawer with fixed trigger, backdrop, focus management and released body scroll lock on close.
+- **Mode selection:** MotionNavigation is a purely visual 2px marker under existing buttons. Buttons own labels, state and focus; the marker is `aria-hidden`, never a second interactive control. Without the script the selected button keeps its static marker.
+
+#### Historical navigation specification (superseded)
+
+The original rail specification is retained below for traceability; current Navigation and Layout above take precedence.
+
 - **Style:** the left rail is a single 248px deep-navy column with a 44px brand mark, six destinations (总览, 课程中心, 论文研究, 数据分析, 项目空间, 设置与隐私), and an account block pinned to the bottom. Items are 48px tall with a 20px icon and a 14px label.
 - **States:** inactive text is Ink Inverse Secondary; hover and current use the raised navy with Ink Inverse text; the current item is additionally marked by a brand-on-navy icon. The current item is exposed through `aria-current="page"`, so the state is not colour-only.
 - **Mobile treatment:** off-canvas drawer with a fixed trigger, a backdrop, and a body scroll lock that is released on close.
+
+### Purposeful workspace motion
+
+Selection feedback uses 180ms `cubic-bezier(.16,1,.3,1)`; quick changes cancel the old marker animation and ResizeObserver keeps it aligned. Reduced-motion preferences, including changes during the session, display the end state directly. Actual panel reveals use 180ms for the course/project field and 200ms for paper side panels; dialog entry uses 200ms. These are short state explanations, not route-delay choreography. No route waits, repeated prose entrances, continuous loops, scroll hijacking or new curtain animation is part of this reconstruction. Existing global curtain implementation remains outside this scoped motion contract.
 
 ### Icons
 - **Library:** Lucide, one family across the whole product. Do not migrate to another icon library, and do not mix families on one surface.
@@ -415,6 +458,8 @@ Borders are 1px and single-sided where possible. Table rows use a bottom border 
 - **Behaviour contract:** any modal must contain focus while it is open, place initial focus somewhere sensible, close on Escape where that is appropriate to the context, restore focus to the control that opened it on close, and expose a correct accessible name and description. Opening or closing must never silently change important state. Status and error regions announce themselves to assistive technology rather than repainting silently. What is fixed here is the contract, not a particular element or API: a native modal dialog satisfies it today, but this document does not lock the implementation.
 
 ## Scholarly Luxe Workspace
+
+**History status:** the language and data-truthfulness principles remain available; the warm-paper palette and dashboard-specific measured geometry in this preserved section describe its earlier reference implementation. They do not override the current white-theme tokens or prescribe reconstructed task layouts. The original overview body is excluded from this phase.
 
 Approved as the workspace language for the product's research surfaces, and implemented first on the dashboard. What carries across surfaces is the language, not the dashboard's layout.
 
@@ -463,20 +508,23 @@ The dashboard is the reference implementation of this language; it is not the la
 
 What unifies the product is the language — typography roles, rules, paper material, metadata discipline and truthfulness — not a cloned layout.
 
-### Deferred: App Shell and Sidebar
+### Historical deferral: App Shell and Sidebar
+
+**SUPERSEDED 2026-10-12:** the reconstructed shell now uses the light rail described in Layout and Navigation. The following original deferral is retained solely as past design rationale.
+
 The navigation rail and app shell still speak the earlier dark-navigation language, and the gap between that language and a Scholarly Luxe body is visible on the same screen. Status: **DEFERRED DESIGN REVIEW**. Once the core workspaces have adopted this language, the shell is reviewed on its own for rail proportion, typography, active state, material, and desktop/mobile navigation. No future shell styling is defined here, and the shell is not to be restyled as a side effect of a page phase.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** apply the locked system as already approved. Brand blue `#2f5ad4`, AI teal family, deep-navy rail, cool neutrals, system sans, and the shared focus contract are settled decisions, not open questions.
+- **Do** apply the incumbent light system and its approved workspace extension: current blue `#305fce`, light rail, white task fields, system sans and shared focus contract. Retained AI semantic and data constraints still apply; historical dark-rail values do not override the source authority.
 - **Do** keep one accent. If a surface seems to need a second colour for emphasis, the hierarchy is wrong, not the palette.
 - **Do** gate every control boundary at 3:1 and every body text pair at 4.5:1, and record the measured ratio when adding a pair.
 - **Do** keep keyboard focus visible on every interactive element, and keep the shared primitive focus treatment working even where page-scoped styles are more specific.
 - **Do** keep `aria-current`, `aria-expanded`, `aria-invalid`, `aria-describedby`, and `aria-live` intact through any visual change, and keep the modal accessibility behaviour intact: focus containment while open, a sensible initial focus, Escape to close where appropriate, focus restoration on close, and a correct accessible name and description.
 - **Do** let PaperLab stay a dense three-column research workspace and DataLab stay a dense analytical one. Preserve their structure; the visual language is what unifies them.
-- **Do** build a workspace page from the working bands, with full-bleed chrome and the capped measure inside it.
-- **Do** build a research surface in the Scholarly Luxe language instead where the content is a study rather than a console: a running head, a publication object in paper, numbered sections, an index and a bibliographic record list, held by rules and typography rather than by containers. The two page languages are both approved; pick the one the surface's work calls for, and do not blend them into a third.
+- **Do** build a reconstructed workspace from PageHeader and its actual task layout. Working bands remain historical patterns; do not force their numeric register or status bezel onto settings or another task with no such content.
+- **Do** build a research surface in the Scholarly Luxe language instead where the content is a study rather than a console: the publication hierarchy, rules, paper material and metadata its content actually calls for, held by rules and typography rather than by containers. The two page languages are both approved; pick the one the surface's work calls for, and do not blend them into a third.
 - **Do** keep the contents numbering and the visual order in step, including when a narrow layout promotes the product's own entries above archive metadata.
 - **Do** keep every register cell, strip cell and count to something the product actually stores, and let a cell report a fact where no number exists.
 - **Do** print `—` for a value the surface has not read, and reserve `0` for a count confirmed to be zero; an unread list, a failed request and an empty account are three different states and must not render as one.
@@ -505,7 +553,7 @@ The navigation rail and app shell still speak the earlier dark-navigation langua
 - **Don't** fabricate metrics, testimonials, customer logos, benchmarks, or product screenshots. The repository has no such evidence; see PRODUCT.md.
 - **Don't** make any AI surface dominate the ordinary study workflow, and don't let AI output look like original paper text or like the student's own notes.
 - **Don't** migrate to Tailwind utilities or introduce a component library during this redesign. The project uses handwritten CSS with semantic tokens, and a styling-architecture migration is a separate engineering task.
-- **Don't** add a hex value that is not in this document. A new colour requires an explicit decision first.
+- **Don't** introduce a new palette decision without approval. Source-derived current tokens are normative; the historical values and known out-of-scope CSS one-offs retained here are not a licence to reuse them.
 - **Don't** create a primitive for a single use. Shared primitives are for genuinely cross-surface patterns only.
 - **Don't** update visual baselines to make a test pass. Baselines change only after a human has reviewed the diff and approved the new design.
 - **Don't** allow the Impeccable launcher or its hook to execute a downloaded binary in this project, and don't commit platform executables.

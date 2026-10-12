@@ -150,6 +150,13 @@ test('SYNC-07 durable navigation uses sequence rather than UUID order',async({pa
  const state=await installApiMocks(page,{signedIn:true,courseSyncStatus:503});await page.goto('/courses/STAT-201/lesson-1');
  await expect(page.getByText('本机记录已保留，等待云端同步。',{exact:true})).toBeVisible();await page.goto('/courses/STAT-201/lesson-2');
  await expect(page.getByText('本机记录已保留，等待云端同步。',{exact:true})).toBeVisible();
- state.courseSyncStatus=200;await page.getByRole('button',{name:'重试同步'}).click();
+ // Restore the simulated service on the real click. Restoring it beforehand
+ // lets an automatic upload remove the retry button during actionability checks.
+ await page.exposeFunction('restoreCourseSyncForExplicitRetry',()=>{state.courseSyncStatus=200;});
+ const retry=page.getByRole('button',{name:'重试同步'});
+ await retry.evaluate(button=>button.addEventListener('click',()=>{
+   void (window as unknown as {restoreCourseSyncForExplicitRetry:()=>Promise<void>}).restoreCourseSyncForExplicitRetry();
+ },{once:true}));
+ await retry.click();
  await expect(page.getByText('学习记录已同步',{exact:true})).toBeVisible();expect(state.courseRecords[JSON.stringify([state.userId,'STAT-201'])].lastLessonId).toBe('lesson-2');
 });
