@@ -29,7 +29,9 @@ for (const width of [1440, 669, 375]) {
       if (path === 'projects') await expect(page.getByRole('heading', {name: project.title, exact: true})).toBeVisible();
       if (path === 'settings') await expect(page.locator('#settings-name')).toHaveValue('测试同学');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
-      await page.screenshot({path: `outputs/workspace-motion-v2-2026-10-12/${path}-${width}.png`, fullPage: path !== 'papers', animations: 'disabled'});
+      // Chrome's stitched WebGL capture can corrupt the desktop header. Use
+      // the actual viewport for the reader and the wide project workspace.
+      await page.screenshot({path: `outputs/workspace-motion-v2-2026-10-12/${path}-${width}.png`, fullPage: path !== 'papers' && !(path === 'projects' && width === 1440), animations: 'disabled'});
     }
     expect(errors).toEqual([]);
   });
