@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { getSiteUrl } from "./lib/site-url";
 import "./globals.css";
 import "./white-theme.css";
+import "./workspace-refresh.css";
 import "katex/dist/katex.min.css";
 import LightCurtain from "./components/light-curtain";
 

@@ -3,7 +3,7 @@
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { ArrowUpFromLine, HardDrive, RotateCcw } from "lucide-react";
 import AppSidebar from "../components/app-sidebar";
-import { Badge } from "../components/ui";
+import { Badge, PageHeader } from "../components/ui";
 import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
 import {
   categoricalColumns,
@@ -103,18 +103,11 @@ export default function Home() {
   }
 
   return (
-    <main className="student-app data-app">
+    <main className="student-app data-app workspace-refresh">
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
       <section className="workspace data-main data-shell" id="workspace">
-        <div className="page-bar">
-          <div className="page-bar-inner">
-            <h1>数据分析</h1>
-            {isSample && <Badge tone="warning">示例数据</Badge>}
-            <span className="page-bar-spacer" />
-            <button className="sample-button" type="button" onClick={restoreSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button>
-          </div>
-        </div>
+        <PageHeader className="workspace-header" title="数据分析" description="在当前设备读取文件，从样本检查开始分析。" actions={<>{isSample && <Badge tone="warning">示例数据</Badge>}<button className="sample-button" type="button" onClick={restoreSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button></>} />
 
         <div className="page-body page-body--wide">
 

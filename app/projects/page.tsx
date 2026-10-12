@@ -7,7 +7,7 @@ import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Pl
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch, getCurrentUser } from "../lib/auth-client";
-import { Button, Dialog, ErrorState } from "../components/ui";
+import { Button, Dialog, ErrorState, PageHeader } from "../components/ui";
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -214,18 +214,11 @@ export default function ProjectsPage() {
   const initials = viewer?.email?.slice(0, 2).toUpperCase() ?? "GU";
 
   return (
-    <main className="student-app project-app">
+    <main className="student-app project-app workspace-refresh">
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
-        <div className="page-bar">
-          <div className="page-bar-inner">
-            <h1>项目空间</h1>
-            <span className="page-bar-spacer" />
-
-            <button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}><Plus size={17} aria-hidden="true" />新建项目</button>
-          </div>
-        </div>
+        <PageHeader className="workspace-header" title="项目空间" description="管理目标、任务和研究笔记。" actions={<button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}><Plus size={17} aria-hidden="true" />新建项目</button>} />
 
         <div className="page-body">
         {message && <div className="project-message" role="status">{message}</div>}
@@ -251,7 +244,7 @@ export default function ProjectsPage() {
 
                 </aside>
 
-                {selected && <article className="project-detail">
+                {selected && <article key={selected.id} className="project-detail">
                   <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => setDeleteOpen(true)} disabled={saving}>删除</button></div></header>
 
                   <p className="project-summary"><span>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>

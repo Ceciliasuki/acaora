@@ -3,6 +3,8 @@
 import styles from "../focused-workspaces.module.css";
 
 import AppSidebar from "../components/app-sidebar";
+import {PageHeader} from "../components/ui";
+import MotionNavigation from "../components/motion-navigation";
 
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
@@ -579,7 +581,7 @@ export default function PaperLab() {
   }
 
   return (
-    <main className="student-app paper-layout">
+    <main className="student-app paper-layout workspace-refresh">
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
       <section className={`student-main plab-shell ${styles.focused}`}>
       {/* Running head: the surface's own line, then only the tools that act on the
@@ -587,11 +589,7 @@ export default function PaperLab() {
           every value in it is already printed where it belongs: the library count in
           the index, the paragraph position and reading progress in the reader, the
           sync state beside the library, and the privacy facts in the colophon. */}
-      <header className="plab-head">
-        <div className="plab-head-id">
-          <h1>论文研究</h1>
-        </div>
-        <div className="plab-head-tools">
+      <PageHeader className="workspace-header plab-head" title="论文研究" description="阅读原文、整理笔记，核对引用对应的段落。" actions={<div className="plab-head-tools">
           <div className={`translator-status state-${translationState}`}>
             <i />
             <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
@@ -601,16 +599,15 @@ export default function PaperLab() {
             {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
           </button>
           <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" disabled={!hydrated || extracting} onChange={handlePdf} />
-        </div>
-      </header>
+        </div>} />
 
       {message && <div className="paper-message" role="status">{message}</div>}
 
-      <nav className="paper-workspace-nav" aria-label="论文工作模式">
+      <MotionNavigation className="paper-workspace-nav" label="论文工作模式" value={mobilePanel === 'ai' || mobilePanel === 'search' ? mobilePanel : 'reader'}>
         <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}>阅读与笔记</button>
         <button type="button" aria-pressed={mobilePanel === "ai"} onClick={() => setMobilePanel("ai")}>AI 分析</button>
         <button type="button" aria-pressed={mobilePanel === "search"} onClick={() => setMobilePanel("search")}>学术检索</button>
-      </nav>
+      </MotionNavigation>
 
       <div className="paper-layout-controls" hidden={mobilePanel === 'ai' || mobilePanel === 'search'}>
         <div>

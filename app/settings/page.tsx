@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
-import { Button, FormField, Input, PasswordField, StatusMessage, Textarea } from "../components/ui";
+import { Button, FormField, Input, PasswordField, StatusMessage, Textarea, PageHeader } from "../components/ui";
 import { clearAiKey, readAiKey, saveAiKey } from "../lib/ai-settings";
 import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
 import { getShortCommit, type BuildVersion } from "../lib/version";
@@ -195,17 +195,10 @@ export default function SettingsPage() {
     router.refresh();
   }
 
-  return <main className="student-app settings-app">
+  return <main className="student-app settings-app workspace-refresh">
     <AppSidebar active="settings" />
     <section className="workspace settings-main settings-shell">
-      <div className="page-bar">
-        <div className="page-bar-inner">
-          <h1>设置</h1>
-          <span className="page-bar-spacer" />
-
-          <Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button>
-        </div>
-      </div>
+      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={<Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button>} />
 
       <div className="page-body">
 

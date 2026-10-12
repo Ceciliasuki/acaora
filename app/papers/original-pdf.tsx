@@ -157,7 +157,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
   }
 
   return <>
-    <button type="button" onClick={() => restoreView()}>查看原 PDF</button>
+    <button className="paper-original-trigger" type="button" onClick={() => restoreView()}>查看原 PDF</button>
     {open && <dialog ref={dialogRef} className={styles.dialog} aria-label="原 PDF" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
       <header className={styles.header}><strong>原 PDF</strong><button type="button" aria-label="关闭原 PDF" onClick={() => setOpen(false)}>关闭</button></header>
       <p className={styles.privacy}>原文件只保存在当前设备，不上传；清除浏览器数据后需重新选择。</p>

@@ -132,7 +132,7 @@ export default function AppSidebar({
   return <>
     <IconButton ref={triggerRef} className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>
     {open && <button className="sidebar-backdrop" type="button" aria-label="关闭主导航" onClick={() => setOpen(false)} />}
-    <aside ref={sidebarRef} className={`student-sidebar app-sidebar ${open ? "is-open" : ""}`} id="app-sidebar" aria-label="应用导航" inert={isDrawer && !open ? true : undefined}>
+    <aside ref={sidebarRef} className={`student-sidebar app-sidebar ${open ? "is-open" : ""}`} data-section={active} id="app-sidebar" aria-label="应用导航" inert={isDrawer && !open ? true : undefined}>
       <div className="sidebar-head">
         <Link className="acaora-brand light" href="/dashboard" aria-label="返回 Acaora 工作台" onClick={() => setOpen(false)}>
           <span>A</span>
