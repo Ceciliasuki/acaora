@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T09:11:03.739545+00:00",
+  "generatedAt": "2026-10-12T13:48:24.6416416+00:00",
   "title": "Design System: Acaora 学曦",
   "extensions": {
     "shadows": [
@@ -18,13 +18,13 @@
       },
       {
         "name": "selection-marker",
-        "value": "180ms",
-        "purpose": "Cancellable visual selection indicator; reduced motion displays the final state."
+        "value": "280ms",
+        "purpose": "Cancellable two-dimensional selection plate; tint and ink retain contrast during travel."
       },
       {
         "name": "task-panel",
-        "value": "180ms",
-        "purpose": "Course and project field reveal."
+        "value": "360ms / 220ms",
+        "purpose": "Course sheet clip reveal / project selection continuity."
       },
       {
         "name": "paper-panel",
@@ -80,9 +80,9 @@
     {
       "name": "Light workspace navigation",
       "kind": "nav",
-      "description": "Real links carry aria-current; a blue marker supplements the tint.",
+      "description": "Native route links with solid blue selected fill and white label.",
       "html": "<nav class=\"ds-nav\" aria-label=\"工作区\"><a href=\"/courses\" aria-current=\"page\">课程中心</a><a href=\"/papers\">论文研究</a></nav>",
-      "css": ".ds-nav {display:grid;gap:8px;} .ds-nav a {position:relative;display:flex;align-items:center;min-height:48px;padding:12px;border-radius:8px;color:#5e6877;text-decoration:none;font:400 14px var(--font-sans);} .ds-nav a:hover{background:var(--surface);} .ds-nav a[aria-current=\"page\"]{background:var(--brand-tint);color:var(--brand-on-subtle);} .ds-nav a[aria-current=\"page\"]::before{content:\"\";position:absolute;left:-14px;top:16px;bottom:16px;width:2px;background:var(--brand);} .ds-nav a:focus-visible {outline:2px solid var(--brand);outline-offset:3px;}"
+      "css": ".ds-nav {display:grid;gap:8px;} .ds-nav a {position:relative;display:flex;align-items:center;min-height:48px;padding:12px;border-radius:8px;color:#5e6877;text-decoration:none;font:400 14px var(--font-sans);} .ds-nav a:hover{background:var(--surface);} .ds-nav a[aria-current=\"page\"]{background:var(--brand);color:#fff;} .ds-nav a[aria-current=\"page\"]::before{content:\"\";position:absolute;left:-14px;top:16px;bottom:16px;width:2px;background:var(--brand);} .ds-nav a:focus-visible {outline:2px solid var(--brand);outline-offset:3px;}"
     },
     {
       "name": "Paper section selection",
@@ -101,9 +101,9 @@
   ],
   "narrative": {
     "northStar": "The Study Workbench",
-    "overview": "This is an extension of the incumbent world, not a new identity. `app/layout.tsx` imports `globals.css`, then the pre-existing `white-theme.css`, then scoped `workspace-refresh.css`. The later white-theme tokens are authoritative; the frontmatter records their effective values. A light curtain, transparent light navigation rail, blue actions and white task fields define the shipped world. The approved reconstruction covers app navigation, courses, papers, data, projects and settings. Original overview body, public landing and authentication remain outside this reconstruction; PRODUCT.md and product, data, accessibility and semantic contracts remain unchanged. See `docs/releases/2026-10-12-workspace-redesign.md` for scope and recoverable original code.",
+    "overview": "Second owner preview: bounded white rail, a stronger 32-42px heading, sliding blue plates, two-column course chapters and project tasks/notes. Existing light curtain, palette, real actions and protected overview/public/auth bodies remain. First preview and original production are independently retained.",
     "keyCharacteristics": [
-      "Light curtain and cool workspace; transparent light navigation rail and white task fields. Deep navy remains a token for genuinely inverse regions, not a navigation requirement.",
+      "Light curtain, bounded white navigation rail and flat white task fields.",
       "One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).",
       "Paper now uses the incumbent white `--surface-paper`; the earlier warm-paper material description is retained as superseded history.",
       "System sans throughout; Georgia has been removed from page-level titles.",
@@ -128,8 +128,8 @@
       }
     ],
     "dos": [
-      "Do retain visible keyboard focus and all existing product, data and semantic contracts.",
-      "Do use PageHeader and each workspace’s actual task layout."
+      "Do preserve focus, original control semantics and user data.",
+      "Do retain readable ink/tint during plate travel and respect reduced motion."
     ],
     "donts": [
       "Don’t introduce route waits, continuous motion loops or scroll hijacking.",

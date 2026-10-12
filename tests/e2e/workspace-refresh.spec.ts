@@ -56,6 +56,15 @@ test('selection motion is interruptible and reduced motion still identifies the 
     const marker = await modes.locator('.motion-navigation-marker').boundingBox();
     return Boolean(button && marker && Math.abs(button.x - marker.x) < 1 && Math.abs(button.width - marker.width) < 1);
   }).toBe(true);
+  await page.setViewportSize({width:375, height:812});
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  const mobile = page.getByRole('tablist', {name:'论文工作台面板', exact:true});
+  await mobile.getByRole('tab', {name:'阅读', exact:true}).click();
+  expect(await mobile.locator('.motion-navigation-marker').evaluate(element=>element.getAnimations().length)).toBeGreaterThan(0);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await mobile.getByRole('tab', {name:'笔记', exact:true}).click();
+  await expect(page.getByLabel('段落笔记', {exact:true})).toBeVisible();
+  await expect.poll(()=>mobile.evaluate(element=>element.getAnimations({subtree:true}).length)).toBe(0);
 });
 
 test('course plates follow two-dimensional selection and settings directory follows its section', async ({page}) => {

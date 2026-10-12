@@ -618,9 +618,9 @@ export default function PaperLab() {
         <span role="status">{{ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState]}</span>
       </div>
 
-      <div className="paper-mobile-tabs" role="tablist" aria-label="论文工作台面板">
+      <MotionNavigation as="div" className="paper-mobile-tabs" role="tablist" label="论文工作台面板" value={mobilePanel}>
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
-      </div>
+      </MotionNavigation>
 
       <section className="plab-workbench" data-library-open={panels.library} data-notes-open={panels.notes} hidden={mobilePanel === "ai" || mobilePanel === "search"}>
         {!hydrated ? <ReadingSkeleton /> : <>

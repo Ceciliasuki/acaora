@@ -41,10 +41,10 @@ typography:
     lineHeight: 1
   workspace-heading:
     fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, Arial, sans-serif"
-    fontSize: "30px"
+    fontSize: "clamp(32px, 3vw, 42px)"
     fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "-0.025em"
+    lineHeight: 1.22
+    letterSpacing: "-0.035em"
   display:
     fontFamily: "Segoe UI, PingFang SC, Microsoft YaHei, Arial, sans-serif"
     fontSize: "30px"
@@ -188,7 +188,7 @@ components:
 
 Approved as the internal design north star. It is taken from the product's own vocabulary (总览 / 论文工作台 / 数据工作台 / 项目工作台) rather than invented for this document. It exists to keep design decisions pointed at one idea, and it is not a marketing slogan, not user-facing copy, and not a line that appears in the interface.
 
-**Current source authority, reconciled 2026-10-12.** This is an extension of the incumbent world, not a new identity. `app/layout.tsx` imports `globals.css`, then the pre-existing `white-theme.css`, then scoped `workspace-refresh.css`. The later white-theme tokens are authoritative; the frontmatter records their effective values. A light curtain, transparent light navigation rail, blue actions and white task fields define the shipped world. The approved reconstruction covers app navigation, courses, papers, data, projects and settings. Original overview body, public landing and authentication remain outside this reconstruction; PRODUCT.md and product, data, accessibility and semantic contracts remain unchanged. See `docs/releases/2026-10-12-workspace-redesign.md` for scope and recoverable original code.
+**Current source authority, second owner preview 2026-10-12.** This is an extension of the incumbent world, not a new identity. `app/layout.tsx` imports `globals.css`, then the pre-existing `white-theme.css`, then scoped `workspace-refresh.css`. The later white-theme tokens are authoritative; the frontmatter records their effective values. A light curtain, bounded white navigation rail, blue actions and white task fields define the shipped world. The approved reconstruction covers app navigation, courses, papers, data, projects and settings. Original overview body, public landing and authentication remain outside this reconstruction; PRODUCT.md and product, data, accessibility and semantic contracts remain unchanged. See `docs/releases/2026-10-12-workspace-redesign.md` for scope and recoverable original code.
 
 **Preserved design history.** The following earlier dark-rail, working-band and warm-paper descriptions explain past decisions. Their palette, required shell geometry and page composition are superseded where they conflict with the current source authority and the scoped rules below. They are not instructions to restore navy navigation, a warm paper token or forced numeric registers. Historical palette: brand `#2f5ad4`, hover `#2648ab`, wash `#eaefff`, wash ink `#1f3f9e`, app field `#f5f6f9`, paper `#faf9f6`, ink `#131a2b`, secondary `#626978`. Their accessibility and data-truthfulness rationale still applies; old measured contrast ratios do not certify the current palette.
 
@@ -203,7 +203,7 @@ The product carries two visual registers that must never blur. Ordinary product 
 Density is deliberately uneven between surfaces. A reading tool and a statistics tool are allowed to be far denser than a settings page. What is unified is the design language: the same neutrals, the same type scale, the same radius and elevation logic, the same focus treatment. Page structure is not unified, and forcing it to be would damage the two tools that need density.
 
 **Key Characteristics:**
-- Light curtain and cool workspace; transparent light navigation rail and white task fields. Deep navy remains a token for genuinely inverse regions, not a navigation requirement.
+- Light curtain and cool workspace; bounded white navigation rail and white task fields. Deep navy remains a token for genuinely inverse regions, not a navigation requirement.
 - One accent (brand blue) for the whole product; one reserved semantic accent (AI teal).
 - Paper now uses the incumbent white `--surface-paper`; the earlier warm-paper material description is retained as superseded history.
 - System sans throughout; Georgia has been removed from page-level titles.
@@ -262,7 +262,7 @@ A tight cool-neutral ramp with a single saturated blue and a single reserved tea
 
 ## Typography
 
-**Current workspace heading.** Approved reconstructed pages use a Chinese-compatible system sans heading at 600, 30px/1.3, -0.025em, stepping to 27px at 760px and below. Supporting header copy is 14px/1.7. The source scale below remains available for other roles; it does not force the former 18px working-band title onto these pages.
+**Current workspace heading.** Approved reconstructed pages use a Chinese-compatible system sans heading at 600, clamp(32px, 3vw, 42px)/1.22, -0.035em, stepping to 32px at 760px and below. Supporting header copy is 14px/1.7. The source scale below remains available for other roles; it does not force the former 18px working-band title onto these pages.
 
 **Display Font:** Segoe UI (with PingFang SC, Microsoft YaHei, Arial, sans-serif fallbacks)
 **Body Font:** the same system sans stack
@@ -304,14 +304,16 @@ Known migration gaps, stated rather than hidden so this record does not read as 
 
 ## Layout
 
-### Current approved workspace layout (2026-10-12)
+Second-preview extension: chapter lists use two columns from 1280px; project tasks and notes sit side by side above 1200px and stack below. Settings retains all forms and native hash links; IntersectionObserver tracks the section being read. This responds to the user rejection of the first preview as too timid. Original production and the first preview remain independently retained; v2 aesthetics await owner review.
 
-The reconstructed workspaces use a shared PageHeader with title, supporting copy and real actions, followed by the topology each task needs. The shell is capped at 1640px, has 24px outer margins and a 208px light rail with a 28px gap. Main content uses 16px horizontal padding. At 1200px the rail becomes 176px and the gap 18px; at 1000px through 761px it is a 72px icon rail; at 760px and below it is a 264px off-canvas drawer and content reserves 72px above the header. This is the scoped shell, not a global restyling of overview/public/auth bodies.
+### Current workspace preview layout (2026-10-12, v2)
 
-- Courses: a 224px course index and a white syllabus/reading sheet; the index becomes a two-column selection grid at narrow widths.
+The reconstructed workspaces use a shared PageHeader with title, supporting copy and real actions, followed by the topology each task needs. The shell is capped at 1640px, has 24px outer margins and a 188px white rail with a 24px gap. Main content uses 16px horizontal padding. At 1200px the rail becomes 176px and the gap 18px; at 1000px through 761px it is a 72px icon rail; at 760px and below it is a 264px off-canvas drawer and content reserves 72px above the header. This is the scoped shell, not a global restyling of overview/public/auth bodies.
+
+- Courses: a 218px course index and a white syllabus/reading sheet; the index becomes a two-column selection grid at narrow widths.
 - Papers: mode navigation over the original/notes workbench; desktop keeps optional library and note rails, bounded reader height and readable prose (16px/1.9, up to 86ch). Mobile switches panels and lets the reading region flow in the document instead of stacking three constrained desktop columns.
 - Data: import and sample inspection precede one analysis field; wide tables retain horizontal scrolling. No conversion of data tables into decorative cards.
-- Projects: a 248px project index and task/editor field, narrowing to 210px at 1200px; at mobile width the project list scrolls horizontally above the selected project's actual tasks and notes.
+- Projects: a 224px project index and task/editor field, narrowing to 210px at 1200px; at mobile width the project list scrolls horizontally above the selected project's actual tasks and notes.
 - Settings: a 156px section index beside separate white form sheets (132px at 1200px); mobile turns the index into horizontal links above the forms. No dashboard register is required here.
 
 The shared 4/8/12/16/24/32/48/64 spacing scale remains available. Scoped 28px gaps, 20px mobile sheet padding and 12px sheet radii are repeated source-derived extensions rather than reasons to migrate the styling architecture. Task fields remain distinct; no dashboard layout is cloned across the five workspaces.
@@ -351,7 +353,7 @@ The token layer is product-wide. The page language is not yet unified: the dashb
 
 ## Elevation & Depth
 
-**Current scoped application.** Reconstructed task fields are white and flat: separation uses tone, spacing and rules, with no floating-card shadow on the main course sheet, paper workbench, analysis field or project workbench. The light rail is transparent and has no shell shadow. Dialogs retain real overlay elevation. The original border-led rationale and publication-object rules below remain historical guidance where the object exists; they do not require adding shadows to the reconstructed fields.
+**Current scoped application.** Reconstructed task fields are white and flat: separation uses tone, spacing and rules, with no floating-card shadow on the main course sheet, paper workbench, analysis field or project workbench. The second preview bounds the white navigation rail with 12px corners and existing shadow-1, without an additional border. Dialogs retain real overlay elevation. The original border-led rationale and publication-object rules below remain historical guidance where the object exists; they do not require adding shadows to the reconstructed fields.
 
 The system is hybrid but border-led: structure comes from a 1px border, and shadow is a supporting cue rather than the primary signal. Surfaces are not floating cards. Panels sit flat at rest with a border and the lightest shadow; shadow increases only with real elevation, so the appearance of depth always corresponds to something actually being above the page. All three shadow values are tinted cool (towards the navy ink) rather than neutral black. The violet-tinted shadow family inherited from an earlier layer is retired and must not return.
 
@@ -371,7 +373,7 @@ The system is hybrid but border-led: structure comes from a 1px border, and shad
 
 ## Shapes
 
-**Current scoped sheets.** Main white task fields use 12px corners; PaperLab becomes 10px on mobile. The rail and structural regions stay square/unbounded; local reader controls use 6–8px corners. The earlier generic 14/18px container defaults and Scholarly Radius Rule below do not override these approved task-specific sheets.
+**Current scoped sheets.** Main white task fields use 12px corners; PaperLab becomes 10px on mobile. The white rail uses 12px corners; structural regions stay unbounded; local reader controls use 6–8px corners. The earlier generic 14/18px container defaults and Scholarly Radius Rule below do not override these approved task-specific sheets.
 
 Form language is soft-rectangular and consistent. Controls use the tighter radii and containers the softer ones: 6px for small marks, 8px for inputs and list rows, 10px for standard buttons and segmented controls, 14px for cards and panels, 18px for large workbench containers and dialogs. The rail and the workbench are the only large-radius containers; nested elements inside a panel step down rather than repeating the container radius.
 
@@ -429,10 +431,10 @@ Scoped workspace primary actions use the solid current brand token and white tex
 - **Error / Disabled:** invalid fields keep the Danger border and pair it with inline error text below the field; the error state is never signalled by colour alone. Disabled fields use a muted surface and reduced text emphasis. Labels sit above the field, and helper or error text sits below it; a placeholder is never used as the label.
 
 ### Navigation
-- **Style:** light transparent rail beside the task field; six existing destinations and the account block retain their real routes and semantics. Scoped items are at least 48px high, 14px labels and 18px Lucide icons. Rail widths and drawer behaviour are in Layout.
-- **States:** muted inactive labels; selected items use brand tint, brand ink and a short 2px blue marker. Hover uses the white surface. The current route retains `aria-current="page"`; state is not colour-only.
+- **Style:** bounded white rail beside the task field; six existing destinations and the account block retain their real routes and semantics. Scoped items are at least 48px high, 14px labels and 18px Lucide icons. Rail widths and drawer behaviour are in Layout.
+- **States:** muted inactive labels; selected items use a solid brand-blue plate with white labels and icons. Hover uses the white surface. The current route retains `aria-current="page"`; state is not colour-only.
 - **Mobile treatment:** off-canvas light drawer with fixed trigger, backdrop, focus management and released body scroll lock on close.
-- **Mode selection:** MotionNavigation is a purely visual 2px marker under existing buttons. Buttons own labels, state and focus; the marker is `aria-hidden`, never a second interactive control. Without the script the selected button keeps its static marker.
+- **Mode selection:** MotionNavigation is a purely visual, two-dimensional sliding plate behind the original controls. Buttons own labels, state and focus; the marker is `aria-hidden`, never a second interactive control. Without the script the selected control keeps its static blue fill.
 
 #### Historical navigation specification (superseded)
 
@@ -444,7 +446,7 @@ The original rail specification is retained below for traceability; current Navi
 
 ### Purposeful workspace motion
 
-Selection feedback uses 180ms `cubic-bezier(.16,1,.3,1)`; quick changes cancel the old marker animation and ResizeObserver keeps it aligned. Reduced-motion preferences, including changes during the session, display the end state directly. Actual panel reveals use 180ms for the course/project field and 200ms for paper side panels; dialog entry uses 200ms. These are short state explanations, not route-delay choreography. No route waits, repeated prose entrances, continuous loops, scroll hijacking or new curtain animation is part of this reconstruction. Existing global curtain implementation remains outside this scoped motion contract.
+Selection plates use cancellable 280ms cubic-bezier(.16,1,.3,1), with ResizeObserver tracking root and controls. The authored course-sheet opening is a 360ms bounded clip reveal from its index. Projects use 220ms continuity; analysis and paper tools use 240ms; paper side panels and dialogs use 200ms. During travel, brand tint and brand ink keep labels readable. Sidebar continuity remembers geometry only in module memory. Reduced motion cancels live animation and removes spatial transitions and smooth scrolling. No route delays, recurring loops, paragraph entrances, new curtain animation or account-storage changes.
 
 ### Icons
 - **Library:** Lucide, one family across the whole product. Do not migrate to another icon library, and do not mix families on one surface.

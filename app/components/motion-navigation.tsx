@@ -50,7 +50,7 @@ export default function MotionNavigation({value, label, className, children, as:
         animation.onfinish = () => {root!.dataset.motionMoving = 'false';};
       }
     }
-    const observer = new ResizeObserver(() => update());
+    const observer = new ResizeObserver(() => update(true));
     observer.observe(root);
     root.querySelectorAll('button, a').forEach(element => observer.observe(element));
     const reduce = () => {marker.getAnimations().forEach(animation => animation.cancel()); root.dataset.motionMoving = 'false'; update();};
