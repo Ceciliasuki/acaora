@@ -21,7 +21,7 @@ for (const width of [1440, 669, 375]) {
     await installApiMocks(page, {signedIn: true, projects: [project], cloudPapers: [paper]});
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
-    await mkdir('outputs/workspace-redesign-2026-10-12', {recursive: true});
+    await mkdir('outputs/workspace-motion-v2-2026-10-12', {recursive: true});
     for (const [path, heading] of [['courses', '课程中心'], ['papers', '论文研究'], ['data', '数据分析'], ['projects', '项目空间'], ['settings', '设置']]) {
       await page.goto(`/${path}`);
       await expect(page.getByRole('heading', {name: heading, exact: true, level: 1})).toBeVisible();
@@ -29,7 +29,7 @@ for (const width of [1440, 669, 375]) {
       if (path === 'projects') await expect(page.getByRole('heading', {name: project.title, exact: true})).toBeVisible();
       if (path === 'settings') await expect(page.locator('#settings-name')).toHaveValue('测试同学');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
-      await page.screenshot({path: `outputs/workspace-redesign-2026-10-12/${path}-${width}.png`, fullPage: path !== 'papers', animations: 'disabled'});
+      await page.screenshot({path: `outputs/workspace-motion-v2-2026-10-12/${path}-${width}.png`, fullPage: path !== 'papers', animations: 'disabled'});
     }
     expect(errors).toEqual([]);
   });
@@ -56,4 +56,30 @@ test('selection motion is interruptible and reduced motion still identifies the 
     const marker = await modes.locator('.motion-navigation-marker').boundingBox();
     return Boolean(button && marker && Math.abs(button.x - marker.x) < 1 && Math.abs(button.width - marker.width) < 1);
   }).toBe(true);
+});
+
+test('course plates follow two-dimensional selection and settings directory follows its section', async ({page}) => {
+  await installApiMocks(page, {signedIn: true});
+  await page.goto('/courses');
+  const courses = page.getByRole('navigation', {name: '选择课程', exact: true});
+  await courses.getByRole('button', {name: 'ECON-204 微观经济学', exact: true}).click();
+  await expect(page.getByRole('heading', {name: '微观经济学', exact: true})).toBeVisible();
+  expect(await courses.locator('.motion-navigation-marker').evaluate(element => element.getAnimations().length)).toBeGreaterThan(0);
+  await page.emulateMedia({reducedMotion: 'reduce'});
+  await page.setViewportSize({width: 669, height: 751});
+  await courses.getByRole('button', {name: 'STAT-302 回归分析', exact: true}).click();
+  await expect.poll(async () => {
+    const selected = await courses.getByRole('button', {name: 'STAT-302 回归分析', exact: true}).boundingBox();
+    const marker = await courses.locator('.motion-navigation-marker').boundingBox();
+    return Boolean(selected && marker && Math.abs(selected.x-marker.x)<1 && Math.abs(selected.y-marker.y)<1 && Math.abs(selected.width-marker.width)<1 && Math.abs(selected.height-marker.height)<1);
+  }).toBe(true);
+  await page.goto('/settings');
+  await expect(page.locator('#settings-name')).toHaveValue('测试同学');
+  const directory = page.getByRole('navigation', {name:'设置分区', exact:true});
+  await directory.getByRole('link', {name:'账户与安全', exact:true}).click();
+  await expect(directory.getByRole('link', {name:'账户与安全', exact:true})).toHaveAttribute('aria-current','location');
+  await expect(page.locator('#security')).toBeInViewport();
+  await page.locator('#settings-new-password').focus();
+  await expect(page.locator('#settings-new-password')).toBeFocused();
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1)).toBe(true);
 });

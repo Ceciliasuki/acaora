@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client";
 import { IconButton } from "./ui";
+import MotionNavigation from './motion-navigation';
 
 type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
 
@@ -129,6 +130,14 @@ export default function AppSidebar({
     };
   }, [isDrawer, open]);
 
+  const links = navigation.map(item => {
+    const Icon = item.icon;
+    return <Link aria-current={item.id === active ? 'page' : undefined} aria-label={item.label}
+      className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
+      <Icon size={20} aria-hidden="true" /><span>{item.label}</span>
+    </Link>;
+  });
+
   return <>
     <IconButton ref={triggerRef} className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>
     {open && <button className="sidebar-backdrop" type="button" aria-label="关闭主导航" onClick={() => setOpen(false)} />}
@@ -140,21 +149,8 @@ export default function AppSidebar({
         </Link>
         <IconButton ref={closeRef} className="sidebar-close-button" variant="ghost" label="关闭主导航" onClick={() => setOpen(false)}><X size={21} /></IconButton>
       </div>
-      <nav aria-label="主要导航">
-        {navigation.map((item) => {
-          const Icon = item.icon;
-          return <Link
-            aria-current={item.id === active ? "page" : undefined}
-            aria-label={item.label}
-            className={item.id === active ? "active" : ""}
-            href={item.href}
-            key={item.id}
-            onClick={() => setOpen(false)}
-          >
-            <Icon size={20} aria-hidden="true" /><span>{item.label}</span>
-          </Link>;
-        })}
-      </nav>
+      {active === 'dashboard' ? <nav aria-label="主要导航">{links}</nav> :
+        <MotionNavigation className="sidebar-nav-motion" label="主要导航" value={active} rememberKey="workspace-sidebar">{links}</MotionNavigation>}
       <div className="student-sidebar-foot">
         <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料" onClick={() => setOpen(false)}>
           {displayedProfile.avatarUrl ? <img src={displayedProfile.avatarUrl} width="72" height="72" alt="" /> : <b>{displayedProfile.initials}</b>}

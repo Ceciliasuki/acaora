@@ -8,6 +8,7 @@ import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Pl
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { authFetch, getCurrentUser } from "../lib/auth-client";
 import { Button, Dialog, ErrorState, PageHeader } from "../components/ui";
+import MotionNavigation from '../components/motion-navigation';
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -236,7 +237,7 @@ export default function ProjectsPage() {
             {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => setShowCreate(true)}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
-                  <div className="project-filter"><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></div>
+                  <MotionNavigation as="div" className="project-filter" label="项目筛选" role="group" value={filter}><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></MotionNavigation>
                   <div className="project-list">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
                     return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onClick={() => setSelectedId(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;

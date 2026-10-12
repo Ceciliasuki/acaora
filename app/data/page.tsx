@@ -3,6 +3,7 @@
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { ArrowUpFromLine, HardDrive, RotateCcw } from "lucide-react";
 import AppSidebar from "../components/app-sidebar";
+import MotionNavigation from '../components/motion-navigation';
 import { Badge, PageHeader } from "../components/ui";
 import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
 import {
@@ -186,14 +187,14 @@ export default function Home() {
         <section className="analysis-panel" id="analysis">
           <div className="analysis-header">
             <div><h2>分析方法</h2></div>
-            <div className="analysis-tabs" role="tablist" aria-label="分析方法">
+            <MotionNavigation as="div" className="analysis-tabs" role="tablist" label="分析方法" value={tab}>
               <button role="tab" aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
               <button role="tab" aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
               <button role="tab" aria-selected={tab === "test"} className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
-            </div>
+            </MotionNavigation>
           </div>
 
-          {numeric.length === 0 ? (
+          <div className="analysis-content" key={tab}>{numeric.length === 0 ? (
             <div className="empty-state"><strong>没有检测到数值变量</strong><p>请确认数值列中没有混入大量文字或特殊符号。</p></div>
           ) : tab === "describe" ? (
             <div className="analysis-grid">
@@ -294,7 +295,7 @@ export default function Home() {
                 </> : <div className="empty-state"><strong>暂时无法执行检验</strong><p>分组变量需要恰好包含两个有效组，每组至少有两个观测。</p></div>}
               </div>
             </div>
-          )}
+          )}</div>
         </section>
 
         <section className="data-preview" id="preview">

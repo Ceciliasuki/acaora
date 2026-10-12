@@ -7,6 +7,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
+import SettingsNavigation from './settings-navigation';
 import { Button, FormField, Input, PasswordField, StatusMessage, Textarea, PageHeader } from "../components/ui";
 import { clearAiKey, readAiKey, saveAiKey } from "../lib/ai-settings";
 import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
@@ -202,7 +203,7 @@ export default function SettingsPage() {
 
       <div className="page-body">
 
-      {signedIn && <nav className="settings-nav" aria-label="设置分区"><a href="#profile">个人资料</a><a href="#security">账户与安全</a><a href="#ai-models">AI 与模型</a><a href="#privacy">隐私与数据</a><a href="#about">关于</a></nav>}
+      {signedIn && !loading && <SettingsNavigation />}
 
       {loading ? <div className="settings-state" role="status">正在读取账户…</div> : sessionError ? <div className="settings-state" role="alert"><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
         {(message || error) && <StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage>}
