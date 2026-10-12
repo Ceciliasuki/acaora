@@ -222,7 +222,7 @@
 @keyframes workspace-course-open { from { opacity: .72; clip-path: inset(0 0 0 5% round 12px); transform: translateX(16px); } to { opacity: 1; clip-path: inset(0 round 12px); transform: none; } }
 @keyframes workspace-panel-in { from { opacity: .5; transform: translateX(6px); } to { opacity: 1; transform: none; } }
 @keyframes workspace-dialog-in { from { opacity: .6; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
-@keyframes workspace-tool-switch { from { opacity: .65; clip-path: inset(0 0 4% 0); } to { opacity: 1; clip-path: inset(0); } }
+@keyframes workspace-tool-switch { from { opacity: .65; } to { opacity: 1; } }
 html:has(.settings-app.workspace-refresh) { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: no-preference) {
   .workspace-refresh .course-overview { animation: workspace-course-open 360ms var(--ease-out); }
