@@ -10,7 +10,9 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import AiStudio from "./ai-studio";
 import ContinuousReader from './continuous-reader';
-import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, SearchPaper } from "./paper-types";
+import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
+import AnnotationPanel, {AnnotationEditor} from './annotation-panel';
+import LiteratureSearch from './literature-search';
 import {saveResult} from './ai-studio';
 import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines} from './pdf-text';
 import OriginalPdf from './original-pdf';
@@ -52,13 +54,7 @@ export default function PaperLab() {
   const [translationProgress, setTranslationProgress] = useState(0);
   const [modelProgress, setModelProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState(samplePaper.title);
-  const [searchResults, setSearchResults] = useState<SearchPaper[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchMessage, setSearchMessage] = useState("");
-  /* A search has three distinct endings — results, a settled empty answer, and a
-     failure — and they must not render as one another. */
-  const [searchError, setSearchError] = useState("");
-  const [searchSettled, setSearchSettled] = useState(false);
+  const [annotationDraft,setAnnotationDraft]=useState<AnnotationDraft|null>(null);
   /* A device-library read is a real operation that can really fail; when it does
      the count is unknown rather than zero, and the reader can retry the read. */
   const [libraryError, setLibraryError] = useState("");
@@ -343,12 +339,57 @@ export default function PaperLab() {
     return () => window.clearTimeout(handle);
   }, [paper, hydrated, setCloudStatus, syncNow, withReadingPosition]);
 
-  function updatePaper(updater: (current: PaperRecord) => PaperRecord) {
+  const updatePaper=useCallback((updater: (current: PaperRecord) => PaperRecord) => {
     if (userIdRef.current) {
       dirtyRef.current = true;
       setCloudStatus("syncing");
     }
     setPaper((current) => updater(withReadingPosition(current)));
+  },[withReadingPosition,setCloudStatus]);
+
+  const createAnnotation=useCallback((anchors:TextAnchor[],highlightOnly:boolean)=>{
+    const current=paperRef.current;
+    if((current.ownerId??null)!==userIdRef.current)return;
+    const valid=anchors.filter(anchor=>current.paragraphs.some(p=>p.id===anchor.paragraphId&&p.original.slice(anchor.start,anchor.end)===anchor.quote));
+    if(!valid.length)return;
+    const draft:AnnotationDraft={key:crypto.randomUUID(),paperKey:JSON.stringify([current.ownerId??null,current.id]),anchors:valid,comment:'',color:'yellow'};
+    if(highlightOnly){
+      const createdAt=Date.now();const additions=valid.map(anchor=>({...anchor,id:crypto.randomUUID(),createdAt,color:'yellow' as const,comment:''}));
+      updatePaper(paper=>JSON.stringify([paper.ownerId??null,paper.id])!==draft.paperKey?paper:{...paper,paragraphs:paper.paragraphs.map(p=>{
+        const added=additions.filter(a=>a.paragraphId===p.id).map(a=>({id:a.id,start:a.start,end:a.end,quote:a.quote,createdAt:a.createdAt,color:a.color,comment:a.comment}));
+        return added.length?{...p,annotations:[...(p.annotations??[]),...added]}:p;
+      })});
+      setMessage(current.id===samplePaper.id?'已添加示例高亮；导入PDF后可长期保存批注。':'已添加高亮。');
+    }else{
+      setAnnotationDraft(draft);setPanels(previous=>({...previous,notes:true}));setMobilePanel(innerWidth<=760?'insight':'reader');
+    }
+  },[updatePaper]);
+
+  const editAnnotation=useCallback((paragraphId:string,annotation:PaperAnnotation)=>{
+    const current=paperRef.current;
+    if((current.ownerId??null)!==userIdRef.current)return;
+    setAnnotationDraft({key:crypto.randomUUID(),paperKey:JSON.stringify([current.ownerId??null,current.id]),annotationId:annotation.id,anchors:[{paragraphId,start:annotation.start,end:annotation.end,quote:annotation.quote}],comment:annotation.comment,color:annotation.color});
+    setPanels(previous=>({...previous,notes:true}));setMobilePanel(innerWidth<=760?'insight':'reader');
+  },[]);
+
+  function saveAnnotation(draft:AnnotationDraft){
+    const current=paperRef.current;
+    if(JSON.stringify([current.ownerId??null,current.id])!==draft.paperKey||(current.ownerId??null)!==userIdRef.current)return;
+    const createdAt=Date.now();
+    const additions=draft.anchors.map(anchor=>({paragraphId:anchor.paragraphId,annotation:{id:draft.annotationId??crypto.randomUUID(),start:anchor.start,end:anchor.end,quote:anchor.quote,comment:draft.comment,color:draft.color,createdAt:current.paragraphs.find(p=>p.id===anchor.paragraphId)?.annotations?.find(a=>a.id===draft.annotationId)?.createdAt??createdAt}}));
+    updatePaper(paper=>JSON.stringify([paper.ownerId??null,paper.id])!==draft.paperKey?paper:{...paper,paragraphs:paper.paragraphs.map(p=>{
+      const added=additions.filter(a=>a.paragraphId===p.id&&p.original.slice(a.annotation.start,a.annotation.end)===a.annotation.quote).map(a=>a.annotation);
+      return added.length?{...p,annotations:[...(p.annotations??[]).filter(a=>a.id!==draft.annotationId),...added]}:p;
+    })});
+    setAnnotationDraft(null);setMessage(current.id===samplePaper.id?'示例批注已添加；导入PDF后可长期保存。':'批注已更新。');
+  }
+
+  function deleteAnnotation(paragraphId:string,id:string){
+    const source=paperRef.current;
+    if(!window.confirm('删除这条批注？原文和段落笔记会保留。'))return;
+    if(source.id!==paperRef.current.id||source.ownerId!==paperRef.current.ownerId||(source.ownerId??null)!==userIdRef.current)return;
+    updatePaper(current=>current.id!==source.id||current.ownerId!==source.ownerId?current:{...current,paragraphs:current.paragraphs.map(p=>p.id===paragraphId?{...p,annotations:(p.annotations??[]).filter(a=>a.id!==id)}:p)});
+    if(annotationDraft?.annotationId===id)setAnnotationDraft(null);
   }
 
   function updateActiveParagraph(patch: Partial<Paragraph>) {
@@ -467,43 +508,6 @@ export default function PaperLab() {
     }
   }
 
-  async function searchPapers() {
-    const query = searchQuery.trim();
-    if (query.length < 3) {
-      setSearchResults([]);
-      setSearchMessage("");
-      setSearchError("请输入至少三个字符后再检索。");
-      setSearchSettled(true);
-      setMobilePanel("search");
-      return;
-    }
-    setSearching(true);
-    setSearchResults([]);
-    setSearchMessage("");
-    setSearchError("");
-    setSearchSettled(false);
-    try {
-      const response = await fetch(`/api/papers/search?q=${encodeURIComponent(query)}`);
-      const payload = await response.json() as { error?: string; papers?: SearchPaper[]; source?: string };
-      if (!response.ok) throw new Error(payload.error ?? "检索失败。" );
-      const normalizedTitle = paper.title.toLowerCase();
-      /* The list the reader actually sees is the list that is counted: the paper
-         already open in the reader is not repeated as a discovery result. */
-      const discovered = (payload.papers ?? []).filter((result) => result.title.toLowerCase() !== normalizedTitle);
-      setSearchResults(discovered);
-      setSearchMessage(`来自 ${payload.source ?? "公共学术索引"} · ${discovered.length} 条结果`);
-      setSearchSettled(true);
-      setMobilePanel("search");
-    } catch (error) {
-      setSearchResults([]);
-      setSearchMessage("");
-      setSearchError(error instanceof Error ? error.message : "检索失败。" );
-      setSearchSettled(true);
-    } finally {
-      setSearching(false);
-    }
-  }
-
   async function removeFromLibrary(record: PaperRecord) {
     const confirmation = signedInRef.current
       ? `从所有设备删除“${record.title}”的论文记忆？原始 PDF 不受影响；提取文本、翻译、笔记、阅读进度和 AI 结果将被删除。`
@@ -590,11 +594,6 @@ export default function PaperLab() {
           the index, the paragraph position and reading progress in the reader, the
           sync state beside the library, and the privacy facts in the colophon. */}
       <PageHeader className="workspace-header plab-head" title="论文研究" description="阅读原文、整理笔记，核对引用对应的段落。" actions={<div className="plab-head-tools">
-          <div className={`translator-status state-${translationState}`}>
-            <i />
-            <div><strong>{translatorStatusLabel(translationState, isEdge)}</strong><small>{translationStatusDetail(translationState, modelProgress)}</small></div>
-          </div>
-          <button className="plab-tool" type="button" onClick={() => setMobilePanel("search")}>检索论文</button>
           <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>
             {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
           </button>
@@ -603,6 +602,7 @@ export default function PaperLab() {
 
       {message && <div className="paper-message" role="status">{message}</div>}
 
+      <div className="paper-navigation-bar">
       <MotionNavigation className="paper-workspace-nav" label="论文工作模式" value={mobilePanel === 'ai' || mobilePanel === 'search' ? mobilePanel : 'reader'}>
         <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}>阅读与笔记</button>
         <button type="button" aria-pressed={mobilePanel === "ai"} onClick={() => setMobilePanel("ai")}>AI 分析</button>
@@ -617,7 +617,7 @@ export default function PaperLab() {
         </div>
         <span role="status">{{ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState]}</span>
       </div>
-
+      </div>
       <MotionNavigation as="div" className="paper-mobile-tabs" role="tablist" label="论文工作台面板" value={mobilePanel}>
         {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
       </MotionNavigation>
@@ -676,12 +676,14 @@ export default function PaperLab() {
             </div>
           </div>
 
-          <ContinuousReader key={paper.id} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} />
+          <ContinuousReader key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation}/>
         </section>
 
         {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
         <aside id="paper-notes" className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="plab-rail-head"><h2>我的笔记</h2><span>随段落自动保存</span><button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {changePanels({...panels, notes: false}); notesToggleRef.current?.focus();}}>×</button></div>
+          <div className="plab-rail-head"><h2>笔记与批注</h2><span>随原文自动保存</span><button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {setAnnotationDraft(null);changePanels({...panels, notes: false}); notesToggleRef.current?.focus();}}>×</button></div>
+          {annotationDraft?.paperKey===JSON.stringify([paper.ownerId??null,paper.id])&&<AnnotationEditor key={annotationDraft.key} draft={annotationDraft} onSave={saveAnnotation} onCancel={()=>setAnnotationDraft(null)}/>}
+          <AnnotationPanel paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation}/>
           <NotesSummary key={paper.id} paper={paper} onSelect={jumpToParagraph} />
           {activeParagraph && <div className="plab-rail-block">
             <p className="plab-reading-context">第 {activeIndex + 1} / {paper.paragraphs.length} 段 · 第 {activeParagraph.page} 页 · {activeParagraph.section}</p>
@@ -694,6 +696,7 @@ export default function PaperLab() {
               <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
             </div>
           </div>}
+          <details className="paper-reading-tools"><summary>翻译状态</summary><p>{translatorStatusLabel(translationState,isEdge)}</p><p>{translationStatusDetail(translationState,modelProgress)}</p></details>
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
             <div className="plab-rail-block"><strong className="plab-rail-role">{insight.role}</strong><p>{insight.explanation}</p></div>
@@ -717,68 +720,12 @@ export default function PaperLab() {
           onSearchQuery={(query) => {
             if (paperRef.current.id !== paper.id || (paper.ownerId ?? null) !== userIdRef.current) return;
             setSearchQuery(query);
-            setSearchResults([]);
-            setSearchMessage("");
-            setSearchError("");
-            setSearchSettled(false);
           }}
         /> : <AiConsoleSkeleton />}
         </div>
 
-        {/* Scholarly Discovery Index: the page's lowest-weight research tool. It is
-            a bibliography, not a search product: one query field, ruled records, and
-            four endings that never impersonate one another. */}
         <div className="paper-mode-content" hidden={mobilePanel !== "search"}>
-        {hydrated ? <section className={`plab-discovery ${mobilePanel === "search" ? "mobile-visible" : ""}`}>
-          <div className="plab-discovery-head">
-            <h2>学术检索</h2>
-            <p className="plab-discovery-note">输入关键词或 DOI，无需密钥。也可以从 AI「检索策略」填入检索式。</p>
-          </div>
-
-          <form className="plab-query" onSubmit={(event) => { event.preventDefault(); void searchPapers(); }}>
-            <label className="plab-query-field">
-              <span>检索式</span>
-              <input
-                aria-label="论文检索关键词"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="标题、DOI 或关键词（至少三个字符）"
-                name="paper-query"
-                autoComplete="off"
-              />
-            </label>
-            <button className="plab-query-submit" type="submit" disabled={searching}>{searching ? "检索中…" : "检索"}</button>
-          </form>
-
-          {searching ? <SearchLoadingSkeleton /> : null}
-          {!searching && searchError ? <p className="plab-discovery-error" role="alert">
-            {searchError}
-            <button className="plab-discovery-retry" type="button" onClick={() => void searchPapers()}>重新检索</button>
-          </p> : null}
-          {!searching && !searchError && searchSettled && !searchResults.length ? <p className="plab-discovery-empty">没有匹配的记录。可以换成英文关键词，或改用论文的 DOI 再试一次。</p> : null}
-          {!searching && !searchError && !searchSettled ? <p className="plab-discovery-idle">英文关键词通常更容易找到相关论文。</p> : null}
-          {searchMessage ? <p className="plab-discovery-source">{searchMessage}</p> : null}
-
-          {searchResults.length ? <ol className="plab-records">
-            {searchResults.map((result, index) => <li className="plab-record" key={`${result.source}-${result.id}`}>
-              <p className="plab-record-line">
-                <span className="plab-record-num journal-num">{String(index + 1).padStart(2, "0")}</span>
-                <span className="plab-record-source">{result.source}</span>
-                {result.year !== null ? <span className="plab-record-year journal-num">{result.year}</span> : null}
-                {result.citationCount > 0 ? <span className="plab-record-cites journal-num">被引 {result.citationCount}</span> : null}
-                {result.venue ? <span className="plab-record-venue">{result.venue}</span> : null}
-              </p>
-              <h3 className="plab-record-title">{result.title}</h3>
-              {result.authors.length ? <p className="plab-record-authors">{result.authors.slice(0, 4).join(", ")}{result.authors.length > 4 ? " 等" : ""}</p> : null}
-              {result.abstract ? <p className="plab-record-abstract">{result.abstract}</p> : null}
-              {(result.url || result.pdfUrl || result.doi) ? <p className="plab-record-actions">
-                {result.url ? <a href={result.url} target="_blank" rel="noreferrer">查看来源 ↗</a> : null}
-                {result.pdfUrl ? <a href={result.pdfUrl} target="_blank" rel="noreferrer">开放全文 ↗</a> : null}
-                {result.doi ? <button type="button" onClick={() => void navigator.clipboard.writeText(result.doi)}>复制 DOI</button> : null}
-              </p> : null}
-            </li>)}
-          </ol> : null}
-        </section> : <DiscoverySkeleton />}
+          {hydrated ? <LiteratureSearch seed={searchQuery}/> : <DiscoverySkeleton/>}
         </div>
       </section>
     </main>

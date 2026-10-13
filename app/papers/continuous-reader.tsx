@@ -1,7 +1,9 @@
 "use client";
 
 import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
-import type {Paragraph} from './paper-types';
+import type {Paragraph, PaperAnnotation, TextAnchor} from './paper-types';
+import {annotationSegments} from './paper-annotations.mjs';
+import SelectionTools from './selection-tools';
 
 type Props = {
   paperId: string;
@@ -11,9 +13,11 @@ type Props = {
   mode: string;
   onSelect: (index: number) => void;
   jump?: {index: number; id: number} | null;
+  onCreateAnnotation: (anchors:TextAnchor[],highlightOnly:boolean)=>void;
+  onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 };
 
-export default memo(function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump}: Props) {
+export default memo(function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef(activeIndex);
   const positioningRef = useRef(false);
@@ -101,9 +105,9 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
   }, [paperId, paragraphs.length, mode, select, position]);
 
   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- The named reader supports keyboard scrolling and paragraph selection without pretending to be a different widget.
-  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End"
+  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M"
     onKeyDown={event => {
-      if (event.target !== event.currentTarget || !paragraphs.length) return;
+      if (event.target !== event.currentTarget || !paragraphs.length || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
       const index = event.key === 'Home' ? 0 : event.key === 'End' ? paragraphs.length - 1
         : event.key === 'ArrowUp' ? Math.max(0, currentRef.current - 1)
         : event.key === 'ArrowDown' ? Math.min(paragraphs.length - 1, currentRef.current + 1) : null;
@@ -120,19 +124,21 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
       onClick={() => {const index = paragraphs.findIndex(p => p.section === section); select(index); position(index);}}>{section}</button>)}</nav>}
     {paragraphs.length ? <article className="plab-page plab-continuous-text"><div className="plab-body">
       {paragraphs.map((paragraph, index) => <ReaderParagraph key={paragraph.id} paragraph={paragraph} index={index} active={index === activeIndex}
-        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} />)}
+        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} onEditAnnotation={onEditAnnotation} />)}
     </div></article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
+    <SelectionTools rootRef={rootRef} onCreate={onCreateAnnotation}/>
   </div>;
 });
 
 // Only the previous/current paragraph changes during reading. Stable text and
 // notes keep their existing objects, so React can skip the rest of the article.
-const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, startsSection, showTranslations}: {
+const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, startsSection, showTranslations,onEditAnnotation}: {
   paragraph: Paragraph; index: number; active: boolean; startsSection: boolean; showTranslations: boolean;
+  onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 }) {
   return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active}>
     {startsSection && <h2>{paragraph.section}</h2>}
-    <p>{paragraph.original}</p>
+    <p data-original-text>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}>{segment.text}</button>:<span key={segment.start}>{segment.text}</span>)}</p>
     {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
   </div>;
 });

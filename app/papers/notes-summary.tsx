@@ -2,17 +2,19 @@
 
 import {useState} from 'react';
 import type {PaperRecord} from './paper-types';
+import {validAnnotations} from './paper-annotations.mjs';
 
 export function notesMarkdown(paper: PaperRecord) {
   const lines = [`# ${paper.title.replace(/\s*\n\s*/g, ' ')}`, '', `原文件：${paper.fileName}`, '', '页码对应原 PDF；P 编号对应当前提取正文。', ''];
   const sections = [...new Set(paper.paragraphs.map(p => p.section))];
   for (const section of sections) {
-    const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.section === section && (paragraph.note.trim() || paragraph.bookmarked));
+    const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.section === section && (paragraph.note.trim() || paragraph.bookmarked || validAnnotations(paragraph).length));
     if (!entries.length) continue;
     lines.push(`## ${section}`, '');
     for (const {paragraph, index} of entries) {
       lines.push(`### P${index + 1} · 第 ${paragraph.page} 页${paragraph.bookmarked ? ' · 已收藏' : ''}`, '', ...paragraph.original.split(/\r?\n/).map(line => `> ${line}`), '');
       if (paragraph.note.trim()) lines.push('笔记：', '', paragraph.note, '');
+      for(const annotation of validAnnotations(paragraph)) lines.push('划线批注：','',...annotation.quote.split(/\r?\n/).map(line=>`> ${line}`),'',annotation.comment||'仅高亮','');
     }
   }
   return lines.join('\n');
@@ -20,7 +22,7 @@ export function notesMarkdown(paper: PaperRecord) {
 
 export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onSelect: (index: number) => void}) {
   const [open, setOpen] = useState(false);
-  const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.note.trim() || paragraph.bookmarked);
+  const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.note.trim() || paragraph.bookmarked || validAnnotations(paragraph).length);
   function download() {
     const url = URL.createObjectURL(new Blob([notesMarkdown(paper)], {type: 'text/markdown;charset=utf-8'}));
     const link = document.createElement('a');
