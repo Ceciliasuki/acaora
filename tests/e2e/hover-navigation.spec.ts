@@ -8,6 +8,7 @@ const captures = 'outputs/hover-navigation-2026-10-13';
 test('hover rails reveal without moving content, leave with delay, and support keyboard escape', async ({page}) => {
   await page.setViewportSize({width:1440, height:1000});
   await installApiMocks(page, {signedIn:true});
+  await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/courses');
   await mkdir(captures, {recursive:true});
   const sidebar = page.locator('.sidebar-auto-slot');
@@ -60,6 +61,10 @@ test('hover rails reveal without moving content, leave with delay, and support k
   await page.keyboard.press('Escape');
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();
+  await page.goto('/dashboard');
+  await expect(page.locator('.dashboard-loading')).toBeHidden();
+  await expect(page.locator('.sidebar-auto-slot')).toHaveAttribute('data-expanded','false');
+  await page.screenshot({path:`${captures}/dashboard-folded-1440.png`, animations:'disabled'});
 });
 
 test('chapter rail keeps reading and answers intact, with reduced motion and narrow desktop access', async ({page}) => {
@@ -95,8 +100,13 @@ test('chapter rail keeps reading and answers intact, with reduced motion and nar
 test('touch disclosures close outside, main drawer keeps its focus trap, and opened directories have no serious accessibility errors', async ({browser}) => {
   const context = await browser.newContext({viewport:{width:375,height:812}, hasTouch:true, isMobile:true});
   const page = await context.newPage();
+  await page.emulateMedia({reducedMotion:'reduce'});
   await installApiMocks(page, {signedIn:true});
   await page.goto('/courses');
+  await expect.poll(async () => {
+    const sidebar = await page.locator('.app-sidebar').boundingBox();
+    return Boolean(sidebar && sidebar.x + sidebar.width <= 0);
+  }).toBe(true);
   const toggle = page.getByRole('button', {name:'课程目录', exact:true});
   await toggle.tap();
   await expect(toggle).toHaveAttribute('aria-expanded','true');

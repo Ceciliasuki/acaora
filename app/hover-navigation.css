@@ -85,7 +85,7 @@
   .course-navigation-heading { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .student-app .sidebar-auto-slot .app-sidebar.student-sidebar,
+  .student-app .sidebar-auto-slot .app-sidebar.student-sidebar { transition: none; }
   .student-app .sidebar-auto-slot :is(.acaora-brand > div, nav a span, .student-sidebar-foot p, .sidebar-rail-toggle span),
   .course-navigation-panel, .course-navigation-toggle > svg:last-child { transition: none; transform: none; }
 }
