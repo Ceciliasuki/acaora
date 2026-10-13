@@ -8,6 +8,15 @@ const original='Research evidence must be checked against original sources. 中�
 const paper={id:'annotation-fixture',title:'示例：原文阅读与批注',fileName:'annotation-example.pdf',addedAt:1,updatedAt:1,activeParagraph:0,
  paragraphs:['Introduction','Methods','Results'].map((section,index)=>({id:`annotation-${index}`,section,page:index+1,original:`${section}: ${original}`,translation:'',note:index===0?'保留已有段落笔记':'',bookmarked:false,read:false,annotations:[] as unknown[]}))};
 
+test('the demonstration is labelled and directs annotations to an imported personal paper',async({page})=>{
+ const state=await installApiMocks(page,{signedIn:true});await page.goto('/papers');
+ await expect(page.locator('.plab-reader-progress')).toHaveText('示例论文');
+ await selectText(page);await page.getByRole('button',{name:'添加批注',exact:true}).click();
+ await expect(page.locator('.paper-message')).toContainText('请先导入 PDF，再添加批注');
+ await expect(page.getByLabel('批注内容')).toHaveCount(0);
+ expect(state.requests).not.toContain('PUT /api/cloud/papers');
+});
+
 async function selectText(page:Page,start=14,end=56,crossParagraph=false){
  await page.locator('[data-original-text]').first().evaluate((element,{start,end,crossParagraph})=>{
   function boundary(target:Element,offset:number):[Node,number]{const walker=document.createTreeWalker(target,NodeFilter.SHOW_TEXT);let node:Node|null;while((node=walker.nextNode())){const length=node.textContent?.length??0;if(offset<=length)return[node,offset];offset-=length;}throw new Error('Selection offset outside text');}

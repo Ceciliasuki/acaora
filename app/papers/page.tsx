@@ -349,6 +349,7 @@ export default function PaperLab() {
 
   const createAnnotation=useCallback((anchors:TextAnchor[],highlightOnly:boolean)=>{
     const current=paperRef.current;
+    if(current.id===samplePaper.id){setMessage('示例只用于阅读演示；请先导入 PDF，再添加批注。');return;}
     if((current.ownerId??null)!==userIdRef.current)return;
     const valid=anchors.filter(anchor=>current.paragraphs.some(p=>p.id===anchor.paragraphId&&p.original.slice(anchor.start,anchor.end)===anchor.quote));
     if(!valid.length)return;
@@ -672,7 +673,7 @@ export default function PaperLab() {
               <button type="button" aria-pressed={showTranslations} onClick={() => setShowTranslations(value => !value)}>{showTranslations ? '隐藏译文' : '显示译文'}</button>
             </div>
             <div className="plab-reader-progress">
-              <b className="journal-num">{completion}% 已读</b>
+              <b className="journal-num">{paper.id===samplePaper.id?'示例论文':`${completion}% 已读`}</b>
               <i style={{ width: `${completion}%` }} />
             </div>
           </div>
