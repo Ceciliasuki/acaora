@@ -34,8 +34,8 @@ export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onS
   return <div className="paper-notes-summary">
     <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>笔记汇总</button>
     {open && <section aria-label="笔记汇总">
-      <div className="paper-notes-summary-head"><span>{entries.length} 段笔记 / 收藏</span><button type="button" disabled={!entries.length} onClick={download}>导出 Markdown</button></div>
-      {!entries.length && <p>还没有笔记或收藏。阅读时记录重点，即可在这里汇总。</p>}
+      <div className="paper-notes-summary-head"><span>{entries.length} 个段落</span><button type="button" disabled={!entries.length} onClick={download}>导出 Markdown</button></div>
+      {!entries.length && <p>还没有笔记、收藏或批注。阅读时记录重点，即可在这里汇总。</p>}
       {[...new Set(entries.map(({paragraph}) => paragraph.section))].map(section => <div key={section}>
         <h3>{section}</h3>
         {entries.filter(({paragraph}) => paragraph.section === section).map(({paragraph, index}) => <article key={paragraph.id}>

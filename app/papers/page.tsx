@@ -594,6 +594,7 @@ export default function PaperLab() {
           the index, the paragraph position and reading progress in the reader, the
           sync state beside the library, and the privacy facts in the colophon. */}
       <PageHeader className="workspace-header plab-head" title="论文研究" description="阅读原文、整理笔记，核对引用对应的段落。" actions={<div className="plab-head-tools">
+          {['working','done','error'].includes(translationState)&&<span className="paper-translation-feedback" role="status">{translatorStatusLabel(translationState,isEdge)}</span>}
           <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>
             {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
           </button>
@@ -649,6 +650,7 @@ export default function PaperLab() {
                   <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
                 </button>
                 <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
+                <span className="paper-library-filename">{record.fileName}</span>
               </article>;
             }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
           </div>
@@ -659,7 +661,6 @@ export default function PaperLab() {
         <section className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
           <div className="plab-reader-bar">
             <div className="paper-title-edit">
-              <span className="journal-num">{paper.fileName}</span>
               <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
           {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
             if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
@@ -696,7 +697,7 @@ export default function PaperLab() {
               <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
             </div>
           </div>}
-          <details className="paper-reading-tools"><summary>翻译状态</summary><p>{translatorStatusLabel(translationState,isEdge)}</p><p>{translationStatusDetail(translationState,modelProgress)}</p></details>
+          <details className="paper-reading-tools"><summary>翻译状态</summary>{!['working','done','error'].includes(translationState)&&<p>{translatorStatusLabel(translationState,isEdge)}</p>}<p>{translationStatusDetail(translationState,modelProgress)}</p></details>
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
             <div className="plab-rail-block"><strong className="plab-rail-role">{insight.role}</strong><p>{insight.explanation}</p></div>

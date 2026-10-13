@@ -40,7 +40,7 @@ export default function LiteratureSearch({seed}:{seed:string}) {
  return <section className="literature-search" aria-label="文献检索">
   <header><h2>文献检索</h2><p>查找中英文文献，筛选结果并导出引用。</p></header>
   <form onSubmit={event=>{event.preventDefault();void search(criteria);}}>
-   <div className="literature-query"><label><span className="sr-only">检索字段</span><select aria-label="检索字段" value={criteria.field} onChange={event=>change('field',event.target.value)}><option value="keywords">标题 / 关键词</option><option value="author">作者</option><option value="journal">期刊</option><option value="doi">DOI</option></select></label>
+   <div className="literature-query"><label><span className="sr-only">检索字段</span><select aria-label="检索字段" value={criteria.field} onChange={event=>change('field',event.target.value)}><option value="keywords">综合检索</option><option value="author">作者</option><option value="journal">期刊</option><option value="doi">DOI</option></select></label>
     <input aria-label="论文检索关键词" value={criteria.q} maxLength={300} onChange={event=>change('q',event.target.value)} placeholder="输入中文、英文关键词或完整 DOI" autoComplete="off"/>
     <button type="submit" disabled={busy}>{busy?'检索中…':'检索'}</button>
    </div>
@@ -50,7 +50,7 @@ export default function LiteratureSearch({seed}:{seed:string}) {
     <label>排序<select aria-label="结果排序" value={criteria.sort} onChange={event=>change('sort',event.target.value)}><option value="relevance">相关度</option><option value="newest">最新优先</option><option value="citations">被引次数</option></select></label>
    </div>
   </form>
-  <details className="literature-source"><summary>数据来源与覆盖</summary><p>主要检索Crossref中已登记DOI的中英文文献；“标题 / 关键词”使用书目信息匹配，可能同时匹配作者等信息。中文收录和学位论文覆盖不等同于知网，全文访问以出版来源权限为准。检索词发送至公共索引，正文和笔记不会自动提交。</p><a href="https://www.crossref.org/" target="_blank" rel="noreferrer">Crossref</a></details>
+  <details className="literature-source"><summary>数据来源与覆盖</summary><p>主要检索Crossref中已登记DOI的中英文文献；综合检索匹配标题、作者等书目信息，采用宽泛匹配，优先按相关度查找。按年份或被引排序可能包含主题较远的记录，DOI用于精确查找。中文收录和学位论文覆盖不等同于知网，全文访问以出版来源权限为准。检索词发送至公共索引，正文和笔记不会自动提交。</p><a href="https://www.crossref.org/" target="_blank" rel="noreferrer">Crossref</a></details>
   {busy&&<div className="literature-loading" role="status">正在检索公共学术索引…</div>}
   {error&&<div className="literature-error" role="alert"><p>{error}</p><button type="button" onClick={()=>void search(criteria)}>重新检索</button></div>}
   {status&&<p className="literature-status" role="status">{status}</p>}
