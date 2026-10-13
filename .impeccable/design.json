@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T13:48:24.6416416+00:00",
+  "generatedAt": "2026-10-13T02:22:38.9091318Z",
   "title": "Design System: Acaora 学曦",
   "extensions": {
     "shadows": [
@@ -35,16 +35,17 @@
         "name": "dialog",
         "value": "200ms",
         "purpose": "Real dialog entry; not a route wait."
+      },
+      {
+        "name": "navigation-disclosure",
+        "value": "260ms / 240ms / 180ms",
+        "purpose": "Isolated app rail reveal / course overlay reveal / pointer leave grace period; reduced motion removes spatial transitions."
       }
     ],
     "breakpoints": [
       {
         "name": "workspace-compact",
         "value": "1200px"
-      },
-      {
-        "name": "workspace-icon-rail",
-        "value": "1000px"
       },
       {
         "name": "workspace-drawer",

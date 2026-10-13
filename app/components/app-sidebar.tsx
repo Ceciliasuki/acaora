@@ -9,6 +9,8 @@ import {
   FolderKanban,
   LayoutDashboard,
   Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   X,
   type LucideIcon,
@@ -18,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client";
 import { IconButton } from "./ui";
 import MotionNavigation from './motion-navigation';
+import useHoverNavigation from './use-hover-navigation';
 
 type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
 
@@ -47,6 +50,7 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const [open, setOpen] = useState(false);
   const [isDrawer, setIsDrawer] = useState(false);
+  const {expanded, rootRef, toggleRef, toggle, handlers} = useHoverNavigation();
   const [profile, setProfile] = useState<{initials: string; title: string; subtitle: string; avatarUrl: string} | null>(null);
   const displayedProfile = profile ?? {initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl};
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -133,7 +137,7 @@ export default function AppSidebar({
   const links = navigation.map(item => {
     const Icon = item.icon;
     return <Link aria-current={item.id === active ? 'page' : undefined} aria-label={item.label}
-      className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
+      title={item.label} className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
       <Icon size={20} aria-hidden="true" /><span>{item.label}</span>
     </Link>;
   });
@@ -141,6 +145,7 @@ export default function AppSidebar({
   return <>
     <IconButton ref={triggerRef} className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>
     {open && <button className="sidebar-backdrop" type="button" aria-label="关闭主导航" onClick={() => setOpen(false)} />}
+    <div className="sidebar-auto-slot" ref={rootRef} data-expanded={!isDrawer && expanded} {...(!isDrawer ? handlers : {})}>
     <aside ref={sidebarRef} className={`student-sidebar app-sidebar ${open ? "is-open" : ""}`} data-section={active} id="app-sidebar" aria-label="应用导航" inert={isDrawer && !open ? true : undefined}>
       <div className="sidebar-head">
         <Link className="acaora-brand light" href="/dashboard" aria-label="返回 Acaora 工作台" onClick={() => setOpen(false)}>
@@ -149,6 +154,9 @@ export default function AppSidebar({
         </Link>
         <IconButton ref={closeRef} className="sidebar-close-button" variant="ghost" label="关闭主导航" onClick={() => setOpen(false)}><X size={21} /></IconButton>
       </div>
+      <button ref={toggleRef} className="sidebar-rail-toggle" type="button" aria-label="展开或收起主导航" aria-expanded={expanded} aria-controls="app-sidebar" onClick={toggle}>
+        {expanded ? <PanelLeftClose size={20} aria-hidden="true"/> : <PanelLeftOpen size={20} aria-hidden="true"/>}<span>导航</span>
+      </button>
       {active === 'dashboard' ? <nav aria-label="主要导航">{links}</nav> :
         <MotionNavigation className="sidebar-nav-motion" label="主要导航" value={active} rememberKey="workspace-sidebar">{links}</MotionNavigation>}
       <div className="student-sidebar-foot">
@@ -158,5 +166,6 @@ export default function AppSidebar({
         </Link>
       </div>
     </aside>
+    </div>
   </>;
 }
