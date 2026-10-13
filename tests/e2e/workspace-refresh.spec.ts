@@ -21,7 +21,7 @@ for (const width of [1440, 669, 375]) {
     await installApiMocks(page, {signedIn: true, projects: [project], cloudPapers: [paper]});
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
-    await mkdir('outputs/hover-navigation-2026-10-13', {recursive: true});
+    await mkdir('outputs/advanced-motion-2026-10-13', {recursive: true});
     for (const [path, heading] of [['courses', '课程中心'], ['papers', '论文研究'], ['data', '数据分析'], ['projects', '项目空间'], ['settings', '设置']]) {
       await page.goto(`/${path}`);
       await expect(page.getByRole('heading', {name: heading, exact: true, level: 1})).toBeVisible();
@@ -35,7 +35,7 @@ for (const width of [1440, 669, 375]) {
       }).toBe(true);
       // Chrome's stitched WebGL capture can corrupt the desktop header. Use
       // the actual viewport for the reader and the wide project workspace.
-      await page.screenshot({path: `outputs/hover-navigation-2026-10-13/${path}-${width}.png`, fullPage: path !== 'papers' && !(path === 'projects' && width === 1440), animations: 'disabled'});
+      await page.screenshot({path: `outputs/advanced-motion-2026-10-13/${path}-${width}.png`, fullPage: path !== 'papers' && !(path === 'projects' && width === 1440), animations: 'disabled'});
     }
     expect(errors).toEqual([]);
   });

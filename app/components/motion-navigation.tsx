@@ -13,9 +13,35 @@ export default function MotionNavigation({value, label, className, children, as:
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<HTMLSpanElement>(null);
+  const hoverRef = useRef<HTMLSpanElement>(null);
+  const hovered = useRef<HTMLElement | null>(null);
+  function moveHover(control: HTMLElement, animate = true) {
+    const root = rootRef.current;
+    const marker = hoverRef.current;
+    if (!root || !marker || control.matches(':disabled')) return;
+    const bounds = root.getBoundingClientRect();
+    const target = control.getBoundingClientRect();
+    const previous = marker.getBoundingClientRect();
+    const ready = root.dataset.hoverVisible === 'true';
+    const transform = `translate(${target.left-bounds.left+root.scrollLeft}px, ${target.top-bounds.top+root.scrollTop}px)`;
+    marker.getAnimations().forEach(animation=>animation.cancel());
+    marker.style.width = `${target.width}px`;
+    marker.style.height = `${target.height}px`;
+    marker.style.transform = transform;
+    root.dataset.hoverVisible = 'true';
+    hovered.current = control;
+    if (animate && ready && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      marker.animate([{transform:`translate(${previous.left-bounds.left+root.scrollLeft}px, ${previous.top-bounds.top+root.scrollTop}px) scale(${previous.width/target.width}, ${previous.height/target.height})`}, {transform}], {duration:200, easing:'cubic-bezier(.16,1,.3,1)'});
+    }
+  }
+  function hideHover() {
+    if (rootRef.current) rootRef.current.dataset.hoverVisible = 'false';
+    hovered.current = null;
+  }
   useEffect(() => {
     const marker = markerRef.current;
-    return () => marker?.getAnimations().forEach(animation => animation.cancel());
+    const hover = hoverRef.current;
+    return () => {marker?.getAnimations().forEach(animation => animation.cancel()); hover?.getAnimations().forEach(animation => animation.cancel());};
   }, []);
   useEffect(() => {
     const root = rootRef.current;
@@ -48,15 +74,21 @@ export default function MotionNavigation({value, label, className, children, as:
         {transform: `translate(${previous.x}px, ${previous.y}px) scale(${previous.width / next.width}, ${previous.height / next.height})`}, {transform},
         ], {duration: 280, easing: "cubic-bezier(.16,1,.3,1)"});
         animation.onfinish = () => {root!.dataset.motionMoving = 'false';};
+        animation.oncancel = () => {if (!marker!.getAnimations().length) root!.dataset.motionMoving = 'false';};
       }
     }
-    const observer = new ResizeObserver(() => update(true));
+    const observer = new ResizeObserver(() => {update(true); if (hovered.current) moveHover(hovered.current, false);});
     observer.observe(root);
     root.querySelectorAll('button, a').forEach(element => observer.observe(element));
-    const reduce = () => {marker.getAnimations().forEach(animation => animation.cancel()); root.dataset.motionMoving = 'false'; update();};
+    const reduce = () => {marker.getAnimations().forEach(animation => animation.cancel()); hoverRef.current?.getAnimations().forEach(animation=>animation.cancel()); root.dataset.motionMoving = 'false'; update();};
     preference.addEventListener("change", reduce);
     update(true);
     return () => {observer.disconnect(); preference.removeEventListener("change", reduce);};
   }, [value, rememberKey]);
-  return <Tag ref={rootRef} className={`motion-navigation ${className}`} aria-label={label} role={role}>{children}<span ref={markerRef} className="motion-navigation-marker" aria-hidden="true" /></Tag>;
+  return <Tag ref={rootRef} className={`motion-navigation ${className}`} aria-label={label} role={role}
+    onPointerMove={event=>{if(event.pointerType !== 'mouse' || !(event.target instanceof Element)) return; const control=event.target.closest<HTMLElement>('button, a'); if(control && control !== hovered.current) moveHover(control);}}
+    onPointerLeave={()=>{const active=document.activeElement; if(!(active instanceof HTMLElement) || !rootRef.current?.contains(active) || !active.matches(':focus-visible')) hideHover();}}
+    onFocusCapture={event=>{if(event.target instanceof HTMLElement && event.target.matches('button:focus-visible, a:focus-visible')) moveHover(event.target);}}
+    onBlurCapture={event=>{if(!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) hideHover();}}>
+    <span ref={hoverRef} className="motion-navigation-hover" aria-hidden="true" />{children}<span ref={markerRef} className="motion-navigation-marker" aria-hidden="true" /></Tag>;
 }

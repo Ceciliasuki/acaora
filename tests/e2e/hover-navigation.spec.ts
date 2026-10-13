@@ -3,7 +3,7 @@ import {mkdir} from 'node:fs/promises';
 import AxeBuilder from '@axe-core/playwright';
 import {installApiMocks} from './helpers';
 
-const captures = 'outputs/hover-navigation-2026-10-13';
+const captures = 'outputs/advanced-motion-2026-10-13';
 
 test('hover rails reveal without moving content, leave with delay, and support keyboard escape', async ({page}) => {
   await page.setViewportSize({width:1440, height:1000});

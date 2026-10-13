@@ -3,17 +3,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
-  BarChart3,
-  BookOpen,
-  FileSearch,
-  FolderKanban,
-  LayoutDashboard,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
-  Settings,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -21,8 +14,8 @@ import { authChangeEvent, getCurrentUser, getProfile } from "../lib/auth-client"
 import { IconButton } from "./ui";
 import MotionNavigation from './motion-navigation';
 import useHoverNavigation from './use-hover-navigation';
-
-type AppSection = "dashboard" | "courses" | "papers" | "data" | "projects" | "settings";
+import {navigation, type AppSection} from './workspace-navigation';
+import QuickNavigation from './quick-navigation';
 
 type AppSidebarProps = {
   active: AppSection;
@@ -31,15 +24,6 @@ type AppSidebarProps = {
   profileSubtitle?: string;
   avatarUrl?: string;
 };
-
-const navigation: Array<{ id: AppSection; href: string; icon: LucideIcon; label: string }> = [
-  { id: "dashboard", href: "/dashboard", icon: LayoutDashboard, label: "总览" },
-  { id: "courses", href: "/courses", icon: BookOpen, label: "课程中心" },
-  { id: "papers", href: "/papers", icon: FileSearch, label: "论文研究" },
-  { id: "data", href: "/data", icon: BarChart3, label: "数据分析" },
-  { id: "projects", href: "/projects", icon: FolderKanban, label: "项目空间" },
-  { id: "settings", href: "/settings", icon: Settings, label: "设置与隐私" },
-];
 
 export default function AppSidebar({
   active,
@@ -134,10 +118,10 @@ export default function AppSidebar({
     };
   }, [isDrawer, open]);
 
-  const links = navigation.map(item => {
+  const links = navigation.map((item, index) => {
     const Icon = item.icon;
     return <Link aria-current={item.id === active ? 'page' : undefined} aria-label={item.label}
-      title={item.label} className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
+      title={item.label} style={{'--navigation-step': Math.min(index, 4)} as React.CSSProperties} className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
       <Icon size={20} aria-hidden="true" /><span>{item.label}</span>
     </Link>;
   });
@@ -160,6 +144,7 @@ export default function AppSidebar({
       {active === 'dashboard' ? <nav aria-label="主要导航">{links}</nav> :
         <MotionNavigation className="sidebar-nav-motion" label="主要导航" value={active} rememberKey="workspace-sidebar">{links}</MotionNavigation>}
       <div className="student-sidebar-foot">
+        <QuickNavigation onNavigate={()=>setOpen(false)}/>
         <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料" onClick={() => setOpen(false)}>
           {displayedProfile.avatarUrl ? <img src={displayedProfile.avatarUrl} width="72" height="72" alt="" /> : <b>{displayedProfile.initials}</b>}
           <p><strong>{displayedProfile.title}</strong><small>{displayedProfile.subtitle}</small></p>

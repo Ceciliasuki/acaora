@@ -40,6 +40,11 @@
         "name": "navigation-disclosure",
         "value": "260ms / 240ms / 180ms",
         "purpose": "Isolated app rail reveal / course overlay reveal / pointer leave grace period; reduced motion removes spatial transitions."
+      },
+      {
+        "name": "interaction-motion",
+        "value": "200ms / 280ms / 380ms / 420ms",
+        "purpose": "Pointer-follow plate / native quick navigation dialog / mounted course focus layout / true chart geometry; reduced motion keeps the resulting states."
       }
     ],
     "breakpoints": [
@@ -113,7 +118,7 @@
       "Borders plus the lightest shadow carry structure for controls and genuinely raised content; a page is never a stack of floating cards.",
       "A numeric register reports the page's real state, and the dense tool surfaces are allowed to look like instruments rather than like marketing panels.",
       "A surface never prints a number it has not read: unknown is `—`, never `0`.",
-      "Motion is restrained and always explains a state change.",
+      "Motion is visible at navigation, focus-layout and real result changes; reading remains stable and transitions are interruptible.",
       "Long-session legibility beats first-impression impact."
     ],
     "rules": [

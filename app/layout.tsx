@@ -4,6 +4,7 @@ import "./globals.css";
 import "./white-theme.css";
 import "./workspace-refresh.css";
 import "./hover-navigation.css";
+import "./workspace-motion.css";
 import "katex/dist/katex.min.css";
 import LightCurtain from "./components/light-curtain";
 

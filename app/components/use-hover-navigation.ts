@@ -40,6 +40,7 @@ export default function useHoverNavigation() {
     toggle() { cancelLeave(); keyboardInside.current = false; setExpanded(value => !value); },
     handlers: {
       onPointerEnter(event: PointerEvent<HTMLDivElement>) {
+        if (!event.currentTarget.contains(event.target as Node)) return;
         if (event.pointerType !== 'mouse' || !window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)').matches) return;
         cancelLeave(); pointerInside.current = true; setExpanded(true);
       },
@@ -51,12 +52,15 @@ export default function useHoverNavigation() {
         }, 180);
       },
       onFocusCapture(event: FocusEvent<HTMLDivElement>) {
+        // A portaled modal belongs to the component tree, not this visual rail.
+        if (!event.currentTarget.contains(event.target)) return;
         if (restoringFocus.current) { restoringFocus.current = false; return; }
         if (event.target.matches(':focus-visible')) {
           cancelLeave(); keyboardInside.current = true; setExpanded(true);
         }
       },
       onBlurCapture(event: FocusEvent<HTMLDivElement>) {
+        if (!event.currentTarget.contains(event.target)) return;
         if (!event.currentTarget.contains(event.relatedTarget)) {
           keyboardInside.current = false;
           if (!pointerInside.current) close();

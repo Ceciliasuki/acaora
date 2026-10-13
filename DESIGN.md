@@ -212,7 +212,7 @@ Density is deliberately uneven between surfaces. A reading tool and a statistics
 - Borders plus the lightest shadow carry structure for controls and genuinely raised content; a page is never a stack of floating cards.
 - A numeric register reports the page's real state, and the dense tool surfaces are allowed to look like instruments rather than like marketing panels.
 - A surface never prints a number it has not read: unknown is `—`, never `0`.
-- Motion is restrained and always explains a state change.
+- Motion is visible at navigation, focus-layout and real result changes; reading remains stable and transitions are interruptible.
 - Long-session legibility beats first-impression impact.
 
 ## Colors
@@ -447,6 +447,8 @@ The original rail specification is retained below for traceability; current Navi
 ### Purposeful workspace motion
 
 Selection plates use cancellable 280ms cubic-bezier(.16,1,.3,1), with ResizeObserver tracking root and controls. The authored course-sheet opening is a 360ms bounded clip reveal from its index. Projects use 220ms continuity; analysis and paper tools use 240ms; paper side panels and dialogs use 200ms. During travel, brand tint and brand ink keep labels readable. Sidebar continuity remembers geometry only in module memory. Reduced motion cancels live animation and removes spatial transitions and smooth scrolling. No route delays, recurring loops, paragraph entrances, new curtain animation or account-storage changes.
+
+The advanced interaction extension adds a separate 200ms pointer-follow plate without changing selection. Native quick navigation opens in 280ms and searches only the six real workspace destinations; Ctrl/Meta+K, arrows, Enter, Escape and focus return work, and an existing modal prevents nesting. Course focus mode keeps lessons and answers mounted, hides chrome, and explains the layout switch with a 380ms position transition without scaling text. Histogram bars and scatter points interpolate real geometry in 420ms; labels and statistics show their current values immediately. Task-count feedback lasts 600ms. Reduced motion keeps all final states and removes these transitions; idle surfaces do not loop.
 
 ### Icons
 - **Library:** Lucide, one family across the whole product. Do not migrate to another icon library, and do not mix families on one surface.
