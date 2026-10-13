@@ -64,6 +64,7 @@ test('hover rails reveal without moving content, leave with delay, and support k
   await page.goto('/dashboard');
   await expect(page.locator('.dashboard-loading')).toBeHidden();
   await expect(page.locator('.sidebar-auto-slot')).toHaveAttribute('data-expanded','false');
+  expect(await page.locator('.sidebar-auto-slot a[aria-current="page"] svg').evaluate(element=>getComputedStyle(element).color)).toBe('rgb(255, 255, 255)');
   await page.screenshot({path:`${captures}/dashboard-folded-1440.png`, animations:'disabled'});
 });
 
