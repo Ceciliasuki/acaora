@@ -1,6 +1,8 @@
 # ACAORA 当前开发与验收交接
 
-更新：2026-10-09（Asia/Shanghai）。本文件替代旧的 2026-09-16 Dashboard 原型交接，不把历史规划或待发布状态当作当前进度。
+更新：2026-10-14（Asia/Shanghai）。本文件替代旧的 2026-09-16 Dashboard 原型交接，不把历史规划或待发布状态当作当前进度。
+
+本轮整批工作台与论文交互发布范围、触控对齐及门槛见 [2026-10-14 发布记录](releases/2026-10-14-study-workspaces.md)。分支为 `codex/papers-design-refinement-2026-10-13`，用户已授权部署。最终发布状态以对应 PR、`origin/main` 和正式站 `/api/version` 的完整 SHA 核对；下文的 10 月 9 日信息保留为历史交接。
 
 ## 开发基准
 

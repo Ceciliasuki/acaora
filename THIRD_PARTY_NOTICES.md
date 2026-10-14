@@ -1,5 +1,7 @@
 # UI references
 
+PaperLab self-hosts Adobe's Source Serif 4 Regular under the SIL Open Font License 1.1. Source: [adobe-fonts/source-serif](https://github.com/adobe-fonts/source-serif), release branch, `WOFF2/OTF/SourceSerif4-Regular.otf.woff2`. The complete license and copyright notice ship in `public/fonts/source-serif/LICENSE.md`. The font is unmodified; no third-party font server is contacted while reading a paper.
+
 The button inset highlight in `app/white-theme.css` adapts the layered highlight approach from Magic UI's [Shimmer Button](https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/shimmer-button.tsx). ACAORA uses a hover-triggered CSS sheen instead of the source's continuously rotating shimmer; no Magic UI runtime dependency is included.
 
 MIT License

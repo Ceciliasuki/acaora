@@ -1,4 +1,5 @@
 'use client';
+import SourcePreview from './source-preview';
 
 import {useEffect, useRef, useState} from 'react';
 import type {AnnotationDraft, PaperAnnotation, PaperRecord, TextAnchor} from './paper-types';
@@ -26,7 +27,7 @@ export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate}:
   {!entries.length&&<p>选中文字后添加高亮或批注。也可用 Alt＋M 高亮、Alt＋A 批注。</p>}
   {active&&<button className="paper-annotate-paragraph" type="button" onClick={()=>onCreate([{paragraphId:active.id,start:0,end:active.original.length,quote:active.original}],false)}>批注当前段落</button>}
   {entries.map(({paragraph,index,annotation})=><article key={annotation.id} className={`annotation-entry color-${annotation.color}`}>
-   <button className="annotation-location" type="button" onClick={()=>onJump(index)}>P{index+1} · 第 {paragraph.page} 页</button>
+   <SourcePreview paper={paper} index={index} onNavigate={onJump}/><button className="annotation-location" type="button" onClick={()=>onJump(index)}>P{index+1} · 第 {paragraph.page} 页</button>
    <blockquote>{annotation.quote}</blockquote>{annotation.comment&&<p>{annotation.comment}</p>}
    <div><button type="button" onClick={()=>onEdit(paragraph.id,annotation)}>编辑批注</button><button type="button" aria-label={`删除批注：${annotation.quote.slice(0,40)}`} onClick={()=>onDelete(paragraph.id,annotation.id)}>删除</button></div>
   </article>)}

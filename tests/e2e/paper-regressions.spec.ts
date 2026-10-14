@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {installApiMocks} from './helpers';
+import {installApiMocks, openPaperLibrary} from './helpers';
 
 const first = {
   id: 'regression-a', fileName: 'a.pdf', title: 'Source paper', addedAt: 1, updatedAt: 1, activeParagraph: 0,
@@ -16,8 +16,10 @@ test('editing a note then immediately switching papers preserves the source note
   await page.goto('/papers');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByLabel('段落笔记').fill('Unsaved source note');
+  await openPaperLibrary(page);
   await page.locator('.plab-index-open').filter({hasText: second.title}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(second.title);
+  await openPaperLibrary(page);
   await page.locator('.plab-index-open').filter({hasText: first.title}).click();
   await expect(page.getByLabel('段落笔记')).toHaveValue('Unsaved source note');
   await page.reload();
@@ -61,6 +63,7 @@ test('AI results arriving after a paper switch never overwrite the other paper',
   await page.getByRole('button', {name: '分析当前段落', exact: true}).click();
   await request;
   await page.getByRole('button', {name: '阅读与笔记', exact: true}).click();
+  await openPaperLibrary(page);
   await page.locator('.plab-index-open').filter({hasText: second.title}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(second.title);
   const response = page.waitForResponse('**/api/papers/ai');
@@ -139,11 +142,13 @@ test('edits made while the target paper storage is slow survive the eventual swi
   await page.goto('/papers');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.evaluate(() => {(window as typeof window & {holdTarget?: boolean}).holdTarget = true;});
+  await openPaperLibrary(page);
   await page.locator('.plab-index-open').filter({hasText: second.title}).click();
   await expect.poll(() => page.evaluate(() => (window as typeof window & {targetBlocked?: boolean}).targetBlocked)).toBe(true);
   await page.getByLabel('段落笔记').fill('Edit while storage is pending');
   await page.evaluate(() => (window as typeof window & {releaseTarget?: () => void}).releaseTarget?.());
   await expect(page.getByLabel('论文标题')).toHaveValue(second.title);
+  await openPaperLibrary(page);
   await page.locator('.plab-index-open').filter({hasText: first.title}).click();
   await expect(page.getByLabel('段落笔记')).toHaveValue('Edit while storage is pending');
 });

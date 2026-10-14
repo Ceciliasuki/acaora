@@ -1,0 +1,166 @@
+import {expect, test} from '@playwright/test';
+import {mkdir} from 'node:fs/promises';
+import AxeBuilder from '@axe-core/playwright';
+import {installApiMocks, type MockProject} from './helpers';
+
+const now = '2026-10-14T08:00:00.000Z';
+const project: MockProject = {id:'craft-project', title:'文献整理与研究计划', kind:'paper', status:'active', metadata:{goal:'核对文献来源，整理下一步任务。',notes:'先检查证据，再记录判断。',tasks:[{id:'task-one',text:'核对引用来源',done:false}]},created_at:now,updated_at:now};
+const captures = 'outputs/workspace-audit-2026-10-14';
+
+test('Desktop workspace evidence with controlled records', async ({page})=>{
+  await installApiMocks(page,{signedIn:true,projects:[project]});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await mkdir(captures,{recursive:true});
+  for (const route of ['projects','settings']) {
+    await page.setViewportSize({width:1440,height:900});
+    await page.goto(`/${route}`);
+    if(route==='projects') await expect(page.getByRole('heading',{name:project.title,exact:true})).toBeVisible();
+    else await expect(page.getByLabel('昵称',{exact:true})).toHaveValue('测试同学');
+    await page.screenshot({path:`${captures}/${route}-controlled-${process.env.CRAFT_CAPTURE_PHASE ?? 'after'}.png`});
+  }
+});
+
+test('Data method tabs and the account tabs activate with keyboard and expose their panels', async ({page})=>{
+  await installApiMocks(page);
+  await page.goto('/data');
+  const tabs = page.getByRole('tablist',{name:'分析方法',exact:true});
+  await tabs.getByRole('tab',{name:'描述统计',exact:true}).press('ArrowRight');
+  await expect(tabs.getByRole('tab',{name:'相关与回归',exact:true})).toBeFocused();
+  await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby','analysis-tab-relation');
+  await page.keyboard.press('End');
+  await expect(tabs.getByRole('tab',{name:'独立样本 t 检验',exact:true})).toHaveAttribute('aria-selected','true');
+  await page.keyboard.press('Home');
+  await expect(tabs.getByRole('tab',{name:'描述统计',exact:true})).toHaveAttribute('tabindex','0');
+  await page.goto('/auth');
+  await page.getByRole('tab',{name:'密码登录',exact:true}).press('ArrowRight');
+  await expect(page.getByRole('tab',{name:'注册账户',exact:true})).toBeFocused();
+  await expect(page.getByLabel('昵称',{exact:true})).toBeVisible();
+  await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby','account-tab-register');
+});
+
+test('A click pins the hover-open directory and a second click closes it', async ({page})=>{
+  await installApiMocks(page);
+  await page.goto('/courses');
+  const trigger=page.getByRole('button',{name:'课程目录',exact:true});
+  await trigger.hover(); await expect(trigger).toHaveAttribute('aria-expanded','true');
+  await trigger.click(); await page.mouse.move(1000,100);
+  await expect(trigger).toHaveAttribute('aria-expanded','true');
+  await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded','false');
+  await page.getByRole('heading',{name:'课程中心',exact:true}).click();
+  await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded','true');
+  await trigger.press('Escape'); await expect(trigger).toHaveAttribute('aria-expanded','false');
+  await expect(trigger).toBeFocused();
+});
+
+test('Failed project writes preserve drafts and an in-flight write cannot be duplicated', async ({page})=>{
+  await installApiMocks(page,{signedIn:true,projects:[project]});
+  let writes=0;
+  await page.route('**/api/projects?*',async route=>{
+    if(route.request().method()!=='PATCH') return route.fallback();
+    writes++;
+    await new Promise(resolve=>setTimeout(resolve,250));
+    if(writes===1) return route.fulfill({status:503,json:{error:'保存暂时不可用，请重试。'}});
+    await route.fallback();
+  });
+  await page.goto('/projects');
+  const field=page.getByLabel('新任务',{exact:true});
+  await field.fill('保留这条待办');
+  await page.getByRole('button',{name:'添加',exact:true}).click();
+  await expect(page.getByLabel('项目状态',{exact:true})).toBeDisabled();
+  await expect(page.locator('.project-tasks input')).toBeDisabled();
+  await expect(page.locator('.project-message[role="alert"]')).toContainText('保存暂时不可用');
+  await expect(field).toHaveValue('保留这条待办');
+  await page.getByRole('button',{name:'添加',exact:true}).click();
+  await field.fill('继续记录的下一条');
+  await expect(page.locator('.project-tasks')).toContainText('保留这条待办');
+  await expect(field).toHaveValue('继续记录的下一条');
+  expect(writes).toBe(2);
+});
+
+test('Task and note drafts belong to their project when switching records', async ({page})=>{
+  await installApiMocks(page,{signedIn:true,projects:[project,{...project,id:'other',title:'第二个项目',metadata:{tasks:[]}}]});
+  await page.goto('/projects');
+  await page.getByLabel('新任务',{exact:true}).fill('第一条草稿');
+  await page.getByLabel('项目笔记',{exact:true}).fill('尚未保存的研究思路');
+  await page.locator('.project-list').getByRole('button',{name:/第二个项目/}).click();
+  await expect(page.getByLabel('新任务',{exact:true})).toHaveValue('');
+  await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('');
+  await page.locator('.project-list').getByRole('button',{name:/文献整理与研究计划/}).click();
+  await expect(page.getByLabel('新任务',{exact:true})).toHaveValue('第一条草稿');
+  await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('尚未保存的研究思路');
+  await expect(page.getByText('有未保存修改',{exact:true})).toBeVisible();
+});
+
+test('Project creation and deletion failures stay visible inside their dialog', async ({page})=>{
+  await installApiMocks(page,{signedIn:true,projects:[project]});
+  await page.route('**/api/projects**',async route=>{
+    if(['POST','DELETE'].includes(route.request().method())) return route.fulfill({status:503,json:{error:'暂时无法提交，请重试。'}});
+    await route.fallback();
+  });
+  await page.goto('/projects');
+  await page.getByRole('button',{name:'新建项目',exact:true}).click();
+  await page.getByLabel('项目名称',{exact:true}).fill('输入应保留');
+  await page.getByRole('button',{name:'创建项目空间',exact:true}).click();
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('暂时无法提交');
+  await expect(page.getByLabel('项目名称',{exact:true})).toHaveValue('输入应保留');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'删除',exact:true}).click();
+  await page.getByRole('button',{name:'确认删除',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'删除这个项目？'}).getByRole('alert')).toContainText('暂时无法提交');
+  await expect(page.getByRole('button',{name:'确认删除',exact:true})).toBeEnabled();
+});
+
+test('Settings report rejected metadata and blocked session storage without claiming a save', async ({page})=>{
+  await installApiMocks(page,{signedIn:true});
+  await page.route('**/api/version',route=>route.fulfill({status:503,json:{commit:'invalid'}}));
+  await page.route('**/api/papers/ai',route=>route.fulfill({status:503,json:{model:'unconfirmed'}}));
+  await page.goto('/settings');
+  await expect(page.getByText('暂时无法读取版本',{exact:true})).toBeVisible();
+  await expect(page.locator('#ai-models')).toContainText('配置请求失败');
+  await page.getByLabel('DeepSeek API Key',{exact:true}).fill('test-only-not-a-real-key');
+  await page.evaluate(()=>{Storage.prototype.setItem=function(){throw new DOMException('Blocked','QuotaExceededError');};});
+  await page.getByRole('button',{name:'保存到当前会话',exact:true}).click();
+  await expect(page.locator('.workspace-feedback').getByRole('alert')).toContainText('无法保存会话设置');
+  await expect(page.getByLabel('DeepSeek API Key',{exact:true})).toHaveValue('test-only-not-a-real-key');
+  await expect(page.locator('.workspace-feedback').getByRole('alert')).toBeInViewport();
+});
+
+test('Data section navigation preserves selection and can reveal every imported variable', async ({page})=>{
+  await installApiMocks(page);
+  await page.goto('/data');
+  const csv=Array.from({length:10},(_,i)=>`variable_${i}`).join(',')+'\n'+Array.from({length:10},(_,i)=>i+1).join(',')+'\n'+Array.from({length:10},(_,i)=>i+2).join(',');
+  await page.getByLabel('选择数据文件',{exact:true}).setInputFiles({name:'controlled-ui.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
+  await expect(page.getByRole('status')).toContainText('刷新后需重新选择原文件');
+  await expect(page.locator('.variable-card')).toHaveCount(8);
+  await page.getByRole('button',{name:'查看全部 10 个变量',exact:true}).click();
+  await expect(page.locator('.variable-card')).toHaveCount(10);
+  await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'分析结果',exact:true}).click();
+  await expect(page.locator('#analysis')).toBeInViewport();
+  await page.getByRole('tab',{name:'描述统计',exact:true}).press('ArrowRight');
+  await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'原始数据',exact:true}).click();
+  await expect(page.getByRole('tab',{name:'相关与回归',exact:true})).toHaveAttribute('aria-selected','true');
+});
+
+test('The public create-account entry opens registration directly', async ({page})=>{
+  await installApiMocks(page);
+  await page.goto('/');
+  await page.getByRole('link',{name:'创建账户',exact:true}).click();
+  await expect(page.getByRole('tab',{name:'注册账户',exact:true})).toHaveAttribute('aria-selected','true');
+  await expect(page.getByLabel('昵称',{exact:true})).toBeVisible();
+});
+
+for(const width of [1024,1440]) test(`Desktop cross-page layout and accessibility at ${width}px @a11y`,async ({page})=>{
+  await installApiMocks(page,{signedIn:true,projects:[project]});
+  await page.setViewportSize({width,height:768}); await page.emulateMedia({reducedMotion:'reduce'});
+  await mkdir(captures,{recursive:true});
+  for(const route of ['courses','data','projects','settings','auth','dashboard','courses/STAT-201/lesson-1']) {
+    await page.goto(`/${route}`);
+    if(route==='projects') await expect(page.getByRole('heading',{name:project.title,exact:true})).toBeVisible();
+    if(route==='settings') await expect(page.getByLabel('昵称',{exact:true})).toHaveValue('测试同学');
+    if(route==='dashboard') await expect(page.locator('.dashboard-loading')).toBeHidden();
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1)).toBe(true);
+    const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+    expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical'),route).toEqual([]);
+    await page.screenshot({path:`${captures}/${route.replaceAll('/','-')}-after-${width}.png`,animations:'disabled'});
+  }
+});

@@ -1,19 +1,22 @@
 "use client";
 
-import styles from "../focused-workspaces.module.css";
+import craft from "./reading-craft.module.css";
+import PaperTitle from './paper-title';
+import usePaperMotion from './use-paper-motion';
+import {ArrowLeft, Bookmark, BookOpen, Check, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
+import dynamic from 'next/dynamic';
+import SourcePreview from './source-preview';
 
 import AppSidebar from "../components/app-sidebar";
 import {PageHeader} from "../components/ui";
 import MotionNavigation from "../components/motion-navigation";
 
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
-import AiStudio from "./ai-studio";
-import ContinuousReader from './continuous-reader';
+import ContinuousReader, {type ReaderNavigation, type ReadingAnchor} from './continuous-reader';
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
 import AnnotationPanel, {AnnotationEditor} from './annotation-panel';
-import LiteratureSearch from './literature-search';
-import {saveResult} from './ai-studio';
+import {saveResult} from './ai-memory';
 import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines} from './pdf-text';
 import OriginalPdf from './original-pdf';
 import NotesSummary from './notes-summary';
@@ -39,11 +42,20 @@ type TranslatorFactory = {
 };
 
 type TranslationState = "checking" | "ready" | "downloadable" | "unsupported" | "working" | "done" | "error";
+const AiStudio = dynamic(() => import('./ai-studio'), {loading: () => <AiConsoleSkeleton />});
+const LiteratureSearch = dynamic(() => import('./literature-search'), {loading: () => <DiscoverySkeleton />});
+type TrailEntry = {anchor: ReadingAnchor; mode: 'reader' | 'library' | 'insight' | 'ai' | 'search'; section: string};
 
 export default function PaperLab() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const translatorRef = useRef<TranslatorSession | null>(null);
   const [paper, setPaper] = useState<PaperRecord>(samplePaper);
+  const navigationRef = useRef<ReaderNavigation>(null);
+  const [trail, setTrail] = useState<{key: string; entries: TrailEntry[]}>({key: '', entries: []});
+  const [visited, setVisited] = useState({ai: false, search: false});
+  const [lockedNote, setLockedNote] = useState<{key: string; id: string; pinned?: boolean} | null>(null);
+  const [fontSize, setFontSize] = useState(20);
+  const [saveFeedback, setSaveFeedback] = useState<{key: string; state: 'saving' | 'saved' | 'error'} | null>(null);
   const paperRef = useRef(paper);
   const [library, setLibrary] = useState<PaperRecord[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -69,11 +81,20 @@ export default function PaperLab() {
   const skipPersistRef = useRef(false);
   const dirtyRef = useRef(false);
   const switchingRef = useRef(false);
-  const [mobilePanel, setMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
+  const [mobilePanel, commitMobilePanel] = useState<"reader" | "library" | "insight" | "ai" | "search">("reader");
   const [showTranslations, setShowTranslations] = useState(false);
-  const [citationJump, setCitationJump] = useState<{index: number; id: number; paperId: string; ownerId?: string} | null>(null);
+  const [citationJump, setCitationJump] = useState<{index: number; id: number; paperId: string; ownerId?: string; offset?: number} | null>(null);
   const [pdfRequest, setPdfRequest] = useState<{page: number; id: number; paperId: string; ownerId?: string} | undefined>();
   const [panels, setPanels] = useState({library: false, notes: false});
+  const {shellRef, capture: captureMotion} = usePaperMotion(`${mobilePanel}:${panels.library}:${panels.notes}`);
+  const setMobilePanel = useCallback((next: typeof mobilePanel) => {
+    navigationRef.current?.getPosition();
+    if (next === 'ai' || next === 'search') setVisited(previous => ({...previous, [next]: true}));
+    captureMotion();
+    // The library is a temporary drawer; a new working mode returns to the text.
+    if (next !== 'library') setPanels(previous => previous.library ? {...previous, library: false} : previous);
+    commitMobilePanel(next);
+  }, [captureMotion]);
   const libraryToggleRef = useRef<HTMLButtonElement>(null);
   const notesToggleRef = useRef<HTMLButtonElement>(null);
 
@@ -83,13 +104,15 @@ export default function PaperLab() {
       if (!active) return;
       try {
         const saved = JSON.parse(localStorage.getItem('acaora:paper-panels') ?? 'null');
-        if (saved && typeof saved.library === 'boolean' && typeof saved.notes === 'boolean') setPanels({library: saved.library, notes: saved.notes});
+        if (saved && typeof saved.notes === 'boolean') setPanels({library: false, notes: saved.notes});
       } catch { /* Panel preferences are optional; reading works without storage. */ }
     });
     return () => {active = false;};
   }, []);
 
   function changePanels(next: typeof panels) {
+    navigationRef.current?.getPosition();
+    captureMotion();
     setPanels(next);
     try {localStorage.setItem('acaora:paper-panels', JSON.stringify(next));} catch { /* Keep the current session usable. */ }
   }
@@ -102,6 +125,31 @@ export default function PaperLab() {
   }, []);
   const {activeIndex, select: selectParagraph, snapshot: withReadingPosition} = useReadingPosition(paper, commitReadingPosition);
   const activeParagraph = paper.paragraphs[activeIndex];
+  const paperKey = JSON.stringify([paper.ownerId ?? null, paper.id]);
+  const noteIndex = lockedNote?.key === paperKey ? Math.max(0, paper.paragraphs.findIndex(paragraph => paragraph.id === lockedNote.id)) : activeIndex;
+  const noteParagraph = paper.paragraphs[noteIndex];
+  const trailEntries = trail.key === paperKey ? trail.entries : [];
+  const saveLabel = paper.id === samplePaper.id ? '本次演示有效 · 导入后可保存' : saveFeedback?.key === paperKey ? {saving: '正在保存到设备', saved: '已保存到设备', error: '设备保存未完成'}[saveFeedback.state] : '设备端记忆';
+  const workspaceStatus = paper.id === samplePaper.id ? '示例演示' : saveFeedback?.key === paperKey && (saveFeedback.state !== 'saved' || !paper.ownerId) ? saveLabel : {ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState];
+  useEffect(() => {
+    try {const size = Number(localStorage.getItem('acaora:paper-font-size')); if ([18,20,22].includes(size)) queueMicrotask(() => setFontSize(size));} catch { /* Reading preferences are optional. */ }
+  }, []);
+  useEffect(() => {
+    if (!panels.library || mobilePanel !== 'reader' || innerWidth <= 760) return;
+    const node = document.querySelector<HTMLButtonElement>('#paper-library button');
+    node?.focus({preventScroll: true});
+  }, [panels.library, mobilePanel]);
+  useEffect(() => {
+    if (!panels.library) return;
+    const close = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      event.preventDefault(); captureMotion(); setPanels(previous => ({...previous, library: false}));
+      try {localStorage.setItem('acaora:paper-panels', JSON.stringify({...panels, library: false}));} catch { /* Optional preference. */ }
+      libraryToggleRef.current?.focus({preventScroll: true});
+    };
+    document.addEventListener('keydown', close);
+    return () => document.removeEventListener('keydown', close);
+  }, [panels, captureMotion]);
   const completion = paper.paragraphs.length
     ? Math.round((paper.paragraphs.filter((item) => item.read).length / paper.paragraphs.length) * 100)
     : 0;
@@ -329,17 +377,20 @@ export default function PaperLab() {
       const updated = { ...withReadingPosition(paper), ownerId: userIdRef.current ?? undefined, updatedAt: Date.now() };
       const persist = signedInRef.current ? savePaperAndQueue(updated, {requireExisting: true}) : savePaper(updated);
       void persist.then((saved) => {
-        if (saved === false) return;
+        if (saved === false) {if (paperRef.current.id === paper.id) setSaveFeedback({key: JSON.stringify([paper.ownerId ?? null, paper.id]), state: 'error'}); return;}
         if ((paper.ownerId ?? null) !== userIdRef.current) return;
         if (paperRef.current === paper) dirtyRef.current = false;
+        if (paperRef.current === paper) setSaveFeedback({key: JSON.stringify([paper.ownerId ?? null, paper.id]), state: 'saved'});
         setLibrary((current) => [updated, ...current.filter((item) => item.id !== updated.id)]);
         if (signedInRef.current) void syncNow();
-      }).catch(() => setCloudStatus("error"));
+      }).catch(() => {if (paperRef.current === paper) setSaveFeedback({key: JSON.stringify([paper.ownerId ?? null, paper.id]), state: 'error'}); setCloudStatus("error");});
     }, 450);
     return () => window.clearTimeout(handle);
   }, [paper, hydrated, setCloudStatus, syncNow, withReadingPosition]);
 
   const updatePaper=useCallback((updater: (current: PaperRecord) => PaperRecord) => {
+    const source = paperRef.current;
+    if (source.id !== samplePaper.id) setSaveFeedback({key: JSON.stringify([source.ownerId ?? null, source.id]), state: 'saving'});
     if (userIdRef.current) {
       dirtyRef.current = true;
       setCloudStatus("syncing");
@@ -364,14 +415,14 @@ export default function PaperLab() {
     }else{
       setAnnotationDraft(draft);setPanels(previous=>({...previous,notes:true}));setMobilePanel(innerWidth<=760?'insight':'reader');
     }
-  },[updatePaper]);
+  },[updatePaper,setMobilePanel]);
 
   const editAnnotation=useCallback((paragraphId:string,annotation:PaperAnnotation)=>{
     const current=paperRef.current;
     if((current.ownerId??null)!==userIdRef.current)return;
     setAnnotationDraft({key:crypto.randomUUID(),paperKey:JSON.stringify([current.ownerId??null,current.id]),annotationId:annotation.id,anchors:[{paragraphId,start:annotation.start,end:annotation.end,quote:annotation.quote}],comment:annotation.comment,color:annotation.color});
     setPanels(previous=>({...previous,notes:true}));setMobilePanel(innerWidth<=760?'insight':'reader');
-  },[]);
+  },[setMobilePanel]);
 
   function saveAnnotation(draft:AnnotationDraft){
     const current=paperRef.current;
@@ -396,16 +447,30 @@ export default function PaperLab() {
   function updateActiveParagraph(patch: Partial<Paragraph>) {
     updatePaper((current) => ({
       ...current,
-      paragraphs: current.paragraphs.map((paragraph, index) => index === activeIndex ? { ...paragraph, ...patch } : paragraph),
+      paragraphs: current.paragraphs.map((paragraph, index) => index === noteIndex ? { ...paragraph, ...patch } : paragraph),
     }));
   }
 
   function jumpToParagraph(index: number, originalPdf = false) {
     if (index < 0 || index >= paper.paragraphs.length) return;
+    if (innerWidth > 760) {
+      const anchor = navigationRef.current?.getPosition() ?? {index: activeIndex, offset: 0};
+      const entry: TrailEntry = {anchor, mode: mobilePanel, section: paper.paragraphs[anchor.index]?.section ?? ''};
+      setTrail(previous => ({key: paperKey, entries: [...(previous.key === paperKey ? previous.entries : []).filter((item, position, all) => position !== all.length - 1 || item.mode !== entry.mode || item.anchor.index !== anchor.index || Math.abs(item.anchor.offset - anchor.offset) > 2), entry].slice(-12)}));
+    }
     selectParagraph(index);
     setMobilePanel('reader');
     setCitationJump(previous => ({index, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
     if (originalPdf) setPdfRequest(previous => ({page: paper.paragraphs[index].page, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
+  }
+
+  function returnToReading(position: number) {
+    const entry = trailEntries[position];
+    if (!entry || !paper.paragraphs[entry.anchor.index]) return;
+    setTrail({key: paperKey, entries: trailEntries.slice(0, position)});
+    selectParagraph(entry.anchor.index);
+    setCitationJump(previous => ({...entry.anchor, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
+    setMobilePanel(entry.mode === 'ai' || entry.mode === 'search' ? entry.mode : 'reader');
   }
 
   async function handlePdf(event: ChangeEvent<HTMLInputElement>) {
@@ -470,7 +535,7 @@ export default function PaperLab() {
     return session;
   }
 
-  async function translateParagraphs(mode: "current" | "all") {
+  async function translateParagraphs(mode: "current" | "all", paragraphIndex = activeIndex) {
     setMessage("");
     setTranslationProgress(0);
     setTranslationState('working');
@@ -479,7 +544,7 @@ export default function PaperLab() {
     try {
       const translator = await ensureTranslator();
       const targets = mode === "current"
-        ? [activeIndex]
+        ? [paragraphIndex]
         : paper.paragraphs.map((_, index) => index).filter((index) => !paper.paragraphs[index].translation);
       if (!targets.length) {
         setTranslationState("done");
@@ -586,9 +651,9 @@ export default function PaperLab() {
   }
 
   return (
-    <main className="student-app paper-layout workspace-refresh">
+    <main className={`student-app paper-layout workspace-refresh ${craft.reading}`}>
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section className={`student-main plab-shell ${styles.focused}`}>
+      <section ref={shellRef} className="student-main plab-shell" style={{'--paper-reading-size': `${fontSize}px`} as CSSProperties}>
       {/* Running head: the surface's own line, then only the tools that act on the
           library. The numeric register that used to sit here was removed because
           every value in it is already printed where it belongs: the library count in
@@ -597,7 +662,7 @@ export default function PaperLab() {
       <PageHeader className="workspace-header plab-head" title="论文研究" description="阅读原文、整理笔记，核对引用对应的段落。" actions={<div className="plab-head-tools">
           {['working','done','error'].includes(translationState)&&<span className="paper-translation-feedback" role="status">{translatorStatusLabel(translationState,isEdge)}</span>}
           <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>
-            {extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
+            <Upload size={16} aria-hidden="true" />{extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
           </button>
           <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" disabled={!hydrated || extracting} onChange={handlePdf} />
         </div>} />
@@ -606,22 +671,31 @@ export default function PaperLab() {
 
       <div className="paper-navigation-bar">
       <MotionNavigation className="paper-workspace-nav" label="论文工作模式" value={mobilePanel === 'ai' || mobilePanel === 'search' ? mobilePanel : 'reader'}>
-        <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}>阅读与笔记</button>
-        <button type="button" aria-pressed={mobilePanel === "ai"} onClick={() => setMobilePanel("ai")}>AI 分析</button>
-        <button type="button" aria-pressed={mobilePanel === "search"} onClick={() => setMobilePanel("search")}>学术检索</button>
+        <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}><BookOpen size={16} aria-hidden="true" />阅读与笔记</button>
+        <button type="button" aria-pressed={mobilePanel === "ai"} onClick={() => setMobilePanel("ai")}><Sparkles size={16} aria-hidden="true" />AI 分析</button>
+        <button type="button" aria-pressed={mobilePanel === "search"} onClick={() => setMobilePanel("search")}><Search size={16} aria-hidden="true" />学术检索</button>
       </MotionNavigation>
 
       <div className="paper-layout-controls" hidden={mobilePanel === 'ai' || mobilePanel === 'search'}>
         <div>
-          <button ref={libraryToggleRef} type="button" aria-controls="paper-library" aria-expanded={panels.library} onClick={() => changePanels({...panels, library: !panels.library})}>论文库</button>
-          <button ref={notesToggleRef} type="button" aria-controls="paper-notes" aria-expanded={panels.notes} onClick={() => changePanels({...panels, notes: !panels.notes})}>笔记</button>
-          <button type="button" aria-pressed={!panels.library && !panels.notes} onClick={() => changePanels({library: false, notes: !panels.library && !panels.notes})}>专注阅读</button>
+          <button ref={libraryToggleRef} type="button" aria-controls="paper-library" aria-expanded={panels.library} onClick={() => changePanels({...panels, library: !panels.library})}><Library size={16} aria-hidden="true" />论文库</button>
+          <button ref={notesToggleRef} type="button" aria-controls="paper-notes" aria-expanded={panels.notes} onClick={() => changePanels({...panels, notes: !panels.notes})}><PanelRight size={16} aria-hidden="true" />笔记</button>
+          <button type="button" aria-pressed={!panels.library && !panels.notes} onClick={() => changePanels({library: false, notes: !panels.library && !panels.notes})}><Scan size={16} aria-hidden="true" />专注阅读</button>
         </div>
-        <span role="status">{{ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState]}</span>
+        <span role="status">{workspaceStatus}</span>
+        {!panels.notes && saveFeedback?.key === paperKey && saveFeedback.state === 'error' && <button className="desktop-paper-tool" type="button" onClick={() => updatePaper(current => ({...current}))}>重试保存</button>}
       </div>
       </div>
       <MotionNavigation as="div" className="paper-mobile-tabs" role="tablist" label="论文工作台面板" value={mobilePanel}>
-        {(["library", "reader", "insight", "ai", "search"] as const).map((panel) => <button role="tab" aria-selected={mobilePanel === panel} className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button">{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
+        {(["library", "reader", "insight", "ai", "search"] as const).map((panel, index, choices) => <button id={`paper-tab-${panel}`} role="tab" aria-selected={mobilePanel === panel} tabIndex={mobilePanel === panel ? 0 : -1}
+          aria-controls={{library:'paper-library',reader:'paper-reader',insight:'paper-notes',ai:'paper-ai',search:'paper-search'}[panel]}
+          className={mobilePanel === panel ? "active" : ""} key={panel} onClick={() => setMobilePanel(panel)} type="button"
+          onKeyDown={event => {
+            const next = event.key === 'ArrowRight' ? (index + 1) % choices.length : event.key === 'ArrowLeft' ? (index + choices.length - 1) % choices.length : event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1 : null;
+            if (next === null || event.altKey || event.ctrlKey || event.metaKey) return;
+            event.preventDefault(); setMobilePanel(choices[next]);
+            event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="tab"]')[next]?.focus();
+          }}>{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
       </MotionNavigation>
 
       <section className="plab-workbench" data-library-open={panels.library} data-notes-open={panels.notes} hidden={mobilePanel === "ai" || mobilePanel === "search"}>
@@ -629,13 +703,16 @@ export default function PaperLab() {
         {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
             rows, the title as the entry, and the reader's own progress beneath it.
             The row keeps its two real controls (open, delete) unchanged. */}
-        <aside id="paper-library" className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`}>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Escape bubbles from the drawer's controls; the aside retains complementary semantics. */}
+        <aside id="paper-library" className={`plab-index ${mobilePanel === "library" ? "mobile-visible" : ""}`} onKeyDown={event => {
+          if (event.key === 'Escape') {event.stopPropagation(); changePanels({...panels, library: false}); setMobilePanel('reader'); (libraryToggleRef.current?.getClientRects().length ? libraryToggleRef.current : document.getElementById('paper-tab-reader'))?.focus();}
+        }}>
           <div className="plab-index-head">
             <h2>论文库</h2>
             {/* An unread store has no count, so the index prints an absence rather
                 than a zero that would claim the library is empty. */}
             <span className="journal-num">{libraryError ? "—" : library.length}</span>
-            <button className="paper-panel-close" type="button" aria-label="收起论文库" onClick={() => {changePanels({...panels, library: false}); libraryToggleRef.current?.focus();}}>×</button>
+            <button className="paper-panel-close" type="button" aria-label="收起论文库" onClick={() => {changePanels({...panels, library: false}); setMobilePanel('reader'); (libraryToggleRef.current?.getClientRects().length ? libraryToggleRef.current : document.getElementById('paper-tab-reader'))?.focus();}}><X size={16} aria-hidden="true" /></button>
           </div>
           {libraryError ? <p className="plab-index-error" role="alert">
             {libraryError}
@@ -646,11 +723,11 @@ export default function PaperLab() {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
               const current = record.id === paper.id;
               return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
-                <button className="plab-index-open" type="button" onClick={() => void openPaper(record)}>
+                <button className="plab-index-open" type="button" onClick={() => {changePanels({...panels, library: false}); setMobilePanel('reader'); void openPaper(record);}}>
                   <strong>{record.title}</strong>
                   <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
                 </button>
-                <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}>×</button>
+                <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}><X size={14} aria-hidden="true" /></button>
                 <span className="paper-library-filename">{record.fileName}</span>
               </article>;
             }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
@@ -659,45 +736,47 @@ export default function PaperLab() {
         </aside>
 
         {/* Full text is continuous; paragraph IDs still anchor notes and AI context. */}
-        <section className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
-          <div className="plab-reader-bar">
+        <section id="paper-reader" className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
+          <ContinuousReader noteIndex={noteIndex} navigationRef={navigationRef} onNavigate={jumpToParagraph} key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation} header={<div className="plab-reader-bar">
+            <div className="paper-source-record"><span>{paper.id === samplePaper.id ? '示例论文 · 仅供阅读演示' : paper.fileName}</span><span>{paper.paragraphs.length} 段 · {new Set(paper.paragraphs.map(paragraph => paragraph.section)).size} 个章节</span></div>
             <div className="paper-title-edit">
-              <input aria-label="论文标题" value={paper.title} onChange={(event) => updatePaper((current) => ({ ...current, title: event.target.value }))} />
+              <PaperTitle key={paperKey} value={paper.title} onChange={title => updatePaper(current => ({...current, title}))} />
+            </div>
+          </div>} tools={<><div className="reader-controls">
+              <span>全文阅读</span>
           {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
             if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
             updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
           }} />}
-            </div>
-            <div className="reader-controls">
-              <span>全文阅读</span>
+              <div className="paper-reading-preferences desktop-paper-tool"><label>字号<select aria-label="正文字号" value={fontSize} onChange={event => {const size = Number(event.target.value); setFontSize(size); try {localStorage.setItem('acaora:paper-font-size', String(size));} catch { /* Optional preference. */ }}}>{[18,20,22].map(size => <option key={size} value={size}>{size}</option>)}</select></label></div>
+              {trailEntries.length > 0 && <div className="paper-reading-trail desktop-paper-tool"><button type="button" aria-label="返回刚才的位置" title={`返回 ${trailEntries.at(-1)?.section}`} onClick={() => returnToReading(trailEntries.length - 1)}><ArrowLeft size={15} aria-hidden="true" />返回</button><details><summary>阅读轨迹</summary><nav aria-label="阅读轨迹">{trailEntries.map((entry, index) => <button type="button" key={index} onClick={() => returnToReading(index)}>{entry.section} · 第 {entry.anchor.index + 1} 段{entry.mode === 'ai' ? ' · AI 分析' : ''}</button>)}</nav></details></div>}
               <button type="button" aria-pressed={showTranslations} onClick={() => setShowTranslations(value => !value)}>{showTranslations ? '隐藏译文' : '显示译文'}</button>
             </div>
             <div className="plab-reader-progress">
               <b className="journal-num">{paper.id===samplePaper.id?'示例论文':`${completion}% 已读`}</b>
               <i style={{ width: `${completion}%` }} />
             </div>
-          </div>
-
-          <ContinuousReader key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation}/>
+          </>} />
         </section>
 
         {/* Notes belong to the active paragraph; rule-based hints open on demand. */}
         <aside id="paper-notes" className={`plab-rail ${mobilePanel === "insight" ? "mobile-visible" : ""}`}>
-          <div className="plab-rail-head"><h2>笔记与批注</h2><span>随原文自动保存</span><button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {setAnnotationDraft(null);changePanels({...panels, notes: false}); notesToggleRef.current?.focus();}}>×</button></div>
+          <div className="plab-rail-head"><h2>笔记与批注</h2><span role="status">{saveLabel}</span>{saveFeedback?.key === paperKey && saveFeedback.state === "error" && <button type="button" onClick={() => updatePaper(current => ({...current}))}>重试保存</button>}<button className="paper-panel-close" type="button" aria-label="收起笔记" onClick={() => {setAnnotationDraft(null);changePanels({...panels, notes: false}); setMobilePanel('reader'); (notesToggleRef.current?.getClientRects().length ? notesToggleRef.current : document.getElementById('paper-tab-reader'))?.focus();}}><X size={16} aria-hidden="true" /></button></div>
           {annotationDraft?.paperKey===JSON.stringify([paper.ownerId??null,paper.id])&&<AnnotationEditor key={annotationDraft.key} draft={annotationDraft} onSave={saveAnnotation} onCancel={()=>setAnnotationDraft(null)}/>}
-          <AnnotationPanel paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation}/>
-          <NotesSummary key={paper.id} paper={paper} onSelect={jumpToParagraph} />
-          {activeParagraph && <div className="plab-rail-block">
-            <p className="plab-reading-context">第 {activeIndex + 1} / {paper.paragraphs.length} 段 · 第 {activeParagraph.page} 页 · {activeParagraph.section}</p>
-            <textarea aria-label="段落笔记" value={activeParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
+          {noteParagraph && <div className="plab-rail-block">
+            <p className="plab-reading-context">第 {noteIndex + 1} / {paper.paragraphs.length} 段 · 第 {noteParagraph.page} 页 · {noteParagraph.section}</p>
+            <div className="paper-note-source desktop-paper-tool"><blockquote>{noteParagraph.original.slice(0,220)}{noteParagraph.original.length > 220 ? '…' : ''}</blockquote><div><SourcePreview key={`${paperKey}:${noteIndex}`} paper={paper} index={noteIndex} onNavigate={jumpToParagraph}/><button type="button" onClick={() => jumpToParagraph(noteIndex)}>定位原文</button><button type="button" aria-pressed={lockedNote?.key === paperKey && Boolean(lockedNote.pinned)} onClick={() => setLockedNote(lockedNote?.key === paperKey && lockedNote.pinned ? null : {key: paperKey, id: noteParagraph.id, pinned: true})}><Pin size={14} aria-hidden="true" />{lockedNote?.key === paperKey && lockedNote.pinned ? '取消固定' : '固定笔记'}</button></div></div>
+            <textarea aria-label="段落笔记" onFocus={() => {if (innerWidth > 760) setLockedNote(previous => previous?.key === paperKey && previous.pinned ? previous : {key: paperKey, id: noteParagraph.id});}} onBlur={() => setLockedNote(previous => previous?.pinned ? previous : null)} value={noteParagraph.note} placeholder="记录重点、疑问或自己的解释……" onChange={(event) => updateActiveParagraph({ note: event.target.value })} />
             <div className="plab-rail-actions">
-              <button type="button" onClick={() => updateActiveParagraph({bookmarked: !activeParagraph.bookmarked})}>{activeParagraph.bookmarked ? '★ 已收藏' : '☆ 收藏'}</button>
-              <button type="button" onClick={() => updateActiveParagraph({read: !activeParagraph.read})}>{activeParagraph.read ? '✓ 已读' : '标记为已读'}</button>
-              <button type="button" onClick={() => setMobilePanel('ai')}>分析当前段落</button>
-              <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('current')}>翻译当前段落</button>
-              <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
+              <button type="button" aria-pressed={noteParagraph.bookmarked} onClick={() => updateActiveParagraph({bookmarked: !noteParagraph.bookmarked})}><Bookmark size={14} fill={noteParagraph.bookmarked ? 'currentColor' : 'none'} aria-hidden="true" />{noteParagraph.bookmarked ? '已收藏' : '收藏'}</button>
+              <button type="button" aria-pressed={noteParagraph.read} onClick={() => updateActiveParagraph({read: !noteParagraph.read})}><Check size={14} aria-hidden="true" />{noteParagraph.read ? '已读' : '标记为已读'}</button>
+              <button type="button" onClick={() => {if (noteIndex !== activeIndex) jumpToParagraph(noteIndex); setMobilePanel('ai');}}>分析当前段落</button>
+              <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('current', noteIndex)}>翻译当前段落</button>
+              <details className="paper-note-more desktop-paper-tool"><summary>更多工具</summary><button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button></details><button className="mobile-paper-tool" type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
             </div>
           </div>}
+          <NotesSummary key={`summary:${paperKey}`} paper={paper} onSelect={jumpToParagraph} />
+          <AnnotationPanel key={`annotations:${paperKey}`} paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation}/>
           <details className="paper-reading-tools"><summary>翻译状态</summary>{!['working','done','error'].includes(translationState)&&<p>{translatorStatusLabel(translationState,isEdge)}</p>}<p>{translationStatusDetail(translationState,modelProgress)}</p></details>
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
@@ -710,8 +789,8 @@ export default function PaperLab() {
         </>}
       </section>
 
-        <div className="paper-mode-content" hidden={mobilePanel !== "ai"}>
-        {hydrated ? <AiStudio
+        <div id="paper-ai" className="paper-mode-content" hidden={mobilePanel !== "ai"}>
+        {hydrated && (visited.ai || mobilePanel === 'ai') ? <AiStudio
           paper={paper}
           activeParagraph={activeParagraph}
           activeIndex={activeIndex}
@@ -726,8 +805,8 @@ export default function PaperLab() {
         /> : <AiConsoleSkeleton />}
         </div>
 
-        <div className="paper-mode-content" hidden={mobilePanel !== "search"}>
-          {hydrated ? <LiteratureSearch seed={searchQuery}/> : <DiscoverySkeleton/>}
+        <div id="paper-search" className="paper-mode-content" hidden={mobilePanel !== "search"}>
+          {hydrated && (visited.search || mobilePanel === 'search') ? <LiteratureSearch seed={searchQuery}/> : mobilePanel === 'search' ? <DiscoverySkeleton/> : null}
         </div>
       </section>
     </main>

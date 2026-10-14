@@ -40,10 +40,16 @@ export default function LightCurtain() {
   // Draw the existing light field once, then keep it still. Task interactions
   // should not compete with a permanent full-screen shader. Motion is opt-in.
   const [paused, setPaused] = useState(true);
+  const [visibleEpoch, setVisibleEpoch] = useState(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    if (!canvas.getClientRects().length) {
+      const waiting = new ResizeObserver(() => {if (canvas.getClientRects().length) {waiting.disconnect(); setVisibleEpoch(epoch => epoch + 1);}});
+      waiting.observe(canvas);
+      return () => waiting.disconnect();
+    }
     canvas.dataset.motion = "unavailable";
     const gl = canvas.getContext("webgl", { alpha: false, antialias: false, depth: false, powerPreference: "low-power" });
     if (!gl) return; // The static CSS material remains available without WebGL.
@@ -99,6 +105,7 @@ export default function LightCurtain() {
       draw();
     };
     const tick = (now: number) => {
+      if (!canvas.getClientRects().length) {sync(); return;}
       if (previous) elapsedRef.current += Math.min(now - previous, 100);
       previous = now;
       draw();
@@ -110,11 +117,12 @@ export default function LightCurtain() {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
       previous = 0;
-      canvas.dataset.motion = lost ? "unavailable" : motion.matches || paused ? "paused" : document.hidden ? "hidden" : "running";
-      if (!lost && !motion.matches && !paused && !document.hidden) frame = requestAnimationFrame(tick);
+      const visible = canvas.getClientRects().length > 0;
+      canvas.dataset.motion = lost ? "unavailable" : document.hidden || !visible ? "hidden" : motion.matches || paused ? "paused" : "running";
+      if (!lost && visible && !motion.matches && !paused && !document.hidden) frame = requestAnimationFrame(tick);
     };
     const interact = () => {
-      if (paused || motion.matches || lost || document.hidden) return;
+      if (paused || motion.matches || lost || document.hidden || !canvas.getClientRects().length) return;
       cancelAnimationFrame(frame);
       clearTimeout(timer);
       previous = 0;
@@ -129,6 +137,10 @@ export default function LightCurtain() {
     resize();
     canvas.style.opacity = "1";
     sync();
+    // Route-scoped CSS can remove the light field without changing the user's
+    // preference. Stop hidden draws and resume when a visible workspace returns.
+    const visibility = new ResizeObserver(sync);
+    visibility.observe(canvas);
     window.addEventListener("resize", resize);
     document.addEventListener("visibilitychange", sync);
     motion.addEventListener("change", sync);
@@ -139,6 +151,7 @@ export default function LightCurtain() {
     return () => {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
+      visibility.disconnect();
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", sync);
       motion.removeEventListener("change", sync);
@@ -150,7 +163,7 @@ export default function LightCurtain() {
       shaders.forEach((shader) => gl.deleteShader(shader));
       gl.deleteProgram(program);
     };
-  }, [paused]);
+  }, [paused, visibleEpoch]);
 
   return <>
     <div className="light-curtain" aria-hidden="true"><canvas ref={canvasRef} className="light-curtain-canvas" /></div>

@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {installApiMocks} from './helpers';
+import {installApiMocks, openPaperLibrary} from './helpers';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
 
@@ -95,7 +95,9 @@ test('LOAD-05 a late initial cloud response cannot restore the previous account 
     await expect.poll(()=>started).toBe(true);
     state.signedIn=false;
     await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
-    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('设备端保存');
+    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('示例演示');
+    await openPaperLibrary(page);
+    await expect(page.locator('.library-privacy strong')).toHaveText('设备端记忆');
     release();
     await expect(page.getByLabel('论文标题')).not.toHaveValue(paper.title);
     await expect(page.getByRole('region',{name:'论文正文'})).toBeVisible();
@@ -125,7 +127,7 @@ test('LOAD-06 a cloud deletion takes precedence over a draft made during refresh
     await page.getByLabel('段落笔记').fill('Draft while a cloud deletion is pending.');
     release();
     await expect(page.getByLabel('论文标题')).not.toHaveValue(paper.title);
-    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
+    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('示例演示');
   }finally{release();}
 });
 
@@ -161,7 +163,9 @@ test('LOAD-08 failed session recheck does not leave initial reading skeleton for
     await expect.poll(()=>started).toBe(true);
     await page.route('**/api/auth/session',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Session unavailable'})}));
     await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
-    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('同步暂不可用');
+    await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('示例演示');
+    await openPaperLibrary(page);
+    await expect(page.locator('.library-privacy strong')).toHaveText('云同步暂不可用');
     await expect(page.getByRole('region',{name:'论文正文'})).toBeVisible();
   }finally{release();}
 });

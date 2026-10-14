@@ -41,7 +41,7 @@ export default function LiteratureSearch({seed}:{seed:string}) {
   <header><h2>文献检索</h2><p>查找中英文文献，筛选结果并导出引用。</p></header>
   <form onSubmit={event=>{event.preventDefault();void search(criteria);}}>
    <div className="literature-query"><label><span className="sr-only">检索字段</span><select aria-label="检索字段" value={criteria.field} onChange={event=>change('field',event.target.value)}><option value="keywords">综合检索</option><option value="author">作者</option><option value="journal">期刊</option><option value="doi">DOI</option></select></label>
-    <input aria-label="论文检索关键词" value={criteria.q} maxLength={300} onChange={event=>change('q',event.target.value)} placeholder="输入中文、英文关键词或完整 DOI" autoComplete="off"/>
+    <input aria-label="论文检索关键词" value={criteria.q} maxLength={300} onChange={event=>change('q',event.target.value)} placeholder={{keywords:'输入中文或英文关键词',author:'输入作者姓名',journal:'输入期刊名称',doi:'例如 10.1038/s41586-020-2649-2'}[criteria.field]} autoComplete="off"/>
     <button type="submit" disabled={busy}>{busy?'检索中…':'检索'}</button>
    </div>
    <div className="literature-filters">

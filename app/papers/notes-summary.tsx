@@ -1,4 +1,5 @@
 'use client';
+import SourcePreview from './source-preview';
 
 import {useState} from 'react';
 import type {PaperRecord} from './paper-types';
@@ -39,7 +40,7 @@ export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onS
       {[...new Set(entries.map(({paragraph}) => paragraph.section))].map(section => <div key={section}>
         <h3>{section}</h3>
         {entries.filter(({paragraph}) => paragraph.section === section).map(({paragraph, index}) => <article key={paragraph.id}>
-          <button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
+          <SourcePreview paper={paper} index={index} onNavigate={onSelect}/><button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
           <blockquote>{paragraph.original}</blockquote>
           {paragraph.note.trim() && <p>{paragraph.note}</p>}
         </article>)}

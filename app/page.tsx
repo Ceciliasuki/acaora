@@ -7,7 +7,7 @@ import dashboardPreview from "../public/preview-dashboard.webp";
 import { getServerViewer } from "./lib/auth/server-viewer";
 
 const modules = [
-  { title: "课程资料", copy: "选一门课，整理资料或生成练习。", href: "/courses" },
+  { title: "课程学习", copy: "阅读课程讲解、完成练习，继续学习进度。", href: "/courses" },
   { title: "论文阅读", copy: "原文、译文和笔记，放在一起读。", href: "/papers" },
   { title: "数据分析", copy: "导入数据，检查变量、分布和回归结果。", href: "/data" },
   { title: "研究项目", copy: "记下目标，安排下一步，留下研究笔记。", href: "/projects" },
@@ -21,7 +21,7 @@ export default async function AcaoraHome() {
       <nav className="acaora-nav" aria-label="主导航">
         <Link className="acaora-brand" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
         <div className="acaora-nav-links"><a href="#platform">平台</a><Link href="/papers">论文研究</Link><Link href="/data">数据分析</Link><a href="#principles">隐私与 AI</a></div>
-        <div className="acaora-nav-actions">{viewer ? <><Link className="ghost-link" href="/dashboard">进入工作台</Link><Link className="home-viewer" href="/settings" aria-label={`打开 ${viewer.displayName} 的账户设置`}>{viewer.avatar ? <img src={viewer.avatar} alt="" width="32" height="32" /> : <span>{initials}</span>}<strong>{viewer.displayName}</strong></Link></> : <><Link className="ghost-link" href="/auth">登录</Link><Link className="primary-link" href="/auth">创建账户</Link></>}</div>
+        <div className="acaora-nav-actions">{viewer ? <><Link className="ghost-link" href="/dashboard">进入工作台</Link><Link className="home-viewer" href="/settings" aria-label={`打开 ${viewer.displayName} 的账户设置`}>{viewer.avatar ? <img src={viewer.avatar} alt="" width="32" height="32" /> : <span>{initials}</span>}<strong>{viewer.displayName}</strong></Link></> : <><Link className="ghost-link" href="/auth">登录</Link><Link className="primary-link" href="/auth?mode=register">创建账户</Link></>}</div>
       </nav>
 
       <section className="acaora-hero">

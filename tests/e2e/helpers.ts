@@ -32,6 +32,13 @@ export type MockState = {
 };
 
 const user = { id: "user-e2e", email: "student@example.com" };
+export async function openPaperLibrary(page: Page) {
+  await expect(page.getByLabel('论文标题', {exact: true})).toBeVisible();
+  const mobile = page.getByRole('tab', {name: '论文库', exact: true});
+  if (await mobile.isVisible()) {await mobile.click(); return;}
+  const toggle = page.getByRole('button', {name: '论文库', exact: true});
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click();
+}
 const profile = {
   display_name: "测试同学",
   university: "Acaora University",

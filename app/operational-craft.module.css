@@ -1,0 +1,83 @@
+/* Desktop refinements within the approved Study Workbench. */
+@media (min-width: 761px) {
+  .craft.craft :global(.workspace-header.ui-page-header) { min-height: 98px; padding: 8px 0 18px; margin-bottom: 18px; }
+  .craft.craft :global(.workspace-header h1) { font-size: clamp(30px, 2.6vw, 38px); margin-bottom: 8px; }
+  .craft.craft :global(.course-overview) { padding: 28px 32px; }
+  .craft.craft :global(.course-overview > header h2) { margin: 8px 0 14px; }
+  .craft.craft :global(.course-overview > header) { padding-bottom: 16px; }
+  .craft.craft :global(.course-overview > ol) { margin-top: 20px; }
+  .craft.craft.craft :global(.project-shell .project-detail) { padding: 28px 32px; }
+  .craft.craft :global(.project-detail-head) { padding-bottom: 16px; }
+  .craft.craft :global(.project-detail-head h2) { margin: 8px 0; overflow-wrap: anywhere; }
+  .craft.craft :global(.project-detail-head > div:first-child) { min-width: 0; }
+  .craft.craft :global(.project-tasks) { max-height: min(44dvh, 440px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-gutter: stable; }
+  .craft.craft :global(.project-list) { max-height: min(65dvh, 640px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  .craft.craft.craft :global(.project-shell .project-note-card textarea) { height: auto; min-height: 160px; max-height: 320px; field-sizing: content; }
+  .craft.craft :global(.settings-state) { grid-column: 1 / -1; max-width: 680px; margin: 0; }
+  .craft.craft :global(.settings-panel) { scroll-margin-top: 32px; }
+  .craft.craft :global(.workspace-feedback) { position: fixed; z-index: 45; inset: auto 40px 80px auto; width: min(440px, calc(100vw - 160px)); margin: 0; padding: 14px 18px; background: var(--surface); color: var(--text); border-radius: 8px; box-shadow: var(--shadow-overlay); font-size: 14px; line-height: 1.6; }
+  .craft.craft :global(.workspace-feedback[data-tone="error"]) { color: var(--danger); }
+  .craft.craft :global(.workspace-feedback[data-tone="success"]) { color: var(--success); }
+  .craft.craft :global(.workspace-feedback .ui-status) { margin: 0; }
+  .craft.craft :global(.data-stage-nav) { position: sticky; top: 12px; z-index: 20; display: flex; gap: 4px; width: fit-content; max-width: 100%; padding: 4px; margin-bottom: 20px; background: var(--surface); border-radius: 8px; box-shadow: var(--shadow-1); }
+  .craft.craft :global(.data-stage-nav a) { padding: 10px 16px; min-height: 40px; color: var(--text-2); text-decoration: none; white-space: nowrap; border-radius: 4px; font-size: 13px; }
+  .craft.craft :global(.data-stage-nav a[aria-current="location"]) { color: var(--brand); background: var(--brand-subtle); }
+  .craft.craft :global(.data-stage-nav .motion-navigation-marker) { background: var(--brand-subtle); border-radius: 4px; }
+  .craft.craft :global(.data-stage-nav.motion-navigation[data-motion-ready="true"] a[aria-current="location"]) { color: var(--brand); background: transparent; }
+  .craft.craft :global(.data-stage-nav a:hover) { color: var(--brand); }
+  .craft.craft :global(.hero-grid) { gap: 28px; }
+  .craft.craft :global(.upload-panel) { padding: 20px 24px; }
+  .craft.craft :global(.dropzone) { min-height: 132px; padding: 18px; gap: 8px; }
+  .craft.craft :global(.upload-icon) { width: 36px; height: 36px; }
+  .craft.craft :global(.overview-panel) { padding: 20px 0; }
+  .craft.craft :global(.metric-grid > article) { padding-block: 12px; }
+  .craft.craft :global(.metric-grid > article strong) { color: var(--text); font-size: 30px; }
+  .craft.craft :global(.format-support) { font-size: 12px; flex-wrap: wrap; }
+  .craft.craft :global(.file-chip) { margin-top: 16px; padding-top: 14px; }
+  .craft.craft :global(.quality-panel), .craft.craft :global(.analysis-panel), .craft.craft :global(.data-preview), .craft.craft :global(#import) { scroll-margin-top: 80px; }
+  .craft.craft :global(.analysis-tabs button) { font-size: 13px; }
+  .craft.craft :global(.analysis-header) { align-items: center; gap: 16px; }
+  .craft.craft :global(.analysis-header h2) { margin: 0; }
+  .craft.craft :global(.analysis-tabs) { margin-bottom: 0; }
+  .craft.craft :global(.analysis-content) { min-height: 360px; }
+  .craft.craft :global(.table-wrap) { font-variant-numeric: tabular-nums; }
+  .craft.craft :global(.variable-card) { min-width: 0; }
+  .craft.craft :global(.variable-card strong) { overflow-wrap: anywhere; }
+  .auth.auth { padding-block: 24px; }
+  .auth.auth :global(.auth-shell) { min-height: calc(100dvh - 48px); }
+  .auth.auth :global(.auth-form-side) { padding: 36px 48px; }
+  .auth.auth :global(.auth-form-head) { margin-bottom: 22px; }
+  .auth.auth :global(.auth-mode-tabs) { margin-bottom: 22px; }
+  .auth.auth :global(.auth-story-copy h1) { text-wrap: balance; }
+}
+:global(.workspace-draft-state) { display: inline-flex; align-items: center; gap: 8px; font: 12px/1.6 var(--font-sans); color: var(--text-2); }
+:global(.project-note-actions) { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; }
+:global(.project-note-actions .ui-button) { margin: 0; }
+:global(.project-create-error) { color: var(--danger); font-size: 14px; line-height: 1.6; }
+:global(.data-variable-disclosure) { margin-top: 16px; border: 0; background: transparent; color: var(--brand); padding: 8px 0; font-size: 13px; cursor: pointer; }
+:global(.data-load-status) { font-size: 13px; line-height: 1.6; color: var(--text-2); margin: 12px 0 0; }
+@media (max-width:760px) { :global(.data-stage-nav) { display: none; } }
+
+.craft.craft :global(.project-search) { position: relative; margin: 16px 0; }
+.craft.craft :global(.project-search label) { display: block; font-size: 12px; color: var(--text-2); margin-bottom: 6px; }
+.craft.craft :global(.project-search input) { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--border-control); border-radius: 6px; padding: 8px 30px 8px 10px; background: var(--surface); font-size: 13px; }
+.craft.craft :global(.project-search button) { position: absolute; right: 4px; bottom: 3px; display: grid; place-items: center; width: 32px; height: 34px; border: 0; background: var(--surface); color: var(--text-2); border-radius: 4px; }
+.craft.craft :global(.project-filter-empty button) { border: 0; padding: 8px 0; color: var(--brand); background: transparent; font-size: 13px; }
+.craft.craft :global(.project-task-filter) { display: flex; flex-wrap: wrap; width: fit-content; gap: 4px; margin: 16px 0 12px; padding: 4px; background: var(--surface-2); border-radius: 6px; }
+.craft.craft :global(.project-task-filter button) { border: 0; background: transparent; padding: 8px 10px; min-height: 36px; border-radius: 4px; color: var(--text-2); font-size: 12px; }
+.craft.craft :global(.project-task-filter button[aria-pressed="true"]) { background: var(--brand); color: var(--surface); }
+.craft.craft :global(.project-task-filter[data-motion-ready="true"] button[aria-pressed="true"]) { background: transparent; }
+.craft.craft :global(.project-tasks label span) { overflow-wrap: anywhere; }
+.craft.craft :global(.data-result-tools) { margin: 16px 0 20px; }
+.craft.craft :global(.data-result-actions) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.craft.craft :global(.data-result-actions [role="status"]) { font-size: 12px; color: var(--success); }
+.craft.craft :global(.data-result-comparison) { margin-top: 16px; border-block: 1px solid var(--border); padding: 12px 0; }
+.craft.craft :global(.data-result-comparison summary) { cursor: pointer; color: var(--brand); font-size: 14px; padding: 4px 0; }
+.craft.craft :global(.data-result-comparison header h3) { margin: 16px 0 8px; font-size: 17px; }
+.craft.craft :global(.data-result-comparison p), .craft.craft :global(.data-result-comparison small) { color: var(--text-2); font-size: 12px; line-height: 1.7; }
+.craft.craft :global(.data-comparison-context) { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; margin: 16px 0; }
+.craft.craft :global(.data-comparison-context div) { display: grid; gap: 6px; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.craft.craft :global(.data-comparison-context span) { color: var(--text-2); }
+.craft.craft :global(.data-result-comparison th), .craft.craft :global(.data-result-comparison td) { font-size: 13px; font-variant-numeric: tabular-nums; }
+.craft.craft :global(.data-copy-fallback p) { color: var(--danger); font-size: 13px; }
+.craft.craft :global(.data-copy-fallback textarea) { width: 100%; min-height: 160px; padding: 12px; border: 1px solid var(--border-control); border-radius: 6px; background: var(--surface); color: var(--text); font: 13px/1.7 var(--font-sans); }

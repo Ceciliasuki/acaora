@@ -565,3 +565,39 @@ The navigation rail and app shell still speak the earlier dark-navigation langua
 - **Don't** create a primitive for a single use. Shared primitives are for genuinely cross-surface patterns only.
 - **Don't** update visual baselines to make a test pass. Baselines change only after a human has reviewed the diff and approved the new design.
 - **Don't** allow the Impeccable launcher or its hook to execute a downloaded binary in this project, and don't commit platform executables.
+
+## PaperLab Reading Room — 2026-10-14 replacement
+
+The owner explicitly authorized replacing the interface and broad refactoring. This section supersedes earlier three-column composition prescriptions for `/papers` only. Other routes, the shared navigation, light-only commitment, tokens, AI-only teal semantics, content truth and data contracts keep their existing authority.
+
+PaperLab now uses a reading-room composition: a quiet running head and single mode band, a large Source Serif paper title, a single continuous paper scroll, a temporary source-library drawer, and a paragraph-note margin. The publication itself supplies the focal moment. The title and source record scroll with the text; chapters, translation and original-PDF access share one sticky utility band. Opening the library must not shrink the text measure. Choosing a source closes the drawer. The library starts closed even if an older layout preference requested a persistent column. The note margin docks alongside the text and uses a more compact two-row utility band on narrow desktop screens; mobile presents each working surface through its existing accessible tabs.
+
+The route is a flat white field with typography and hairline divisions. Background animation and its control are absent on this reading surface. There is no decorative hero, invented author information, marketing statistic, card grid, or numbered ornament. Actual filename, paragraph count and chapter count form the source record. Long titles remain fully editable. Shared product cobalt marks ordinary selections; AI results retain their provenance and teal containment.
+
+The route composition is owned by `app/papers/reading-craft.module.css`, independent of `focused-workspaces.module.css`. Keep one motion owner per surface, visible defaults, interruptible 220–280ms transitions, and reduced-motion cancellation. Do not vertically animate or scale the measured paragraph surface. Preserve account boundaries, PDF bytes, paragraph identities, annotations and asynchronous source ownership.
+
+### Desktop interaction extension — 2026-10-14
+
+The owner approved the first interaction stage (source peeks and reading trails) together with the industry-audit refinements. Desktop remains the implementation target; mobile alignment is a release check. A source peek shows actual paragraph text without moving the reading cursor. Explicit chapter/citation/note navigation records a source-scoped, session-only reading anchor; returning restores the paragraph-relative offset and working mode. The peek is a nonmodal native popover with keyboard entry, Escape return, outside dismissal and reduced-motion support. It shares the existing paper surface and tokens.
+
+Desktop titles require explicit editing and confirmation/cancellation. Notes display their source excerpt, retain the editing target while focused, and can be pinned independently of the reading cursor. Device save feedback must reflect the actual write; demo notes explicitly describe their session lifetime. The desktop work area fits the viewport, AI/search inherit the reader's flat visual language, and only the active AI tab enters the tab order. Reader type can be adjusted to 18/20/22px as a local view preference. Advanced translation stays under “更多工具” on desktop. Source identity and paragraph anchors continue to govern all operations; view preferences and navigation trails never enter the cloud data model.
+
+
+## Desktop operational refinement · 2026-10-14
+
+Extend the existing light Study Workbench on courses, data, projects, settings and account entry. Preserve the approved Dashboard composition and PaperLab reader. Desktop layout is primary; formal mobile alignment remains a pre-deployment gate.
+
+- Reduce operational header height and top spacing without introducing a new visual identity.
+- DataLab has a sticky section directory for import, variable checks, analysis and source preview; the selected method and variables survive section navigation. Imported analysis is explicitly session-local. More than eight variables have a real expand/collapse action.
+- Disclosure rails distinguish hover-open from click-pinned state. A click after hover keeps the directory available; a second click, outside click or Escape closes it. Hover never shifts the task surface.
+- Short horizontal tab lists use roving tabIndex, arrow/Home/End activation and labelled panels. No new motion runtime is needed.
+- Project task drafts are keyed to their project; clear an input only after a successful write and only when it still contains the submitted text. Pending operations disable competing writes; modal errors remain inside their dialog. Notes have an explicit unsaved state.
+- Settings distinguish edited profile fields from their last acknowledged save; operation feedback remains visible in the desktop viewport. Failed metadata or blocked session storage must not imply a confirmed model, version or successful Key save.
+- Scope visual refinements through operational-craft.module.css; new palette, public marketing reconstruction and Dashboard body changes are outside this refinement. Correct the public register entry and outdated course capability copy using actual product behavior.
+
+
+## Desktop flow tools · 2026-10-14
+
+Project search matches actual title and goal. Ordinary project buttons support Up/Down/Home/End; task filters use real state counts, preserve per-project drafts and restore focus after a filtered row leaves. Desktop project and task lists have bounded independent scrolling.
+
+Data result tools capture one current computed result for optional folded comparison and copy its source, method, variables and displayed precision. Keep method/variable context visible, represent absent metrics honestly, expose clipboard errors with a manual-copy fallback. Clear snapshots on every successful dataset replacement, including same-name files. Session-only view snapshots introduce no statistical computation or cloud storage. Preserve the incumbent motion, tokens and Dashboard composition; no additional runtime dependency.

@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import craft from '../operational-craft.module.css';
 import { ChangeEvent, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
@@ -25,6 +26,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [email, setEmail] = useState("");
+  const [savedProfile, setSavedProfile] = useState(JSON.stringify(emptyProfile));
+  const profileDirty = JSON.stringify(profile) !== savedProfile;
   const [interestInput, setInterestInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -55,8 +58,8 @@ export default function SettingsPage() {
       // Metadata is independent of account fields; an unavailable model endpoint
       // must not hold the entire settings form behind its network timeout.
       void Promise.allSettled([
-        fetch("/api/version", { cache: "no-store" }).then((response) => response.json() as Promise<BuildVersion>),
-        fetch("/api/papers/ai", { cache: "no-store" }).then((response) => response.json() as Promise<{ model?: string }>),
+        fetch("/api/version", { cache: "no-store" }).then((response) => {if (!response.ok) throw new Error("VERSION_UNAVAILABLE"); return response.json() as Promise<BuildVersion>;}),
+        fetch("/api/papers/ai", { cache: "no-store" }).then((response) => {if (!response.ok) throw new Error("MODEL_UNAVAILABLE"); return response.json() as Promise<{ model?: string }>;}),
       ]).then(([versionResult, aiResult]) => {
       if (mounted) {
         if (versionResult.status === "fulfilled") {
@@ -85,11 +88,13 @@ export default function SettingsPage() {
         if (!mounted) return;
         setSignedIn(true);
         setEmail(user.email || "");
-        setProfile({
+        const loadedProfile = {
           ...emptyProfile,
           ...(next || {}),
           preferences: { ...emptyProfile.preferences, ...(next?.preferences || {}) },
-        });
+        };
+        setProfile(loadedProfile);
+        setSavedProfile(JSON.stringify(loadedProfile));
       } catch (cause) {
         if (mounted) {
           setSignedIn(false);
@@ -146,7 +151,8 @@ export default function SettingsPage() {
     setMessage("");
     try {
       const saved = await saveAccountProfile(profile);
-      setProfile(saved);
+      setProfile(current => JSON.stringify(current) === JSON.stringify(profile) ? saved : current);
+      setSavedProfile(JSON.stringify(saved));
       setMessage("个人资料已保存。");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "保存失败。");
@@ -176,9 +182,14 @@ export default function SettingsPage() {
   }
 
   function saveAiSettings() {
-    saveAiKey(aiKey);
-    setAiKey(readAiKey());
-    setMessage(aiKey.trim() ? "AI Key 已保存到当前浏览器会话。" : "当前会话的 AI Key 已清除。");
+    setError(""); setMessage("");
+    try {
+      saveAiKey(aiKey);
+      setAiKey(readAiKey());
+      setMessage(aiKey.trim() ? "AI Key 已保存到当前浏览器会话。" : "当前会话的 AI Key 已清除。");
+    } catch {
+      setError("当前浏览器无法保存会话设置。请检查存储权限后重试，输入仍保留在此处。");
+    }
   }
 
   function exportProfile() {
@@ -196,17 +207,17 @@ export default function SettingsPage() {
     router.refresh();
   }
 
-  return <main className="student-app settings-app workspace-refresh">
+  return <main className={`student-app settings-app workspace-refresh ${craft.craft}`}>
     <AppSidebar active="settings" />
     <section className="workspace settings-main settings-shell">
-      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={<Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button>} />
+      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={<>{signedIn && profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></>} />
 
       <div className="page-body">
 
       {signedIn && !loading && <SettingsNavigation />}
 
       {loading ? <div className="settings-state" role="status">正在读取账户…</div> : sessionError ? <div className="settings-state" role="alert"><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
-        {(message || error) && <StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage>}
+        {(message || error) && <div className="workspace-feedback" data-tone={error ? "error" : "success"}><StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage></div>}
         <div className="settings-sections">
           <section className="settings-panel" id="profile">
             <div className="settings-section-head"><h2>个人资料</h2></div>

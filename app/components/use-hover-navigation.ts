@@ -11,6 +11,7 @@ export default function useHoverNavigation() {
   const pointerInside = useRef(false);
   const keyboardInside = useRef(false);
   const restoringFocus = useRef(false);
+  const pinned = useRef(false);
 
   function cancelLeave() {
     if (leaveTimer.current) clearTimeout(leaveTimer.current);
@@ -18,12 +19,14 @@ export default function useHoverNavigation() {
   }
   function close() {
     cancelLeave();
+    pinned.current = false;
     keyboardInside.current = false;
     setExpanded(false);
   }
   useEffect(() => {
     function outside(event: globalThis.PointerEvent) {
       if (event.target instanceof Node && !rootRef.current?.contains(event.target)) {
+        pinned.current = false;
         keyboardInside.current = false;
         setExpanded(false);
       }
@@ -37,7 +40,11 @@ export default function useHoverNavigation() {
 
   return {
     expanded, rootRef, toggleRef,
-    toggle() { cancelLeave(); keyboardInside.current = false; setExpanded(value => !value); },
+    toggle() {
+      cancelLeave(); keyboardInside.current = false;
+      if (pinned.current) close();
+      else { pinned.current = true; setExpanded(true); }
+    },
     handlers: {
       onPointerEnter(event: PointerEvent<HTMLDivElement>) {
         if (!event.currentTarget.contains(event.target as Node)) return;
@@ -48,7 +55,7 @@ export default function useHoverNavigation() {
         pointerInside.current = false;
         cancelLeave();
         leaveTimer.current = setTimeout(() => {
-          if (!keyboardInside.current) setExpanded(false);
+          if (!keyboardInside.current && !pinned.current) setExpanded(false);
         }, 180);
       },
       onFocusCapture(event: FocusEvent<HTMLDivElement>) {
@@ -63,7 +70,7 @@ export default function useHoverNavigation() {
         if (!event.currentTarget.contains(event.target)) return;
         if (!event.currentTarget.contains(event.relatedTarget)) {
           keyboardInside.current = false;
-          if (!pointerInside.current) close();
+          if (!pointerInside.current && !pinned.current) close();
         }
       },
       onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
