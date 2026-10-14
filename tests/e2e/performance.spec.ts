@@ -100,8 +100,10 @@ test('PERF-05 switching papers restores the target device cursor before updating
   await page.getByRole('button', {name: `${other.title} 80 段 · 已读 0%`, exact: true}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(other.title);
   await expect(page.locator('[data-paragraph-index="6"]')).toHaveAttribute('data-active', 'true');
+  await page.getByRole('button', {name: '论文库', exact: true}).click();
   await page.getByRole('button', {name: `${paper.title} 80 段 · 已读 0%`, exact: true}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.getByRole('button', {name: '论文库', exact: true}).click();
   await page.getByRole('button', {name: `${other.title} 80 段 · 已读 0%`, exact: true}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(other.title);
   await expect(page.locator('[data-paragraph-index="6"]')).toHaveAttribute('data-active', 'true');

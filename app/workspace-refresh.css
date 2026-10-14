@@ -1,0 +1,315 @@
+/* A task workspace inside the existing light/blue identity. Scoped to the
+   approved workspaces; the public site and overview content keep their world. */
+.workspace-refresh {
+  --workspace-rail: 188px;
+  --workspace-gap: 24px;
+  --workspace-paper: #fff;
+  --workspace-muted: #5e6877;
+  width: calc(100% - 48px);
+  max-width: 1640px;
+  margin: 24px auto;
+  gap: var(--workspace-gap);
+  grid-template-columns: var(--workspace-rail) minmax(0, 1fr);
+  color: var(--text);
+}
+.workspace-refresh :where(input, textarea) { caret-color: var(--brand); }
+.workspace-refresh ::selection { background: var(--brand-tint); color: var(--brand-on-subtle); }
+.workspace-refresh :where(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.workspace-refresh :where(button, input, select, textarea) { font-family: var(--font-sans); }
+.workspace-refresh :where(.ui-button, .plab-tool, .project-create-button, .sample-button) { transform: none; box-shadow: none; }
+.workspace-refresh :where(.ui-button, .plab-tool, .project-create-button, .sample-button):hover:not(:disabled) { transform: none; box-shadow: none; }
+.workspace-refresh :where(.ui-button--primary, .plab-tool--primary, .project-create-button) { background: var(--brand); border-color: var(--brand); }
+.workspace-refresh :where(.ui-button--primary, .plab-tool--primary, .project-create-button)::after { display: none; }
+.workspace-refresh :where(.ui-button--primary, .plab-tool--primary, .project-create-button):hover:not(:disabled) { background: var(--brand-hover); }
+.workspace-refresh :where(.ui-button, .plab-tool, .project-create-button):active:not(:disabled) { transform: scale(.985); }
+
+/* Stable rail: active location is legible before any script runs. */
+.workspace-refresh .app-sidebar.student-sidebar { top: 24px; height: calc(100dvh - 48px); padding: 20px 12px; border: 0; border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-1); }
+.workspace-refresh .app-sidebar > nav { margin-top: 40px; gap: 8px; }
+.workspace-refresh .app-sidebar > nav a { position: relative; min-height: 48px; padding: 12px; border-radius: 8px; color: var(--workspace-muted); }
+.workspace-refresh .app-sidebar > nav a.active { background: var(--brand); color: var(--surface); box-shadow: none; }
+.workspace-refresh .app-sidebar > nav a.active::before { display: none; }
+.workspace-refresh .app-sidebar > nav a:not(.active):hover { background: var(--surface-2); color: var(--brand); }
+.workspace-refresh .app-sidebar > nav a svg { transition: transform 200ms var(--ease-out); }
+.workspace-refresh .app-sidebar > nav a.active svg { color: inherit; }
+.workspace-refresh .app-sidebar > nav a:hover svg { transform: translateX(3px); }
+.workspace-refresh .sidebar-profile-link { padding: 12px 6px; }
+.workspace-refresh .student-sidebar-foot p small { font-size: 12px; }
+
+/* A single heading system with real actions, then each tool's own topology. */
+.workspace-refresh.workspace-refresh > :is(.learning-main, .plab-shell, .data-main, .project-main, .settings-main) { padding: 0 16px 40px; }
+.workspace-refresh .workspace-header.ui-page-header, .workspace-refresh .plab-shell .workspace-header.ui-page-header { min-height: 130px; padding: 14px 0 30px; margin: 0 0 22px; border-bottom: 0; gap: 24px; align-items: center; background: transparent; }
+.workspace-refresh .workspace-header h1 { font: 600 clamp(32px, 3vw, 42px)/1.22 var(--font-sans); letter-spacing: -.035em; margin: 0 0 12px; }
+.workspace-refresh .workspace-header > div > span { display: block; max-width: 48ch; font: 400 14px/1.7 var(--font-sans); color: var(--workspace-muted); }
+.workspace-refresh .workspace-header > div:first-child { text-align: left; }
+.workspace-refresh .workspace-header .ui-page-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.workspace-refresh .workspace-header .page-bar-spacer { display: none; }
+.workspace-refresh .workspace-header .page-bar-date { color: var(--workspace-muted); font-size: 12px; }
+.workspace-refresh .page-body { padding: 0; margin: 0; }
+.workspace-refresh :where(.page-bar-seg, .project-filter, .analysis-tabs) { padding: 5px; background: var(--surface); border: 0; border-radius: 9px; gap: 4px; }
+.workspace-refresh :where(.page-bar-seg, .project-filter, .analysis-tabs) button { min-height: 36px; padding: 8px 14px; border-radius: 6px; border: 0; color: var(--workspace-muted); background: transparent; }
+.workspace-refresh :where(.page-bar-seg, .project-filter, .analysis-tabs) button:is([aria-pressed="true"], .active) { color: var(--surface); background: var(--brand); }
+
+/* Course directory and syllabus: one index, one reading sheet. */
+.workspace-refresh .course-catalog-layout { grid-template-columns: 218px minmax(0, 1fr); gap: 24px; align-items: start; }
+.workspace-refresh .course-catalog-index { position: sticky; top: 28px; padding: 12px 0; }
+.workspace-refresh .course-catalog-index h2 { margin: 0 0 16px 12px; font-size: 14px; font-weight: 600; }
+.workspace-refresh .course-catalog-index ul { display: flex; flex-direction: column; gap: 6px; }
+.workspace-refresh .course-catalog-index button { position: relative; gap: 6px; min-height: 84px; padding: 16px 14px; border: 0; border-radius: 8px; color: var(--text); transition: color 180ms var(--ease-out); }
+.workspace-refresh .course-catalog-index button small { font-size: 12px; letter-spacing: .03em; color: var(--workspace-muted); }
+.workspace-refresh .course-catalog-index button span { font-size: 15px; line-height: 1.6; }
+.workspace-refresh .course-catalog-index button[aria-current="true"] { background: var(--brand); border-left: 0; color: var(--surface); }
+.workspace-refresh .course-catalog-index button[aria-current="true"] small { color: var(--surface); }
+.workspace-refresh .course-catalog-index button:not([aria-current="true"]):hover { background: var(--surface); }
+.workspace-refresh .course-overview { max-width: none; background: var(--workspace-paper); border-radius: 12px; padding: clamp(24px, 3vw, 44px); }
+.workspace-refresh .course-overview > header { padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.workspace-refresh .course-overview > header h2 { font-size: clamp(27px, 2.8vw, 38px); line-height: 1.35; margin: 12px 0 20px; letter-spacing: -.025em; text-wrap: balance; }
+.workspace-refresh .course-overview > header p { max-width: 62ch; }
+.workspace-refresh .course-overview > ol { list-style: none; padding: 0; margin-top: 28px; }
+.workspace-refresh .course-overview > ol > li { padding: 20px 0; break-inside: avoid; }
+.workspace-refresh .course-overview > ol > li h3 { display: flex; align-items: baseline; gap: 12px; }
+.workspace-refresh .course-chapter-number { flex: 0 0 24px; font-size: 24px; font-weight: 400; color: var(--brand); font-variant-numeric: tabular-nums; }
+.workspace-refresh .course-overview a { transition: color 160ms var(--ease-out), background-color 160ms var(--ease-out); }
+.workspace-refresh .course-overview a[class*="primaryLink"] { background: var(--brand); border-radius: 8px; gap: 18px; padding: 12px 18px; }
+.workspace-refresh .course-overview a[class*="primaryLink"] svg { transition: transform 180ms var(--ease-out); }
+.workspace-refresh .course-overview a[class*="primaryLink"]:hover svg { transform: translateX(4px); }
+.workspace-refresh .course-overview > ol > li h3 { color: var(--text); margin: 0 0 14px; }
+.workspace-refresh .course-overview > ol > li ul li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 4px 0; }
+.workspace-refresh .course-overview > ol > li a { color: var(--text); }
+.workspace-refresh .course-overview > ol > li a:hover { color: var(--brand); }
+.workspace-refresh .course-overview > ol > li small { font-size: 12px; }
+.workspace-refresh .courses-shell .page-body > div:has(> nav[aria-label="课程内导航"]) { gap: 28px; }
+.workspace-refresh .courses-shell .page-body > div > nav[aria-label="课程内导航"] { padding: 20px 0; }
+.workspace-refresh .courses-shell .page-body > div > div:has(> header) { background: var(--workspace-paper); border-radius: 12px; padding: clamp(20px, 3vw, 40px); }
+
+/* PaperLab: modes above the sheet; paper tools are part of its running head. */
+.workspace-refresh.workspace-refresh .plab-head { border-bottom: 0; }
+.workspace-refresh .plab-head-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.workspace-refresh .translator-status { border: 0; box-shadow: none; background: var(--surface); padding: 8px 12px; border-radius: 8px; }
+.workspace-refresh .translator-status span, .workspace-refresh .translator-status small { font-size: 12px; }
+.workspace-refresh.workspace-refresh .plab-shell .paper-workspace-nav { display: flex; flex-wrap: wrap; width: fit-content; max-width: 100%; gap: 5px; padding: 5px; margin: 0; border: 0; border-radius: 9px; background: var(--surface); }
+.workspace-refresh.workspace-refresh .plab-shell .paper-workspace-nav button { min-height: 42px; padding: 10px 18px; border: 0; border-radius: 6px; background: transparent; font-size: 14px; color: var(--workspace-muted); }
+.workspace-refresh.workspace-refresh .plab-shell .paper-workspace-nav button[aria-pressed="true"] { color: var(--surface); background: var(--brand); }
+.workspace-refresh .paper-workspace-nav button::after { display: none; }
+/* One moving plate for all selections; controls still own state and focus. */
+.workspace-refresh .motion-navigation { position: relative; isolation: isolate; }
+.workspace-refresh .motion-navigation :is(button, a) { position: relative; z-index: 1; }
+.workspace-refresh .motion-navigation-marker { position: absolute; left: 0; top: 0; width: 1px; height: 1px; border-radius: 7px; background: var(--brand); transform-origin: top left; pointer-events: none; z-index: 0; }
+.workspace-refresh.workspace-refresh .motion-navigation[data-motion-ready="true"] :is(button, a):is([aria-pressed="true"], [aria-selected="true"], [aria-current="true"], [aria-current="page"], [aria-current="location"]) { background: transparent; color: var(--surface); }
+.workspace-refresh .motion-navigation:not([data-motion-ready="true"]) .motion-navigation-marker { visibility: hidden; }
+.workspace-refresh .motion-navigation[data-motion-moving="true"] .motion-navigation-marker { background: var(--brand-tint); }
+.workspace-refresh.workspace-refresh .motion-navigation[data-motion-moving="true"] :is(button, a):is([aria-pressed="true"], [aria-selected="true"], [aria-current="true"], [aria-current="page"], [aria-current="location"]), .workspace-refresh .course-selection[data-motion-moving="true"] button[aria-current="true"] small { color: var(--brand-on-subtle); }
+.workspace-refresh .paper-layout-controls { margin: 0; padding: 16px 0; min-height: 64px; }
+.workspace-refresh .paper-layout-controls button { border-radius: 6px; min-height: 36px; padding: 8px 12px; }
+.workspace-refresh .paper-layout-controls button[aria-expanded="true"] { background: var(--brand-tint); color: var(--brand-on-subtle); border-color: var(--brand-tint); }
+.workspace-refresh.workspace-refresh .plab-shell .plab-workbench { margin: 0; gap: 0; background: var(--workspace-paper); border: 1px solid var(--border); border-radius: 12px; box-shadow: none; overflow: hidden; height: clamp(540px, calc(100dvh - 290px), 900px); }
+.workspace-refresh.workspace-refresh .plab-reader { background: var(--workspace-paper); min-width: 0; }
+.workspace-refresh.workspace-refresh .plab-reader-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'title title' 'tools progress'; gap: 12px; padding: 24px 28px 18px; border-bottom: 1px solid var(--border); background: var(--workspace-paper); }
+.workspace-refresh .paper-title-edit { grid-area: title; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; }
+.workspace-refresh .paper-title-edit > span { grid-column: 1; color: var(--workspace-muted); font-size: 12px; }
+.workspace-refresh .paper-title-edit input { grid-column: 1; width: 100%; min-width: 0; padding: 0; border: 0; border-radius: 0; color: var(--text); background: transparent; box-shadow: none; font-size: 24px; line-height: 1.6; font-weight: 600; }
+.workspace-refresh .paper-title-edit input:focus { background: var(--surface-2); box-shadow: none; }
+.workspace-refresh .paper-original-trigger { grid-column: 2; grid-row: 1 / 3; display: inline-flex; align-items: center; justify-content: center; min-height: 40px; width: auto; padding: 9px 14px; border: 1px solid var(--border-control); border-radius: 7px; background: var(--surface); font-size: 13px; color: var(--text); cursor: pointer; }
+.workspace-refresh .paper-original-trigger:hover { background: var(--surface-2); border-color: var(--brand); }
+.workspace-refresh .reader-controls { grid-area: tools; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.workspace-refresh .reader-controls span { font-size: 12px; color: var(--workspace-muted); }
+.workspace-refresh .reader-controls button { min-height: 36px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); font-size: 13px; }
+.workspace-refresh .plab-reader-progress { grid-area: progress; min-width: 60px; width: auto; margin: 0; align-self: center; }
+.workspace-refresh .plab-reader-progress b { font-size: 12px; }
+.workspace-refresh .plab-reader-progress > i { display: none; }
+.workspace-refresh.workspace-refresh .plab-reader-scroll { padding: 0; scrollbar-width: thin; scrollbar-color: var(--border-control) transparent; }
+.workspace-refresh.workspace-refresh .section-chips { padding: 12px 28px; border-bottom: 1px solid var(--border); gap: 12px; background: var(--surface); }
+.workspace-refresh .section-chips button { border: 0; border-radius: 5px; min-height: 32px; padding: 6px 8px; color: var(--workspace-muted); }
+.workspace-refresh .section-chips button.active { color: var(--brand-on-subtle); background: var(--brand-tint); }
+.workspace-refresh.workspace-refresh .plab-continuous-text { padding: 30px clamp(24px, 4vw, 64px) 64px; }
+.workspace-refresh.workspace-refresh .plab-continuous-text .plab-body { max-width: 86ch; margin: auto; font-size: 16px; line-height: 1.9; }
+.workspace-refresh .plab-paragraph { border-radius: 3px; }
+.workspace-refresh .plab-paragraph[data-active="true"] { background: var(--surface-2); }
+.workspace-refresh .plab-paragraph p { padding-inline: 10px; }
+.workspace-refresh.workspace-refresh .plab-index, .workspace-refresh.workspace-refresh .plab-rail { background: var(--surface-2); padding: 20px 16px; }
+.workspace-refresh .plab-index-head h2, .workspace-refresh .plab-rail-head h2 { font-size: 16px; line-height: 1.5; }
+.workspace-refresh .plab-rail-head > span { font-size: 12px; }
+.workspace-refresh .plab-index-row { border-radius: 6px; }
+.workspace-refresh .plab-index-row--current { background: var(--brand-tint); }
+.workspace-refresh .plab-index-open strong { font-size: 14px; }
+.workspace-refresh .plab-index-open small, .workspace-refresh .library-privacy p { font-size: 12px; line-height: 1.7; }
+.workspace-refresh .plab-reading-context { color: var(--workspace-muted); font-size: 12px; }
+.workspace-refresh .plab-rail textarea { border-radius: 7px; background: var(--surface); line-height: 1.8; }
+.workspace-refresh .paper-mode-content:not([hidden]) { padding-top: 22px; }
+.workspace-refresh .ai-console, .workspace-refresh .plab-discovery { border: 1px solid var(--border); border-radius: 12px; background: var(--workspace-paper); box-shadow: none; }
+
+/* DataLab: import and sample inspection precede an uninterrupted analysis field. */
+.workspace-refresh .data-shell .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .8fr); gap: 32px; align-items: start; }
+.workspace-refresh .upload-panel { padding: 24px; border-radius: 12px; background: var(--workspace-paper); }
+.workspace-refresh .overview-panel { padding: 24px 0; background: transparent; border: 0; box-shadow: none; }
+.workspace-refresh .panel-heading h2 { font-size: 18px; font-weight: 600; }
+.workspace-refresh .dropzone { min-height: 170px; margin-top: 20px; background: var(--surface-2); border: 1px dashed var(--border-control); border-radius: 8px; }
+.workspace-refresh .dropzone.dragging { background: var(--brand-tint); border-color: var(--brand); }
+.workspace-refresh .privacy-pill { font-size: 12px; }
+.workspace-refresh .format-support { display: flex; flex-wrap: wrap; gap: 12px; }
+.workspace-refresh .format-support > span { border: 0; background: transparent; padding: 0; font-size: 12px; }
+.workspace-refresh .format-support small { font-size: 12px; }
+.workspace-refresh .file-chip { margin-top: 20px; padding: 12px 0 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; box-shadow: none; }
+.workspace-refresh .metric-grid { gap: 0; background: transparent; }
+.workspace-refresh .metric-grid > article { background: transparent; border: 0; padding: 18px 12px 18px 0; }
+.workspace-refresh .metric-grid > article span { font-size: 12px; color: var(--workspace-muted); }
+.workspace-refresh .metric-grid > article strong { font-weight: 500; font-size: 36px; color: var(--brand); font-variant-numeric: tabular-nums; }
+.workspace-refresh .analysis-panel { margin-top: 32px; padding: 28px; border-radius: 12px; background: var(--workspace-paper); }
+.workspace-refresh .analysis-tabs { width: fit-content; display: flex; flex-wrap: wrap; margin-bottom: 24px; }
+.workspace-refresh :where(.chart-card, .result-card, .summary-table-card, .test-config-card) { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.workspace-refresh .analysis-grid { gap: 28px; }
+.workspace-refresh .chart-card { min-width: 0; padding: 16px 0; }
+.workspace-refresh .histogram-column { min-width: 0; }
+.workspace-refresh .summary-table-card { padding-inline: 0; }
+.workspace-refresh .data-preview { margin-top: 32px; padding: 28px; border-radius: 12px; background: var(--workspace-paper); }
+.workspace-refresh .table-wrap { scrollbar-width: thin; scrollbar-color: var(--border-control) transparent; }
+.workspace-refresh .summary-table-card table { min-width: 580px; }
+.workspace-refresh table th { background: var(--surface-2); font-size: 12px; }
+.workspace-refresh table td { font-size: 13px; }
+.workspace-refresh .data-bottom { color: var(--workspace-muted); }
+
+/* Projects: an index and a spacious task/editor spread, rather than nested cards. */
+.workspace-refresh.workspace-refresh .project-shell .project-workbench { display: grid; grid-template-columns: 224px minmax(0, 1fr); gap: 0; border: 0; border-radius: 12px; background: var(--workspace-paper); overflow: hidden; }
+.workspace-refresh.workspace-refresh .project-shell .project-library { padding: 20px 16px; background: var(--surface-2); border-right: 1px solid var(--border); }
+.workspace-refresh .project-filter { display: flex; margin-bottom: 20px; }
+.workspace-refresh .project-filter button { padding: 8px 10px; font-size: 12px; }
+.workspace-refresh.workspace-refresh .project-shell .project-list > button { border: 0; background: transparent; border-radius: 8px; padding: 16px 12px; min-height: 90px; }
+.workspace-refresh.workspace-refresh .project-shell .project-list > button.active { background: var(--brand); border-color: transparent; }
+.workspace-refresh .project-list > button.active :is(strong, span, small) { color: var(--surface); }
+.workspace-refresh .project-list strong { font-size: 15px; }
+.workspace-refresh.workspace-refresh .project-shell .project-list :is(small, span) { font-size: 12px; }
+.workspace-refresh.workspace-refresh .project-shell .project-detail { padding: clamp(24px, 3vw, 40px); }
+.workspace-refresh .project-detail-head { align-items: flex-start; gap: 20px; padding: 0 0 24px; border-bottom: 1px solid var(--border); }
+.workspace-refresh .project-detail-head h2 { font-size: clamp(24px, 2.4vw, 32px); line-height: 1.5; margin: 10px 0; }
+.workspace-refresh .project-detail-head p { font-size: 14px; line-height: 1.8; }
+.workspace-refresh .project-detail-head > div:last-child { display: flex; gap: 8px; flex-wrap: wrap; }
+.workspace-refresh .project-detail-head select, .workspace-refresh .project-more { min-height: 40px; border: 1px solid var(--border-control); border-radius: 6px; padding: 8px 12px; background: var(--surface); }
+.workspace-refresh .project-more { color: var(--danger); }
+.workspace-refresh .project-summary { display: flex; flex-wrap: wrap; gap: 24px; color: var(--workspace-muted); font-size: 13px; padding: 18px 0; }
+.workspace-refresh.workspace-refresh .project-shell .project-detail-grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.workspace-refresh .project-task-card form { flex-wrap: wrap; }
+.workspace-refresh .project-task-card form input { flex: 1 1 180px; min-width: 0; }
+.workspace-refresh .project-task-card form .ui-button { flex: 0 0 auto; }
+.workspace-refresh.workspace-refresh .project-shell :is(.project-task-card, .project-note-card) { border: 0; border-radius: 0; box-shadow: none; padding: 0; background: transparent; }
+.workspace-refresh :where(.project-task-card, .project-note-card) h3 { font-size: 17px; margin: 0 0 16px; }
+.workspace-refresh .project-tasks label { border-bottom: 1px solid var(--border); min-height: 52px; padding: 14px 4px; border-radius: 6px; transition: background-color 180ms var(--ease-out); }
+.workspace-refresh .project-tasks label:has(input:checked) { background: var(--brand-tint); }
+.workspace-refresh .project-tasks input { accent-color: var(--brand); width: 18px; height: 18px; }
+.workspace-refresh .project-tasks label.done span { color: var(--workspace-muted); }
+.workspace-refresh.workspace-refresh .project-shell .project-note-card textarea { min-height: 180px; line-height: 1.8; background: var(--surface-2); border: 1px solid var(--border-control); border-radius: 8px; padding: 16px; }
+.workspace-refresh .project-related { padding-top: 26px; margin-top: 30px; border-top: 1px solid var(--border); }
+
+/* Settings use section navigation and calm form sheets, with no dashboard metrics. */
+.workspace-refresh .settings-main .page-body { display: grid; grid-template-columns: 156px minmax(0, 1fr); gap: 28px; align-items: start; }
+.workspace-refresh .settings-nav { position: sticky; top: 28px; margin: 0; padding: 8px 0; background: transparent; gap: 6px; }
+.workspace-refresh .settings-nav a { min-height: 44px; padding: 12px; border-radius: 6px; color: var(--workspace-muted); font-size: 14px; }
+.workspace-refresh .settings-nav a:not([aria-current="location"]):hover { color: var(--brand); background: var(--surface); }
+.workspace-refresh .settings-nav a[aria-current="location"] { color: var(--surface); background: var(--brand); }
+.workspace-refresh .settings-sections { padding: 0; background: transparent; border-radius: 0; box-shadow: none; }
+.workspace-refresh .settings-main .settings-sections > .settings-panel { padding: 32px; margin: 0 0 20px; border: 0; border-radius: 12px; background: var(--workspace-paper); scroll-margin-top: 24px; }
+.workspace-refresh .settings-section-head { margin-bottom: 24px; }
+.workspace-refresh .settings-section-head h2 { font-size: 24px; font-weight: 600; }
+.workspace-refresh .settings-form { gap: 24px; }
+.workspace-refresh .settings-panel :where(label, small, p) { font-size: 13px; line-height: 1.75; }
+.workspace-refresh .settings-info-grid { gap: 28px; }
+.workspace-refresh .settings-info-grid article { padding: 0; border: 0; background: transparent; }
+.workspace-refresh .settings-info-grid b { font-weight: 600; font-size: 14px; }
+.workspace-refresh .avatar-editor { padding: 0 0 28px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+.workspace-refresh .settings-state { grid-column: 1 / -1; }
+
+/* The course switch is the authored moment: the index opens its teaching sheet.
+   Other tools use shorter continuity cues, never paragraph-by-paragraph reveals. */
+@keyframes workspace-course-open { from { opacity: .72; clip-path: inset(0 0 0 5% round 12px); transform: translateX(16px); } to { opacity: 1; clip-path: inset(0 round 12px); transform: none; } }
+@keyframes workspace-panel-in { from { opacity: .5; transform: translateX(6px); } to { opacity: 1; transform: none; } }
+@keyframes workspace-dialog-in { from { opacity: .6; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
+@keyframes workspace-tool-switch { from { opacity: .65; } to { opacity: 1; } }
+html:has(.settings-app.workspace-refresh) { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: no-preference) {
+  .workspace-refresh .course-overview { animation: workspace-course-open 360ms var(--ease-out); }
+  .workspace-refresh .project-detail { animation: workspace-panel-in 220ms var(--ease-out); }
+  .workspace-refresh .plab-index, .workspace-refresh .plab-rail { animation: workspace-panel-in 200ms var(--ease-out); }
+  .workspace-refresh :is(.analysis-content, .paper-mode-content):not([hidden]) { animation: workspace-tool-switch 240ms var(--ease-out); }
+  .workspace-refresh :is(.project-modal > form, .ui-dialog[open], dialog[aria-label="原 PDF"][open]) { animation: workspace-dialog-in 200ms var(--ease-out); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.settings-app.workspace-refresh) { scroll-behavior: auto; }
+  .workspace-refresh *, .workspace-refresh *::before, .workspace-refresh *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .workspace-refresh :where(button, a, input, textarea) { transform: none !important; }
+  .workspace-refresh :where(.course-overview, .project-detail, .plab-index, .plab-rail, dialog) { animation: none; }
+}
+@media (min-width: 1280px) {
+  .workspace-refresh .course-overview > ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
+}
+@media (max-width: 1200px) {
+  .workspace-refresh { --workspace-rail: 176px; --workspace-gap: 18px; width: calc(100% - 32px); }
+  .workspace-refresh .workspace-header { flex-wrap: wrap; }
+  .workspace-refresh .course-catalog-layout { grid-template-columns: 190px minmax(0, 1fr); gap: 20px; }
+  .workspace-refresh .data-shell .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .workspace-refresh .overview-panel { padding-inline: 24px; }
+  .workspace-refresh.workspace-refresh .project-shell .project-workbench { grid-template-columns: 210px minmax(0, 1fr); }
+  .workspace-refresh.workspace-refresh .project-shell .project-detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .workspace-refresh .settings-main .page-body { grid-template-columns: 132px minmax(0, 1fr); gap: 18px; }
+}
+@media (max-width: 1000px) and (min-width: 761px) {
+  .workspace-refresh { --workspace-rail: 72px; }
+  .workspace-refresh .app-sidebar.student-sidebar { padding: 20px 8px; }
+  .workspace-refresh .app-sidebar .acaora-brand > div, .workspace-refresh .app-sidebar > nav a span, .workspace-refresh .student-sidebar-foot p { display: none; }
+  .workspace-refresh .app-sidebar > nav a { justify-content: center; padding: 12px; }
+  .workspace-refresh .app-sidebar > nav a.active::before { left: -8px; }
+  .workspace-refresh .course-catalog-layout { grid-template-columns: minmax(0, 1fr); }
+  .workspace-refresh .course-catalog-index { position: relative; top: 0; }
+  .workspace-refresh .course-catalog-index ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .workspace-refresh { width: 100%; margin: 0; display: block; }
+  .workspace-refresh .app-sidebar.student-sidebar { position: fixed; top: 0; left: 0; height: 100dvh; width: 264px; min-height: 0; background: var(--surface); padding: 24px 16px; border-right: 1px solid var(--border); }
+  .workspace-refresh .app-sidebar > nav { margin-top: 32px; }
+  .workspace-refresh.workspace-refresh > :is(.learning-main, .plab-shell, .data-main, .project-main, .settings-main) { padding: 72px 16px 40px; }
+  .workspace-refresh .workspace-header.ui-page-header, .workspace-refresh .plab-shell .workspace-header.ui-page-header { min-height: 0; padding: 8px 0 22px; margin-bottom: 20px; gap: 18px; flex-wrap: wrap; }
+  .workspace-refresh .workspace-header h1 { font-size: 32px; }
+  .workspace-refresh .workspace-header .ui-page-actions { width: 100%; }
+  .workspace-refresh .workspace-header .ui-page-actions > * { flex: initial; }
+  .workspace-refresh .workspace-header .page-bar-seg { width: auto; order: 0; }
+  .workspace-refresh .workspace-header .page-bar-date { display: inline; }
+  .workspace-refresh .course-catalog-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .workspace-refresh .course-catalog-index { position: relative; top: 0; padding: 0; }
+  .workspace-refresh .course-catalog-index h2 { margin-left: 0; }
+  .workspace-refresh .course-catalog-index ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-refresh .course-catalog-index button { min-height: 82px; padding: 12px; }
+  .workspace-refresh .course-catalog-index button span { font-size: 14px; }
+  .workspace-refresh .course-overview { padding: 24px 20px; }
+  .workspace-refresh .course-overview > ol > li ul li { display: block; padding: 6px 0; }
+  .workspace-refresh .course-overview > ol > li small { margin-top: 0; }
+  .workspace-refresh .plab-head-tools { width: 100%; }
+  .workspace-refresh .translator-status { width: 100%; }
+  .workspace-refresh.workspace-refresh .plab-shell .paper-workspace-nav { display: none; }
+  .workspace-refresh.workspace-refresh .plab-shell .paper-mobile-tabs { position: sticky; top: 0; margin: 0 0 18px; padding: 5px 5px 5px 44px; background: var(--surface); border-radius: 9px; }
+  .workspace-refresh .paper-mobile-tabs button { min-width: 0; min-height: 42px; padding: 8px 4px; font-size: 13px; border: 0; border-radius: 6px; }
+  .workspace-refresh .paper-mobile-tabs button[aria-selected="true"] { background: var(--brand); color: var(--surface); }
+  .workspace-refresh.workspace-refresh .plab-shell .plab-workbench { display: block; height: auto; border-radius: 10px; overflow: visible; }
+  .workspace-refresh.workspace-refresh .plab-reader-bar { padding: 20px 16px 16px; gap: 12px; }
+  .workspace-refresh .paper-title-edit { display: flex; flex-wrap: wrap; gap: 10px; }
+  .workspace-refresh .paper-title-edit > span { width: 100%; }
+  .workspace-refresh .paper-title-edit input { width: 100%; font-size: 17px; }
+  .workspace-refresh .paper-original-trigger { width: auto; }
+  .workspace-refresh.workspace-refresh .plab-reader-scroll { overflow-y: visible; }
+  .workspace-refresh.workspace-refresh .plab-continuous-text { padding: 22px 16px 44px; }
+  .workspace-refresh.workspace-refresh .plab-continuous-text .plab-body { font-size: 16px; }
+  .workspace-refresh.workspace-refresh .section-chips { padding: 10px 16px; }
+  .workspace-refresh.workspace-refresh .plab-index, .workspace-refresh.workspace-refresh .plab-rail { max-height: none; padding: 20px; }
+  .workspace-refresh .upload-panel, .workspace-refresh .analysis-panel, .workspace-refresh .data-preview { padding: 20px 16px; }
+  .workspace-refresh .overview-panel { padding: 12px 0; }
+  .workspace-refresh .analysis-tabs { width: 100%; gap: 2px; flex-wrap: nowrap; }
+  .workspace-refresh .analysis-tabs button { padding: 8px 6px; flex: 1 1 0; min-width: 0; font-size: 12px; white-space: nowrap; }
+  .workspace-refresh .analysis-grid { grid-template-columns: minmax(0, 1fr); }
+  .workspace-refresh.workspace-refresh .project-shell .project-workbench { grid-template-columns: minmax(0, 1fr); }
+  .workspace-refresh.workspace-refresh .project-shell .project-library { border-right: 0; padding: 16px; }
+  .workspace-refresh .project-list { display: flex; overflow-x: auto; gap: 8px; }
+  .workspace-refresh.workspace-refresh .project-shell .project-list > button { min-width: 180px; flex: 0 0 180px; }
+  .workspace-refresh.workspace-refresh .project-shell .project-detail { padding: 24px 20px; }
+  .workspace-refresh .project-detail-head { flex-wrap: wrap; }
+  .workspace-refresh .settings-main .page-body { display: block; }
+  .workspace-refresh .settings-nav { position: relative; top: 0; display: flex; flex-direction: row; overflow-x: auto; margin-bottom: 16px; }
+  .workspace-refresh .settings-nav a { white-space: nowrap; flex: 0 0 auto; }
+  .workspace-refresh .settings-main .settings-sections > .settings-panel { padding: 24px 20px; }
+}

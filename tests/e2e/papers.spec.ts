@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { installApiMocks, makeTextPdf } from "./helpers";
+import { installApiMocks, makeTextPdf, openPaperLibrary } from "./helpers";
 
 // Existing note/sync cases exercise the expanded workspace. Default collapsed
 // behavior and toggling are covered separately by paper-layout.spec.ts.
@@ -34,7 +34,7 @@ test("PAPER-01 imports and parses a text PDF locally", async ({ page }) => {
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "reproducible-study.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect(page.getByText(/已读取 \d+ 个段落，原始 PDF 未上传。/)).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText("reproducible-study.pdf", { exact: true })).toBeVisible();
+  await expect(page.locator('.paper-source-record')).toContainText('reproducible-study.pdf');
   await expect.poll(() => state.requests.includes("PUT /api/cloud/papers")).toBe(true);
 });
 
@@ -43,9 +43,9 @@ test("PAPER-02 failed upload remains queued across reload", async ({ page }) => 
   await page.goto("/papers");
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "queued.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
-  await expect(page.getByText(/云同步暂不可用/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('同步暂不可用', {timeout: 30_000});
   await page.reload();
-  await expect(page.getByText("queued.pdf", { exact: true })).toBeVisible();
+  await expect(page.locator('.paper-source-record')).toContainText('queued.pdf');
   const queuedIds = await readSyncQueue(page);
   expect(queuedIds.map((operation) => operation.id)).toHaveLength(1);
   expect(queuedIds[0].type).toBe("upsert");
@@ -59,6 +59,7 @@ test("PAPER-03 signed-in delete is durably queued before cloud acknowledgement",
   const state = await installApiMocks(page, { signedIn: true, cloudPapers: [paperFixture], failPaperDelete: true });
   await page.goto("/papers");
   page.on("dialog", (dialog) => dialog.accept());
+  await openPaperLibrary(page);
   await page.getByRole("button", { name: `删除 ${paperFixture.title}` }).click();
   await expect(page.getByText(paperFixture.title, { exact: true })).toHaveCount(0);
   const operations = await readSyncQueue(page);
@@ -74,7 +75,7 @@ test("PAPER-03 signed-in delete is durably queued before cloud acknowledgement",
 test("PAPER-04 cloud tombstone removes local paper and pending upsert", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, cloudPapers: [paperFixture] });
   await page.goto("/papers");
-  await expect(page.getByText(paperFixture.title, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(paperFixture.title);
   state.cloudPapers = [];
   state.cloudDeletions.push({ id: paperFixture.id, deletedAt: Date.now() });
   await page.reload();
@@ -86,6 +87,7 @@ test("PAPER-05 deletion confirmation distinguishes all devices from this device"
   const state = await installApiMocks(page, { signedIn: true, cloudPapers: [paperFixture] });
   await page.goto("/papers");
   const signedInDialog = page.waitForEvent("dialog");
+  await openPaperLibrary(page);
   const signedInClick = page.getByRole("button", { name: `删除 ${paperFixture.title}` }).click();
   const first = await signedInDialog;
   expect(first.message()).toBe(`从所有设备删除“${paperFixture.title}”的论文记忆？原始 PDF 不受影响；提取文本、翻译、笔记、阅读进度和 AI 结果将被删除。`);
@@ -109,6 +111,7 @@ test("PAPER-05 deletion confirmation distinguishes all devices from this device"
   }, guestPaper);
   await page.reload();
   const guestDialog = page.waitForEvent("dialog");
+  await openPaperLibrary(page);
   const guestClick = page.getByRole("button", { name: `删除 ${guestPaper.title}` }).click();
   const second = await guestDialog;
   expect(second.message()).toBe(`从当前设备删除“${guestPaper.title}”的论文记忆？原始 PDF 不受影响。`);
@@ -119,7 +122,7 @@ test("PAPER-05 deletion confirmation distinguishes all devices from this device"
 test("PAPER-06 account switch does not expose or upload another account's local papers", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, userId: "account-a", cloudPapers: [paperFixture] });
   await page.goto("/papers");
-  await expect(page.getByText(paperFixture.title, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(paperFixture.title);
   state.userId = "account-b";
   state.cloudPapers = [];
   const writesBefore = state.requests.filter((request) => request === "PUT /api/cloud/papers").length;
@@ -136,7 +139,9 @@ test("PAPER-07 edit during an in-flight upload remains queued until the newer ve
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.locator('input[type="file"]').setInputFiles({ name: "race.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
   await expect.poll(() => state.requests.filter((request) => request === "PUT /api/cloud/papers").length).toBeGreaterThan(0);
+  await page.getByRole("button", {name: "编辑标题", exact: true}).click();
   await page.getByRole("textbox", { name: "论文标题" }).fill("Edited while uploading");
+  await page.getByRole("button", {name: "保存标题", exact: true}).click();
   await expect.poll(() => state.requestBodies.some((body) => (body as { title?: string }).title === "Edited while uploading"), { timeout: 10_000 }).toBe(true);
   await expect.poll(async () => (await readSyncQueue(page)).length, { timeout: 10_000 }).toBe(0);
 });
@@ -149,11 +154,13 @@ test("PAPER-08 oversized memory stays local and does not retry until edited", as
   await expect.poll(async () => (await readSyncQueue(page))[0]?.blockedReason).toBe("too-large");
   const writesBefore = state.requests.filter((request) => request === "PUT /api/cloud/papers").length;
   await page.reload();
-  await expect(page.getByText("large.pdf", { exact: true })).toBeVisible();
+  await expect(page.locator('.paper-source-record')).toContainText('large.pdf');
   await expect(page.locator(".library-privacy strong")).toHaveText("云同步暂不可用");
   expect(state.requests.filter((request) => request === "PUT /api/cloud/papers").length).toBe(writesBefore);
   state.paperSyncStatus = 200;
+  await page.getByRole("button", {name: "编辑标题", exact: true}).click();
   await page.getByRole("textbox", { name: "论文标题" }).fill("Revised local memory");
+  await page.getByRole("button", {name: "保存标题", exact: true}).click();
   await expect.poll(async () => (await readSyncQueue(page)).length, { timeout: 10_000 }).toBe(0);
   expect(state.requests.filter((request) => request === "PUT /api/cloud/papers").length).toBeGreaterThan(writesBefore);
 });
@@ -161,9 +168,10 @@ test("PAPER-08 oversized memory stays local and does not retry until edited", as
 test("PAPER-09 offline deletion survives reload and reaches cloud after reconnect", async ({ page }) => {
   const state = await installApiMocks(page, { signedIn: true, cloudPapers: [paperFixture] });
   await page.goto("/papers");
-  await expect(page.getByText(paperFixture.title, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(paperFixture.title);
   await page.context().setOffline(true);
   page.on("dialog", (dialog) => dialog.accept());
+  await openPaperLibrary(page);
   await page.getByRole("button", { name: `删除 ${paperFixture.title}` }).click();
   await expect(page.getByText(paperFixture.title, { exact: true })).toHaveCount(0);
   expect((await readSyncQueue(page)).find((operation) => operation.id === paperFixture.id)?.type).toBe("delete");
@@ -221,7 +229,7 @@ test('PAPER-12 full text scrolls continuously and restores the current paragraph
   const sent = () => ([...state.requestBodies].reverse() as typeof continuousPaperFixture[]).find(p => p.id === continuousPaperFixture.id);
   await page.goto('/papers');
   await expect(page.getByLabel('论文标题')).toHaveValue(continuousPaperFixture.title);
-  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByText(paragraph.original, {exact: true})).toBeAttached();
+  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByRole('region', {name: '论文正文', exact: true}).getByText(paragraph.original, {exact: true})).toBeAttached();
   await expect(page.getByRole('button', {name: '下一段', exact: true})).toHaveCount(0);
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.hover();
@@ -238,7 +246,7 @@ test('PAPER-12 full text scrolls continuously and restores the current paragraph
   await expect.poll(() => reader.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
   await page.locator('.section-chips').getByRole('button', {name: 'Methods', exact: true}).click();
   await expect(page.getByLabel('段落笔记')).toHaveValue('Methods原有笔记。');
-  await page.getByRole('button', {name: '☆ 收藏', exact: true}).click();
+  await page.getByRole('button', {name: '收藏', exact: true}).click();
   await expect.poll(() => sent()?.paragraphs[1].bookmarked).toBe(true);
   expect(sent()?.paragraphs[2].note).toBe('结果段新笔记。');
   expect(sent()?.paragraphs.every(p => !p.read)).toBe(true);
@@ -250,7 +258,7 @@ test('PAPER-13 mobile full-text scrolling keeps notes attached to the reading po
   await installApiMocks(page, {signedIn: true, cloudPapers: [continuousPaperFixture]});
   await page.goto('/papers');
   await expect(page.getByLabel('论文标题')).toHaveValue(continuousPaperFixture.title);
-  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByText(paragraph.original, {exact: true})).toBeAttached();
+  for (const paragraph of continuousPaperFixture.paragraphs) await expect(page.getByRole('region', {name: '论文正文', exact: true}).getByText(paragraph.original, {exact: true})).toBeAttached();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   const panels = page.getByRole('tablist', {name: '论文工作台面板'});
   await expect(panels).toBeInViewport();
@@ -262,7 +270,7 @@ test('PAPER-13 mobile full-text scrolling keeps notes attached to the reading po
   await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
   await page.getByLabel('段落笔记').fill('手机全文笔记。');
   await panels.getByRole('tab', {name: '阅读', exact: true}).click();
-  await expect(page.getByText(continuousPaperFixture.paragraphs[2].original, {exact: true})).toBeInViewport();
+  await expect(page.getByRole('region', {name: '论文正文', exact: true}).getByText(continuousPaperFixture.paragraphs[2].original, {exact: true})).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
   await page.screenshot({path: 'outputs/continuous-paper-reader-mobile.png'});
 });
@@ -278,7 +286,7 @@ test('PAPER-15 scrolling to a short conclusion selects its notes and restores th
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.hover();
   await page.mouse.wheel(0, 10_000);
-  await expect(page.getByText(paper.paragraphs[3].original, {exact: true})).toBeInViewport();
+  await expect(reader.getByText(paper.paragraphs[3].original, {exact: true})).toBeInViewport();
   await expect(page.getByLabel('段落笔记')).toHaveValue('Results原有笔记。');
   await page.getByLabel('段落笔记').fill('短结论笔记。');
   await reader.press('ArrowUp');
@@ -316,6 +324,7 @@ test('PAPER-14 delayed translation preserves later reading and notes and cannot 
   await page.getByRole('button', {name: '翻译当前段落', exact: true}).click();
   await expect(page.getByText('设备端翻译进行中', {exact: true})).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as typeof window & {translationCalls?: number}).translationCalls)).toBe(2);
+  await openPaperLibrary(page);
   await page.getByRole('button', {name: `${paperFixture.title} 1 段 · 已读 0%`, exact: true}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue(paperFixture.title);
   await page.evaluate(() => (window as typeof window & {finishTranslation: (text: string) => void}).finishTranslation('另一篇的过期翻译。'));
@@ -340,7 +349,7 @@ test("PAPER-10 a long paper stays bounded and switches to an unobstructed AI mod
   await page.setViewportSize({ width: 1440, height: 900 });
   await installApiMocks(page, { signedIn: true, cloudPapers: [longPaperFixture] });
   await page.goto("/papers");
-  await expect(page.getByText(longPaperFixture.title, { exact: true })).toBeVisible();
+  await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(longPaperFixture.title);
   await expect(page.getByRole("heading", { name: "AI 分析", exact: true })).toBeHidden();
 
   const regions = await page.evaluate(() => {

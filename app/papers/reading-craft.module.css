@@ -1,0 +1,220 @@
+/* PaperLab reading room. This is the route's complete composition, independent
+   of the older focused-workspace grid; shared product tokens remain normative. */
+@font-face {
+  font-family: 'Acaora Source Serif';
+  src: url('/fonts/source-serif/SourceSerif4-Regular.woff2') format('woff2');
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+.reading.reading:global(.paper-layout.workspace-refresh) {
+  --paper-ink: var(--text); --paper-muted: var(--text-2); --paper-rule: var(--border);
+  --paper-serif: 'Acaora Source Serif', Georgia, 'Times New Roman', 'Songti SC', SimSun, serif;
+  background: var(--surface); min-height: 100dvh; align-items: start;
+}
+:global(body):has(.reading) { background: var(--surface); }
+:global(body):has(.reading) :global(.light-curtain),
+:global(body):has(.reading) :global(.ambient-toggle) { display: none; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell) {
+  min-width: 0; padding: 24px 32px 0; gap: 0; background: var(--surface);
+}
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-head) { min-height: 64px; padding: 0 0 18px; margin: 0; align-items: center; gap: 20px; border: 0; }
+.reading.reading :global(.plab-head h1) { font-size: 22px; letter-spacing: -.025em; font-weight: 600; }
+.reading.reading :global(.plab-head > div:first-child > span) { display: block; margin-top: 6px; color: var(--paper-muted); font-size: 12px; line-height: 1.6; }
+.reading.reading :global(.plab-head-tools .plab-tool) { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 10px 18px; border-radius: 6px; }
+.reading.reading :global(.paper-navigation-bar) { min-height: 58px; padding: 0; gap: 8px 20px; border-block: 1px solid var(--paper-rule); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-workspace-nav) { margin: 0; padding: 0; gap: 16px; border-radius: 0; background: transparent; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-workspace-nav button) { display: inline-flex; align-items: center; gap: 8px; min-height: 56px; padding: 10px 4px; border: 0; border-radius: 0; background: transparent; color: var(--paper-muted); font-size: 13px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-workspace-nav button[aria-pressed="true"]) { background: transparent; color: var(--brand); }
+.reading.reading :global(.paper-workspace-nav .motion-navigation-marker),
+.reading.reading :global(.paper-mobile-tabs .motion-navigation-marker),
+.reading.reading :global(.section-chips .motion-navigation-marker) { background: transparent; border-bottom: 2px solid var(--brand); border-radius: 0; box-shadow: none; }
+.reading.reading :global(.motion-navigation-hover) { background: var(--brand-subtle); border-radius: 3px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls) { display: flex; align-items: center; padding: 0; margin: 0; gap: 20px; min-height: 44px; }
+.reading.reading :global(.paper-layout-controls > div) { display: flex; align-items: center; gap: 4px; }
+.reading.reading :global(button:focus-visible), .reading.reading :global(select:focus-visible), .reading.reading :global(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 3px; }
+.reading.reading :global(.paper-layout-controls button:hover) { color: var(--brand); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button) { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px; border: 0; border-radius: 4px; background: transparent; color: var(--paper-muted); font-size: 12px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button[aria-expanded="true"]),
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button[aria-pressed="true"]) { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.reading.reading :global(.paper-layout-controls > span) { color: var(--paper-muted); font-size: 12px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench) { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; margin: 0; height: max(540px, calc(100dvh - 150px)); border: 0; border-radius: 0; background: var(--surface); overflow: hidden; }
+.reading.reading :global(.plab-workbench[hidden]),
+.reading.reading :global(.paper-mode-content[hidden]),
+.reading.reading :global(.paper-layout-controls[hidden]) { display: none !important; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader) { grid-column: 1; grid-row: 1; min-width: 0; min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--surface); }
+.reading.reading :global(.plab-reader-scroll) { display: block; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable both-edges; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader-bar) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'source' 'title'; max-width: 850px; padding: 48px 32px 36px; margin: 0 auto; gap: 22px; border: 0; background: transparent; }
+.reading.reading :global(.paper-reading-navigation) { position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'chapters tools progress'; align-items: center; gap: 12px; padding: 0 32px; border-block: 1px solid var(--paper-rule); background: var(--surface); }
+.reading.reading :global(.paper-reading-navigation .section-chips) { grid-area: chapters; min-width: 0; }
+.reading.reading :global(.reader-controls dialog button) { width: auto; height: auto; min-height: 40px; }
+.reading.reading :global(.paper-source-record) { grid-area: source; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; color: var(--paper-muted); font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-title-edit) { display: block; grid-area: title; min-width: 0; }
+.reading .titleField { display: block; width: 100%; min-width: 0; min-height: 1.3em; margin: 0; padding: 0; border: 0; border-radius: 2px; background: transparent; color: var(--paper-ink); font: 400 44px/1.3 var(--paper-serif); letter-spacing: -.025em; white-space: pre-wrap; overflow-wrap: anywhere; field-sizing: content; resize: none; overflow: hidden; height: auto; caret-color: var(--brand); }
+.titleField:hover { background: var(--surface-2); }
+.titleField:focus-visible { outline: 2px solid var(--brand); outline-offset: 5px; }
+.reading.reading :global(.reader-controls) { display: flex; flex-wrap: wrap; gap: 8px; }
+.reading.reading :global(.paper-original-trigger) { margin: 0; white-space: nowrap; }
+.reading.reading :global(.reader-controls > button) { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; height: auto; min-height: 40px; padding: 8px 12px; border: 1px solid var(--border-control); border-radius: 4px; background: transparent; color: var(--paper-muted); font-size: 12px; white-space: nowrap; }
+.reading.reading :global(.reader-controls button[aria-pressed="true"]) { color: var(--brand-on-subtle); border-color: var(--brand); background: var(--brand-subtle); }
+.reading.reading :global(.plab-reader-progress) { width: auto; min-width: 0; }
+.reading.reading :global(.plab-reader-progress b) { font-weight: 400; font-size: 11px; color: var(--paper-muted); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips) { position: relative; top: auto; z-index: 1; display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; min-height: 49px; padding: 0; gap: 24px; border: 0; background: var(--surface); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips button) { flex: 0 0 auto; min-height: 47px; padding: 12px 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--paper-muted); font-size: 12px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips button.active) { color: var(--brand); border-bottom-color: var(--brand); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips[data-motion-ready="true"] button.active) { color: var(--brand); border-bottom-color: transparent; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-continuous-text) { max-width: none; margin: 0; padding: 36px 32px 100px; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-continuous-text .plab-body) { max-width: 72ch; margin: 0 auto; font-family: var(--paper-serif); font-size: 20px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-paragraph h2) { margin: 0 0 16px; padding: 0; color: var(--paper-ink); font-family: var(--font-sans); font-size: 14px; font-weight: 600; letter-spacing: 0; line-height: 1.6; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-paragraph + .plab-paragraph) { margin-top: 28px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-paragraph:has(h2):not(:first-child)) { margin-top: 44px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-body p) { margin: 0; padding: 0; font: inherit; line-height: 1.85; color: var(--paper-ink); }
+.reading.reading :global(.plab-body ::selection), .reading.reading :global(textarea::selection) { background: var(--brand-subtle); color: var(--paper-ink); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-inline-translation) { margin-top: 20px; padding: 16px 20px; border: 0; border-radius: 2px; background: var(--surface-2); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-inline-translation p) { font: 14px/1.85 var(--font-sans); color: var(--paper-muted); }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-index) { display: none; position: absolute; inset: 0 auto 0 0; z-index: 8; width: 304px; padding: 24px; background: var(--surface); border: 0; border-right: 1px solid var(--paper-rule); box-shadow: var(--shadow-overlay); overflow-y: auto; animation: none; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-library-open="true"] .plab-index) { display: flex; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { display: none; grid-column: 2; grid-row: 1; padding: 24px; min-width: 0; border: 0; border-left: 1px solid var(--paper-rule); border-radius: 0; background: var(--surface-2); overflow-y: auto; animation: none; scrollbar-width: thin; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 320px; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"] .plab-rail) { display: block; }
+.reading.reading :global(.plab-index-head), .reading.reading :global(.plab-rail-head) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 8px; padding-bottom: 20px; margin: 0 0 24px; border-bottom: 1px solid var(--paper-rule); }
+.reading.reading :global(.plab-index-head h2), .reading.reading :global(.plab-rail-head h2) { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+.reading.reading :global(.plab-rail-head > span) { grid-column: 1; font-size: 11px; color: var(--paper-muted); }
+.reading.reading :global(.plab-index-head > span) { grid-column: 1; grid-row: 2; color: var(--paper-muted); font-size: 11px; }
+.reading.reading :global(.paper-panel-close) { display: inline-grid; grid-column: 2; grid-row: 1 / span 2; place-items: center; min-height: 40px; width: 40px; border: 0; border-radius: 4px; background: transparent; color: var(--paper-muted); }
+.reading.reading :global(.paper-panel-close:hover) { background: var(--brand-subtle); color: var(--brand); }
+.reading.reading :global(.plab-index-list) { margin: 0; display: block; }
+.reading.reading :global(.plab-index-row) { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 8px; padding: 14px 0; border-radius: 0; border-bottom: 1px solid var(--paper-rule); background: transparent; box-shadow: none; }
+.reading.reading :global(.plab-index-row--current) { background: transparent; box-shadow: none; }
+.reading.reading :global(.plab-index-open) { padding: 0; }
+.reading.reading :global(.plab-index-open strong) { font-size: 16px; font-weight: 400; line-height: 1.55; font-family: var(--paper-serif); }
+.reading.reading :global(.plab-index-open small) { margin-top: 8px; font-size: 11px; }
+.reading.reading :global(.paper-library-filename) { grid-column: 1 / -1; padding: 4px 0 0; font-size: 11px; }
+.reading.reading :global(.plab-index-delete) { display: inline-grid; place-items: center; }
+.reading.reading :global(.plab-index-empty) { padding: 16px 0 24px; line-height: 1.85; }
+.reading.reading :global(.plab-index-empty strong) { font-size: 16px; }
+.reading.reading :global(.library-privacy) { margin-top: 32px; }
+.reading.reading :global(.plab-index .library-privacy) { padding: 16px 0 0; border: 0; border-top: 1px solid var(--paper-rule); border-radius: 0; background: transparent; }
+.reading.reading :global(.library-privacy strong) { color: var(--paper-ink); font-size: 11px; }
+.reading.reading :global(.library-privacy p) { font-size: 11px; line-height: 1.85; }
+.reading.reading :global(.plab-rail-block) { margin: 0 0 24px; padding: 0; }
+.reading.reading :global(.plab-reading-context) { margin: 0 0 12px; color: var(--paper-muted); font-size: 11px; line-height: 1.8; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail-block textarea) { min-height: 190px; height: 210px; padding: 14px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--paper-ink); font-size: 14px; line-height: 1.8; caret-color: var(--brand); }
+.reading.reading :global(.plab-rail-actions) { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.reading.reading :global(.plab-rail-actions button) { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px; border: 0; border-radius: 4px; background: transparent; font-size: 12px; }
+.reading.reading :global(.plab-rail-actions button[aria-pressed="true"]) { background: var(--brand-subtle); color: var(--brand-on-subtle); border-color: transparent; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-mode-content) { margin: 0; padding: 0; max-width: none; animation: none; }
+.reading.reading :global(.literature-search) { max-width: 1080px; margin: 0 auto; padding: 56px 32px; border: 0; border-radius: 0; background: var(--surface); }
+.reading.reading :global(.literature-search > header h2) { font-size: 36px; font-weight: 400; letter-spacing: -.025em; }
+.reading.reading :global(.literature-search > header p) { margin-top: 12px; margin-bottom: 36px; }
+.reading.reading :global(.literature-query > input) { font-size: 18px; min-height: 54px; }
+.reading.reading :global(.literature-filters) { padding-block: 18px; border-bottom: 1px solid var(--paper-rule); }
+.reading.reading :global(.literature-records h3) { font-family: var(--paper-serif); font-size: 24px; font-weight: 400; }
+.reading.reading :global(.literature-records li) { padding-block: 28px; }
+.reading.reading :global(.literature-empty) { padding: 32px 0; }
+.reading.reading :global(.ai-studio) { margin: 0; padding: 48px 32px; border: 0; max-width: 1080px; margin-inline: auto; }
+.reading.reading :global(.ai-console-head) { margin-bottom: 24px; }
+.reading.reading :global(.ai-console-head h2) { font-size: 30px; }
+@media (max-width: 1200px) and (min-width: 761px) {
+  .reading.reading :global(.paper-layout-controls > span) { display: none; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell) { padding-inline: 24px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-workspace-nav) { gap: 12px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls) { gap: 0; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button) { padding-inline: 6px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 280px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { position: static; width: auto; padding-inline: 20px; box-shadow: none; }
+  .reading.reading :global(.plab-workbench[data-notes-open="true"] .paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
+  .reading.reading .titleField { font-size: 40px; }
+}
+@media (max-width: 760px) {
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell) { padding: 72px 20px 40px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-head) { padding: 0 0 20px; gap: 12px; }
+  .reading.reading :global(.plab-head > div:first-child > span) { display: none; }
+  .reading.reading :global(.plab-head h1) { font-size: 20px; }
+  .reading.reading :global(.plab-head-tools .plab-tool) { padding: 10px 12px; }
+  .reading.reading :global(.paper-navigation-bar) { display: none; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-mobile-tabs) { position: sticky; top: 0; z-index: 9; margin: 0; padding: 0 0 0 44px; border-block: 1px solid var(--paper-rule); border-radius: 0; background: var(--surface); gap: 0; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-mobile-tabs button) { min-height: 48px; padding: 10px 4px; border: 0; border-radius: 0; background: transparent; color: var(--paper-muted); font-size: 12px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-mobile-tabs button[aria-selected="true"]) { color: var(--brand); }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench) { display: block; height: auto; min-height: 0; overflow: visible; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader) { display: none; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader.mobile-visible) { display: block; }
+  .reading.reading :global(.plab-reader-scroll) { height: auto; overflow: visible; overscroll-behavior: auto; scrollbar-gutter: auto; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader-bar) { padding: 32px 0 24px; gap: 18px; }
+  .reading.reading .titleField { font-size: 32px; line-height: 1.3; }
+  .reading.reading :global(.paper-reading-navigation) { top: 50px; padding: 8px 0 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
+  .reading.reading :global(.paper-source-record) { font-size: 11px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips) { position: relative; z-index: 1; top: auto; padding: 0; gap: 22px; min-height: 45px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .section-chips button) { min-height: 43px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-continuous-text) { padding: 28px 0 40px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-continuous-text .plab-body) { font-size: 18px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-index),
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { display: none !important; position: static; width: auto; padding: 28px 0; border: 0; box-shadow: none; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-index.mobile-visible) { display: flex !important; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail.mobile-visible) { display: block !important; background: var(--surface); }
+  .reading.reading :global(.plab-index-list) { overflow: visible; }
+  .reading.reading :global(.literature-search), .reading.reading :global(.ai-studio) { padding: 32px 0; }
+  .reading.reading :global(.literature-search > header h2) { font-size: 30px; }
+  .reading.reading :global(.literature-query > input) { font-size: 16px; min-height: 48px; }
+  .reading.reading :global(.literature-records h3) { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) { .reading.reading :global(button) { transition: none; } }
+
+:global(.paper-document-title) { margin: 0; padding: 0; font: inherit; }
+:global(.paper-title-actions), :global(.paper-reading-trail), :global(.paper-note-source > div) { display: flex; align-items: center; gap: 8px; }
+:global(.paper-title-actions) { margin-top: 12px; }
+:global(.paper-title-actions button), :global(.paper-note-source button), :global(.paper-peek-trigger) { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--text-2); font: 13px/1.5 var(--font-sans); }
+:global(.paper-title-actions button:hover), :global(.paper-note-source button:hover), :global(.paper-peek-trigger:hover) { background: var(--surface-2); color: var(--brand); }
+:global(.paper-reading-preferences label) { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+:global(.paper-reading-preferences select) { width: 64px; min-width: 64px; max-width: 64px; min-height: 36px; padding: 4px 6px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); }
+:global(.paper-reading-trail) { flex-wrap: wrap; }
+:global(.paper-reading-trail details) { font: 12px/1.6 var(--font-sans); }
+:global(.paper-reading-trail summary) { padding: 8px; cursor: pointer; }
+:global(.paper-reading-trail nav) { display: grid; max-height: 180px; overflow: auto; }
+:global(.paper-note-source) { margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+:global(.paper-note-source blockquote) { margin: 0 0 8px; color: var(--text-2); font: 14px/1.7 var(--font-sans); }
+:global(.paper-note-source button[aria-pressed="true"]) { color: var(--brand-on-subtle); background: var(--brand-subtle); }
+:global(.paper-source-peek) { display: inline-flex; }
+:global(.paper-source-preview) { position: fixed; inset: auto; margin: 0; padding: 20px; max-height: min(500px, calc(100dvh - 32px)); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-overlay); background: var(--surface); color: var(--text); overflow: auto; opacity: 0; transition: opacity 140ms ease-out, display 140ms allow-discrete, overlay 140ms allow-discrete; }
+:global(.paper-source-preview:popover-open) { opacity: 1; }
+:global(.paper-source-preview:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+:global(.paper-note-more summary) { min-height: 40px; padding: 8px; cursor: pointer; font: 13px/1.6 var(--font-sans); color: var(--text-2); }
+@media (min-width: 761px) { :global(.mobile-paper-tool) { display: none !important; } }
+@starting-style { :global(.paper-source-preview:popover-open) { opacity: 0; } }
+:global(.paper-source-preview header) { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 600 14px/1.6 var(--font-sans); }
+:global(.paper-source-preview header button) { display: grid; place-items: center; width: 36px; height: 36px; border: 0; background: transparent; color: var(--text-2); border-radius: 4px; }
+:global(.paper-preview-source) { margin: 6px 0 16px; color: var(--text-2); font: 12px/1.7 var(--font-sans); }
+:global(.paper-source-preview blockquote) { margin: 0; max-height: 260px; overflow: auto; font: 18px/1.8 'Acaora Source Serif', var(--font-sans), serif; }
+:global(.paper-source-preview footer) { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border); }
+:global(.paper-source-preview footer button) { min-height: 36px; padding: 6px 10px; border: 0; border-radius: 4px; background: var(--brand-subtle); color: var(--brand-on-subtle); font: 13px/1.6 var(--font-sans); }
+@media (min-width: 761px) {
+  .reading.reading:global(.paper-layout.workspace-refresh) { margin: 0; max-width: none; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell) { display: flex; flex-direction: column; height: 100dvh; min-height: 0; box-sizing: border-box; padding-top: 24px; padding-bottom: 20px; overflow: hidden; }
+  .reading.reading :global(.plab-head), .reading.reading :global(.paper-navigation-bar), .reading.reading :global(.paper-message) { flex: 0 0 auto; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench) { flex: 1; height: auto; min-height: 0; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-mode-content) { flex: 1; min-height: 0; overflow: auto; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader-bar) { padding: 32px 24px 24px; }
+  .reading .titleField[readonly] { cursor: default; pointer-events: none; }
+  .reading .titleField[readonly]:hover { background: transparent; }
+  .reading.reading { --paper-serif: 'Acaora Source Serif', Georgia, 'PingFang SC', 'Microsoft YaHei', serif; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-continuous-text .plab-body) { font-size: var(--paper-reading-size, 20px); }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-paragraph h2) { font-size: 16px; }
+  .reading.reading :global(.paper-source-record), .reading.reading :global(.plab-reading-context), .reading.reading :global(.plab-rail-head > span), .reading.reading :global(.plab-index-head > span), .reading.reading :global(.plab-reader-progress b), .reading.reading :global(.library-privacy p), .reading.reading :global(.library-privacy strong) { font-size: 12px; }
+  .reading.reading :global(.plab-rail-actions button), .reading.reading :global(.reader-controls > button) { font-size: 13px; }
+  .reading.reading :global(.reader-controls) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail-block textarea) { field-sizing: content; min-height: 128px; max-height: 280px; height: auto; }
+  .reading.reading :global(.paper-notes-summary > button) { display: flex; align-items: center; min-height: 40px; padding: 8px 0; border: 0; background: transparent; color: var(--text); font: 600 14px/1.6 var(--font-sans); }
+  .reading.reading :global(.plab-rail-actions button[aria-pressed="true"]) { color: var(--text); background: transparent; font-weight: 600; }
+  .reading.reading :global(.plab-workbench[data-notes-open="true"] .plab-paragraph[data-note-active="true"]) { position: relative; }
+  .reading.reading :global(.plab-workbench[data-notes-open="true"] .plab-paragraph[data-note-active="true"]::before) { content: ''; position: absolute; inset: 0 auto 0 -12px; width: 1px; background: var(--brand); }
+  .reading.reading :global(.ai-studio), .reading.reading :global(.literature-search) { padding: 36px 32px; }
+  .reading.reading :global(.ai-console) { border: 0; border-radius: 0; padding: 0; box-shadow: none; background: transparent; }
+  .reading.reading :global(.ai-console-head h2), .reading.reading :global(.literature-search > header h2) { font-size: 32px; font-weight: 500; }
+  .reading.reading :global(.ai-console-key small), .reading.reading :global(.ai-console-context) { font-size: 13px; line-height: 1.7; }
+  .reading.reading :global(.ai-mode) { display: flex; flex-wrap: nowrap; gap: 24px; overflow-x: auto; }
+  .reading.reading :global(.ai-mode-item) { flex: 0 0 auto; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; padding: 12px 0; box-shadow: none; }
+  .reading.reading :global(.ai-mode-item--on) { color: var(--brand); border-bottom-color: var(--brand); background: transparent; box-shadow: none; }
+}
+@media (min-width: 761px) and (max-width: 1300px) {
+  .reading.reading :global(.plab-workbench[data-notes-open="true"] .paper-reading-navigation) { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; padding: 8px 16px 0; }
+}
+@media (max-width: 760px) { :global(.desktop-paper-tool) { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { :global(.paper-source-preview) { transition: none; } }

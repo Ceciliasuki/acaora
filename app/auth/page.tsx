@@ -1,5 +1,7 @@
 "use client";
 
+import craft from '../operational-craft.module.css';
+import {navigateTabs} from '../components/tab-keyboard';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
@@ -40,7 +42,9 @@ export default function AuthPage() {
   const [mailPurpose, setMailPurpose] = useState<MailPurpose>("confirmation");
 
   useEffect(() => {
-    const code = new URLSearchParams(location.search).get("auth_error");
+    const params = new URLSearchParams(location.search);
+    if (params.get("mode") === "register") queueMicrotask(() => setMode("register"));
+    const code = params.get("auth_error");
     if (!code) return;
     queueMicrotask(() => setMessage(code === "otp_expired"
       ? "这封邮件中的链接已经过期或已被使用，请重新申请一封新邮件。"
@@ -134,7 +138,7 @@ export default function AuthPage() {
         : "安全链接已经发送，请打开邮件完成操作。";
 
   return (
-    <main className="auth-page">
+    <main className={`auth-page ${craft.auth}`}>
       <Link className="auth-back" href="/">← 返回 Acaora</Link>
       <section className="auth-shell">
         <div className="auth-story">
@@ -156,16 +160,16 @@ export default function AuthPage() {
             </div> : mode === "existing-account" ? <div className="auth-check-email auth-existing-account">
               <Info aria-hidden="true" /><h3>这个邮箱可能已经注册</h3><strong>{email}</strong><p>如果你以前使用过邮箱验证码，账户已经自动创建。发送密码设置链接后，以后可直接使用邮箱和密码登录。</p><button className="auth-primary-action" type="button" disabled={working} onClick={() => void sendPasswordSetup()}>{working ? "正在发送…" : "发送密码设置链接"}</button><button className="auth-secondary-action" type="button" onClick={() => switchMode("login")}>我已有密码，返回登录</button>
             </div> : <>
-              {mode !== "recover" && <div className="auth-mode-tabs" role="tablist" aria-label="账户操作">
-                <button type="button" role="tab" aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => switchMode("login")}>密码登录</button>
-                <button type="button" role="tab" aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => switchMode("register")}>注册账户</button>
+              {mode !== "recover" && <div className="auth-mode-tabs" role="tablist" aria-label="账户操作" tabIndex={-1} onKeyDown={navigateTabs}>
+                <button type="button" role="tab" id="account-tab-login" aria-controls="account-form" tabIndex={mode === "login" ? 0 : -1} disabled={working} aria-selected={mode === "login"} className={mode === "login" ? "active" : ""} onClick={() => switchMode("login")}>密码登录</button>
+                <button type="button" role="tab" id="account-tab-register" aria-controls="account-form" tabIndex={mode === "register" ? 0 : -1} disabled={working} aria-selected={mode === "register"} className={mode === "register" ? "active" : ""} onClick={() => switchMode("register")}>注册账户</button>
               </div>}
-              <form onSubmit={(event) => void submit(event)}>
+              <form id="account-form" role={mode === "recover" ? undefined : "tabpanel"} aria-labelledby={mode === "recover" ? undefined : `account-tab-${mode}`} aria-busy={working} onSubmit={(event) => void submit(event)}>
                 {mode === "register" && <label htmlFor="display-name">昵称<input className="auth-text-input" id="display-name" type="text" required maxLength={40} autoComplete="name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="你的昵称" /></label>}
                 <label htmlFor="account-email">邮箱地址<div className="email-field"><span>@</span><input id="account-email" type="email" required autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@qq.com" /></div></label>
-                {mode !== "recover" && <FormField label="密码" id="account-password" required><PasswordField autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少 8 位，含大小写字母和数字" showPolicy={mode === "register"} /></FormField>}
+                {mode !== "recover" && <FormField label="密码" id="account-password" required><PasswordField autoComplete={mode === "register" ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === "register" ? "至少 8 位，含大小写字母和数字" : "输入你的登录密码"} showPolicy={mode === "register"} /></FormField>}
                 {mode === "register" && <FormField label="确认密码" id="confirm-password" required error={confirmPassword && password !== confirmPassword ? "两次输入的密码不一致。" : undefined}><PasswordField autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="再次输入密码" /></FormField>}
-                {mode === "login" && <button className="auth-forgot" type="button" onClick={() => switchMode("recover")}>忘记密码？</button>}
+                {mode === "login" && <button className="auth-forgot" type="button" disabled={working} onClick={() => switchMode("recover")}>忘记密码？</button>}
                 <button className="auth-submit" type="submit" disabled={working}>{working ? "正在处理…" : mode === "login" ? "登录账户" : mode === "register" ? "创建账户" : "发送重置链接"}<span>→</span></button>
               </form>
               {mode === "recover" && <button className="auth-return" type="button" onClick={() => switchMode("login")}>← 返回密码登录</button>}

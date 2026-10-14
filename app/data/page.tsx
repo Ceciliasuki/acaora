@@ -2,8 +2,13 @@
 
 import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
 import { ArrowUpFromLine, HardDrive, RotateCcw } from "lucide-react";
+import ResultTools, {type AnalysisResult} from './result-tools';
 import AppSidebar from "../components/app-sidebar";
-import { Badge } from "../components/ui";
+import craft from '../operational-craft.module.css';
+import SectionNavigation from '../components/section-navigation';
+import {navigateTabs} from '../components/tab-keyboard';
+import MotionNavigation from '../components/motion-navigation';
+import { Badge, PageHeader } from "../components/ui";
 import { acceptedDataFormats, formatLabel, readDataFile } from "./file-readers";
 import {
   categoricalColumns,
@@ -19,10 +24,16 @@ import {
   welchTest,
 } from "../stats";
 
+const stages = [['import','导入数据'],['quality','变量检查'],['analysis','分析结果'],['preview','原始数据']] as const;
+
 type AnalysisTab = "describe" | "relation" | "test";
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const readLock = useRef(false);
+  const [showAllVariables, setShowAllVariables] = useState(false);
+  const [fileStatus, setFileStatus] = useState("");
+  const [datasetKey, setDatasetKey] = useState(0);
   const [data, setData] = useState<DataSet>(sampleData);
   const [error, setError] = useState("");
   const [dragging, setDragging] = useState(false);
@@ -51,8 +62,19 @@ export default function Home() {
   const model = activeX && activeY && activeX !== activeY ? regression(data, activeX, activeY) : null;
   const test = activeGroup && activeTest ? welchTest(data, activeGroup, activeTest) : null;
 
+  const result: AnalysisResult | null = (() => {
+    const source = {source:data.name,sample:isSample};
+    if (tab === "describe" && activeX) {
+      const summary = summarize(data, activeX);
+      return {...source,method:"描述统计",context:`分析变量：${activeX}`,metrics:[["有效样本",String(summary.n)],["均值",formatNumber(summary.mean)],["标准差",formatNumber(summary.sd)],["最小值",formatNumber(summary.min)],["中位数",formatNumber(summary.median)],["最大值",formatNumber(summary.max)]]};
+    }
+    if (tab === "relation" && model) return {...source,method:"Pearson 相关与一元回归",context:`X：${activeX}；Y：${activeY}`,metrics:[["有效样本",String(model.n)],["相关系数 r",formatNumber(model.r,3)],["p",formatP(model.p)],["回归斜率",formatNumber(model.slope,3)],["截距",formatNumber(model.intercept,3)],["R²",formatNumber(model.r2,3)],["t 统计量",formatNumber(model.t,3)]]};
+    if (tab === "test" && test) return {...source,method:"双侧 Welch 独立样本 t 检验",context:`分组：${activeGroup}；因变量：${activeTest}；α = 0.05`,metrics:test.groups.flatMap((group,index):Array<readonly [string,string]> => [[`${group} 有效样本`,String(test.samples[index].length)],[`${group} 均值`,formatNumber(test.means[index])]]).concat([["t 统计量",formatNumber(test.t,3)],["自由度",formatNumber(test.degreesOfFreedom,1)],["p",formatP(test.p)],["Cohen's d",formatNumber(test.effect,3)]])};
+    return null;
+  })();
+
   async function loadFile(file?: File) {
-    if (!file) return;
+    if (!file || readLock.current) return;
     if (file.size === 0) {
       setError("这个文件是空的，请选择包含表头和数据行的文件。");
       return;
@@ -61,13 +83,18 @@ export default function Home() {
       setError("文件超过 20 MB。请先抽样或拆分后再导入，以免浏览器失去响应。");
       return;
     }
+    readLock.current = true;
     setReading(true);
+    setFileStatus(`正在读取 ${file.name}…`);
     try {
       const parsed = await readDataFile(file);
       const parsedNumeric = numericColumns(parsed);
       const parsedCategorical = categoricalColumns(parsed);
       if (!parsed.headers.length || !parsed.rows.length) throw new Error("文件中没有可分析的数据行。");
       setData(parsed);
+      setDatasetKey(key => key + 1);
+      setShowAllVariables(false);
+      setFileStatus(`已读取 ${file.name}：${parsed.rows.length} 行，${parsed.headers.length} 列。本次分析有效，刷新后需重新选择原文件。`);
       setIsSample(false);
       setXVariable(parsedNumeric[0] ?? "");
       setYVariable(parsedNumeric[1] ?? parsedNumeric[0] ?? "");
@@ -75,8 +102,10 @@ export default function Home() {
       setGroupVariable(parsedCategorical[0] ?? "");
       setError("");
     } catch (cause) {
+      setFileStatus("");
       setError(cause instanceof Error ? cause.message : "文件读取失败，请检查格式。" );
     } finally {
+      readLock.current = false;
       setReading(false);
     }
   }
@@ -93,7 +122,11 @@ export default function Home() {
   }
 
   function restoreSample() {
+    if (readLock.current) return;
+    setFileStatus("已恢复示例数据。");
+    setShowAllVariables(false);
     setData(sampleData);
+    setDatasetKey(key => key + 1);
     setIsSample(true);
     setXVariable("睡眠时长");
     setYVariable("统计学成绩");
@@ -103,29 +136,23 @@ export default function Home() {
   }
 
   return (
-    <main className="student-app data-app">
+    <main className={`student-app data-app workspace-refresh ${craft.craft}`}>
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
       <section className="workspace data-main data-shell" id="workspace">
-        <div className="page-bar">
-          <div className="page-bar-inner">
-            <h1>数据分析</h1>
-            {isSample && <Badge tone="warning">示例数据</Badge>}
-            <span className="page-bar-spacer" />
-            <button className="sample-button" type="button" onClick={restoreSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button>
-          </div>
-        </div>
+        <PageHeader className="workspace-header" title="数据分析" description="在当前设备读取文件，从样本检查开始分析。" actions={<>{isSample && <Badge tone="warning">示例数据</Badge>}<button className="sample-button" type="button" onClick={restoreSample} disabled={reading || isSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button></>} />
 
         <div className="page-body page-body--wide">
 
-        <section className="hero-grid">
+        <SectionNavigation sections={stages} className="data-stage-nav" label="数据分析分区" />
+        <section className="hero-grid" id="import">
           <div className="upload-panel">
             <div className="panel-heading">
               <div><h2>导入数据</h2></div>
               <span className="privacy-pill"><HardDrive size={15} aria-hidden="true" />仅本地处理</span>
             </div>
             <button
-              className={`dropzone ${dragging ? "dragging" : ""}`}
+              className={`dropzone ${dragging ? "dragging" : ""}`} disabled={reading} aria-busy={reading}
               type="button"
               onClick={() => inputRef.current?.click()}
               onDragEnter={(event) => { event.preventDefault(); setDragging(true); }}
@@ -137,7 +164,8 @@ export default function Home() {
               <strong>{reading ? "正在识别并读取数据…" : dragging ? "松开即可读取文件" : "拖入文件，或点击选择"}</strong>
               <small>CSV · Excel · Stata · SPSS · SAS · R 数据文件</small>
             </button>
-            <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} aria-label="选择数据文件" onChange={onFileChange} />
+            <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} aria-label="选择数据文件" disabled={reading} onChange={onFileChange} />
+            {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}
             {error && <p className="error-message" role="alert">{error}</p>}
             <div className="format-support" role="group" aria-label="支持的数据格式">
               <span>Excel <small>.xlsx .xls .ods</small></span>
@@ -175,8 +203,8 @@ export default function Home() {
             <div><h2>变量检查</h2></div>
             <span className="quality-score">完整度 {completeness.toFixed(1)}%</span>
           </div>
-          <div className="variable-strip">
-            {data.headers.slice(0, 8).map((header, column) => {
+          <div className="variable-strip" id="data-variables">
+            {(showAllVariables ? data.headers : data.headers.slice(0, 8)).map((header, column) => {
               const missing = data.rows.filter((row) => isMissing(row[column])).length;
               const isNumeric = numeric.includes(header);
               return (
@@ -188,19 +216,21 @@ export default function Home() {
               );
             })}
           </div>
+          {data.headers.length > 8 && <button type="button" className="data-variable-disclosure" aria-controls="data-variables" aria-expanded={showAllVariables} onClick={() => setShowAllVariables(value => !value)}>{showAllVariables ? "收起变量" : `查看全部 ${data.headers.length} 个变量`}</button>}
         </section>
 
         <section className="analysis-panel" id="analysis">
           <div className="analysis-header">
             <div><h2>分析方法</h2></div>
-            <div className="analysis-tabs" role="tablist" aria-label="分析方法">
-              <button role="tab" aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
-              <button role="tab" aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
-              <button role="tab" aria-selected={tab === "test"} className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
-            </div>
+            <MotionNavigation as="div" className="analysis-tabs" role="tablist" label="分析方法" value={tab} onKeyDown={navigateTabs}>
+              <button role="tab" id="analysis-tab-describe" aria-controls="analysis-result" tabIndex={tab === "describe" ? 0 : -1} aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
+              <button role="tab" id="analysis-tab-relation" aria-controls="analysis-result" tabIndex={tab === "relation" ? 0 : -1} aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
+              <button role="tab" id="analysis-tab-test" aria-controls="analysis-result" tabIndex={tab === "test" ? 0 : -1} aria-selected={tab === "test"} className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
+            </MotionNavigation>
           </div>
 
-          {numeric.length === 0 ? (
+          <ResultTools key={datasetKey} result={result} />
+          <div className="analysis-content" key={tab} id="analysis-result" role="tabpanel" aria-labelledby={`analysis-tab-${tab}`} tabIndex={0}>{numeric.length === 0 ? (
             <div className="empty-state"><strong>没有检测到数值变量</strong><p>请确认数值列中没有混入大量文字或特殊符号。</p></div>
           ) : tab === "describe" ? (
             <div className="analysis-grid">
@@ -301,7 +331,7 @@ export default function Home() {
                 </> : <div className="empty-state"><strong>暂时无法执行检验</strong><p>分组变量需要恰好包含两个有效组，每组至少有两个观测。</p></div>}
               </div>
             </div>
-          )}
+          )}</div>
         </section>
 
         <section className="data-preview" id="preview">

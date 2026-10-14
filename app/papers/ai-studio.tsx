@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
+import SourcePreview from './source-preview';
 import { getServerAiKeySnapshot, readAiKey, subscribeAiKey } from "../lib/ai-settings";
-import type { AiMemory, AiSavedResult, PaperRecord, Paragraph } from "./paper-types";
+import type { AiSavedResult, PaperRecord, Paragraph } from "./paper-types";
 
 type AiAction = "paragraph" | "summary" | "audit" | "replication" | "translate" | "chat" | "search";
 
@@ -122,11 +123,16 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
         </dl>
 
         <div className="ai-mode" role="tablist" aria-label="AI 研究功能">
-          {(Object.keys(actionMeta) as AiAction[]).map((item) => <button role="tab" aria-selected={action === item} key={item} className={action === item ? "ai-mode-item ai-mode-item--on" : "ai-mode-item"} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }}>
+          {(Object.keys(actionMeta) as AiAction[]).map((item, index, choices) => <button role="tab" id={`ai-tab-${item}`} aria-controls="ai-action-panel" aria-selected={action === item} tabIndex={action === item ? 0 : -1} key={item} className={action === item ? "ai-mode-item ai-mode-item--on" : "ai-mode-item"} type="button" onClick={() => { setAction(item); setSessionResult(null); setError(""); }} onKeyDown={event => {
+            const next = event.key === 'ArrowRight' ? (index + 1) % choices.length : event.key === 'ArrowLeft' ? (index + choices.length - 1) % choices.length : event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1 : null;
+            if (next === null || event.altKey || event.ctrlKey || event.metaKey) return;
+            event.preventDefault(); setAction(choices[next]); setSessionResult(null); setError(''); document.getElementById(`ai-tab-${choices[next]}`)?.focus();
+          }}>
             {actionMeta[item].label}
           </button>)}
         </div>
 
+        <div id="ai-action-panel" role="tabpanel" aria-labelledby={`ai-tab-${action}`}>
         <p className="ai-mode-brief">
           <span className="ai-mode-brief-copy">{actionMeta[action].description}</span>
         </p>
@@ -165,20 +171,13 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
             : <p className="ai-doc-idle">选择一种分析方式，再针对当前论文运行；结果会保存在这篇论文的记忆里，可随时回看。</p>}
         </section>}
         <p className="ai-provenance">AI 结果保存在论文记忆中，可能出错，请核对原文。</p>
+        </div>
       </div>
     </section>
   );
 }
 
-export function saveResult(memory: AiMemory, result: AiSavedResult, paragraphId?: string): AiMemory {
-  if (result.action === "paragraph" && paragraphId) return { ...memory, paragraph: { ...memory.paragraph, [paragraphId]: result } };
-  if (result.action === "summary") return { ...memory, summary: result };
-  if (result.action === "audit") return { ...memory, audit: result };
-  if (result.action === "replication") return { ...memory, replication: result };
-  if (result.action === "search") return { ...memory, search: result };
-  if (result.action === "chat") return { ...memory, chats: [result, ...(memory.chats ?? [])].slice(0, 20) };
-  return memory;
-}
+export {saveResult} from './ai-memory';
 
 function buildPaperContext(paper: PaperRecord) {
   return paper.paragraphs.slice(0, 80).map((paragraph, index) => `[P${index + 1} | ${paragraph.section} | page ${paragraph.page}] ${paragraph.original}`).join("\n\n").slice(0, 85000);
@@ -203,7 +202,7 @@ function CitationText({text, paper, onCitation}: CitationProps & {text: string})
     if (!/^P\d+$/.test(part)) return part;
     const paragraphIndex = Number(part.slice(1)) - 1;
     if (!Number.isSafeInteger(paragraphIndex) || paragraphIndex < 0 || paragraphIndex >= paper.paragraphs.length) return <span className="ai-citation-invalid" key={index}>{part}（无对应段落）</span>;
-    return <span className="ai-citation" key={index}><button type="button" aria-label={`查看原文 ${part}`} onClick={() => onCitation(paragraphIndex)}>{part}</button>{paper.id !== 'sample-paper' && <button type="button" className="ai-citation-page" aria-label={`查看 ${part} 对应原 PDF 第 ${paper.paragraphs[paragraphIndex].page} 页`} onClick={() => onCitation(paragraphIndex, true)}>原页</button>}</span>;
+    return <span className="ai-citation" key={index}><SourcePreview paper={paper} index={paragraphIndex} onNavigate={onCitation}/><button type="button" aria-label={`查看原文 ${part}`} onClick={() => onCitation(paragraphIndex)}>{part}</button>{paper.id !== 'sample-paper' && <button type="button" className="ai-citation-page" aria-label={`查看 ${part} 对应原 PDF 第 ${paper.paragraphs[paragraphIndex].page} 页`} onClick={() => onCitation(paragraphIndex, true)}>原页</button>}</span>;
   })}</>;
 }
 

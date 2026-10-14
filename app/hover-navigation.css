@@ -1,0 +1,91 @@
+/* A stable narrow slot with an isolated reveal above the content. */
+@media (min-width: 761px) {
+  .student-app:has(> .sidebar-auto-slot) { grid-template-columns: 72px minmax(0, 1fr); }
+  .sidebar-auto-slot { position: sticky; top: 24px; height: calc(100dvh - 48px); min-height: 520px; width: 72px; z-index: 40; }
+  .student-app .sidebar-auto-slot .app-sidebar.student-sidebar {
+    position: absolute; inset: 0 auto 0 0; width: 72px; height: 100%; min-height: 0;
+    align-items: stretch; padding: 20px 12px 12px; border: 0; border-radius: 12px;
+    background: var(--surface); box-shadow: var(--shadow-1); overflow: hidden;
+    transition: width 260ms var(--ease-out), box-shadow 260ms var(--ease-out);
+  }
+  .student-app .sidebar-auto-slot[data-expanded="true"] .app-sidebar { width: 232px; box-shadow: var(--shadow-overlay); }
+  .student-app .sidebar-auto-slot .sidebar-head { display: block; }
+  .student-app .sidebar-auto-slot .acaora-brand { padding: 0 8px; width: max-content; }
+  .student-app .sidebar-auto-slot .acaora-brand > span { flex: 0 0 32px; }
+  .student-app .sidebar-auto-slot :is(.acaora-brand > div, nav a span, .student-sidebar-foot p, .sidebar-rail-toggle span) {
+    display: flex; flex: none; white-space: nowrap; opacity: 0; transform: translateX(-6px);
+    transition: opacity 120ms ease, transform 180ms var(--ease-out);
+  }
+  .student-app .sidebar-auto-slot[data-expanded="true"] :is(.acaora-brand > div, nav a span, .student-sidebar-foot p, .sidebar-rail-toggle span) {
+    opacity: 1; transform: none; transition-duration: 180ms, 220ms;
+  }
+  .student-app .sidebar-auto-slot .student-sidebar-foot p { display: block; }
+  .sidebar-rail-toggle { display: flex; gap: 12px; align-items: center; flex-shrink: 0; height: 40px; margin-top: 18px; padding: 10px 14px; border: 0; border-radius: 8px; color: var(--text-2); background: transparent; font: 400 13px var(--font-sans); cursor: pointer; }
+  .sidebar-rail-toggle:hover { color: var(--brand); background: var(--surface-2); }
+  .sidebar-rail-toggle svg { flex: 0 0 20px; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav { margin-top: 22px; gap: 8px; width: 100%; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav a {
+    display: flex; justify-content: flex-start; gap: 14px; min-width: 0; min-height: 48px;
+    padding: 12px 14px; border-radius: 8px; font-size: 14px; color: var(--text-2);
+  }
+  .student-app .sidebar-auto-slot .app-sidebar > nav a svg { flex: 0 0 20px; width: 20px; height: 20px; transform: none; color: inherit; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav a.active { color: var(--surface); background: var(--brand); box-shadow: none; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav a.active::before { display: none; }
+  .student-app .sidebar-auto-slot .motion-navigation-marker { display: block; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav.motion-navigation[data-motion-ready="true"] a.active { background: transparent; }
+  .student-app .sidebar-auto-slot .app-sidebar > nav.motion-navigation[data-motion-moving="true"] a.active { color: var(--brand-on-subtle); }
+  .student-app .sidebar-auto-slot .app-sidebar > nav a:not(.active):hover { color: var(--brand); background: var(--surface-2); }
+  .student-app .sidebar-auto-slot .student-sidebar-foot { display: block; padding-top: 12px; }
+  .student-app .sidebar-auto-slot .sidebar-profile-link { display: flex; gap: 12px; min-height: 56px; margin: 0; padding: 8px 4px; border: 0; border-radius: 8px; }
+  .student-app .sidebar-auto-slot .sidebar-profile-link > :is(b, img) { flex: 0 0 40px; }
+  .sidebar-auto-slot :is(a, button):focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+}
+
+.workspace-refresh :is(.course-catalog-layout, .course-study-layout) { grid-template-columns: 56px minmax(0, 1fr); gap: 24px; align-items: start; }
+.course-navigation-rail { position: sticky; top: 24px; width: 56px; z-index: 30; }
+.course-navigation-toggle { position: relative; z-index: 2; width: 56px; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 18px; padding: 18px 0; border: 0; border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-1); color: var(--text-2); font: 500 14px var(--font-sans); cursor: pointer; }
+.course-navigation-toggle > span { writing-mode: vertical-rl; letter-spacing: .15em; }
+.course-navigation-toggle > svg:last-child { transition: transform 180ms var(--ease-out); }
+.course-navigation-toggle:hover { color: var(--brand); }
+.course-navigation-rail[data-expanded="true"] .course-navigation-toggle { color: var(--brand); box-shadow: none; }
+.course-navigation-rail[data-expanded="true"] .course-navigation-toggle > svg:last-child { transform: rotate(180deg); }
+.course-navigation-panel {
+  position: absolute; top: 0; left: 0; width: 300px; max-height: calc(100dvh - 48px);
+  overflow: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent; border-radius: 12px;
+  padding: 20px 18px 20px 70px; background: var(--surface); box-shadow: var(--shadow-overlay);
+  opacity: 0; visibility: hidden; transform: translateX(-8px); pointer-events: none;
+  transition: opacity 140ms ease, transform 180ms var(--ease-out), visibility 180ms;
+}
+.course-navigation-rail[data-expanded="true"] .course-navigation-panel { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition-duration: 180ms, 240ms, 0ms; }
+.course-navigation-heading { margin-bottom: 18px; color: var(--text); font-size: 14px; font-weight: 600; line-height: 20px; }
+.workspace-refresh .course-navigation-panel .course-catalog-index { position: static; padding: 0; }
+.workspace-refresh .course-navigation-panel .course-catalog-index ul { display: flex; flex-direction: column; gap: 6px; }
+.workspace-refresh .course-navigation-panel .course-catalog-index button { min-height: 74px; padding: 12px; border-bottom: 0; }
+.workspace-refresh .course-navigation-panel .course-catalog-index button:not([aria-current="true"]):hover { background: var(--surface-2); }
+.course-navigation-panel nav { border: 0; padding: 0; }
+.course-navigation-panel nav > a { display: block; min-height: 44px; padding-block: 8px; font-size: 13px; }
+.course-lesson-directory { margin: 12px 0 0; padding: 0; list-style: none; }
+.course-lesson-directory :is(a, span) { display: block; min-height: 44px; margin-bottom: 4px; padding: 10px 12px; border-radius: 8px; font-size: 14px; line-height: 1.6; text-decoration: none; }
+.course-lesson-directory a:hover { background: var(--surface-2); }
+.course-lesson-directory a[aria-current="page"] { background: var(--brand); color: var(--surface); }
+.course-lesson-directory span { color: var(--text-2); }
+.course-navigation-rail :is(button, a):focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+
+@media (max-width: 760px) {
+  .sidebar-auto-slot { display: contents; }
+  .sidebar-rail-toggle { display: none; }
+  .workspace-refresh :is(.course-catalog-layout, .course-study-layout) { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .course-navigation-rail { position: relative; top: 0; width: 100%; }
+  .course-navigation-toggle { width: 100%; min-height: 48px; flex-direction: row; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 9px; }
+  .course-navigation-toggle > span { writing-mode: horizontal-tb; letter-spacing: 0; }
+  .course-navigation-toggle > svg:last-child { margin-left: auto; transform: rotate(90deg); }
+  .course-navigation-rail[data-expanded="true"] .course-navigation-toggle > svg:last-child { transform: rotate(-90deg); }
+  .course-navigation-panel { top: 56px; width: 100%; max-height: min(60dvh, 540px); padding: 18px; }
+  .course-navigation-heading { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .student-app .sidebar-auto-slot .app-sidebar.student-sidebar { transition: none; }
+  .student-app .sidebar-auto-slot :is(.acaora-brand > div, nav a span, .student-sidebar-foot p, .sidebar-rail-toggle span),
+  .course-navigation-panel, .course-navigation-toggle > svg:last-child { transition: none; transform: none; }
+}

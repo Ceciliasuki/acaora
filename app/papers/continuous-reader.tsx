@@ -1,24 +1,54 @@
 "use client";
 
-import {memo, useCallback, useEffect, useMemo, useRef} from 'react';
-import type {Paragraph} from './paper-types';
+import {memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, type ReactNode, type Ref} from 'react';
+import type {Paragraph, PaperAnnotation, TextAnchor} from './paper-types';
+import {annotationSegments} from './paper-annotations.mjs';
+import SelectionTools from './selection-tools';
+import MotionNavigation from '../components/motion-navigation';
 
+export type ReadingAnchor = {index: number; offset: number};
+export type ReaderNavigation = {getPosition: () => ReadingAnchor};
 type Props = {
+  navigationRef?: Ref<ReaderNavigation>;
+  onNavigate?: (index: number) => void;
+  noteIndex?: number;
+  header?: ReactNode;
+  tools?: ReactNode;
   paperId: string;
   paragraphs: Paragraph[];
   activeIndex: number;
   showTranslations: boolean;
   mode: string;
   onSelect: (index: number) => void;
-  jump?: {index: number; id: number} | null;
+  jump?: {index: number; id: number; offset?: number} | null;
+  onCreateAnnotation: (anchors:TextAnchor[],highlightOnly:boolean)=>void;
+  onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 };
 
-export default memo(function ContinuousReader({paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump}: Props) {
+export default memo(function ContinuousReader({navigationRef, onNavigate, noteIndex, header, tools, paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const currentRef = useRef(activeIndex);
   const positioningRef = useRef(false);
   const positionFrameRef = useRef(0);
+  const handledJump = useRef<number | null>(null);
   const sections = useMemo(() => [...new Set(paragraphs.map(p => p.section))], [paragraphs]);
+  const remembered = useRef<ReadingAnchor>({index: activeIndex, offset: 0});
+  const hasPosition = useRef(false);
+  const getPosition = useCallback(() => {
+    const root = rootRef.current;
+    const node = root?.querySelector<HTMLElement>(`[data-paragraph-index="${currentRef.current}"]`);
+    if (root?.getClientRects().length && node) {
+      hasPosition.current = true;
+      const navigation = root.querySelector<HTMLElement>('.paper-reading-navigation');
+      const inset = navigation && getComputedStyle(navigation).position === 'sticky' ? navigation.offsetHeight : 0;
+      const pane = getComputedStyle(root).overflowY !== 'visible';
+      const tabs = document.querySelector<HTMLElement>('.paper-mobile-tabs');
+      const anchor = (pane ? root.getBoundingClientRect().top : tabs?.offsetHeight ?? 0) + inset + 24;
+      remembered.current = {index: currentRef.current, offset: node.getBoundingClientRect().top - anchor};
+    }
+    return remembered.current;
+  }, []);
+  useImperativeHandle(navigationRef, () => ({getPosition}), [getPosition]);
 
   useEffect(() => {currentRef.current = activeIndex;}, [activeIndex]);
 
@@ -28,17 +58,23 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
     onSelect(index);
   }, [onSelect]);
 
-  const position = useCallback((index: number) => {
+  const position = useCallback((index: number, offset = 0) => {
     const root = rootRef.current;
     const node = root?.querySelector<HTMLElement>(`[data-paragraph-index="${index}"]`);
-    if (!root || !node || !root.getClientRects().length) return;
+    if (!root || !node) return;
+    if (!root.getClientRects().length) {remembered.current = {index, offset}; hasPosition.current = true; return;}
+    hasPosition.current = true;
     positioningRef.current = true;
     cancelAnimationFrame(positionFrameRef.current);
     if (getComputedStyle(root).overflowY !== 'visible') {
-      root.scrollTop += node.getBoundingClientRect().top - root.getBoundingClientRect().top - 24;
+      const chapters = root.querySelector<HTMLElement>('.paper-reading-navigation, .section-chips');
+      const inset = chapters && getComputedStyle(chapters).position === 'sticky' ? chapters.offsetHeight : 0;
+      root.scrollTop += node.getBoundingClientRect().top - root.getBoundingClientRect().top - inset - 24 - offset;
     } else {
       const tabs = document.querySelector<HTMLElement>('.paper-mobile-tabs');
-      window.scrollTo({top: window.scrollY + node.getBoundingClientRect().top - (tabs?.offsetHeight ?? 0) - 24, behavior: 'instant'});
+      const navigation = root.querySelector<HTMLElement>('.paper-reading-navigation');
+      const inset = navigation && getComputedStyle(navigation).position === 'sticky' ? navigation.offsetHeight : 0;
+      window.scrollTo({top: window.scrollY + node.getBoundingClientRect().top - (tabs?.offsetHeight ?? 0) - inset - 24 - offset, behavior: 'instant'});
     }
     positionFrameRef.current = requestAnimationFrame(() => {
       positionFrameRef.current = requestAnimationFrame(() => {positioningRef.current = false;});
@@ -47,7 +83,7 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
 
   useEffect(() => {
     if (!jump || jump.index >= paragraphs.length) return;
-    const frame = requestAnimationFrame(() => {position(jump.index); rootRef.current?.focus({preventScroll: true});});
+    const frame = requestAnimationFrame(() => {position(jump.index, jump.offset); handledJump.current = jump.id; rootRef.current?.focus({preventScroll: true});});
     return () => cancelAnimationFrame(frame);
   }, [jump, paragraphs.length, position]);
 
@@ -55,20 +91,28 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
     const root = rootRef.current;
     if (!root) return;
     let frame = 0;
+    let disposed = false;
+    let restoring = currentRef.current > 0;
+    const newJump = Boolean(jump && jump.id !== handledJump.current);
+    const resume = () => {restoring = false;};
     const nodes = root.querySelectorAll<HTMLElement>('[data-paragraph-index]');
     // Paragraph starts are ordered. Binary search avoids measuring every paragraph
     // on each frame of a long paper; scrolling never marks content as read.
     const trackPosition = () => {
-      if (positioningRef.current || !root.getClientRects().length) return;
+      if (restoring || positioningRef.current || !root.getClientRects().length) return;
       const bounds = root.getBoundingClientRect();
       const pane = getComputedStyle(root).overflowY !== 'visible';
       const tabs = document.querySelector<HTMLElement>('.paper-mobile-tabs');
-      const anchor = pane ? bounds.top + 24 : (tabs?.offsetHeight ?? 0) + 24;
+      const chapters = root.querySelector<HTMLElement>('.paper-reading-navigation, .section-chips');
+      const inset = chapters && getComputedStyle(chapters).position === 'sticky' ? chapters.offsetHeight : 0;
+      const anchor = pane ? bounds.top + inset + 24 : (tabs?.offsetHeight ?? 0) + inset + 24;
       if (!pane && (bounds.top >= window.innerHeight || bounds.bottom <= anchor)) return;
       let low = 0, high = nodes.length - 1, index = 0;
       while (low <= high) {
         const mid = Math.floor((low + high) / 2);
-        if (nodes[mid].getBoundingClientRect().top <= anchor) {index = mid; low = mid + 1;}
+        // scrollTop can round to a CSS pixel while font layout stays fractional.
+        // A restored paragraph 0.125px below its anchor still owns the cursor.
+        if (nodes[mid].getBoundingClientRect().top <= anchor + 1) {index = mid; low = mid + 1;}
         else high = mid - 1;
       }
       // A short final paragraph cannot reach the top anchor. At the end of a
@@ -76,7 +120,7 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
       const atEnd = pane
         ? root.scrollTop > 0 && root.scrollTop + root.clientHeight >= root.scrollHeight - 1
         : bounds.top < anchor && bounds.bottom <= window.innerHeight;
-      if (nodes.length) select(atEnd ? nodes.length - 1 : index);
+      if (nodes.length) {select(atEnd ? nodes.length - 1 : index); getPosition();}
     };
     const schedule = () => {cancelAnimationFrame(frame); frame = requestAnimationFrame(trackPosition);};
     let viewportWidth = window.innerWidth;
@@ -85,25 +129,50 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
     const resize = () => {
       if (window.innerWidth === viewportWidth) return;
       viewportWidth = window.innerWidth;
-      cancelAnimationFrame(frame); position(currentRef.current);
+      cancelAnimationFrame(frame); if (hasPosition.current || currentRef.current > 0) position(currentRef.current, remembered.current.offset);
     };
     root.addEventListener('scroll', schedule, {passive: true});
+    root.addEventListener('wheel', resume, {passive: true});
+    root.addEventListener('pointerdown', resume);
+    root.addEventListener('keydown', resume);
+    window.addEventListener('touchmove', resume, {passive: true});
     window.addEventListener('scroll', schedule, {passive: true});
     window.addEventListener('resize', resize);
     // This effect restores on mount/paper or mode change, not when scrolling changes the
     // active paragraph. Otherwise saving the position would pull the reader back.
-    const restore = requestAnimationFrame(() => {if (currentRef.current > 0) position(currentRef.current);});
+    const restore = requestAnimationFrame(() => {
+      if (newJump || (currentRef.current <= 0 && !hasPosition.current)) {restoring = false; return;}
+      position(currentRef.current, remembered.current.offset);
+      // A swapped webfont can change every paragraph's height after the first
+      // restore. Preserve its source anchor until fonts settle; user input wins.
+      void document.fonts.ready.then(() => {
+        if (disposed || !restoring) return;
+        position(currentRef.current, remembered.current.offset); restoring = false;
+      });
+    });
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame); cancelAnimationFrame(restore); cancelAnimationFrame(positionFrameRef.current);
       positioningRef.current = false;
       root.removeEventListener('scroll', schedule); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', resize);
+      root.removeEventListener('wheel', resume); root.removeEventListener('pointerdown', resume); root.removeEventListener('keydown', resume);
+      window.removeEventListener('touchmove', resume);
     };
-  }, [paperId, paragraphs.length, mode, select, position]);
+  }, [paperId, paragraphs.length, mode, select, position, getPosition, jump]);
+
+  useEffect(() => {
+    const selected = rootRef.current?.querySelector<HTMLElement>('.section-chips [aria-current="location"]');
+    const strip = selected?.parentElement;
+    if (!selected || !strip) return;
+    const a = selected.getBoundingClientRect(), b = strip.getBoundingClientRect();
+    if (a.left < b.left) strip.scrollLeft -= b.left - a.left + 8;
+    else if (a.right > b.right) strip.scrollLeft += a.right - b.right + 8;
+  }, [activeIndex, mode]);
 
   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- The named reader supports keyboard scrolling and paragraph selection without pretending to be a different widget.
-  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End"
+  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M"
     onKeyDown={event => {
-      if (event.target !== event.currentTarget || !paragraphs.length) return;
+      if (event.target !== event.currentTarget || !paragraphs.length || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
       const index = event.key === 'Home' ? 0 : event.key === 'End' ? paragraphs.length - 1
         : event.key === 'ArrowUp' ? Math.max(0, currentRef.current - 1)
         : event.key === 'ArrowDown' ? Math.min(paragraphs.length - 1, currentRef.current + 1) : null;
@@ -115,24 +184,30 @@ export default memo(function ContinuousReader({paperId, paragraphs, activeIndex,
       const node = (event.target as HTMLElement).closest<HTMLElement>('[data-paragraph-index]');
       if (node) select(Number(node.dataset.paragraphIndex));
     }}>
-    {sections.length > 0 && <nav className="section-chips" aria-label="论文章节">{sections.map(section => <button key={section} type="button"
-      className={paragraphs[activeIndex]?.section === section ? 'active' : ''}
-      onClick={() => {const index = paragraphs.findIndex(p => p.section === section); select(index); position(index);}}>{section}</button>)}</nav>}
+    {header}
+    <div className="paper-reading-navigation">
+    {sections.length > 0 && <MotionNavigation className="section-chips" label="论文章节" value={paragraphs[activeIndex]?.section ?? ''}>{sections.map(section => <button key={section} type="button"
+      className={paragraphs[activeIndex]?.section === section ? 'active' : ''} aria-current={paragraphs[activeIndex]?.section === section ? 'location' : undefined}
+      onClick={() => {const index = paragraphs.findIndex(p => p.section === section); if (onNavigate) onNavigate(index); else {select(index); position(index);}}}>{section}</button>)}</MotionNavigation>}
+    {tools}
+    </div>
     {paragraphs.length ? <article className="plab-page plab-continuous-text"><div className="plab-body">
-      {paragraphs.map((paragraph, index) => <ReaderParagraph key={paragraph.id} paragraph={paragraph} index={index} active={index === activeIndex}
-        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} />)}
+      {paragraphs.map((paragraph, index) => <ReaderParagraph key={paragraph.id} paragraph={paragraph} index={index} active={index === activeIndex} noteActive={index === noteIndex}
+        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} onEditAnnotation={onEditAnnotation} />)}
     </div></article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
+    <SelectionTools rootRef={rootRef} onCreate={onCreateAnnotation}/>
   </div>;
 });
 
 // Only the previous/current paragraph changes during reading. Stable text and
 // notes keep their existing objects, so React can skip the rest of the article.
-const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, startsSection, showTranslations}: {
-  paragraph: Paragraph; index: number; active: boolean; startsSection: boolean; showTranslations: boolean;
+const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, noteActive, startsSection, showTranslations,onEditAnnotation}: {
+  paragraph: Paragraph; index: number; active: boolean; noteActive: boolean; startsSection: boolean; showTranslations: boolean;
+  onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 }) {
-  return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active}>
+  return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active} data-note-active={noteActive}>
     {startsSection && <h2>{paragraph.section}</h2>}
-    <p>{paragraph.original}</p>
+    <p data-original-text>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}>{segment.text}</button>:<span key={segment.start}>{segment.text}</span>)}</p>
     {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
   </div>;
 });

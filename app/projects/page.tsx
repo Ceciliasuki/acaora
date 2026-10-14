@@ -1,13 +1,15 @@
 "use client";
 
+import craft from '../operational-craft.module.css';
 import styles from "../focused-workspaces.module.css";
 import AppSidebar from "../components/app-sidebar";
 import Link from "next/link";
 import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Users, X, type LucideIcon } from "lucide-react";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { authFetch, getCurrentUser } from "../lib/auth-client";
-import { Button, Dialog, ErrorState } from "../components/ui";
+import { Button, Dialog, ErrorState, PageHeader } from "../components/ui";
+import MotionNavigation from '../components/motion-navigation';
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -56,7 +58,12 @@ export default function ProjectsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [taskText, setTaskText] = useState("");
+  const [taskDrafts, setTaskDrafts] = useState<Record<string, string>>({});
+  const operationLock = useRef(false);
+  const [messageTone, setMessageTone] = useState<"success" | "error">("success");
+  const [query, setQuery] = useState("");
+  const [taskFilters, setTaskFilters] = useState<Record<string,"all"|"todo"|"done">>({});
+  const taskListRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<"all" | "active">("all");
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -65,10 +72,15 @@ export default function ProjectsPage() {
      fetch your data" as "you have no data". */
   const [loadError, setLoadError] = useState("");
 
-  const filteredProjects = useMemo(() => filter === "active" ? projects.filter((project) => project.status === "active") : projects, [filter, projects]);
+  const filteredProjects = useMemo(() => projects.filter(project => (filter !== "active" || project.status === "active") && `${project.title} ${project.metadata.goal ?? ""}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())), [filter, projects, query]);
   const visibleSelectedId = filteredProjects.some((project) => project.id === selectedId) ? selectedId : filteredProjects[0]?.id ?? "";
   const selected = projects.find((project) => project.id === visibleSelectedId) ?? null;
+  const taskText = selected ? taskDrafts[selected.id] ?? "" : "";
   const notes = selected ? noteDrafts[selected.id] ?? selected.metadata.notes ?? "" : "";
+  const taskFilter = selected ? taskFilters[selected.id] ?? "all" : "all";
+  const allTasks = selected?.metadata.tasks ?? [];
+  const visibleTasks = allTasks.filter(task => taskFilter === "all" || (taskFilter === "done" ? task.done : !task.done));
+  const remainingCount = allTasks.filter(task => !task.done).length;
   const activeCount = projects.filter((project) => project.status === "active").length;
 
   useEffect(() => {
@@ -90,6 +102,8 @@ export default function ProjectsPage() {
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (operationLock.current) return;
+    operationLock.current = true;
     const form = new FormData(event.currentTarget);
     setSaving(true);
     setMessage("");
@@ -109,15 +123,20 @@ export default function ProjectsPage() {
       setProjects((current) => [payload.project!, ...current]);
       setSelectedId(payload.project.id);
       setShowCreate(false);
+      setMessageTone("success");
       setMessage("项目已创建，可以开始拆解任务了。");
     } catch (error) {
+      setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "创建项目失败。");
     } finally {
+      operationLock.current = false;
       setSaving(false);
     }
   }
 
   async function saveProject(next: Project, successMessage = "项目已保存。") {
+    if (operationLock.current) return false;
+    operationLock.current = true;
     setSaving(true);
     setMessage("");
     try {
@@ -129,44 +148,52 @@ export default function ProjectsPage() {
       const payload = await response.json() as { project?: Project; error?: string };
       if (!response.ok || !payload.project) throw new Error(payload.error ?? "项目保存失败。");
       setProjects((current) => current.map((project) => project.id === next.id ? payload.project! : project));
+      setMessageTone("success");
       setMessage(successMessage);
+      return true;
     } catch (error) {
+      setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "项目保存失败。");
+      return false;
     } finally {
+      operationLock.current = false;
       setSaving(false);
     }
   }
 
-  function addTask(event: FormEvent) {
+  async function addTask(event: FormEvent) {
     event.preventDefault();
-    if (!selected || !taskText.trim()) return;
+    if (!selected || !taskText.trim() || operationLock.current) return;
     const task: Task = { id: crypto.randomUUID(), text: taskText.trim(), done: false };
-    setTaskText("");
-    void saveProject({ ...selected, metadata: { ...selected.metadata, tasks: [...(selected.metadata.tasks ?? []), task] } }, "新任务已加入项目。" );
+    const id = selected.id;
+    const saved = await saveProject({ ...selected, metadata: { ...selected.metadata, tasks: [...(selected.metadata.tasks ?? []), task] } }, "新任务已加入项目。" );
+    if (saved) setTaskDrafts(current => current[id] === taskText ? {...current, [id]: ""} : current);
   }
 
-  function toggleTask(taskId: string) {
+  async function toggleTask(taskId: string, control: HTMLInputElement) {
     if (!selected) return;
     const tasks = (selected.metadata.tasks ?? []).map((task) => task.id === taskId ? { ...task, done: !task.done } : task);
-    void saveProject({ ...selected, metadata: { ...selected.metadata, tasks } }, "任务进度已更新。" );
+    const saved = await saveProject({ ...selected, metadata: { ...selected.metadata, tasks } }, "任务进度已更新。" );
+    if (saved) requestAnimationFrame(() => {
+      if (document.activeElement !== document.body && document.activeElement !== control) return;
+      if (control.isConnected) control.focus();
+      else (taskListRef.current?.querySelector<HTMLInputElement>('input:not([disabled])') ?? document.querySelector<HTMLButtonElement>('.project-task-filter button[aria-pressed="true"]'))?.focus();
+    });
   }
 
   async function deleteProject() {
-    if (!selected) return;
-    setSaving(true);
-    const response = await authFetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, { method: "DELETE" });
-    const payload = await response.json() as { error?: string };
-    if (!response.ok) {
-      setMessage(payload.error ?? "删除项目失败。");
-      setSaving(false);
-      return;
-    }
-    const remaining = projects.filter((project) => project.id !== selected.id);
-    setProjects(remaining);
-    setSelectedId(remaining[0]?.id ?? "");
-    setSaving(false);
-    setDeleteOpen(false);
-    setMessage("项目已删除。");
+    if (!selected || operationLock.current) return;
+    operationLock.current = true;
+    setSaving(true); setMessage("");
+    try {
+      const response = await authFetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, {method:"DELETE"});
+      const payload = await response.json() as {error?:string};
+      if (!response.ok) throw new Error(payload.error ?? "删除项目失败。");
+      setProjects(current => current.filter(project => project.id !== selected.id));
+      setSelectedId(""); setDeleteOpen(false); setMessageTone("success"); setMessage("项目已删除。");
+    } catch (error) {
+      setMessageTone("error"); setMessage(error instanceof Error ? error.message : "删除项目失败，请重试。");
+    } finally {operationLock.current = false; setSaving(false);}
   }
 
   /* The create dialog is a hand-rolled modal, so it owes the same contract the
@@ -185,7 +212,7 @@ export default function ProjectsPage() {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setShowCreate(false);
+        if (!operationLock.current) setShowCreate(false);
         return;
       }
       if (event.key !== "Tab") return;
@@ -211,24 +238,28 @@ export default function ProjectsPage() {
     };
   }, [showCreate]);
 
+  function navigateProject(event: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;
+    const controls=Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(':scope > button') ?? []);
+    const index=controls.indexOf(event.currentTarget);
+    if(index<0)return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?controls.length-1:Math.max(0,Math.min(controls.length-1,index+(event.key==='ArrowDown'?1:-1)));
+    controls[next].focus();controls[next].click();
+    controls[next].scrollIntoView({block:'nearest',inline:'nearest'});
+  }
+
   const initials = viewer?.email?.slice(0, 2).toUpperCase() ?? "GU";
 
   return (
-    <main className="student-app project-app">
+    <main className={`student-app project-app workspace-refresh ${craft.craft}`}>
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
-        <div className="page-bar">
-          <div className="page-bar-inner">
-            <h1>项目空间</h1>
-            <span className="page-bar-spacer" />
-
-            <button className="project-create-button" disabled={!viewer} onClick={() => setShowCreate(true)}><Plus size={17} aria-hidden="true" />新建项目</button>
-          </div>
-        </div>
+        <PageHeader className="workspace-header" title="项目空间" description="管理目标、任务和研究笔记。" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
 
         <div className="page-body">
-        {message && <div className="project-message" role="status">{message}</div>}
+        {message && !showCreate && !deleteOpen && <div className="project-message workspace-feedback" data-tone={messageTone} role={messageTone === "error" ? "alert" : "status"}>{message}</div>}
 
         {!loaded ? <section className="project-loading"><i /><p>正在读取项目…</p></section> : loadError ? (
           <ErrorState
@@ -240,26 +271,27 @@ export default function ProjectsPage() {
         ) : (
           <>
 
-            {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => setShowCreate(true)}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
+            {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => {setMessage(""); setShowCreate(true);}}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
-                  <div className="project-filter"><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></div>
-                  <div className="project-list">{filteredProjects.map((project) => {
+                  <MotionNavigation as="div" className="project-filter" label="项目筛选" role="group" value={filter}><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></MotionNavigation>
+                  <div className="project-search"><label htmlFor="project-search">查找项目</label><input id="project-search" type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="项目名称或目标"/>{query && <button type="button" aria-label="清除项目搜索" onClick={()=>setQuery("")}><X size={15} aria-hidden="true"/></button>}</div>
+                  <div className="project-list" role="group" aria-label="项目列表">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
-                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onClick={() => setSelectedId(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;
-                  })}{!filteredProjects.length && <p className="project-filter-empty">没有进行中的项目。</p>}</div>
+                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onKeyDown={navigateProject} onClick={() => setSelectedId(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;
+                  })}{!filteredProjects.length && <div className="project-filter-empty"><p>{query ? "没有匹配的项目。" : "没有进行中的项目。"}</p><button type="button" onClick={()=>{setQuery("");setFilter("all");}}>查看全部项目</button></div>}</div>
 
                 </aside>
 
-                {selected && <article className="project-detail">
-                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => setDeleteOpen(true)} disabled={saving}>删除</button></div></header>
+                {selected && <article key={selected.id} className="project-detail">
+                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" disabled={saving} value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => {setMessage(""); setDeleteOpen(true);}} disabled={saving}>删除</button></div></header>
 
-                  <p className="project-summary"><span>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>
+                  <p className="project-summary"><span key={(selected.metadata.tasks ?? []).filter((task) => task.done).length}>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>
 
                   <div className="project-detail-grid">
-                    <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={addTask}><input value={taskText} onChange={(event) => setTaskText(event.target.value)} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><div className="project-tasks">{(selected.metadata.tasks ?? []).length ? (selected.metadata.tasks ?? []).map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" checked={task.done} onChange={() => toggleTask(task.id)} /><span>{task.text}</span></label>) : <p>还没有任务。可以先记录需要查找的论文或待处理的数据。</p>}</div></section>
+                    <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={event => void addTask(event)}><input value={taskText} onChange={(event) => setTaskDrafts(current => ({...current,[selected.id]:event.target.value}))} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><MotionNavigation as="div" className="project-task-filter" role="group" label="任务筛选" value={taskFilter}>{([['all',`全部 ${allTasks.length}`],['todo',`待办 ${remainingCount}`],['done',`已完成 ${allTasks.length-remainingCount}`]] as const).map(([value,label])=><button key={value} type="button" aria-pressed={taskFilter===value} onClick={()=>setTaskFilters(current=>({...current,[selected.id]:value}))}>{label}</button>)}</MotionNavigation><div className="project-tasks" ref={taskListRef}>{visibleTasks.length ? visibleTasks.map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" disabled={saving} checked={task.done} onChange={event => void toggleTask(task.id,event.currentTarget)} /><span>{task.text}</span></label>) : <p>{!allTasks.length ? "还没有任务。可以先记录需要查找的论文或待处理的数据。" : taskFilter === "todo" ? "当前没有待办任务。" : "当前没有已完成任务。"}</p>}</div></section>
 
-                    <section className="project-note-card"><header><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈或待解决的问题…" id="project-notes" aria-label="项目笔记" /><Button disabled={saving} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</Button></section>
+                    <section className="project-note-card"><header><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈或待解决的问题…" id="project-notes" aria-label="项目笔记" /><div className="project-note-actions"><span className="workspace-draft-state">{notes !== (selected.metadata.notes ?? "") ? "有未保存修改" : "与已保存笔记一致"}</span><Button disabled={saving || notes === (selected.metadata.notes ?? "")} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</Button></div></section>
                   </div>
 
                   <nav className="project-related" aria-label="项目相关工作台"><Link href="/papers">查阅论文 <ArrowRight size={15} aria-hidden="true" /></Link><Link href="/data">分析数据 <ArrowRight size={15} aria-hidden="true" /></Link></nav>
@@ -273,17 +305,18 @@ export default function ProjectsPage() {
       </section>
 
       {showCreate && viewer && <div ref={createDialogRef} className="project-modal" role="dialog" aria-modal="true" aria-labelledby="create-project-title" aria-describedby="create-project-description">
-        <button className="project-modal-backdrop" onClick={() => setShowCreate(false)} aria-label="关闭新建项目窗口" />
+        <button className="project-modal-backdrop" disabled={saving} onClick={() => setShowCreate(false)} aria-label="关闭新建项目窗口" />
         <form onSubmit={createProject}>
-          <header><div><h2 id="create-project-title">建立一个项目空间</h2><p id="create-project-description">先定义目标，后续再逐步加入论文、数据和任务。</p></div><button type="button" onClick={() => setShowCreate(false)} aria-label="关闭"><X size={20} aria-hidden="true" /></button></header>
+          <header><div><h2 id="create-project-title">建立一个项目空间</h2><p id="create-project-description">先定义目标，后续再逐步加入论文、数据和任务。</p></div><button type="button" onClick={() => setShowCreate(false)} disabled={saving} aria-label="关闭"><X size={20} aria-hidden="true" /></button></header>
           <label>项目名称<input ref={createTitleRef} name="title" required maxLength={120} placeholder="例如：大学生睡眠与学习成绩研究" /></label>
           <label>项目类型<select name="kind" defaultValue="paper">{kindOptions.map((kind) => <option value={kind.value} key={kind.value}>{kind.label}</option>)}</select></label>
           <label>希望完成什么？<textarea name="goal" rows={3} placeholder="用一句话描述你想得到的最终成果" /></label>
           <label>计划截止日期<input name="deadline" type="date" /></label>
-          <footer><button type="button" onClick={() => setShowCreate(false)}>取消</button><button className="primary" disabled={saving}>{saving ? "正在创建…" : "创建项目空间"}</button></footer>
+          {message && messageTone === "error" && <p className="project-create-error" role="alert">{message}</p>}
+          <footer><button type="button" disabled={saving} onClick={() => setShowCreate(false)}>取消</button><button className="primary" disabled={saving}>{saving ? "正在创建…" : "创建项目空间"}</button></footer>
         </form>
       </div>}
-      <Dialog open={deleteOpen} title="删除这个项目？" description={selected ? `“${selected.title}”及其任务和笔记将被永久删除。` : undefined} confirmLabel={saving ? "正在删除…" : "确认删除"} destructive onConfirm={() => void deleteProject()} onClose={() => setDeleteOpen(false)} />
+      <Dialog open={deleteOpen} title="删除这个项目？" description={selected ? `“${selected.title}”及其任务和笔记将被永久删除。` : undefined} confirmLabel={saving ? "正在删除…" : "确认删除"} busy={saving} destructive onConfirm={() => void deleteProject()} onClose={() => setDeleteOpen(false)}>{message && messageTone === "error" && <p className="project-create-error" role="alert">{message}</p>}</Dialog>
     </main>
   );
 }

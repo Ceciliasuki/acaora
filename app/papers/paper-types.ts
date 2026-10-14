@@ -1,3 +1,14 @@
+export type PaperAnnotation = {
+  id: string;
+  start: number;
+  end: number;
+  quote: string;
+  comment: string;
+  color: 'yellow' | 'blue' | 'green';
+  createdAt: number;
+};
+export type TextAnchor = {paragraphId: string; start: number; end: number; quote: string};
+export type AnnotationDraft = {key: string; paperKey: string; anchors: TextAnchor[]; annotationId?: string; comment: string; color: PaperAnnotation['color']};
 export type Paragraph = {
   id: string;
   page: number;
@@ -7,6 +18,7 @@ export type Paragraph = {
   note: string;
   bookmarked: boolean;
   read: boolean;
+  annotations?: PaperAnnotation[];
 };
 
 export type AiSavedResult = {
@@ -53,7 +65,8 @@ export type SearchPaper = {
   year: number | null;
   venue: string;
   abstract: string;
-  citationCount: number;
+  citationCount: number | null;
+  type?: string;
   url: string;
   pdfUrl: string;
   doi: string;

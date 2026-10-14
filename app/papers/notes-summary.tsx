@@ -1,18 +1,21 @@
 'use client';
+import SourcePreview from './source-preview';
 
 import {useState} from 'react';
 import type {PaperRecord} from './paper-types';
+import {validAnnotations} from './paper-annotations.mjs';
 
 export function notesMarkdown(paper: PaperRecord) {
   const lines = [`# ${paper.title.replace(/\s*\n\s*/g, ' ')}`, '', `原文件：${paper.fileName}`, '', '页码对应原 PDF；P 编号对应当前提取正文。', ''];
   const sections = [...new Set(paper.paragraphs.map(p => p.section))];
   for (const section of sections) {
-    const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.section === section && (paragraph.note.trim() || paragraph.bookmarked));
+    const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.section === section && (paragraph.note.trim() || paragraph.bookmarked || validAnnotations(paragraph).length));
     if (!entries.length) continue;
     lines.push(`## ${section}`, '');
     for (const {paragraph, index} of entries) {
       lines.push(`### P${index + 1} · 第 ${paragraph.page} 页${paragraph.bookmarked ? ' · 已收藏' : ''}`, '', ...paragraph.original.split(/\r?\n/).map(line => `> ${line}`), '');
       if (paragraph.note.trim()) lines.push('笔记：', '', paragraph.note, '');
+      for(const annotation of validAnnotations(paragraph)) lines.push('划线批注：','',...annotation.quote.split(/\r?\n/).map(line=>`> ${line}`),'',annotation.comment||'仅高亮','');
     }
   }
   return lines.join('\n');
@@ -20,7 +23,7 @@ export function notesMarkdown(paper: PaperRecord) {
 
 export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onSelect: (index: number) => void}) {
   const [open, setOpen] = useState(false);
-  const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.note.trim() || paragraph.bookmarked);
+  const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.note.trim() || paragraph.bookmarked || validAnnotations(paragraph).length);
   function download() {
     const url = URL.createObjectURL(new Blob([notesMarkdown(paper)], {type: 'text/markdown;charset=utf-8'}));
     const link = document.createElement('a');
@@ -32,12 +35,12 @@ export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onS
   return <div className="paper-notes-summary">
     <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)}>笔记汇总</button>
     {open && <section aria-label="笔记汇总">
-      <div className="paper-notes-summary-head"><span>{entries.length} 段笔记 / 收藏</span><button type="button" disabled={!entries.length} onClick={download}>导出 Markdown</button></div>
-      {!entries.length && <p>还没有笔记或收藏。阅读时记录重点，即可在这里汇总。</p>}
+      <div className="paper-notes-summary-head"><span>{entries.length} 个段落</span><button type="button" disabled={!entries.length} onClick={download}>导出 Markdown</button></div>
+      {!entries.length && <p>还没有笔记、收藏或批注。阅读时记录重点，即可在这里汇总。</p>}
       {[...new Set(entries.map(({paragraph}) => paragraph.section))].map(section => <div key={section}>
         <h3>{section}</h3>
         {entries.filter(({paragraph}) => paragraph.section === section).map(({paragraph, index}) => <article key={paragraph.id}>
-          <button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
+          <SourcePreview paper={paper} index={index} onNavigate={onSelect}/><button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
           <blockquote>{paragraph.original}</blockquote>
           {paragraph.note.trim() && <p>{paragraph.note}</p>}
         </article>)}
