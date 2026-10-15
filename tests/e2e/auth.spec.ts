@@ -22,7 +22,7 @@ test("AUTH-01 registration reuses consistent PasswordField controls", async ({ p
 
 test("AUTH-02 login succeeds and redirects to Dashboard", async ({ page }) => {
   await login(page);
-  await expect(page.getByText("工作台还是空的")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "还没有论文或项目记录", exact: true })).toBeVisible();
 });
 
 test("AUTH-03 login survives a Dashboard refresh", async ({ page }) => {
@@ -30,7 +30,7 @@ test("AUTH-03 login survives a Dashboard refresh", async ({ page }) => {
   await page.reload();
   await expect(page.getByRole("heading", { name: "总览", exact: true })).toBeVisible();
   await expect(page.locator(".sidebar-profile-link")).toContainText("测试同学");
-  await expect(page.getByText("工作台还是空的")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "还没有论文或项目记录", exact: true })).toBeVisible();
 });
 
 test("AUTH-04 workspace logo returns to Dashboard without losing identity", async ({ page }) => {
@@ -51,7 +51,7 @@ test("AUTH-05 all workspace navigation preserves the session", async ({ page }) 
     ["设置与隐私", /\/settings$/],
   ] as const;
   for (const [name, pathname] of destinations) {
-    await page.getByRole("link", { name, exact: true }).click();
+    await page.locator("#app-sidebar").getByRole("link", { name, exact: true }).click();
     await expect(page).toHaveURL(pathname);
     if (name === "项目空间") await page.getByRole("button", { name: "关闭", exact: true }).click();
   }

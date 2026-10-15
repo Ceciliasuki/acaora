@@ -1,17 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronRight, FileText, Folder, Plus, Upload } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
 import { Button } from "../components/ui";
 import { authFetch, getCurrentUser, signOut as signOutSession } from "../lib/auth-client";
+import styles from "./overview.module.css";
 
 type Viewer = { id: string; email?: string } | null;
 type Project = { id: string; title: string; status?: string; updated_at?: string };
 type Paper = { id: string; title: string; updatedAt?: number; paragraphs?: unknown[] };
 type LoadState = "loading" | "guest" | "empty" | "ready" | "error";
 type Activity = { id: string; title: string; detail: string; updatedAt: number; href: "/papers" | "/projects" };
+
+const workspaces = [
+  { href: "/courses", title: "课程中心" },
+  { href: "/papers", title: "论文研究" },
+  { href: "/data", title: "数据分析" },
+  { href: "/projects", title: "项目空间" },
+] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
 function stamp(time: number) { return time > 0 && Number.isFinite(time) ? dateFormatter.format(time) : "未记录日期"; }
@@ -50,12 +58,11 @@ export default function DashboardPage() {
     ...papers.map((paper) => ({ id: `paper-${paper.id}`, title: paper.title, detail: `${paper.paragraphs?.length ?? 0} 个段落`, updatedAt: paper.updatedAt ?? 0, href: "/papers" as const })),
     ...projects.map((project) => ({ id: `project-${project.id}`, title: project.title, detail: statusLabel(project.status), updatedAt: project.updated_at ? Date.parse(project.updated_at) : 0, href: "/projects" as const })),
   ].sort((a, b) => (Number.isFinite(b.updatedAt) ? b.updatedAt : 0) - (Number.isFinite(a.updatedAt) ? a.updatedAt : 0)).slice(0, 4), [papers, projects]);
-  const [lead, ...rest] = activity;
   const displayName = viewer?.email?.split("@")[0] ?? "同学";
   const counted = state === "ready" || state === "empty";
   const absence = {
-    guest: { title: "先从一篇论文开始", detail: "可以先在本机阅读和标注论文。登录后，再同步阅读记录和项目。" },
-    empty: { title: "工作台还是空的", detail: "导入一篇论文，或新建项目来整理目标与任务。" },
+    guest: { title: "从当前任务开始", detail: "登录后，可在这里查看论文与项目的最近记录。" },
+    empty: { title: "还没有论文或项目记录", detail: "可以先学习课程、分析数据，也可以导入论文或创建项目。" },
     error: { title: "暂时无法读取记录", detail: "账户记录加载失败，请重试。" },
     ready: { title: "最近更新", detail: "" },
     loading: { title: "正在读取记录", detail: "" },
@@ -68,33 +75,36 @@ export default function DashboardPage() {
 
   return <main className="student-app">
     <AppSidebar active="dashboard" initials={viewer?.email?.slice(0, 2).toUpperCase() ?? "GU"} profileTitle={displayName} profileSubtitle={viewer ? "云端同步已开启" : "仅保存在当前设备"} />
-    <section className="student-main overview-main">
-      <header className="overview-header">
+    <section className={`student-main overview-main ${styles.page}`}>
+      <header className={styles.header}>
         <h1>总览</h1>
-        <div className="overview-toolbar">
-          <Link className="ui-button ui-button--secondary" href="/papers"><Upload size={17} aria-hidden="true" />导入论文</Link>
-          <Link className="ui-button ui-button--primary" href="/projects?new=1"><Plus size={18} aria-hidden="true" />新建项目</Link>
-        </div>
       </header>
-      <h2 className="overview-section-title">{lead ? "继续上次的研究" : "最近更新"}</h2>
-      {state === "loading" ? <div className="dashboard-loading" role="status" aria-label="正在读取工作台记录" /> : <div className={`overview-grid${rest.length ? "" : " overview-grid--single"}`}>
-        <article className="overview-feature">
-          <span className="overview-kind">{lead ? lead.href === "/papers" ? "论文" : "项目" : state === "guest" ? "本机阅读" : state === "error" ? "加载失败" : "开始使用"}</span>
-          <h3>{lead?.title ?? absence.title}</h3>
-          <p>{lead ? `${lead.detail} · 更新于 ${stamp(lead.updatedAt)}` : absence.detail}</p>
-          {lead ? <Link className="ui-button ui-button--primary" href={lead.href}>进入{lead.href === "/papers" ? "论文研究" : "项目空间"}<ArrowRight size={18} aria-hidden="true" /></Link>
-            : state === "error" ? <Button onClick={() => location.reload()}>重新加载</Button>
-              : <Link className="ui-button ui-button--primary" href="/papers">进入论文研究<ArrowRight size={18} aria-hidden="true" /></Link>}
-        </article>
-        {rest.length > 0 && <div className="overview-recent" aria-label="其他最近记录">
-          {rest.map((item) => <Link className="overview-record" href={item.href} key={item.id}>
-            {item.href === "/papers" ? <FileText size={25} aria-hidden="true" /> : <Folder size={25} aria-hidden="true" />}
-            <div><small>{item.href === "/papers" ? "论文" : "项目"} · {stamp(item.updatedAt)}</small><strong>{item.title}</strong></div>
-            <ChevronRight size={17} aria-hidden="true" />
+      <div className={styles.content}>
+        <nav className={styles.workspaces} aria-label="工作空间">
+          <h2 className={styles.sectionTitle}>工作空间</h2>
+          <div className={styles.directory}>
+            {workspaces.map((workspace) => <Link className={styles.workspace} href={workspace.href} key={workspace.href} aria-labelledby={`workspace-${workspace.href.slice(1)}`}>
+              <h3 id={`workspace-${workspace.href.slice(1)}`}>{workspace.title}</h3>
+              <ArrowRight size={22} strokeWidth={1.5} aria-hidden="true" />
+            </Link>)}
+          </div>
+        </nav>
+      <section className={styles.recent} aria-labelledby="recent-heading">
+        <h2 id="recent-heading" className={styles.sectionTitle}>最近更新</h2>
+        {state === "loading" ? <div className={`dashboard-loading ${styles.loading}`} role="status" aria-label="正在读取工作台记录" /> : activity.length > 0 ? <div className={styles.records}>
+          {activity.map((item) => <Link className={`overview-record ${styles.record}`} href={item.href} key={item.id}>
+            <strong>{item.title}</strong>
+            <small><span>{item.href === "/papers" ? "论文" : "项目"} · {item.detail}</span><span>{stamp(item.updatedAt)}</span></small>
           </Link>)}
+          <p className={styles.scope}>显示论文与项目的最近记录。</p>
+        </div> : <div className={styles.empty}>
+          <h3>{absence.title}</h3>
+          <p>{absence.detail}</p>
+          {state === "error" && <Button onClick={() => location.reload()}>重新加载</Button>}
         </div>}
-      </div>}
-      <footer className="overview-footer">
+      </section>
+      </div>
+      <footer className={`overview-footer ${styles.footer}`}>
         <p>{viewer ? `${counted ? `${papers.length} 篇论文 · ${projects.length} 个项目 · ` : ""}${viewer.email ?? "已登录"}` : "匿名论文记录保存在当前设备"}</p>
         {viewer ? <Button variant="ghost" size="sm" onClick={() => void signOut()}>退出</Button> : <Link className="ui-button ui-button--secondary" href="/auth">登录同步</Link>}
       </footer>
