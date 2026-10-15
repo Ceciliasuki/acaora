@@ -12,13 +12,14 @@ test("light curtain is decorative and reduced motion keeps controls steady", asy
   await expect(curtain).toHaveAttribute("aria-hidden", "true");
   expect(await curtain.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("none");
   await expect(curtain.locator("canvas")).toHaveAttribute("data-motion", /paused|unavailable/);
-  const action = page.getByRole("link", { name: "新建项目", exact: true }).first();
+  const action = page.getByRole("navigation", { name: "工作空间" }).getByRole("link", { name: "项目空间", exact: true });
   await action.hover();
   expect(await action.evaluate((node) => getComputedStyle(node).transform)).toBe("none");
   await action.focus();
   expect(await action.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe("solid");
   await action.press("Enter");
-  await expect(page.getByRole("dialog", { name: "建立一个项目空间" })).toBeVisible();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.getByRole("heading", { name: "项目空间", exact: true, level: 1 })).toBeVisible();
 });
 
 test("the global light surface changes, pauses, and survives workspace navigation", async ({ page }) => {
@@ -57,18 +58,20 @@ test("without WebGL the static global material keeps the workspace usable", asyn
   await page.goto("/dashboard");
   await expect(page.locator(".light-curtain canvas")).toHaveAttribute("data-motion", "unavailable");
   await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeHidden();
-  await expect(page.getByRole("link", { name: "进入论文研究", exact: true })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "工作空间" }).getByRole("link", { name: "论文研究", exact: true })).toBeVisible();
   expect(await page.locator(".light-curtain").evaluate((node) => getComputedStyle(node).backgroundImage)).not.toBe("none");
 });
 
-test("primary action has hover light and press feedback without changing its target", async ({ page }) => {
+test("project creation keeps hover and press feedback and opens its dialog", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/dashboard");
-  const action = page.getByRole("link", { name: "新建项目", exact: true }).first();
-  await expect(action).toHaveAttribute("href", "/projects?new=1");
-  const rest = await action.evaluate((node) => getComputedStyle(node).boxShadow);
+  await page.goto("/projects");
+  // With no existing projects the workspace opens onboarding automatically.
+  await page.getByRole("dialog", { name: "建立一个项目空间" }).getByRole("button", { name: "关闭", exact: true }).click();
+  const action = page.getByRole("button", { name: "新建项目", exact: true });
+  await expect(action).toBeEnabled();
+  const rest = await action.evaluate((node) => getComputedStyle(node).backgroundColor);
   await action.hover();
-  await expect.poll(() => action.evaluate((node) => getComputedStyle(node).boxShadow)).not.toBe(rest);
+  await expect.poll(() => action.evaluate((node) => getComputedStyle(node).backgroundColor)).not.toBe(rest);
   const box = await action.boundingBox();
   await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
   await page.mouse.down();
@@ -104,7 +107,7 @@ test("the 700px drawer stays out of page flow and traps keyboard focus", async (
   await page.goto("/dashboard");
   const drawer = page.locator("#app-sidebar");
   await expect(drawer).toHaveAttribute("inert", "");
-  expect((await page.locator(".overview-header").boundingBox())!.y).toBeLessThan(180);
+  expect((await page.getByRole("heading", { name: "总览", exact: true, level: 1 }).boundingBox())!.y).toBeLessThan(180);
   expect(await page.getByRole("button", { name: "打开主导航" }).evaluate((node) => getComputedStyle(node).position)).toBe("fixed");
   await page.locator(".overview-footer").scrollIntoViewIfNeeded();
   await expect(page.getByRole("button", { name: "打开主导航" })).toBeInViewport();
