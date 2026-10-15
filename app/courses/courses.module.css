@@ -23,9 +23,10 @@
 .option input { flex: 0 0 auto; }
 .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.8rem; }
 .actions button { border: 1px solid #b6c5d7; border-radius: 6px; background: #f4f7fa; color: #233047; padding: 0.5rem 0.9rem; min-height: 44px; font: inherit; cursor: pointer; }
-.actions button[type="submit"] { background: #253e5b; border-color: #253e5b; color: #fff; }
+.actions button[type="submit"] { background: var(--brand); border-color: var(--brand); color: #fff; }
+.actions button[type="submit"]:hover:not(:disabled) { background: var(--brand-hover); border-color: var(--brand-hover); }
 .actions button:disabled { opacity: 0.65; cursor: default; }
-.actions button:focus-visible, .question input:focus-visible, .question textarea:focus-visible, .references summary:focus-visible, .tableScroll:focus-visible, .formula:focus-visible { outline: 3px solid #456e9b; outline-offset: 3px; }
+.actions button:focus-visible, .question input:focus-visible, .question textarea:focus-visible, .references summary:focus-visible, .tableScroll:focus-visible, .formula:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .feedback { color: #215734; }.incorrect { color: #98422f; }
 .hint, .solution { border-top: 1px solid #d8e1ec; padding-top: 0.8rem; margin-top: 1rem; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -45,7 +46,8 @@
 .chapters a { display:inline-block;padding:0.5rem 0; }
 .status { display:flex;flex-wrap:wrap;gap:0.8rem;align-items:center;font-size:0.88rem;color:#546175;margin:1rem 0;min-height:44px; }
 .status button,.reset button { border:1px solid #b6c5d7;border-radius:5px;padding:0.5rem 0.8rem;color:#233047;background:#fff;min-height:44px;cursor:pointer; }
-.primaryLink { display:inline-flex;align-items:center;min-height:44px;padding:0.6rem 1.2rem;border-radius:6px;background:#253e5b;color:#fff!important;text-decoration:none; }
+.primaryLink { display:inline-flex;align-items:center;min-height:44px;padding:0.6rem 1.2rem;border-radius:6px;background:var(--brand);color:#fff!important;text-decoration:none; }
+.primaryLink:hover { background: var(--brand-hover); }
 .reset { border-top:1px solid #d8e1ec;margin-top:2.5rem;padding-top:1.5rem; }
 .study { display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px; }
 .study nav { min-width:0;font-size:0.9rem;line-height:1.9; }

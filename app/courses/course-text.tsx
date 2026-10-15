@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import "katex/dist/katex.min.css";
 import { renderCourseMath } from "./course-math.mjs";
 import styles from "./courses.module.css";
 export function Formula({source,block=false}:{source:string;block?:boolean}) {

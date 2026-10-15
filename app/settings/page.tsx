@@ -210,7 +210,7 @@ export default function SettingsPage() {
   return <main className={`student-app settings-app workspace-refresh ${craft.craft}`}>
     <AppSidebar active="settings" />
     <section className="workspace settings-main settings-shell">
-      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={<>{signedIn && profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={!signedIn || saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></>} />
+      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={signedIn ? <>{profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></> : undefined} />
 
       <div className="page-body">
 
