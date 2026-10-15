@@ -7,11 +7,13 @@ test.beforeEach(async ({ page }) => {
 
 test("light curtain is decorative and reduced motion keeps controls steady", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => localStorage.setItem("acaora:ambient-motion", "on"));
   await page.goto("/dashboard");
   const curtain = page.locator("body > .light-curtain");
   await expect(curtain).toHaveAttribute("aria-hidden", "true");
   expect(await curtain.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("none");
   await expect(curtain.locator("canvas")).toHaveAttribute("data-motion", /paused|unavailable/);
+  await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeHidden();
   const action = page.getByRole("navigation", { name: "工作空间" }).getByRole("link", { name: "项目空间", exact: true });
   await action.hover();
   expect(await action.evaluate((node) => getComputedStyle(node).transform)).toBe("none");
@@ -31,6 +33,9 @@ test("the global light surface changes, pauses, and survives workspace navigatio
   await page.getByRole("button", { name: "开启背景动效" }).click();
   await expect(canvas).toHaveAttribute("data-motion", /running|unavailable/);
   test.skip(await canvas.getAttribute("data-motion") === "unavailable", "This browser cannot create a WebGL context; the static fallback is tested separately.");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeVisible();
+  await expect(canvas).toHaveAttribute("data-motion", "running");
   const firstFrame = await canvas.screenshot();
   await expect.poll(async () => (await canvas.screenshot()).equals(firstFrame)).toBe(false);
   await page.getByRole("button", { name: "暂停背景动效" }).click();

@@ -1,7 +1,8 @@
-/* A stable narrow slot with an isolated reveal above the content. */
+/* The expanded rail owns its space, including during the reveal. */
 @media (min-width: 761px) {
-  .student-app:has(> .sidebar-auto-slot) { grid-template-columns: 72px minmax(0, 1fr); }
-  .sidebar-auto-slot { position: sticky; top: 24px; height: calc(100dvh - 48px); min-height: 520px; width: 72px; z-index: 40; }
+  .student-app:has(> .sidebar-auto-slot) { grid-template-columns: 72px minmax(0, 1fr); transition: grid-template-columns 260ms var(--ease-out); }
+  .student-app:has(> .sidebar-auto-slot[data-expanded="true"]) { grid-template-columns: 232px minmax(0, 1fr); }
+  .sidebar-auto-slot { position: sticky; top: 24px; height: calc(100dvh - 48px); min-height: 520px; min-width: 0; z-index: 40; }
   .student-app .sidebar-auto-slot .app-sidebar.student-sidebar {
     position: absolute; inset: 0 auto 0 0; width: 72px; height: 100%; min-height: 0;
     align-items: stretch; padding: 20px 12px 12px; border: 0; border-radius: 12px;
@@ -85,6 +86,7 @@
   .course-navigation-heading { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .student-app:has(> .sidebar-auto-slot) { transition: none; }
   .student-app .sidebar-auto-slot .app-sidebar.student-sidebar { transition: none; }
   .student-app .sidebar-auto-slot :is(.acaora-brand > div, nav a span, .student-sidebar-foot p, .sidebar-rail-toggle span),
   .course-navigation-panel, .course-navigation-toggle > svg:last-child { transition: none; transform: none; }

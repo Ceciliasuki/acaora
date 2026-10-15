@@ -70,6 +70,18 @@
 .literature-search button { min-height: 40px; padding: 10px 14px; border: 0; border-radius: 7px; background: var(--surface-2); color: var(--text); font: 500 13px var(--font-sans); cursor: pointer; }
 .literature-query > button { flex-shrink: 0; background: var(--brand); color: var(--surface); }
 .literature-search button:disabled { opacity: .5; cursor: not-allowed; }
+.paper-annotation-actions button:disabled { opacity: .5; cursor: not-allowed; }
+@media (hover: hover) {
+  .paper-annotation-actions button:hover:not(:disabled),
+  .literature-search button:hover:not(:disabled) { background: var(--brand-subtle); color: var(--brand); }
+  .paper-annotation-actions button:first-child:hover:not(:disabled),
+  .literature-query > button:hover:not(:disabled) { background: var(--brand-hover); color: var(--surface); }
+  :is(.paper-annotate-paragraph, .annotation-entry button):hover:not(:disabled) { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+  :is(.paper-annotation-actions button, .paper-annotate-paragraph, .annotation-entry button, .literature-search button):active:not(:disabled) { transform: translateY(1px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.paper-annotation-actions button, .paper-annotate-paragraph, .annotation-entry button, .literature-search button):active:not(:disabled) { transform: none; }
+}
 .literature-filters { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin: 16px 0; }
 .literature-filters :is(fieldset,label) { display: flex; gap: 8px; align-items: center; margin: 0; padding: 0; border: 0; color: var(--text-2); font-size: 13px; }
 .literature-filters fieldset input { width: 86px; }

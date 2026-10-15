@@ -12,6 +12,10 @@
 .dialog button:hover:not(:disabled) { border-color: var(--brand); background: var(--surface-2); }
 .dialog button:active:not(:disabled) { transform: scale(.985); }
 .dialog button:disabled { opacity: .5; cursor: default; }
+@media (prefers-reduced-motion: reduce) {
+  .dialog button { transition: none; }
+  .dialog button:active:not(:disabled) { transform: none; }
+}
 .dialog button:focus-visible, .controls input:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .body { overflow: auto; max-height: calc(100dvh - 260px); min-height: 180px; padding: 16px; background: #e4e6e2; text-align: center; overscroll-behavior: contain; }
 .body canvas { display: block; margin: 0 auto; background: white; }

@@ -131,6 +131,17 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
       viewportWidth = window.innerWidth;
       cancelAnimationFrame(frame); if (hasPosition.current || currentRef.current > 0) position(currentRef.current, remembered.current.offset);
     };
+    // The main navigation can reflow text without resizing the window. Keep the
+    // same source anchor throughout that width change, including at breakpoints.
+    let readerWidth = root.clientWidth;
+    const observer = new ResizeObserver(() => {
+      const width = root.clientWidth;
+      if (!width || width === readerWidth) return;
+      readerWidth = width;
+      cancelAnimationFrame(frame);
+      if (hasPosition.current || currentRef.current > 0) position(currentRef.current, remembered.current.offset);
+    });
+    observer.observe(root);
     root.addEventListener('scroll', schedule, {passive: true});
     root.addEventListener('wheel', resume, {passive: true});
     root.addEventListener('pointerdown', resume);
@@ -152,6 +163,7 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
     });
     return () => {
       disposed = true;
+      observer.disconnect();
       cancelAnimationFrame(frame); cancelAnimationFrame(restore); cancelAnimationFrame(positionFrameRef.current);
       positioningRef.current = false;
       root.removeEventListener('scroll', schedule); window.removeEventListener('scroll', schedule); window.removeEventListener('resize', resize);

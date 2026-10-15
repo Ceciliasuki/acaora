@@ -1,7 +1,31 @@
 "use client";
 
 import { Pause, Play } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+
+const preferenceKey = "acaora:ambient-motion";
+const preferenceEvent = "acaora:ambient-motion-change";
+let sessionPaused: boolean | null = null;
+function readPausedPreference() {
+  if (sessionPaused !== null) return sessionPaused;
+  try { return window.localStorage.getItem(preferenceKey) !== "on"; }
+  catch { return true; }
+}
+function subscribePreference(notify: () => void) {
+  window.addEventListener("storage", notify);
+  window.addEventListener(preferenceEvent, notify);
+  return () => {
+    window.removeEventListener("storage", notify);
+    window.removeEventListener(preferenceEvent, notify);
+  };
+}
+function defaultPaused() { return true; }
+function savePausedPreference(paused: boolean) {
+  sessionPaused = null;
+  try { window.localStorage.setItem(preferenceKey, paused ? "off" : "on"); }
+  catch { sessionPaused = paused; }
+  window.dispatchEvent(new Event(preferenceEvent));
+}
 
 // One persistent, procedural light surface. No image panning or React frame state.
 const vertexSource = `attribute vec2 position;
@@ -39,7 +63,7 @@ export default function LightCurtain() {
   const elapsedRef = useRef(0);
   // Draw the existing light field once, then keep it still. Task interactions
   // should not compete with a permanent full-screen shader. Motion is opt-in.
-  const [paused, setPaused] = useState(true);
+  const paused = useSyncExternalStore(subscribePreference, readPausedPreference, defaultPaused);
   const [visibleEpoch, setVisibleEpoch] = useState(0);
 
   useEffect(() => {
@@ -167,7 +191,7 @@ export default function LightCurtain() {
 
   return <>
     <div className="light-curtain" aria-hidden="true"><canvas ref={canvasRef} className="light-curtain-canvas" /></div>
-    <button type="button" className="ambient-toggle" aria-label={paused ? "开启背景动效" : "暂停背景动效"} aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+    <button type="button" className="ambient-toggle" aria-label={paused ? "开启背景动效" : "暂停背景动效"} aria-pressed={paused} onClick={() => savePausedPreference(!paused)}>
       {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}<span>{paused ? "动效已暂停" : "背景动效"}</span>
     </button>
   </>;

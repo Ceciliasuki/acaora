@@ -892,17 +892,20 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .auth-existing-account > span { color: #5c57d2; background: #eeedff; font-family: Georgia, serif; }
 .auth-existing-account .auth-primary-action { width: min(100%, 290px); border-color: #101526; color: white; background: #101526; }
 .auth-existing-account .auth-secondary-action { display: block; margin: 10px auto 0; border-color: transparent; color: #5e6472; background: transparent; }
-.auth-result-page { min-height: 100vh; padding: 30px; display: grid; place-items: center; color: #111827; background: #edf0f5; }
+.auth-result-page { min-height: 100vh; padding: 30px; display: grid; place-items: center; color: var(--text); background: #edf0f5; }
 .auth-result-page > section { width: min(520px, 100%); padding: 48px; border: 1px solid #dce1e8; border-radius: 22px; background: white; box-shadow: 0 28px 80px rgba(17, 24, 39, .12); text-align: center; }
-.auth-result-page > section > span { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border-radius: 15px; color: #70dfc5; background: #111827; font: 800 25px/1 Georgia, serif; }
+.auth-result-page > section > span { width: 58px; height: 58px; margin: 0 auto 20px; display: grid; place-items: center; border-radius: 15px; color: var(--surface); background: var(--brand); font: 800 25px/1 Georgia, serif; }
 .auth-result-page h1 { margin: 0; font: 700 35px/1.2 Georgia, "Songti SC", serif; }
 .auth-result-page section > p:not(.eyebrow) { margin: 14px 0 0; color: #70798a; font-size: 14px; line-height: 1.75; }
-.auth-result-page a { display: inline-flex; margin-top: 24px; padding: 12px 17px; border-radius: 9px; color: white; background: #111827; text-decoration: none; font-size: 13px; font-weight: 700; }
+.auth-result-page a { display: inline-flex; margin-top: 24px; padding: 12px 17px; border-radius: 9px; color: white; background: var(--brand); text-decoration: none; font-size: 13px; font-weight: 700; }
+.auth-result-page a:hover { background: var(--brand-hover); }
 .reset-card form { margin-top: 25px; display: grid; gap: 15px; text-align: left; }
 .reset-card form label { display: grid; gap: 8px; color: #4d5666; font-size: 13px; font-weight: 700; }
 .reset-card form input { min-height: 51px; padding: 13px 15px; border: 1px solid #d7dce4; border-radius: 10px; outline: none; font-size: 15px; }
-.reset-card form input:focus { border-color: #625de5; box-shadow: 0 0 0 3px rgba(98, 93, 229, .1); }
-.reset-card form button { min-height: 51px; border: 0; border-radius: 10px; color: white; background: #111827; font-size: 14px; font-weight: 800; cursor: pointer; }
+.reset-card form input:focus { border-color: var(--brand); }
+.reset-card form input:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.reset-card form button { min-height: 51px; border: 0; border-radius: 10px; color: white; background: var(--brand); font-size: 14px; font-weight: 800; cursor: pointer; }
+.reset-card form button:hover:not(:disabled) { background: var(--brand-hover); }
 
 @media (max-width: 600px) {
   .auth-mode-tabs { margin-top: 22px; }
@@ -1167,7 +1170,8 @@ footer { font-size: 12px; }
 .settings-state > span { color: #625de5; font: 800 10px/1 monospace; letter-spacing: .13em; }
 .settings-state h2 { margin: 18px 0 0; font: 700 34px/1.2 Georgia, "Songti SC", serif; }
 .settings-state p { max-width: 520px; margin: 14px 0 0; color: #717a8b; font-size: 13px; line-height: 1.7; }
-.settings-state a { margin-top: 24px; padding: 12px 18px; border-radius: 9px; color: white; background: #171e2e; font-size: 12px; font-weight: 700; text-decoration: none; }
+.settings-state a { margin-top: 24px; padding: 12px 18px; border-radius: 9px; color: white; background: var(--brand); font-size: 12px; font-weight: 700; text-decoration: none; }
+.settings-state a:hover { background: var(--brand-hover); }
 
 @media (max-width: 1200px) {
   .settings-grid { grid-template-columns: minmax(0, 1fr) 320px; }
@@ -1213,7 +1217,7 @@ footer { font-size: 12px; }
 .app-sidebar > nav a { min-width: 0; }
 .app-sidebar > nav a span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .app-sidebar > nav a:focus-visible,
-.app-sidebar a:focus-visible { outline: 2px solid #70dfc5; outline-offset: 2px; }
+.app-sidebar a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
 .data-app,
 .paper-layout {
@@ -1386,7 +1390,8 @@ footer { font-size: 12px; }
 .project-login-wall p,
 .project-empty p { max-width: 560px; margin: 16px 0 0; color: #697386; font-size: 15px; line-height: 1.8; }
 .project-login-wall a,
-.project-empty button { min-height: 50px; margin-top: 28px; padding: 14px 20px; border: 0; border-radius: 10px; color: white; background: #111827; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.project-empty button { min-height: 50px; margin-top: 28px; padding: 14px 20px; border: 0; border-radius: 10px; color: white; background: var(--brand); font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.project-empty button:hover:not(:disabled) { background: var(--brand-hover); }
 .project-empty > b { width: 66px; height: 66px; display: grid; place-items: center; margin-bottom: 24px; border-radius: 18px; color: #5e5ad9; background: #eeedff; font-size: 28px; }
 .project-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
 .project-metrics article { min-width: 0; padding: 20px 22px; border: 1px solid #e0e3e9; border-radius: 14px; background: white; box-shadow: 0 10px 30px rgba(27, 35, 52, .035); }
@@ -1533,7 +1538,7 @@ footer { font-size: 12px; }
 
 /* Shared UI primitives ---------------------------------------------------- */
 :where(a, button, input, select, textarea, summary):focus-visible {
-  outline: 3px solid #625de5;
+  outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
 :where(button, [role="button"], a) { touch-action: manipulation; }
@@ -1802,7 +1807,7 @@ body {
 .app-sidebar > nav a:hover { background: var(--surface-inverse-2); color: var(--text-inverse); }
 .app-sidebar > nav a.active { background: var(--surface-inverse-2); color: var(--text-inverse); }
 .app-sidebar > nav a.active svg { color: var(--brand-on-dark); }
-.app-sidebar a:focus-visible { outline-color: var(--brand-on-dark); }
+.app-sidebar a:focus-visible { outline-color: var(--brand); }
 .sidebar-profile-link:hover { background: var(--surface-inverse-2); }
 .sidebar-profile-link > b { background: var(--brand); color: var(--text-inverse); }
 .student-sidebar-foot > a { border-bottom-color: var(--border-inverse); }
