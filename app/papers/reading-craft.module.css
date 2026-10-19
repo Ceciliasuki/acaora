@@ -125,7 +125,7 @@
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button) { padding-inline: 6px; }
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 280px; }
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { position: static; width: auto; padding-inline: 20px; box-shadow: none; }
-  .reading.reading :global(.plab-workbench[data-notes-open="true"] .paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
+  .reading.reading :global(.paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
   .reading.reading .titleField { font-size: 40px; }
 }
 @media (max-width: 760px) {
