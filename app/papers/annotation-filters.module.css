@@ -1,0 +1,19 @@
+.filters { display: flex; flex-direction: column; gap: 12px; padding: 16px 0; }
+.filters > input { width: 100%; min-height: 42px; padding: 10px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); }
+.filters input::placeholder { color: var(--text-2); }
+.filters > div, .filters label { display: flex; align-items: center; gap: 8px; }
+.filters > div { flex-wrap: wrap; gap: 12px; }
+.filters label, .filters p { margin: 0; color: var(--text-2); font: 13px/1.7 var(--font-sans); }
+.filters select { min-height: 40px; padding: 6px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: inherit; }
+.filters input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--brand); }
+.filters p button { padding: 8px; min-height: 40px; border: 0; background: transparent; color: var(--brand); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.filters :is(input,select,button):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.collection { padding: 12px 0 16px; border-block: 1px solid var(--border); font: 13px/1.7 var(--font-sans); color: var(--text-2); }
+.collection label, .pick { display: flex; align-items: center; gap: 8px; font: 13px/1.7 var(--font-sans); color: var(--text-2); }
+.collection input, .pick input { width: 16px; height: 16px; accent-color: var(--brand); }
+.collection p { margin: 8px 0; }
+.collection > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.collection button { min-height: 40px; padding: 8px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); cursor: pointer; }
+.collection button:disabled { opacity: .45; cursor: not-allowed; }
+.collection :is(input,button):focus-visible, .pick input:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.pick { margin: 16px 0 8px; }

@@ -5,7 +5,7 @@ import {Eye, X} from 'lucide-react';
 import type {PaperRecord} from './paper-types';
 
 /** A source peek never changes the reading cursor until a navigation is chosen. */
-export default function SourcePreview({paper, index, onNavigate}: {paper: PaperRecord; index: number; onNavigate: (index: number, originalPdf?: boolean) => void}) {
+export default function SourcePreview({paper, index, onNavigate, onCompare}: {paper: PaperRecord; index: number; onNavigate: (index: number, originalPdf?: boolean) => void; onCompare?: (index: number) => void}) {
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const surface = useRef<HTMLDivElement>(null);
@@ -56,7 +56,7 @@ export default function SourcePreview({paper, index, onNavigate}: {paper: PaperR
       <header><strong>原文 · 第 {index + 1} 段</strong><button type="button" aria-label="关闭原文预览" onClick={() => {close(); trigger.current?.focus({preventScroll: true});}}><X size={16} aria-hidden="true" /></button></header>
       <p className="paper-preview-source">{paragraph.section} · 第 {paragraph.page} 页</p>
       <blockquote>{paragraph.original}</blockquote>
-      <footer><button type="button" onClick={() => navigate()}>定位正文</button>{paper.id !== 'sample-paper' && <button type="button" onClick={() => navigate(true)}>打开原 PDF 页</button>}</footer>
+      <footer><button type="button" onClick={() => navigate()}>定位正文</button>{onCompare && <button type="button" onClick={() => {close(); onCompare(index);}}>固定为对照</button>}{paper.id !== 'sample-paper' && <button type="button" onClick={() => navigate(true)}>打开原 PDF 页</button>}</footer>
     </div>
   </span>;
 }
