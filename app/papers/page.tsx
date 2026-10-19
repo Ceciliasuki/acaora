@@ -3,7 +3,7 @@
 import craft from "./reading-craft.module.css";
 import PaperTitle from './paper-title';
 import usePaperMotion from './use-paper-motion';
-import {ArrowLeft, Bookmark, BookOpen, Check, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
+import {ArrowLeft, Bookmark, BookOpen, Check, Columns2, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
 import dynamic from 'next/dynamic';
 import SourcePreview from './source-preview';
 
@@ -11,7 +11,7 @@ import AppSidebar from "../components/app-sidebar";
 import {PageHeader} from "../components/ui";
 import MotionNavigation from "../components/motion-navigation";
 
-import { ChangeEvent, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { ChangeEvent, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
 import ContinuousReader, {type ReaderNavigation, type ReadingAnchor} from './continuous-reader';
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
@@ -44,6 +44,7 @@ type TranslatorFactory = {
 type TranslationState = "checking" | "ready" | "downloadable" | "unsupported" | "working" | "done" | "error";
 const AiStudio = dynamic(() => import('./ai-studio'), {loading: () => <AiConsoleSkeleton />});
 const LiteratureSearch = dynamic(() => import('./literature-search'), {loading: () => <DiscoverySkeleton />});
+const ReferencePane = dynamic(() => import('./reference-pane'));
 type TrailEntry = {anchor: ReadingAnchor; mode: 'reader' | 'library' | 'insight' | 'ai' | 'search'; section: string};
 
 export default function PaperLab() {
@@ -54,6 +55,11 @@ export default function PaperLab() {
   const [trail, setTrail] = useState<{key: string; entries: TrailEntry[]}>({key: '', entries: []});
   const [visited, setVisited] = useState({ai: false, search: false});
   const [lockedNote, setLockedNote] = useState<{key: string; id: string; pinned?: boolean} | null>(null);
+  const [reference, setReference] = useState<{key: string; index: number} | null>(null);
+  const [referenceWidth, setReferenceWidth] = useState(38);
+  const referenceResizeAnchor = useRef<ReadingAnchor | null>(null);
+  const referencePendingAnchor = useRef<ReadingAnchor | null>(null);
+  const referenceToggleRef = useRef<HTMLButtonElement>(null);
   const [fontSize, setFontSize] = useState(20);
   const [saveFeedback, setSaveFeedback] = useState<{key: string; state: 'saving' | 'saved' | 'error'} | null>(null);
   const paperRef = useRef(paper);
@@ -126,6 +132,12 @@ export default function PaperLab() {
   const {activeIndex, select: selectParagraph, snapshot: withReadingPosition} = useReadingPosition(paper, commitReadingPosition);
   const activeParagraph = paper.paragraphs[activeIndex];
   const paperKey = JSON.stringify([paper.ownerId ?? null, paper.id]);
+  const referenceOpen = reference?.key === paperKey && Boolean(paper.paragraphs[reference.index]);
+  useLayoutEffect(() => {
+    const anchor = referencePendingAnchor.current;
+    referencePendingAnchor.current = null;
+    if (referenceOpen && anchor) navigationRef.current?.restorePosition(anchor);
+  }, [referenceWidth, referenceOpen]);
   const noteIndex = lockedNote?.key === paperKey ? Math.max(0, paper.paragraphs.findIndex(paragraph => paragraph.id === lockedNote.id)) : activeIndex;
   const noteParagraph = paper.paragraphs[noteIndex];
   const trailEntries = trail.key === paperKey ? trail.entries : [];
@@ -464,6 +476,20 @@ export default function PaperLab() {
     if (originalPdf) setPdfRequest(previous => ({page: paper.paragraphs[index].page, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
   }
 
+  function pinReference(index: number) {
+    if (!paper.paragraphs[index]) return;
+    navigationRef.current?.getPosition();
+    setReference({key: paperKey, index});
+    changePanels({library: false, notes: false});
+    setMobilePanel('reader');
+  }
+
+  function closeReference() {
+    navigationRef.current?.getPosition();
+    setReference(null);
+    referenceToggleRef.current?.focus({preventScroll: true});
+  }
+
   function returnToReading(position: number) {
     const entry = trailEntries[position];
     if (!entry || !paper.paragraphs[entry.anchor.index]) return;
@@ -653,7 +679,7 @@ export default function PaperLab() {
   return (
     <main className={`student-app paper-layout workspace-refresh ${craft.reading}`}>
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
-      <section ref={shellRef} className="student-main plab-shell" style={{'--paper-reading-size': `${fontSize}px`} as CSSProperties}>
+      <section ref={shellRef} className="student-main plab-shell" style={{'--paper-reading-size': `${fontSize}px`, '--paper-reference-width': `${referenceWidth}%`} as CSSProperties}>
       {/* Running head: the surface's own line, then only the tools that act on the
           library. The numeric register that used to sit here was removed because
           every value in it is already printed where it belongs: the library count in
@@ -679,8 +705,9 @@ export default function PaperLab() {
       <div className="paper-layout-controls" hidden={mobilePanel === 'ai' || mobilePanel === 'search'}>
         <div>
           <button ref={libraryToggleRef} type="button" aria-controls="paper-library" aria-expanded={panels.library} onClick={() => changePanels({...panels, library: !panels.library})}><Library size={16} aria-hidden="true" />论文库</button>
-          <button ref={notesToggleRef} type="button" aria-controls="paper-notes" aria-expanded={panels.notes} onClick={() => changePanels({...panels, notes: !panels.notes})}><PanelRight size={16} aria-hidden="true" />笔记</button>
-          <button type="button" aria-pressed={!panels.library && !panels.notes} onClick={() => changePanels({library: false, notes: !panels.library && !panels.notes})}><Scan size={16} aria-hidden="true" />专注阅读</button>
+          <button ref={notesToggleRef} type="button" aria-controls="paper-notes" aria-expanded={panels.notes} onClick={() => {setReference(null); changePanels({...panels, notes: !panels.notes});}}><PanelRight size={16} aria-hidden="true" />笔记</button>
+          <button ref={referenceToggleRef} type="button" aria-controls="paper-reference" aria-expanded={referenceOpen} onClick={() => referenceOpen ? closeReference() : pinReference(activeIndex)}><Columns2 size={16} aria-hidden="true" />原文对照</button>
+          <button type="button" aria-pressed={!panels.library && !panels.notes && !referenceOpen} onClick={() => {setReference(null); changePanels({library: false, notes: !panels.library && !panels.notes && !referenceOpen});}}><Scan size={16} aria-hidden="true" />专注阅读</button>
         </div>
         <span role="status">{workspaceStatus}</span>
         {!panels.notes && saveFeedback?.key === paperKey && saveFeedback.state === 'error' && <button className="desktop-paper-tool" type="button" onClick={() => updatePaper(current => ({...current}))}>重试保存</button>}
@@ -698,7 +725,7 @@ export default function PaperLab() {
           }}>{{ library: "论文库", reader: "阅读", insight: "笔记", ai: "AI", search: "检索" }[panel]}</button>)}
       </MotionNavigation>
 
-      <section className="plab-workbench" data-library-open={panels.library} data-notes-open={panels.notes} hidden={mobilePanel === "ai" || mobilePanel === "search"}>
+      <section className="plab-workbench" data-library-open={panels.library} data-notes-open={panels.notes} data-reference-open={referenceOpen} hidden={mobilePanel === "ai" || mobilePanel === "search"}>
         {!hydrated ? <ReadingSkeleton /> : <>
         {/* 1 · Library Index. An archival index rather than a dark sidebar: ruled
             rows, the title as the entry, and the reader's own progress beneath it.
@@ -775,8 +802,8 @@ export default function PaperLab() {
               <details className="paper-note-more desktop-paper-tool"><summary>更多工具</summary><button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button></details><button className="mobile-paper-tool" type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
             </div>
           </div>}
-          <NotesSummary key={`summary:${paperKey}`} paper={paper} onSelect={jumpToParagraph} />
-          <AnnotationPanel key={`annotations:${paperKey}`} paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation}/>
+          <NotesSummary key={`summary:${paperKey}`} paper={paper} onSelect={jumpToParagraph} onCompare={pinReference}/>
+          <AnnotationPanel key={`annotations:${paperKey}`} paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation} onCompare={pinReference}/>
           <details className="paper-reading-tools"><summary>翻译状态</summary>{!['working','done','error'].includes(translationState)&&<p>{translatorStatusLabel(translationState,isEdge)}</p>}<p>{translationStatusDetail(translationState,modelProgress)}</p></details>
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
@@ -786,6 +813,7 @@ export default function PaperLab() {
           </details>}
 
         </aside>
+        {referenceOpen && reference && <ReferencePane key={paperKey} paper={paper} index={reference.index} activeIndex={activeIndex} width={referenceWidth} onResizeStart={() => {referenceResizeAnchor.current = navigationRef.current?.getPosition() ?? null;}} onResizeEnd={() => {referenceResizeAnchor.current = null;}} onWidth={width => {referencePendingAnchor.current = referenceResizeAnchor.current ?? navigationRef.current?.getPosition() ?? null; setReferenceWidth(width);}} onIndex={index => setReference({key: paperKey, index})} onJump={jumpToParagraph} onClose={closeReference}/>}
         </>}
       </section>
 

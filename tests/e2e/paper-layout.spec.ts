@@ -62,6 +62,9 @@ test('PAPER-18 mobile tabs work independently of desktop collapsed preferences',
   await page.setViewportSize({width:1024,height:900});
   await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
   await expect(page.locator('[data-paragraph-id="wide-2"]')).toHaveAttribute('data-active','true');
+  // Width transitions and ResizeObserver settle asynchronously; an active
+  // source ID alone does not mean its heading has finished being positioned.
+  await expect(page.locator('[data-paragraph-id="wide-2"] h2')).toBeInViewport();
   const desktopReader=await page.getByRole('region',{name:'论文正文',exact:true}).boundingBox();
   const desktopResults=await page.locator('[data-paragraph-id="wide-2"] h2').boundingBox();
   expect(desktopResults!.y).toBeGreaterThanOrEqual(desktopReader!.y);

@@ -19,4 +19,14 @@
 .dialog button:focus-visible, .controls input:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 .body { overflow: auto; max-height: calc(100dvh - 260px); min-height: 180px; padding: 16px; background: #e4e6e2; text-align: center; overscroll-behavior: contain; }
 .body canvas { display: block; margin: 0 auto; background: white; }
+.viewer { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.viewer[data-thumbnails='true'] { grid-template-columns: 132px minmax(0, 1fr); }
+.thumbnailRail { min-width: 0; min-height: 0; background: var(--surface-2); border-right: 1px solid var(--border); }
+.thumbnails { height: 100%; max-height: calc(100dvh - 260px); min-height: 180px; overflow-y: auto; overscroll-behavior: contain; padding: 8px; }
+.thumbnails button { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; margin-bottom: 8px; padding: 6px; border: 1px solid transparent; background: transparent; }
+.thumbnails button[aria-current='page'] { border-color: var(--brand); background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.thumbnailImage { display: grid; place-items: center; width: 96px; min-height: 72px; background: white; color: var(--text-2); }
+.thumbnailImage > span { font-size: 12px; }
+.thumbnailImage canvas { display: block; max-width: 100%; height: auto !important; }
+@media (max-width: 600px) { .viewer[data-thumbnails='true'] { grid-template-columns: 84px minmax(0, 1fr); } .thumbnails { padding: 4px; max-height: calc(100dvh - 360px); } .thumbnailImage { width: 64px; } .thumbnails button { padding: 4px; font-size: 12px; } }
 @media (max-width: 600px) { .dialog {padding: 12px;} .dialog button {min-height: 44px;} .body {max-height: calc(100dvh - 360px);padding: 8px;} }

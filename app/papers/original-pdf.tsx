@@ -6,6 +6,7 @@ import type {PaperRecord} from './paper-types';
 import {getPaperPdf, savePaperPdf} from './paper-original-storage';
 import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines, type PdfLine} from './pdf-text';
 import styles from './original-pdf.module.css';
+import PdfThumbnails from './pdf-thumbnails';
 
 type Props = {paper: PaperRecord; request?: {page: number; id: number}; onRequestHandled: () => void; onRepair: (source: PaperRecord, title: string, sections: string[]) => void};
 
@@ -19,6 +20,8 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
   const [width, setWidth] = useState(800);
   const [pageWidth, setPageWidth] = useState(612);
   const [zoom, setZoom] = useState<number | 'fit'>('fit');
+  const [thumbnails, setThumbnails] = useState(false);
+  const [rotation, setRotation] = useState(0);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -28,10 +31,11 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
   const fitScale = Math.min(2, width / pageWidth);
 
   function restoreView(target?: number) {
-    let saved: {page?: number; zoom?: number | 'fit'} = {};
+    let saved: {page?: number; zoom?: number | 'fit'; rotation?: number} = {};
     try {saved = JSON.parse(localStorage.getItem(historyKey) ?? '{}') ?? {};} catch { /* Device preferences are optional. */ }
     setPageNumber(target ?? (Number.isInteger(saved.page) && saved.page! > 0 ? saved.page! : paper.paragraphs[paper.activeParagraph]?.page ?? 1));
     setZoom(typeof saved.zoom === 'number' && Number.isFinite(saved.zoom) ? Math.max(.25, Math.min(3, saved.zoom)) : 'fit');
+    setRotation([0,90,180,270].includes(saved.rotation ?? -1) ? saved.rotation! : 0);
     setError(''); setOpen(true);
   }
 
@@ -46,8 +50,8 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
 
   useEffect(() => {
     if (!open || !pdf) return;
-    try {localStorage.setItem(historyKey, JSON.stringify({page: pageNumber, zoom}));} catch { /* Reading still works without history storage. */ }
-  }, [historyKey, open, pdf, pageNumber, zoom]);
+    try {localStorage.setItem(historyKey, JSON.stringify({page: pageNumber, zoom, rotation}));} catch { /* Reading still works without history storage. */ }
+  }, [historyKey, open, pdf, pageNumber, zoom, rotation]);
 
   useEffect(() => {mountedRef.current = true; return () => {mountedRef.current = false;};}, []);
 
@@ -86,10 +90,11 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
     const canvas = canvasRef.current;
     void pdf.getPage(pageNumber).then(page => {
       if (!active) return;
-      const baseWidth = page.getViewport({scale: 1}).width;
+      const angle = (page.rotate + rotation) % 360;
+      const baseWidth = page.getViewport({scale: 1, rotation: angle}).width;
       setPageWidth(baseWidth);
       const scale = zoom === 'fit' ? Math.min(2, width / baseWidth) : zoom;
-      const viewport = page.getViewport({scale});
+      const viewport = page.getViewport({scale, rotation: angle});
       const ratio = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(16_000_000 / (viewport.width * viewport.height)));
       canvas.width = Math.ceil(viewport.width * ratio);
       canvas.height = Math.ceil(viewport.height * ratio);
@@ -99,7 +104,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
       return render.promise;
     }).catch(caught => {if (active && caught?.name !== 'RenderingCancelledException') setError('这一页未能显示，请切换页面重试。');});
     return () => {active = false; render?.cancel();};
-  }, [pdf, pageNumber, width, zoom]);
+  }, [pdf, pageNumber, width, zoom, rotation]);
 
   async function attach(event: ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0];
@@ -162,6 +167,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
       <header className={styles.header}><strong>原 PDF</strong><button type="button" aria-label="关闭原 PDF" onClick={() => setOpen(false)}>关闭</button></header>
       <p className={styles.privacy}>原文件只保存在当前设备，不上传；清除浏览器数据后需重新选择。</p>
       <div className={styles.controls}>
+        {pdf && <><button type="button" aria-expanded={thumbnails} aria-controls="pdf-page-thumbnails" onClick={() => setThumbnails(value => !value)}>{thumbnails ? '收起页览' : '页面缩略图'}</button><button type="button" aria-label="顺时针旋转原 PDF" onClick={() => setRotation(value => (value + 90) % 360)}>旋转 {rotation}°</button></>}
         {pdf && <><button type="button" disabled={pageNumber <= 1} onClick={() => setPageNumber(n => n - 1)}>上一页</button><label>页码 <input type="number" min={1} max={pdf.numPages} aria-label="原 PDF 页码" value={pageNumber} onChange={e => setPageNumber(Math.max(1, Math.min(pdf.numPages, Number(e.target.value) || 1)))} /> / {pdf.numPages}</label><button type="button" disabled={pageNumber >= pdf.numPages} onClick={() => setPageNumber(n => n + 1)}>下一页</button></>}
         {pdf && <div className={styles.zoom} aria-label="原 PDF 缩放">
           <button type="button" aria-label="缩小原 PDF" disabled={zoom !== 'fit' && zoom <= .25} onClick={() => setZoom(Math.max(.25, (zoom === 'fit' ? fitScale : zoom) - .25))}>−</button>
@@ -173,8 +179,11 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
         <input ref={inputRef} type="file" hidden accept="application/pdf,.pdf" aria-label="选择当前论文的原 PDF" onChange={attach} />
       </div>
       {error && <p role="alert">{error}</p>}
+      <div className={styles.viewer} data-thumbnails={thumbnails && Boolean(pdf)}>
+      {thumbnails && pdf && <div id="pdf-page-thumbnails" className={styles.thumbnailRail}><PdfThumbnails pdf={pdf} current={pageNumber} rotation={rotation} onSelect={setPageNumber}/></div>}
       <div className={styles.body} ref={bodyRef}>
         {pdf ? <canvas ref={canvasRef} aria-label={`原 PDF 第 ${pageNumber} 页`} role="img" /> : <p>{file ? '正在打开原 PDF…' : '此设备尚未保存原文件。选择这篇论文的原 PDF，即可按原页查看图表；原有笔记和段落编号会保留。'}</p>}
+      </div>
       </div>
     </dialog>}
   </>;

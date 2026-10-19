@@ -21,7 +21,7 @@ export function notesMarkdown(paper: PaperRecord) {
   return lines.join('\n');
 }
 
-export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onSelect: (index: number) => void}) {
+export default function NotesSummary({paper, onSelect, onCompare}: {paper: PaperRecord; onSelect: (index: number) => void; onCompare?: (index: number) => void}) {
   const [open, setOpen] = useState(false);
   const entries = paper.paragraphs.map((paragraph, index) => ({paragraph, index})).filter(({paragraph}) => paragraph.note.trim() || paragraph.bookmarked || validAnnotations(paragraph).length);
   function download() {
@@ -40,7 +40,7 @@ export default function NotesSummary({paper, onSelect}: {paper: PaperRecord; onS
       {[...new Set(entries.map(({paragraph}) => paragraph.section))].map(section => <div key={section}>
         <h3>{section}</h3>
         {entries.filter(({paragraph}) => paragraph.section === section).map(({paragraph, index}) => <article key={paragraph.id}>
-          <SourcePreview paper={paper} index={index} onNavigate={onSelect}/><button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
+          <SourcePreview paper={paper} index={index} onNavigate={onSelect} onCompare={onCompare}/><button type="button" onClick={() => onSelect(index)}>P{index + 1} · 第 {paragraph.page} 页{paragraph.bookmarked ? ' · 已收藏' : ''}</button>
           <blockquote>{paragraph.original}</blockquote>
           {paragraph.note.trim() && <p>{paragraph.note}</p>}
         </article>)}

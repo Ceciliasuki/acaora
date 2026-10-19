@@ -1,13 +1,15 @@
 "use client";
 
-import {memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, type ReactNode, type Ref} from 'react';
+import {memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode, type Ref} from 'react';
 import type {Paragraph, PaperAnnotation, TextAnchor} from './paper-types';
 import {annotationSegments} from './paper-annotations.mjs';
 import SelectionTools from './selection-tools';
 import MotionNavigation from '../components/motion-navigation';
+import ReaderNavigator, {FindText, type NavigatorHandle} from './reader-navigator';
+import {findInPaper, type FindOptions, type FindRange} from './reader-find';
 
 export type ReadingAnchor = {index: number; offset: number};
-export type ReaderNavigation = {getPosition: () => ReadingAnchor};
+export type ReaderNavigation = {getPosition: () => ReadingAnchor; restorePosition: (anchor: ReadingAnchor) => void};
 type Props = {
   navigationRef?: Ref<ReaderNavigation>;
   onNavigate?: (index: number) => void;
@@ -27,6 +29,11 @@ type Props = {
 
 export default memo(function ContinuousReader({navigationRef, onNavigate, noteIndex, header, tools, paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const navigatorRef = useRef<NavigatorHandle>(null);
+  const [find, setFind] = useState<FindOptions>({query: '', caseSensitive: false});
+  const matches = useMemo(() => findInPaper(paragraphs, find), [paragraphs, find]);
+  const matchRanges = useMemo(() => new Map(matches.map(match => [match.index, match.ranges])), [matches]);
+  useEffect(() => {navigatorRef.current?.close();}, [mode]);
   const currentRef = useRef(activeIndex);
   const positioningRef = useRef(false);
   const positionFrameRef = useRef(0);
@@ -48,7 +55,6 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
     }
     return remembered.current;
   }, []);
-  useImperativeHandle(navigationRef, () => ({getPosition}), [getPosition]);
 
   useEffect(() => {currentRef.current = activeIndex;}, [activeIndex]);
 
@@ -80,10 +86,15 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
       positionFrameRef.current = requestAnimationFrame(() => {positioningRef.current = false;});
     });
   }, []);
+  useImperativeHandle(navigationRef, () => ({getPosition, restorePosition: anchor => {select(anchor.index); position(anchor.index, anchor.offset);}}), [getPosition, select, position]);
 
   useEffect(() => {
     if (!jump || jump.index >= paragraphs.length) return;
-    const frame = requestAnimationFrame(() => {position(jump.index, jump.offset); handledJump.current = jump.id; rootRef.current?.focus({preventScroll: true});});
+    const frame = requestAnimationFrame(() => {
+      position(jump.index, jump.offset); handledJump.current = jump.id;
+      // Find stays keyboard-operable while Enter cycles through source locations.
+      if (!rootRef.current?.querySelector('[data-reader-find]')?.contains(document.activeElement)) rootRef.current?.focus({preventScroll: true});
+    });
     return () => cancelAnimationFrame(frame);
   }, [jump, paragraphs.length, position]);
 
@@ -133,9 +144,11 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
     };
     // The main navigation can reflow text without resizing the window. Keep the
     // same source anchor throughout that width change, including at breakpoints.
-    let readerWidth = root.clientWidth;
-    const observer = new ResizeObserver(() => {
-      const width = root.clientWidth;
+    let readerWidth = 0;
+    const observer = new ResizeObserver(entries => {
+      // Text can wrap at a fractional width even when integer clientWidth is
+      // unchanged; skipping that final reflow loses the restored source anchor.
+      const width = entries[0]?.contentRect.width ?? 0;
       if (!width || width === readerWidth) return;
       readerWidth = width;
       cancelAnimationFrame(frame);
@@ -182,8 +195,11 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
   }, [activeIndex, mode]);
 
   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- The named reader supports keyboard scrolling and paragraph selection without pretending to be a different widget.
-  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M"
+  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M Control+f Meta+f"
     onKeyDown={event => {
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f' && !document.querySelector('dialog[open]')) {
+        event.preventDefault(); navigatorRef.current?.openFind(); return;
+      }
       if (event.target !== event.currentTarget || !paragraphs.length || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
       const index = event.key === 'Home' ? 0 : event.key === 'End' ? paragraphs.length - 1
         : event.key === 'ArrowUp' ? Math.max(0, currentRef.current - 1)
@@ -198,14 +214,17 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
     }}>
     {header}
     <div className="paper-reading-navigation">
+    <div className="paper-chapter-navigation">
+    <ReaderNavigator ref={navigatorRef} paragraphs={paragraphs} activeIndex={activeIndex} find={find} matches={matches} onFind={setFind} onNavigate={index => {if (onNavigate) onNavigate(index); else {select(index); position(index);}}}/>
     {sections.length > 0 && <MotionNavigation className="section-chips" label="论文章节" value={paragraphs[activeIndex]?.section ?? ''}>{sections.map(section => <button key={section} type="button"
       className={paragraphs[activeIndex]?.section === section ? 'active' : ''} aria-current={paragraphs[activeIndex]?.section === section ? 'location' : undefined}
       onClick={() => {const index = paragraphs.findIndex(p => p.section === section); if (onNavigate) onNavigate(index); else {select(index); position(index);}}}>{section}</button>)}</MotionNavigation>}
+    </div>
     {tools}
     </div>
     {paragraphs.length ? <article className="plab-page plab-continuous-text"><div className="plab-body">
       {paragraphs.map((paragraph, index) => <ReaderParagraph key={paragraph.id} paragraph={paragraph} index={index} active={index === activeIndex} noteActive={index === noteIndex}
-        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} onEditAnnotation={onEditAnnotation} />)}
+        startsSection={index === 0 || paragraphs[index - 1].section !== paragraph.section} showTranslations={showTranslations} ranges={matchRanges.get(index)} onEditAnnotation={onEditAnnotation} />)}
     </div></article> : <div className="paper-empty"><strong>未识别到正文段落</strong><p>请使用包含文本层的 PDF，扫描版暂不支持。</p></div>}
     <SelectionTools rootRef={rootRef} onCreate={onCreateAnnotation}/>
   </div>;
@@ -213,13 +232,14 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
 
 // Only the previous/current paragraph changes during reading. Stable text and
 // notes keep their existing objects, so React can skip the rest of the article.
-const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, noteActive, startsSection, showTranslations,onEditAnnotation}: {
+const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active, noteActive, startsSection, showTranslations,ranges,onEditAnnotation}: {
   paragraph: Paragraph; index: number; active: boolean; noteActive: boolean; startsSection: boolean; showTranslations: boolean;
+  ranges?: FindRange[];
   onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 }) {
   return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active} data-note-active={noteActive}>
     {startsSection && <h2>{paragraph.section}</h2>}
-    <p data-original-text>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}>{segment.text}</button>:<span key={segment.start}>{segment.text}</span>)}</p>
+    <p data-original-text>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}><FindText text={segment.text} start={segment.start} ranges={ranges}/></button>:<span key={segment.start}><FindText text={segment.text} start={segment.start} ranges={ranges}/></span>)}</p>
     {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
   </div>;
 });

@@ -1,0 +1,23 @@
+.pane { grid-column: 2; grid-row: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; border-left: 1px solid var(--border); background: var(--surface-2); padding: 24px; overflow: hidden; }
+.pane header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.pane h2 { margin: 0; font: 600 17px/1.5 var(--font-sans); }
+.pane header p { margin: 8px 0 0; color: var(--text-2); font: 13px/1.7 var(--font-sans); }
+.pane button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 40px; min-height: 40px; padding: 8px; border: 0; border-radius: 4px; background: transparent; color: var(--text-2); font: 13px var(--font-sans); cursor: pointer; }
+.pane button:disabled { opacity: .45; cursor: not-allowed; }
+.pane button[aria-pressed='true'] { color: var(--brand-on-subtle); background: var(--brand-subtle); }
+.pane :is(button, select):focus-visible, .body:focus-visible, .divider:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+.navigation { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.navigation label { display: grid; gap: 8px; font: 13px var(--font-sans); color: var(--text-2); }
+.navigation select { width: 100%; min-height: 42px; border: 1px solid var(--border-control); border-radius: 4px; padding: 8px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); }
+.navigation > div { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.body { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 20px 2px; }
+.location { margin: 0 0 16px; color: var(--text-2); font: 13px/1.7 var(--font-sans); }
+.original { margin: 0; font: 18px/1.85 var(--paper-serif); white-space: pre-wrap; overflow-wrap: anywhere; }
+.translation { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); font: 14px/1.85 var(--font-sans); color: var(--text-2); }
+.translation strong { font-size: 13px; font-weight: 500; }
+.translation p { margin: 8px 0 0; white-space: pre-wrap; }
+.pane footer { display: flex; flex-wrap: wrap; gap: 4px; padding-top: 16px; border-top: 1px solid var(--border); }
+.divider { position: absolute; z-index: 6; top: 0; bottom: 0; width: 12px; cursor: col-resize; touch-action: none; }
+.divider:hover, .divider:focus-visible { background: color-mix(in srgb, var(--brand) 12%, transparent); }
+@media (hover: hover) { .pane button:hover:not(:disabled) { background: var(--brand-subtle); color: var(--brand-on-subtle); } }
+@media (max-width: 760px) { .pane, .divider { display: none; } }

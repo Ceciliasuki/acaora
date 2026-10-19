@@ -1,0 +1,26 @@
+.controls { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; padding-right: 12px; border-right: 1px solid var(--border); }
+.controls > button, .surface button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 8px; border: 0; border-radius: 4px; background: transparent; color: var(--text-2); font: 13px var(--font-sans); cursor: pointer; }
+.controls > button[aria-expanded='true'], .surface button[aria-current], .results button[aria-pressed='true'] { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.surface { position: fixed; inset: auto; margin: 0; padding: 16px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); color: var(--text); box-shadow: 0 12px 36px rgb(18 24 40 / 12%); overflow: auto; overscroll-behavior: contain; }
+.surface:popover-open { display: flex; flex-direction: column; gap: 12px; }
+.surface header { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 600 14px var(--font-sans); }
+.surface header button { min-width: 40px; margin: -8px -8px -8px 0; }
+.surface > input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 14px var(--font-sans); caret-color: var(--brand); }
+.surface input::placeholder { color: var(--text-2); }
+.findOptions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.findOptions label { display: flex; align-items: center; gap: 8px; font: 13px var(--font-sans); }
+.findOptions input { width: 16px; height: 16px; accent-color: var(--brand); }
+.findOptions > div { display: flex; gap: 4px; }
+.findOptions button { min-width: 40px; border: 1px solid var(--border-control); }
+.surface button:disabled { opacity: .45; cursor: not-allowed; }
+.status, .results > p { margin: 0; color: var(--text-2); font: 13px/1.7 var(--font-sans); }
+.results { display: flex; flex-direction: column; min-height: 0; max-height: min(46dvh, 380px); overflow-y: auto; overscroll-behavior: contain; }
+.results button { display: flex; flex: 0 0 auto; flex-direction: column; align-items: stretch; gap: 5px; padding: 12px 10px; border-radius: 0; border-bottom: 1px solid var(--border); text-align: left; }
+.results strong { font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.results button > span { font-size: 12px; line-height: 1.6; }
+.results button p { margin: 0; font: 14px/1.7 var(--font-sans); color: var(--text); overflow-wrap: anywhere; }
+.match { background: #f7e6a0; color: var(--text); border-radius: 2px; }
+.surface .clear { align-self: flex-start; padding-inline: 0; text-decoration: underline; text-underline-offset: 3px; }
+.controls button:focus-visible, .surface :is(button,input):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+@media (hover: hover) { .controls > button:hover, .surface button:hover:not(:disabled) { background: var(--surface-2); color: var(--text); } }
+@media (max-width: 760px) { .controls { padding-right: 8px; } .controls > button { min-width: 40px; } .controls > button span { display: none; } .results { max-height: 35dvh; } }

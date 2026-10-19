@@ -45,6 +45,8 @@
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader-bar) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'source' 'title'; max-width: 850px; padding: 48px 32px 36px; margin: 0 auto; gap: 22px; border: 0; background: transparent; }
 .reading.reading :global(.paper-reading-navigation) { position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'chapters tools progress'; align-items: center; gap: 12px; padding: 0 32px; border-block: 1px solid var(--paper-rule); background: var(--surface); }
 .reading.reading :global(.paper-reading-navigation .section-chips) { grid-area: chapters; min-width: 0; }
+.reading.reading :global(.paper-chapter-navigation) { grid-area: chapters; display: flex; align-items: center; gap: 16px; min-width: 0; }
+.reading.reading :global(.paper-chapter-navigation .section-chips) { flex: 1; }
 .reading.reading :global(.reader-controls dialog button) { width: auto; height: auto; min-height: 40px; }
 .reading.reading :global(.paper-source-record) { grid-area: source; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; color: var(--paper-muted); font-size: 11px; line-height: 1.7; overflow-wrap: anywhere; }
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-title-edit) { display: block; grid-area: title; min-width: 0; }
@@ -75,6 +77,8 @@
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { display: none; grid-column: 2; grid-row: 1; padding: 24px; min-width: 0; border: 0; border-left: 1px solid var(--paper-rule); border-radius: 0; background: var(--surface-2); overflow-y: auto; animation: none; scrollbar-width: thin; }
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 320px; }
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"] .plab-rail) { display: block; }
+.reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-reference-open="true"]) { grid-template-columns: minmax(0, 1fr) minmax(240px, var(--paper-reference-width, 38%)); }
+.reading.reading :global(.plab-workbench[data-reference-open="true"] .paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
 .reading.reading :global(.plab-index-head), .reading.reading :global(.plab-rail-head) { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 8px; padding-bottom: 20px; margin: 0 0 24px; border-bottom: 1px solid var(--paper-rule); }
 .reading.reading :global(.plab-index-head h2), .reading.reading :global(.plab-rail-head h2) { margin: 0; font-size: 17px; letter-spacing: -.02em; }
 .reading.reading :global(.plab-rail-head > span) { grid-column: 1; font-size: 11px; color: var(--paper-muted); }
@@ -121,7 +125,7 @@
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .paper-layout-controls button) { padding-inline: 6px; }
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-workbench[data-notes-open="true"]) { grid-template-columns: minmax(0, 1fr) 280px; }
   .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-rail) { position: static; width: auto; padding-inline: 20px; box-shadow: none; }
-  .reading.reading :global(.plab-workbench[data-notes-open="true"] .paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
+  .reading.reading :global(.paper-reading-navigation) { padding: 8px 16px 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; gap: 0 8px; }
   .reading.reading .titleField { font-size: 40px; }
 }
 @media (max-width: 760px) {
@@ -166,6 +170,7 @@
 :global(.paper-reading-preferences label) { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
 :global(.paper-reading-preferences select) { width: 64px; min-width: 64px; max-width: 64px; min-height: 36px; padding: 4px 6px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); }
 :global(.paper-reading-trail) { flex-wrap: wrap; }
+.reading.reading :global(.paper-reading-trail > button) { display: inline-flex; align-items: center; gap: 6px; width: auto; height: auto; min-height: 40px; padding: 8px 12px; white-space: nowrap; }
 :global(.paper-reading-trail details) { font: 12px/1.6 var(--font-sans); }
 :global(.paper-reading-trail summary) { padding: 8px; cursor: pointer; }
 :global(.paper-reading-trail nav) { display: grid; max-height: 180px; overflow: auto; }
