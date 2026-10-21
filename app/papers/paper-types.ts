@@ -37,6 +37,17 @@ export type AiMemory = {
   chats: AiSavedResult[];
 };
 
+export type PaperBibliography = {
+  authors: string[];
+  year: number | null;
+  venue: string;
+  doi: string;
+  url: string;
+  tags: string[];
+  source: 'manual' | 'Crossref';
+  confirmed: boolean;
+};
+
 export type PaperRecord = {
   id: string;
   ownerId?: string;
@@ -47,6 +58,7 @@ export type PaperRecord = {
   activeParagraph: number;
   paragraphs: Paragraph[];
   aiMemory?: AiMemory;
+  bibliography?: PaperBibliography;
 };
 
 export type CloudDeletion = {

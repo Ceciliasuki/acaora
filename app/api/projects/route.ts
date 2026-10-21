@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authError, privateNoStore, readRequestSession, supabaseRest } from "../auth/_shared";
+import {validateProjectEvidence} from '../../lib/project-evidence';
 
 const projectKinds = new Set(["course", "paper", "data", "writing", "group", "career"]);
 const projectStatuses = new Set(["active", "paused", "completed"]);
@@ -10,6 +11,8 @@ type ProjectPayload = {
   kind?: string;
   status?: string;
   metadata?: Record<string, unknown>;
+  expectedUpdatedAt?: string;
+  expectedOwnerId?: string;
 };
 
 function json(data: unknown, init?: ResponseInit) {
@@ -24,6 +27,7 @@ function validateProject(payload: ProjectPayload) {
   if (!projectKinds.has(kind)) return { error: "项目类型不受支持。" };
   if (!projectStatuses.has(status)) return { error: "项目状态不受支持。" };
   const metadata = payload.metadata && typeof payload.metadata === "object" ? payload.metadata : {};
+  if (metadata.evidence !== undefined && (!Array.isArray(metadata.evidence) || metadata.evidence.length > 200 || !metadata.evidence.every(validateProjectEvidence))) return {error:'论文来源记录格式不正确或超过 200 条。'};
   if (JSON.stringify(metadata).length > 120_000) return { error: "项目内容过长，请精简后重试。" };
   return { title, kind, status, metadata };
 }
@@ -47,7 +51,9 @@ export async function POST(request: NextRequest) {
   try {
     const session = await readRequestSession();
     if (!session) return json({ error: "请先登录后创建项目。" }, { status: 401 });
-    const validated = validateProject(await request.json() as ProjectPayload);
+    const payload = await request.json() as ProjectPayload;
+    if (payload.expectedOwnerId !== undefined && payload.expectedOwnerId !== session.user.id) return json({error:'账户已切换，请重新操作。'}, {status:409});
+    const validated = validateProject(payload);
     if ("error" in validated) return json({ error: validated.error }, { status: 400 });
     const response = await supabaseRest("learning_projects", session.accessToken, {
       method: "POST",
@@ -74,9 +80,14 @@ export async function PATCH(request: NextRequest) {
     if (!session) return json({ error: "请先登录后更新项目。" }, { status: 401 });
     const id = request.nextUrl.searchParams.get("id");
     if (!id) return json({ error: "缺少项目编号。" }, { status: 400 });
-    const validated = validateProject(await request.json() as ProjectPayload);
+    const payload = await request.json() as ProjectPayload;
+    if (payload.expectedOwnerId !== undefined && payload.expectedOwnerId !== session.user.id) return json({error:'账户已切换，请重新操作。'}, {status:409});
+    const expected = payload.expectedUpdatedAt;
+    if (expected !== undefined && (typeof expected !== 'string' || expected.length > 40 || !Number.isFinite(Date.parse(expected)))) return json({error:'项目版本格式不正确。'}, {status:400});
+    const validated = validateProject(payload);
     if ("error" in validated) return json({ error: validated.error }, { status: 400 });
-    const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}`, session.accessToken, {
+    const versionFilter = expected === undefined ? '' : `&updated_at=eq.${encodeURIComponent(expected)}`;
+    const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}${versionFilter}`, session.accessToken, {
       method: "PATCH",
       headers: { "Prefer": "return=representation" },
       body: JSON.stringify({
@@ -89,7 +100,7 @@ export async function PATCH(request: NextRequest) {
     });
     if (!response.ok) return json({ error: "保存项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
-    if (!rows[0]) return json({ error: "没有找到这个项目。" }, { status: 404 });
+    if (!rows[0]) return json({ error: expected ? '项目已有其他修改或已删除，请重新读取后再保存。' : '没有找到这个项目。' }, { status: expected ? 409 : 404 });
     return json({ project: rows[0] });
   } catch (error) {
     return authError(error);

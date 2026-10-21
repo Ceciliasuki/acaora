@@ -7,9 +7,10 @@ type Marker = {x: number; y: number; width: number; height: number; rootWidth: n
 const remembered = new Map<string, Marker>();
 
 /** The existing buttons own state and focus; this rail only explains selection. */
-export default function MotionNavigation({value, label, className, children, as: Tag = 'nav', role, rememberKey, onKeyDown}: {
+export default function MotionNavigation({value, label, className, children, as: Tag = 'nav', role, orientation, rememberKey, onKeyDown}: {
   value: string; label: string; className: string; children: ReactNode;
   as?: 'nav' | 'div'; role?: AriaRole; rememberKey?: string;
+  orientation?: 'horizontal' | 'vertical';
   onKeyDown?: KeyboardEventHandler<HTMLElement>;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -86,7 +87,7 @@ export default function MotionNavigation({value, label, className, children, as:
     update(true);
     return () => {observer.disconnect(); preference.removeEventListener("change", reduce);};
   }, [value, rememberKey]);
-  return <Tag ref={rootRef} className={`motion-navigation ${className}`} aria-label={label} role={role} onKeyDown={onKeyDown}
+  return <Tag ref={rootRef} className={`motion-navigation ${className}`} aria-label={label} role={role} aria-orientation={orientation} onKeyDown={onKeyDown}
     onPointerMove={event=>{if(event.pointerType !== 'mouse' || !(event.target instanceof Element)) return; const control=event.target.closest<HTMLElement>('button, a'); if(control && control !== hovered.current) moveHover(control);}}
     onPointerLeave={()=>{const active=document.activeElement; if(!(active instanceof HTMLElement) || !rootRef.current?.contains(active) || !active.matches(':focus-visible')) hideHover();}}
     onFocusCapture={event=>{if(event.target instanceof HTMLElement && event.target.matches('button:focus-visible, a:focus-visible')) moveHover(event.target);}}

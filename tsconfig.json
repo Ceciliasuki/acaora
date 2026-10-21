@@ -37,6 +37,7 @@
     "**/*.mts"
   ],
   "exclude": [
+    "work/**/static/**",
     "node_modules",
     "db",
     "drizzle",

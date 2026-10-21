@@ -46,6 +46,16 @@ export const sampleData: DataSet = {
   ],
 };
 
+export function uniqueColumnNames(names: string[]) {
+  const used = new Set<string>();
+  return names.map((name,index)=>{
+    const base=name.trim()||`变量${index+1}`;
+    let candidate=base,suffix=2;
+    while(used.has(candidate))candidate=`${base}_${suffix++}`;
+    used.add(candidate);return candidate;
+  });
+}
+
 export function parseCsv(text: string, name: string): DataSet {
   const records: string[][] = [];
   let row: string[] = [];
@@ -82,7 +92,7 @@ export function parseCsv(text: string, name: string): DataSet {
   }
 
   const width = records[0].length;
-  const headers = records[0].map((header, index) => header || `变量${index + 1}`);
+  const headers = uniqueColumnNames(records[0]);
   const rows = records.slice(1).map((record) =>
     Array.from({ length: width }, (_, index) => record[index] ?? ""),
   );
@@ -120,11 +130,11 @@ export function valuesFor(data: DataSet, header: string) {
 }
 
 function average(values: number[]) {
-  return values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1);
+  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : NaN;
 }
 
 function variance(values: number[]) {
-  if (values.length < 2) return 0;
+  if (values.length < 2) return NaN;
   const mean = average(values);
   return values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (values.length - 1);
 }
@@ -142,16 +152,17 @@ export function summarize(data: DataSet, header: string): NumericSummary {
     missing: data.rows.filter((row) => isMissing(row[column])).length,
     mean: average(values),
     sd: Math.sqrt(variance(values)),
-    min: values[0] ?? 0,
+    min: values[0] ?? NaN,
     median: median ?? 0,
-    max: values.at(-1) ?? 0,
+    max: values.at(-1) ?? NaN,
   };
 }
 
 export function histogram(data: DataSet, header: string, binCount = 9) {
   const values = valuesFor(data, header);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
+  if(!values.length)return [];
+  const min = values.reduce((a,b)=>Math.min(a,b),Infinity);
+  const max = values.reduce((a,b)=>Math.max(a,b),-Infinity);
   const width = (max - min) / binCount || 1;
   const bins = Array.from({ length: binCount }, (_, index) => ({
     from: min + index * width,
@@ -169,6 +180,7 @@ function pairedValues(data: DataSet, xHeader: string, yHeader: string) {
   const xIndex = data.headers.indexOf(xHeader);
   const yIndex = data.headers.indexOf(yHeader);
   return data.rows
+    .filter((row) => !isMissing(row[xIndex] ?? '') && !isMissing(row[yIndex] ?? ''))
     .map((row) => [Number(row[xIndex]), Number(row[yIndex])] as [number, number])
     .filter(([x, y]) => Number.isFinite(x) && Number.isFinite(y));
 }
@@ -182,9 +194,10 @@ export function regression(data: DataSet, xHeader: string, yHeader: string) {
   const ssX = xs.reduce((sum, value) => sum + (value - xMean) ** 2, 0);
   const ssY = ys.reduce((sum, value) => sum + (value - yMean) ** 2, 0);
   const cross = pairs.reduce((sum, [x, y]) => sum + (x - xMean) * (y - yMean), 0);
+  if(pairs.length<3||!Number.isFinite(ssX)||!Number.isFinite(ssY)||ssX<=0||ssY<=0)return null;
   const slope = cross / ssX;
   const intercept = yMean - slope * xMean;
-  const r = cross / Math.sqrt(ssX * ssY);
+  const r = Math.max(-1,Math.min(1,cross / Math.sqrt(ssX) / Math.sqrt(ssY)));
   const t = r * Math.sqrt((pairs.length - 2) / Math.max(1e-12, 1 - r ** 2));
   return {
     pairs,
@@ -198,7 +211,7 @@ export function regression(data: DataSet, xHeader: string, yHeader: string) {
   };
 }
 
-function logGamma(value: number): number {
+export function logGamma(value: number): number {
   const coefficients = [676.5203681218851, -1259.1392167224028, 771.3234287776531,
     -176.6150291621406, 12.507343278686905, -0.13857109526572012,
     9.984369578019572e-6, 1.5056327351493116e-7];
@@ -243,7 +256,7 @@ function betaFraction(a: number, b: number, x: number) {
   return h;
 }
 
-function regularizedBeta(x: number, a: number, b: number) {
+export function regularizedBeta(x: number, a: number, b: number) {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
   const front = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));
@@ -253,7 +266,8 @@ function regularizedBeta(x: number, a: number, b: number) {
 }
 
 export function studentTPValue(t: number, degreesOfFreedom: number) {
-  if (!Number.isFinite(t) || degreesOfFreedom <= 0) return 0;
+  if (typeof t !== 'number' || Number.isNaN(t) || !Number.isFinite(degreesOfFreedom) || degreesOfFreedom <= 0) return NaN;
+  if (!Number.isFinite(t)) return 0;
   const x = degreesOfFreedom / (degreesOfFreedom + t * t);
   return regularizedBeta(x, degreesOfFreedom / 2, 0.5);
 }
@@ -261,15 +275,16 @@ export function studentTPValue(t: number, degreesOfFreedom: number) {
 export function welchTest(data: DataSet, groupHeader: string, valueHeader: string) {
   const groupIndex = data.headers.indexOf(groupHeader);
   const valueIndex = data.headers.indexOf(valueHeader);
-  const groups = [...new Set(data.rows.map((row) => row[groupIndex]).filter((value) => !isMissing(value)))].slice(0, 2);
+  const groups = [...new Set(data.rows.map((row) => row[groupIndex]).filter((value) => !isMissing(value ?? '')))];
   if (groups.length !== 2) return null;
   const samples = groups.map((group) => data.rows
-    .filter((row) => row[groupIndex] === group && Number.isFinite(Number(row[valueIndex])))
+    .filter((row) => row[groupIndex] === group && !isMissing(row[valueIndex] ?? '') && Number.isFinite(Number(row[valueIndex])))
     .map((row) => Number(row[valueIndex])));
   if (samples.some((sample) => sample.length < 2)) return null;
   const means = samples.map(average);
   const variances = samples.map(variance);
   const standardErrorSquared = variances[0] / samples[0].length + variances[1] / samples[1].length;
+  if(!Number.isFinite(standardErrorSquared)||standardErrorSquared<=0)return null;
   const t = (means[0] - means[1]) / Math.sqrt(standardErrorSquared);
   const degreesOfFreedom = standardErrorSquared ** 2 / (
     (variances[0] / samples[0].length) ** 2 / (samples[0].length - 1)

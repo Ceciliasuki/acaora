@@ -2,7 +2,7 @@
 import SourcePreview from './source-preview';
 
 import {useEffect, useRef, useState} from 'react';
-import type {AnnotationDraft, PaperAnnotation, PaperRecord, TextAnchor} from './paper-types';
+import type {AnnotationDraft, PaperAnnotation, PaperRecord, Paragraph, TextAnchor} from './paper-types';
 import {validAnnotations} from './paper-annotations.mjs';
 import styles from './annotation-filters.module.css';
 import {annotationKey, annotationMarkdown} from './annotation-collection';
@@ -21,7 +21,7 @@ export function AnnotationEditor({draft,onSave,onCancel}: {draft:AnnotationDraft
  </form>;
 }
 
-export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,onCompare}: {paper:PaperRecord;onEdit:(paragraphId:string,annotation:PaperAnnotation)=>void;onDelete:(paragraphId:string,id:string)=>void;onJump:(index:number)=>void;onCreate:(anchors:TextAnchor[],highlightOnly:boolean)=>void;onCompare?:(index:number)=>void}) {
+export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,onCompare,onAddToProject}: {paper:PaperRecord;onEdit:(paragraphId:string,annotation:PaperAnnotation)=>void;onDelete:(paragraphId:string,id:string)=>void;onJump:(index:number)=>void;onCreate:(anchors:TextAnchor[],highlightOnly:boolean)=>void;onCompare?:(index:number)=>void;onAddToProject?:(paragraph:Paragraph,annotation:PaperAnnotation)=>void}) {
  const [query,setQuery]=useState('');
  const [color,setColor]=useState('all');
  const [commentsOnly,setCommentsOnly]=useState(false);
@@ -62,7 +62,7 @@ export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,o
    <label className={styles.pick}><input type="checkbox" aria-label={`选择 P${index+1} 的批注：${annotation.quote.slice(0,40)}`} checked={selected.has(annotationKey(paragraph.id,annotation.id))} onChange={()=>choose(annotationKey(paragraph.id,annotation.id))}/>加入摘录集</label>
    <SourcePreview paper={paper} index={index} onNavigate={onJump} onCompare={onCompare}/><button className="annotation-location" type="button" onClick={()=>onJump(index)}>P{index+1} · 第 {paragraph.page} 页</button>
    <blockquote>{annotation.quote}</blockquote>{annotation.comment&&<p>{annotation.comment}</p>}
-   <div><button type="button" onClick={()=>onEdit(paragraph.id,annotation)}>编辑批注</button><button type="button" aria-label={`删除批注：${annotation.quote.slice(0,40)}`} onClick={()=>onDelete(paragraph.id,annotation.id)}>删除</button></div>
+   <div><button type="button" onClick={()=>onEdit(paragraph.id,annotation)}>编辑批注</button>{onAddToProject&&<button type="button" onClick={()=>onAddToProject(paragraph,annotation)}>加入项目</button>}<button type="button" aria-label={`删除批注：${annotation.quote.slice(0,40)}`} onClick={()=>onDelete(paragraph.id,annotation.id)}>删除</button></div>
   </article>)}
  </section>;
 }

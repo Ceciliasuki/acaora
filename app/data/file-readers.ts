@@ -1,5 +1,5 @@
 import type { DataSet } from "../stats";
-import { parseCsv } from "../stats";
+import { parseCsv, uniqueColumnNames } from "../stats";
 
 export const acceptedDataFormats = [
   ".csv", ".tsv", ".txt",
@@ -31,12 +31,7 @@ function matrixToDataSet(matrix: unknown[][], name: string): DataSet {
 
   const width = Math.max(...normalized.map((row) => row.length));
   const rawHeaders = Array.from({ length: width }, (_, index) => normalized[0][index]?.trim() || `变量${index + 1}`);
-  const seen = new Map<string, number>();
-  const headers = rawHeaders.map((header) => {
-    const count = seen.get(header) ?? 0;
-    seen.set(header, count + 1);
-    return count ? `${header}_${count + 1}` : header;
-  });
+  const headers = uniqueColumnNames(rawHeaders);
   const rows = normalized.slice(1).map((row) => headers.map((_, index) => row[index] ?? ""));
   return { name, headers, rows };
 }
@@ -69,7 +64,7 @@ async function readStatFile(file: File): Promise<DataSet> {
   const result = readData(format as "dta" | "sav" | "por" | "sas7bdat" | "xport", bytes);
   return {
     name: file.name,
-    headers: result.variables.map((variable, index) => variable.name || variable.label || `变量${index + 1}`),
+    headers: uniqueColumnNames(result.variables.map((variable, index) => variable.name || variable.label || `变量${index + 1}`)),
     rows: result.rows.map((row) => result.variables.map((variable) => stringifyCell(row[variable.index]))),
   };
 }

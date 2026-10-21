@@ -1,9 +1,18 @@
 "use client";
 
-import { ChangeEvent, DragEvent, useMemo, useRef, useState } from "react";
-import { ArrowUpFromLine, HardDrive, RotateCcw } from "lucide-react";
+import { ChangeEvent, DragEvent, MouseEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowUpFromLine, ChevronDown, HardDrive, RotateCcw } from "lucide-react";
 import ResultTools, {type AnalysisResult} from './result-tools';
+import AnalysisRecipeTools from './analysis-recipe-tools';
+import DataWorkbench from './data-workbench';
+import {ResearchProvider} from './research-context';
+import type {WorkflowResult,VariableEntry} from './data-workflow';
+import {authChangeEvent} from '../lib/auth-client';
+import {AnalysisHistory} from './research-history';
+import DataExplorer from './data-explorer';
+import dynamic from 'next/dynamic';
 import AppSidebar from "../components/app-sidebar";
+import ui from './data-studio.module.css';
 import craft from '../operational-craft.module.css';
 import SectionNavigation from '../components/section-navigation';
 import {navigateTabs} from '../components/tab-keyboard';
@@ -24,13 +33,20 @@ import {
   welchTest,
 } from "../stats";
 
-const stages = [['import','导入数据'],['quality','变量检查'],['analysis','分析结果'],['preview','原始数据']] as const;
+const stages = [['import','导入数据'],['analysis','分析结果'],['data-workbench','数据处理'],['quality','变量检查'],['history','分析历史'],['preview','处理表预览']] as const;
 
-type AnalysisTab = "describe" | "relation" | "test";
+type AnalysisTab = "describe" | "relation" | "test" | 'multiple' | 'advanced';
+const MultipleRegressionPanel=dynamic(()=>import('./multiple-regression-panel'),{loading:()=> <p role="status">正在载入回归工作台…</p>});
+const AdvancedPanel=dynamic(()=>import('./advanced-panel'),{loading:()=> <p role="status">正在载入进阶方法…</p>});
+
+function freshWorkflow(data:DataSet):WorkflowResult{return {data,sourceRows:data.rows.map((_,i)=>i+1),records:[],fittedColumns:[],fittedSelection:false};}
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const readLock = useRef(false);
+  const readLock = useRef(false), readEpoch=useRef(0);
+  const [sourceData,setSourceData]=useState<DataSet>(sampleData),[sourceKey,setSourceKey]=useState(0);
+  const [workflow,setWorkflow]=useState<WorkflowResult>(()=>freshWorkflow(sampleData)),[dictionary,setDictionary]=useState<VariableEntry[]>([]);
+
   const [showAllVariables, setShowAllVariables] = useState(false);
   const [fileStatus, setFileStatus] = useState("");
   const [datasetKey, setDatasetKey] = useState(0);
@@ -40,10 +56,23 @@ export default function Home() {
   const [reading, setReading] = useState(false);
   const [isSample, setIsSample] = useState(true);
   const [tab, setTab] = useState<AnalysisTab>("describe");
+  const [verticalMethods, setVerticalMethods] = useState(false);
   const [xVariable, setXVariable] = useState("睡眠时长");
   const [yVariable, setYVariable] = useState("统计学成绩");
   const [groupVariable, setGroupVariable] = useState("性别");
   const [testVariable, setTestVariable] = useState("统计学成绩");
+
+  useEffect(()=>{const media=matchMedia('(min-width:1181px)'),update=()=>setVerticalMethods(media.matches);update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
+
+  function navigateMethods(event:KeyboardEvent<HTMLElement>){
+    if(verticalMethods&&(event.key==='ArrowDown'||event.key==='ArrowUp')){
+      const methods=Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button[role="tab"]'));
+      const index=methods.findIndex(method=>method===event.target);if(index<0)return;
+      event.preventDefault();const next=methods[(index+(event.key==='ArrowDown'?1:-1)+methods.length)%methods.length];next.focus();next.click();
+    }else navigateTabs(event);
+  }
+
+  useEffect(()=>{const clear=()=>{readEpoch.current++;readLock.current=false;setReading(false);setSourceData(sampleData);setData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setSourceKey(k=>k+1);setDatasetKey(k=>k+1);setIsSample(true);setFileStatus('登录状态已变化，已清除当前数据与分析，请重新导入。');};window.addEventListener(authChangeEvent,clear);return()=>window.removeEventListener(authChangeEvent,clear);},[]);
 
   const numeric = useMemo(() => numericColumns(data), [data]);
   const categorical = useMemo(() => categoricalColumns(data), [data]);
@@ -83,15 +112,17 @@ export default function Home() {
       setError("文件超过 20 MB。请先抽样或拆分后再导入，以免浏览器失去响应。");
       return;
     }
+    const epoch=readEpoch.current;
     readLock.current = true;
     setReading(true);
     setFileStatus(`正在读取 ${file.name}…`);
     try {
       const parsed = await readDataFile(file);
+      if(epoch!==readEpoch.current)return;
       const parsedNumeric = numericColumns(parsed);
       const parsedCategorical = categoricalColumns(parsed);
       if (!parsed.headers.length || !parsed.rows.length) throw new Error("文件中没有可分析的数据行。");
-      setData(parsed);
+      setData(parsed);setSourceData(parsed);setWorkflow(freshWorkflow(parsed));setDictionary([]);setSourceKey(k=>k+1);
       setDatasetKey(key => key + 1);
       setShowAllVariables(false);
       setFileStatus(`已读取 ${file.name}：${parsed.rows.length} 行，${parsed.headers.length} 列。本次分析有效，刷新后需重新选择原文件。`);
@@ -102,11 +133,11 @@ export default function Home() {
       setGroupVariable(parsedCategorical[0] ?? "");
       setError("");
     } catch (cause) {
+      if(epoch!==readEpoch.current)return;
       setFileStatus("");
       setError(cause instanceof Error ? cause.message : "文件读取失败，请检查格式。" );
     } finally {
-      readLock.current = false;
-      setReading(false);
+      if(epoch===readEpoch.current){readLock.current = false;setReading(false);}
     }
   }
 
@@ -125,7 +156,7 @@ export default function Home() {
     if (readLock.current) return;
     setFileStatus("已恢复示例数据。");
     setShowAllVariables(false);
-    setData(sampleData);
+    setData(sampleData);setSourceData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setSourceKey(k=>k+1);
     setDatasetKey(key => key + 1);
     setIsSample(true);
     setXVariable("睡眠时长");
@@ -135,17 +166,26 @@ export default function Home() {
     setError("");
   }
 
+  function revealSection(event:MouseEvent<HTMLDivElement>){
+    const link=(event.target as Element).closest<HTMLAnchorElement>('.data-stage-nav a');
+    if(!link)return;const section=document.getElementById(link.hash.slice(1)),disclosure=section?.querySelector<HTMLDetailsElement>(':scope > details');
+    if(disclosure&&!disclosure.open){disclosure.open=true;requestAnimationFrame(()=>section?.scrollIntoView({block:'start'}));}
+  }
+
   return (
-    <main className={`student-app data-app workspace-refresh ${craft.craft}`}>
+    <ResearchProvider data={data} source={sourceData} workflow={workflow} dictionary={dictionary}><main className={`student-app data-app workspace-refresh ${craft.craft} ${ui.studio}`}>
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
       <section className="workspace data-main data-shell" id="workspace">
-        <PageHeader className="workspace-header" title="数据分析" description="在当前设备读取文件，从样本检查开始分析。" actions={<>{isSample && <Badge tone="warning">示例数据</Badge>}<button className="sample-button" type="button" onClick={restoreSample} disabled={reading || isSample}><RotateCcw size={17} aria-hidden="true" />恢复示例数据</button></>} />
+        <PageHeader className="workspace-header" title="数据分析" description="在当前设备读取文件，从样本检查开始分析。" actions={isSample && <Badge tone="warning">示例数据</Badge>} />
 
-        <div className="page-body page-body--wide">
+        <div className={`page-body page-body--wide ${ui.body}`} onClickCapture={revealSection}>
 
         <SectionNavigation sections={stages} className="data-stage-nav" label="数据分析分区" />
-        <section className="hero-grid" id="import">
+        <section className={ui.dataset} id="import" aria-label="当前数据集">
+          <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'示例数据':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
+          {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}{error && <p className="error-message" role="alert">{error}</p>}
+          <div className={ui.importOptions}><details className={ui.importDetails}><summary>文件格式与导入说明<ChevronDown size={16} aria-hidden="true"/></summary>
           <div className="upload-panel">
             <div className="panel-heading">
               <div><h2>导入数据</h2></div>
@@ -165,8 +205,6 @@ export default function Home() {
               <small>CSV · Excel · Stata · SPSS · SAS · R 数据文件</small>
             </button>
             <input ref={inputRef} className="sr-only" type="file" accept={acceptedDataFormats} aria-label="选择数据文件" disabled={reading} onChange={onFileChange} />
-            {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}
-            {error && <p className="error-message" role="alert">{error}</p>}
             <div className="format-support" role="group" aria-label="支持的数据格式">
               <span>Excel <small>.xlsx .xls .ods</small></span>
               <span>Stata <small>.dta</small></span>
@@ -180,59 +218,27 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="overview-panel">
-            <div className="panel-heading compact">
-              <div><h2>样本概况</h2></div>
-
-            </div>
-            <div className="metric-grid">
-              <article><span>观测数</span><strong>{data.rows.length}</strong></article>
-              <article><span>变量数</span><strong>{data.headers.length}</strong></article>
-              <article className={missingCount ? "has-warning" : ""}><span>缺失值</span><strong>{missingCount}</strong><small>{(100 - completeness).toFixed(2)}%</small></article>
-            </div>
-            <div className="type-breakdown">
-              <div><span>数值变量</span><strong>{numeric.length}</strong></div>
-              <div><span>分类变量</span><strong>{Math.max(0, data.headers.length - numeric.length)}</strong></div>
-            </div>
-
-          </div>
-        </section>
-
-        <section className="quality-panel" id="quality">
-          <div className="panel-heading compact">
-            <div><h2>变量检查</h2></div>
-            <span className="quality-score">完整度 {completeness.toFixed(1)}%</span>
-          </div>
-          <div className="variable-strip" id="data-variables">
-            {(showAllVariables ? data.headers : data.headers.slice(0, 8)).map((header, column) => {
-              const missing = data.rows.filter((row) => isMissing(row[column])).length;
-              const isNumeric = numeric.includes(header);
-              return (
-                <article className="variable-card" key={`${header}-${column}`}>
-                  <div><span className={isNumeric ? "type-number" : "type-text"}>{isNumeric ? "123" : "ABC"}</span><strong>{header}</strong></div>
-                  <small>{isNumeric ? "数值型" : "分类型"} · 缺失 {missing}</small>
-                  <i><b style={{ width: `${100 - (missing / Math.max(1, data.rows.length)) * 100}%` }} /></i>
-                </article>
-              );
-            })}
-          </div>
-          {data.headers.length > 8 && <button type="button" className="data-variable-disclosure" aria-controls="data-variables" aria-expanded={showAllVariables} onClick={() => setShowAllVariables(value => !value)}>{showAllVariables ? "收起变量" : `查看全部 ${data.headers.length} 个变量`}</button>}
+          </details><button className={ui.restoreSample} type="button" onClick={restoreSample} disabled={reading || isSample}><RotateCcw size={14} aria-hidden="true"/>恢复示例数据</button></div>
         </section>
 
         <section className="analysis-panel" id="analysis">
           <div className="analysis-header">
             <div><h2>分析方法</h2></div>
-            <MotionNavigation as="div" className="analysis-tabs" role="tablist" label="分析方法" value={tab} onKeyDown={navigateTabs}>
+            <MotionNavigation as="div" className="analysis-tabs" role="tablist" orientation={verticalMethods?'vertical':'horizontal'} label="分析方法" value={tab} onKeyDown={navigateMethods}>
               <button role="tab" id="analysis-tab-describe" aria-controls="analysis-result" tabIndex={tab === "describe" ? 0 : -1} aria-selected={tab === "describe"} className={tab === "describe" ? "active" : ""} onClick={() => setTab("describe")} type="button">描述统计</button>
               <button role="tab" id="analysis-tab-relation" aria-controls="analysis-result" tabIndex={tab === "relation" ? 0 : -1} aria-selected={tab === "relation"} className={tab === "relation" ? "active" : ""} onClick={() => setTab("relation")} type="button">相关与回归</button>
               <button role="tab" id="analysis-tab-test" aria-controls="analysis-result" tabIndex={tab === "test" ? 0 : -1} aria-selected={tab === "test"} className={tab === "test" ? "active" : ""} onClick={() => setTab("test")} type="button">独立样本 t 检验</button>
+              <button role="tab" id="analysis-tab-multiple" aria-controls="analysis-result" tabIndex={tab==='multiple'?0:-1} aria-selected={tab==='multiple'} className={tab==='multiple'?'active':''} onClick={()=>setTab('multiple')} type="button">多元回归</button>
+              <button role="tab" id="analysis-tab-advanced" aria-controls="analysis-result" tabIndex={tab==='advanced'?0:-1} aria-selected={tab==='advanced'} className={tab==='advanced'?'active':''} onClick={()=>setTab('advanced')} type="button">进阶方法</button>
             </MotionNavigation>
           </div>
 
-          <ResultTools key={datasetKey} result={result} />
+          <div className={ui.analysisCanvas}>
+          {tab!=='multiple'&&tab!=='advanced'&&<AnalysisRecipeTools key={`recipe-${datasetKey}`} datasetKey={String(datasetKey)} data={data} config={{method:tab,x:activeX,y:activeY,group:activeGroup,value:activeTest}} onApply={config=>{setXVariable(config.x);setYVariable(config.y);setGroupVariable(config.group);setTestVariable(config.value);setTab(config.method);}}/>}
+
           <div className="analysis-content" key={tab} id="analysis-result" role="tabpanel" aria-labelledby={`analysis-tab-${tab}`} tabIndex={0}>{numeric.length === 0 ? (
             <div className="empty-state"><strong>没有检测到数值变量</strong><p>请确认数值列中没有混入大量文字或特殊符号。</p></div>
-          ) : tab === "describe" ? (
+          ) : tab==='advanced'?<AdvancedPanel key={`advanced-${datasetKey}`} data={data} isSample={isSample}/>:tab==='multiple'?<MultipleRegressionPanel key={`model-${datasetKey}`} data={data} isSample={isSample}/>:tab === "describe" ? (
             <div className="analysis-grid">
               <div className="chart-card">
                 <div className="chart-toolbar">
@@ -243,7 +249,7 @@ export default function Home() {
                   {distribution.map((bin, index) => (
                     <div className="histogram-column" key={index}>
                       <span>{bin.count || ""}</span>
-                      <i style={{ height: `${(bin.count / maxBin) * 100}%` }} />
+                      <i style={{ height: `calc(${(bin.count / maxBin) * 100}% - ${(bin.count / maxBin) * 22}px)` }} />
                     </div>
                   ))}
                 </div>
@@ -307,7 +313,7 @@ export default function Home() {
                     <div><dt>t 统计量</dt><dd>{formatNumber(model.t, 3)}</dd></div>
                   </dl>
                   <div className="plain-conclusion"><span>结果解释</span><p>{Math.abs(model.r) >= 0.7 ? "两变量呈较强" : Math.abs(model.r) >= 0.4 ? "两变量呈中等" : "两变量呈较弱"}{model.r >= 0 ? "正" : "负"}相关；在 α = 0.05 水平下{model.p < 0.05 ? "具有统计学意义" : "未达到统计学意义"}。</p></div>
-                </> : <p>请选择两个不同的数值变量。</p>}
+                </> : <p role="status">请选择两个不同且有变动的数值变量；相关与回归至少需要 3 对完整观测。</p>}
               </div>
             </div>
           ) : (
@@ -328,22 +334,48 @@ export default function Home() {
                   <div className="test-stat-line"><span>t({formatNumber(test.degreesOfFreedom, 1)}) = {formatNumber(test.t, 3)}</span><strong>p {formatP(test.p)}</strong></div>
                   <dl className="stats-list compact-list"><div><dt>Cohen&apos;s d</dt><dd>{formatNumber(test.effect, 3)}</dd></div><div><dt>显著性水平</dt><dd>α = 0.05</dd></div></dl>
                   <div className="plain-conclusion"><span>统计结论</span><p>两组的 {activeTest} 均值差异{test.p < 0.05 ? "具有统计学意义" : "未达到统计学意义"}（p {formatP(test.p)}）。</p></div>
-                </> : <div className="empty-state"><strong>暂时无法执行检验</strong><p>分组变量需要恰好包含两个有效组，每组至少有两个观测。</p></div>}
+                </> : <div className="empty-state"><strong>暂时无法执行检验</strong><p>分组变量需要恰好包含两个有效组，每组至少有两个有效数值观测，且至少一组存在变动。</p></div>}
               </div>
             </div>
           )}</div>
+          {tab!=='multiple'&&tab!=='advanced'&&<ResultTools key={datasetKey} analysis={{kind:'basic',config:{method:tab,x:activeX,y:activeY,group:activeGroup,value:activeTest}}} result={result} />}
+          </div>
         </section>
+        <DataWorkbench key={sourceKey} onApply={w=>{setData(w.data);setWorkflow(w);setDatasetKey(k=>k+1);}} onDictionary={setDictionary}/>
+        <section className="quality-panel" id="quality"><details className={ui.disclosure}>
+          <summary className="panel-heading compact">
+            <div><h2>变量检查</h2></div>
+            <span className="quality-score">完整度 {completeness.toFixed(1)}%</span><ChevronDown size={17} aria-hidden="true"/>
+          </summary>
+          <div className="variable-strip" id="data-variables">
+            {(showAllVariables ? data.headers : data.headers.slice(0, 8)).map((header, column) => {
+              const missing = data.rows.filter((row) => isMissing(row[column])).length;
+              const isNumeric = numeric.includes(header);
+              return (
+                <article className="variable-card" key={`${header}-${column}`}>
+                  <div><span className={isNumeric ? "type-number" : "type-text"}>{isNumeric ? "123" : "ABC"}</span><strong>{header}</strong></div>
+                  <small>{isNumeric ? "数值型" : "分类型"} · 缺失 {missing}</small>
+                  <i><b style={{ width: `${100 - (missing / Math.max(1, data.rows.length)) * 100}%` }} /></i>
+                </article>
+              );
+            })}
+          </div>
+          {data.headers.length > 8 && <button type="button" className="data-variable-disclosure" aria-controls="data-variables" aria-expanded={showAllVariables} onClick={() => setShowAllVariables(value => !value)}>{showAllVariables ? "收起变量" : `查看全部 ${data.headers.length} 个变量`}</button>}
+        </details></section>
+
+        <div className={ui.exploration}><DataExplorer key={`explorer-${datasetKey}`} data={data} onSelectPair={(x,y)=>{setXVariable(x);setYVariable(y);setTab('relation');requestAnimationFrame(()=>document.getElementById('analysis-tab-relation')?.focus());}}/></div>
+        <section id="history" className={ui.historySection}><AnalysisHistory/></section>
 
         <section className="data-preview" id="preview">
           <div className="panel-heading compact">
-            <div><h2>{data.name}</h2></div>
+            <div><h2>当前处理表 · {data.name}</h2></div>
             <div className="status-copy"><span /> 显示前 {Math.min(8, data.rows.length)} 行</div>
           </div>
-          <div className="table-wrap preview-table" role="region" aria-label="原始数据预览，可横向滚动">
+          <div className="table-wrap preview-table" role="region" aria-label="当前处理表预览，可横向滚动">
             <button
               type="button"
               className="sr-only"
-              aria-label="使用左右方向键横向滚动原始数据预览"
+              aria-label="使用左右方向键横向滚动当前处理表预览"
               onKeyDown={(event) => {
                 if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
                 event.preventDefault();
@@ -361,7 +393,7 @@ export default function Home() {
         </div>
 
       </section>
-    </main>
+    </main></ResearchProvider>
   );
 }
 

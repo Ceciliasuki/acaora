@@ -45,6 +45,21 @@ export async function savePaper(paper: PaperRecord) {
   });
 }
 
+// Restore all copies and their sync operations in one transaction; no partial import.
+export async function restorePaperBatch(papers: PaperRecord[], isCurrent: () => boolean) {
+  const database = await openDatabase();
+  return new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction([storeName, syncStoreName], 'readwrite');
+    if (!isCurrent()) { transaction.abort(); database.close(); reject(new Error('账户已切换，恢复已取消。')); return; }
+    for (const paper of papers) {
+      transaction.objectStore(storeName).add(paper);
+      if (paper.ownerId) transaction.objectStore(syncStoreName).add({id:paper.id,ownerId:paper.ownerId,type:'upsert',updatedAt:paper.updatedAt,paper,attempts:0,nextAttemptAt:0} satisfies PaperSyncOperation);
+    }
+    transaction.oncomplete = () => {database.close(); resolve();};
+    transaction.onerror = transaction.onabort = () => {database.close(); reject(transaction.error ?? new Error('恢复已取消。'));};
+  });
+}
+
 export async function deletePaper(id: string) {
   const database = await openDatabase();
   return new Promise<void>((resolve, reject) => {

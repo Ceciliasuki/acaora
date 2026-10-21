@@ -6,6 +6,7 @@ import "./workspace-refresh.css";
 import "./hover-navigation.css";
 import "./workspace-motion.css";
 import "./paper-reading.css";
+import './research-workflows.css';
 import LightCurtain from "./components/light-curtain";
 
 const title = "Acaora 学曦 · 大学生智能学习与研究平台";

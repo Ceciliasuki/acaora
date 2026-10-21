@@ -1,0 +1,24 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {Button} from '../components/ui';
+import {useResearchContext} from './research-context';
+import type {ResearchAnalysis} from './research-history';
+import type {AnalysisResult} from './result-tools';
+import {zipFiles} from './reproduction-pack';
+import {downloadRegressionFile} from './regression-recipe-tools';
+import {ADVANCED_ENGINE} from './advanced-config';
+import styles from './multiple-regression.module.css';
+export default function ReproductionTools({analysis,result}:{analysis:ResearchAnalysis;result:AnalysisResult}){
+  const ctx=useResearchContext(),[include,setInclude]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),mounted=useRef(true),lock=useRef(false);
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+  async function download(){if(!ctx||lock.current)return;lock.current=true;setBusy(true);setError('');try{
+    if(!ctx.dataFingerprint||!ctx.sourceFingerprint)throw new Error('数据指纹尚未生成。');
+    const raw=JSON.stringify({headers:ctx.data.headers,rows:ctx.data.rows});if(include&&new TextEncoder().encode(raw).length>25000000)throw new Error('附带数据超过 25 MB，请单独导出数据文件。');
+    const responses=await Promise.all([fetch('/repro/analysis.py'),fetch('/repro/analysis.R')]);if(responses.some(r=>!r.ok))throw new Error('复现脚本载入失败，请重试。');const [python,r]=await Promise.all(responses.map(r=>r.text()));
+    const manifest={format:'acaora-reproduction-pack',version:1,engine:ADVANCED_ENGINE,createdAt:new Date().toISOString(),analysis,dataset:{fingerprint:ctx.dataFingerprint,sourceFingerprint:ctx.sourceFingerprint,rows:ctx.data.rows.length,headers:ctx.data.headers},workflow:ctx.workflow.records,dictionary:ctx.dictionary,summary:result};
+    const readme=`Acaora 分析复现包\n\n本包重算当前处理表上的分析，未自动重放原始文件的处理步骤。manifest.json 保存原表/处理表 SHA-256、实际设置、处理参数和变量来源。分析结果含数值运算差异，PCA 重根的方向可能不同。\n\n数据：${include?'已附带 analysis-data.json（包含所有当前数据行）。':'未附带数据。请在原页面点击“导出复现数据 JSON”，放到本目录并保持文件名 analysis-data.json。'}脚本按完整文件字节校验 SHA-256，修改空格或换行也会拒绝。此 JSON 使用原始字符串，保留缺失标记和数值精度。\n\nPython 3.12+：python -m venv .venv；激活环境后 python -m pip install -r requirements.txt；python analysis.py\nR 4.4+：先运行 install.packages(c("jsonlite","digest"))；在本文件夹运行 Rscript analysis.R\n\n输出：python-results.json / r-results.json，逐项摘要、系数、预测或重抽样结果；各自记录依赖版本。两种脚本使用相同 LCG 分折/抽样。配置文件不能作为可执行代码，脚本不联网、不上传数据。\n\n分类预测的预处理仅在训练折拟合；不要在原表预先按全样本填补或筛选变量。Bootstrap 百分位区间不是 BCa。正式推断应核对研究设计与模型假设。\n`;
+    const bytes=zipFiles([{name:'analysis.py',content:python},{name:'analysis.R',content:r},{name:'manifest.json',content:JSON.stringify(manifest,null,2)},{name:'requirements.txt',content:'numpy==2.5.4\nscipy==1.18.1\nstatsmodels==0.15.0\npandas==3.0.6\n'},{name:'README.txt',content:readme},...(include?[{name:'analysis-data.json',content:raw}]:[])]);
+    if(!mounted.current)return;const url=URL.createObjectURL(new Blob([bytes as BlobPart],{type:'application/zip'})),link=document.createElement('a');link.href=url;link.download='acaora-reproduction.zip';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(e){if(mounted.current)setError(e instanceof Error?e.message:'无法生成复现包。');}finally{lock.current=false;if(mounted.current)setBusy(false);}}
+  return <div><h4>Python / R 可运行复现包</h4><p className={styles.help}>包含两种脚本、实际配置、依赖清单和运行说明，校验处理表 SHA-256 后重算；处理步骤与来源记录用于审阅。默认不附带数据。</p><label className={styles.check}><input type="checkbox" checked={include} onChange={e=>setInclude(e.target.checked)}/>附带当前处理表（含全部数据行）</label><div className={styles.actions}><Button variant="secondary" size="sm" disabled={busy||!ctx?.dataFingerprint} onClick={()=>void download()}>{busy?'正在生成…':'下载 Python / R 复现包 ZIP'}</Button><Button variant="ghost" size="sm" disabled={!ctx?.dataFingerprint} onClick={()=>{if(ctx)downloadRegressionFile(JSON.stringify({headers:ctx.data.headers,rows:ctx.data.rows}),'analysis-data.json','application/json');}}>导出复现数据 JSON</Button></div>{error&&<p role="alert">{error}</p>}</div>;
+}

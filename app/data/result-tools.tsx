@@ -1,6 +1,7 @@
 "use client";
 import {useRef, useState} from 'react';
 import {Copy, Pin, X} from 'lucide-react';
+import {ResearchResultActions,type ResearchAnalysis} from './research-history';
 import {Button} from '../components/ui';
 
 export type AnalysisResult = {source:string; sample:boolean; method:string; context:string; metrics:Array<readonly [string,string]>};
@@ -9,7 +10,7 @@ function resultText(result:AnalysisResult) {
 }
 
 /** One session-only comparison, scoped by the dataset key supplied by the page. */
-export default function ResultTools({result}:{result:AnalysisResult|null}) {
+export default function ResultTools({result,analysis}:{result:AnalysisResult|null;analysis?:ResearchAnalysis}) {
   const [pinned,setPinned]=useState<AnalysisResult|null>(null);
   const [copyState,setCopyState]=useState<{text:string;state:'copied'|'error'}|null>(null);
   const [copying,setCopying]=useState(false);
@@ -32,6 +33,7 @@ export default function ResultTools({result}:{result:AnalysisResult|null}) {
       {feedback==='copied' && <span role="status">已复制，包含数据来源与分析条件</span>}
     </div>
     {feedback==='error' && <div className="data-copy-fallback"><p role="alert">浏览器未允许自动复制。可选中下面的结果手动复制。</p><textarea aria-label="可手动复制的分析结果" readOnly value={text} onFocus={event=>event.currentTarget.select()}/></div>}
+    {result&&analysis&&<ResearchResultActions result={result} analysis={analysis}/>}
     {pinned && <details className="data-result-comparison"><summary>查看固定结果对照</summary>
       <header><h3>结果对照</h3></header>
       <p>{pinned.source}{pinned.sample?' · 示例数据':''} · 本次页面有效，重新导入数据后清除</p>
