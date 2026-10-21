@@ -13,6 +13,8 @@ export type ReaderNavigation = {getPosition: () => ReadingAnchor; restorePositio
 type Props = {
   navigationRef?: Ref<ReaderNavigation>;
   onNavigate?: (index: number) => void;
+  onBack?: () => void;
+  onForward?: () => void;
   noteIndex?: number;
   header?: ReactNode;
   tools?: ReactNode;
@@ -27,7 +29,7 @@ type Props = {
   onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 };
 
-export default memo(function ContinuousReader({navigationRef, onNavigate, noteIndex, header, tools, paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
+export default memo(function ContinuousReader({navigationRef, onNavigate, onBack, onForward, noteIndex, header, tools, paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const navigatorRef = useRef<NavigatorHandle>(null);
   const [find, setFind] = useState<FindOptions>({query: '', caseSensitive: false});
@@ -195,8 +197,17 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, noteIn
   }, [activeIndex, mode]);
 
   // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex, jsx-a11y/no-noninteractive-element-interactions -- The named reader supports keyboard scrolling and paragraph selection without pretending to be a different widget.
-  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M Control+f Meta+f"
+  return <div className="plab-reader-scroll" ref={rootRef} role="region" aria-label="论文正文" tabIndex={0} aria-keyshortcuts="ArrowUp ArrowDown Home End Alt+A Alt+M Control+f Meta+f Control+Alt+g Meta+Alt+g Alt+ArrowLeft Alt+ArrowRight"
     onKeyDown={event => {
+      if (event.defaultPrevented || event.nativeEvent.isComposing || document.querySelector('dialog[open]')) return;
+      const editing = (event.target as HTMLElement).closest('input, textarea, select, [contenteditable="true"]');
+      if (!editing && !event.shiftKey && event.altKey && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'g') {
+        event.preventDefault(); navigatorRef.current?.openLocation(); return;
+      }
+      if (!editing && !event.shiftKey && event.altKey && !event.ctrlKey && !event.metaKey) {
+        const move = event.key === 'ArrowLeft' ? onBack : event.key === 'ArrowRight' ? onForward : undefined;
+        if (move) {event.preventDefault(); move(); return;}
+      }
       if ((event.ctrlKey || event.metaKey) && !event.altKey && event.key.toLowerCase() === 'f' && !document.querySelector('dialog[open]')) {
         event.preventDefault(); navigatorRef.current?.openFind(); return;
       }

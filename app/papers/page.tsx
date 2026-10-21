@@ -3,7 +3,7 @@
 import craft from "./reading-craft.module.css";
 import PaperTitle from './paper-title';
 import usePaperMotion from './use-paper-motion';
-import {ArrowLeft, Bookmark, BookOpen, Check, Columns2, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
+import {ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, Columns2, History, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
 import dynamic from 'next/dynamic';
 import SourcePreview from './source-preview';
 
@@ -52,7 +52,7 @@ export default function PaperLab() {
   const translatorRef = useRef<TranslatorSession | null>(null);
   const [paper, setPaper] = useState<PaperRecord>(samplePaper);
   const navigationRef = useRef<ReaderNavigation>(null);
-  const [trail, setTrail] = useState<{key: string; entries: TrailEntry[]}>({key: '', entries: []});
+  const [trail, setTrail] = useState<{key: string; entries: TrailEntry[]; forward: TrailEntry[]}>({key: '', entries: [], forward: []});
   const [visited, setVisited] = useState({ai: false, search: false});
   const [lockedNote, setLockedNote] = useState<{key: string; id: string; pinned?: boolean} | null>(null);
   const [reference, setReference] = useState<{key: string; index: number} | null>(null);
@@ -141,6 +141,7 @@ export default function PaperLab() {
   const noteIndex = lockedNote?.key === paperKey ? Math.max(0, paper.paragraphs.findIndex(paragraph => paragraph.id === lockedNote.id)) : activeIndex;
   const noteParagraph = paper.paragraphs[noteIndex];
   const trailEntries = trail.key === paperKey ? trail.entries : [];
+  const forwardEntries = trail.key === paperKey ? trail.forward : [];
   const saveLabel = paper.id === samplePaper.id ? '本次演示有效 · 导入后可保存' : saveFeedback?.key === paperKey ? {saving: '正在保存到设备', saved: '已保存到设备', error: '设备保存未完成'}[saveFeedback.state] : '设备端记忆';
   const workspaceStatus = paper.id === samplePaper.id ? '示例演示' : saveFeedback?.key === paperKey && (saveFeedback.state !== 'saved' || !paper.ownerId) ? saveLabel : {ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState];
   useEffect(() => {
@@ -465,10 +466,9 @@ export default function PaperLab() {
 
   function jumpToParagraph(index: number, originalPdf = false) {
     if (index < 0 || index >= paper.paragraphs.length) return;
-    if (innerWidth > 760) {
-      const anchor = navigationRef.current?.getPosition() ?? {index: activeIndex, offset: 0};
-      const entry: TrailEntry = {anchor, mode: mobilePanel, section: paper.paragraphs[anchor.index]?.section ?? ''};
-      setTrail(previous => ({key: paperKey, entries: [...(previous.key === paperKey ? previous.entries : []).filter((item, position, all) => position !== all.length - 1 || item.mode !== entry.mode || item.anchor.index !== anchor.index || Math.abs(item.anchor.offset - anchor.offset) > 2), entry].slice(-12)}));
+    const entry = captureReading();
+    if (entry.anchor.index !== index || mobilePanel !== 'reader' || Math.abs(entry.anchor.offset) > 2) {
+      setTrail(previous => ({key: paperKey, entries: [...(previous.key === paperKey ? previous.entries : []).filter((item, position, all) => position !== all.length - 1 || item.mode !== entry.mode || item.anchor.index !== entry.anchor.index || Math.abs(item.anchor.offset - entry.anchor.offset) > 2), entry].slice(-12), forward: []}));
     }
     selectParagraph(index);
     setMobilePanel('reader');
@@ -493,7 +493,23 @@ export default function PaperLab() {
   function returnToReading(position: number) {
     const entry = trailEntries[position];
     if (!entry || !paper.paragraphs[entry.anchor.index]) return;
-    setTrail({key: paperKey, entries: trailEntries.slice(0, position)});
+    setTrail({key: paperKey, entries: trailEntries.slice(0, position), forward: [...forwardEntries, captureReading(), ...trailEntries.slice(position + 1).reverse()].slice(-12)});
+    restoreTrailEntry(entry);
+  }
+
+  function captureReading(): TrailEntry {
+    const anchor = navigationRef.current?.getPosition() ?? {index: activeIndex, offset: 0};
+    return {anchor, mode: mobilePanel, section: paper.paragraphs[anchor.index]?.section ?? ''};
+  }
+
+  function forwardToReading() {
+    const entry = forwardEntries.at(-1);
+    if (!entry || !paper.paragraphs[entry.anchor.index]) return;
+    setTrail({key: paperKey, entries: [...trailEntries, captureReading()].slice(-12), forward: forwardEntries.slice(0, -1)});
+    restoreTrailEntry(entry);
+  }
+
+  function restoreTrailEntry(entry: TrailEntry) {
     selectParagraph(entry.anchor.index);
     setCitationJump(previous => ({...entry.anchor, id: (previous?.id ?? 0) + 1, paperId: paper.id, ownerId: paper.ownerId}));
     setMobilePanel(entry.mode === 'ai' || entry.mode === 'search' ? entry.mode : 'reader');
@@ -764,7 +780,7 @@ export default function PaperLab() {
 
         {/* Full text is continuous; paragraph IDs still anchor notes and AI context. */}
         <section id="paper-reader" className={`plab-reader ${mobilePanel === "reader" ? "mobile-visible" : ""}`}>
-          <ContinuousReader noteIndex={noteIndex} navigationRef={navigationRef} onNavigate={jumpToParagraph} key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation} header={<div className="plab-reader-bar">
+          <ContinuousReader noteIndex={noteIndex} navigationRef={navigationRef} onNavigate={jumpToParagraph} onBack={trailEntries.length ? () => returnToReading(trailEntries.length - 1) : undefined} onForward={forwardEntries.length ? forwardToReading : undefined} key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation} header={<div className="plab-reader-bar">
             <div className="paper-source-record"><span>{paper.id === samplePaper.id ? '示例论文 · 仅供阅读演示' : paper.fileName}</span><span>{paper.paragraphs.length} 段 · {new Set(paper.paragraphs.map(paragraph => paragraph.section)).size} 个章节</span></div>
             <div className="paper-title-edit">
               <PaperTitle key={paperKey} value={paper.title} onChange={title => updatePaper(current => ({...current, title}))} />
@@ -776,7 +792,13 @@ export default function PaperLab() {
             updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
           }} />}
               <div className="paper-reading-preferences desktop-paper-tool"><label>字号<select aria-label="正文字号" value={fontSize} onChange={event => {const size = Number(event.target.value); setFontSize(size); try {localStorage.setItem('acaora:paper-font-size', String(size));} catch { /* Optional preference. */ }}}>{[18,20,22].map(size => <option key={size} value={size}>{size}</option>)}</select></label></div>
-              {trailEntries.length > 0 && <div className="paper-reading-trail desktop-paper-tool"><button type="button" aria-label="返回刚才的位置" title={`返回 ${trailEntries.at(-1)?.section}`} onClick={() => returnToReading(trailEntries.length - 1)}><ArrowLeft size={15} aria-hidden="true" />返回</button><details><summary>阅读轨迹</summary><nav aria-label="阅读轨迹">{trailEntries.map((entry, index) => <button type="button" key={index} onClick={() => returnToReading(index)}>{entry.section} · 第 {entry.anchor.index + 1} 段{entry.mode === 'ai' ? ' · AI 分析' : ''}</button>)}</nav></details></div>}
+              {(trailEntries.length > 0 || forwardEntries.length > 0) && <div className="paper-reading-trail"><button type="button" aria-label="返回刚才的位置" title="返回（阅读区内 Alt＋←）" disabled={!trailEntries.length} onClick={() => returnToReading(trailEntries.length - 1)}><ArrowLeft size={15} aria-hidden="true" /><span>返回</span></button><button type="button" aria-label="前进到下一处阅读位置" title="前进（阅读区内 Alt＋→）" disabled={!forwardEntries.length} onClick={forwardToReading}><ArrowRight size={15} aria-hidden="true" /><span>前进</span></button>{trailEntries.length > 0 && <><button type="button" aria-label="阅读轨迹" popoverTarget="paper-reading-history" onClick={event => {
+                const node = document.getElementById('paper-reading-history');
+                if (!node) return;
+                const bounds = event.currentTarget.getBoundingClientRect();
+                node.style.left = `${Math.max(16, Math.min(bounds.left, innerWidth - 316))}px`;
+                node.style.top = `${Math.max(16, Math.min(bounds.bottom + 8, innerHeight - 220))}px`;
+              }}><History size={15} aria-hidden="true"/><span>阅读轨迹</span></button><nav id="paper-reading-history" popover="auto" aria-label="阅读轨迹">{trailEntries.map((entry, index) => <button type="button" key={index} onClick={event => {event.currentTarget.closest('nav')?.hidePopover(); returnToReading(index);}}>{entry.section} · 第 {entry.anchor.index + 1} 段{entry.mode === 'ai' ? ' · AI 分析' : ''}</button>)}</nav></>}</div>}
               <button type="button" aria-pressed={showTranslations} onClick={() => setShowTranslations(value => !value)}>{showTranslations ? '隐藏译文' : '显示译文'}</button>
             </div>
             <div className="plab-reader-progress">

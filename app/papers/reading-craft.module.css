@@ -43,7 +43,7 @@
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader) { grid-column: 1; grid-row: 1; min-width: 0; min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: var(--surface); }
 .reading.reading :global(.plab-reader-scroll) { display: block; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable both-edges; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
 .reading.reading:global(.workspace-refresh) :global(.plab-shell .plab-reader-bar) { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'source' 'title'; max-width: 850px; padding: 48px 32px 36px; margin: 0 auto; gap: 22px; border: 0; background: transparent; }
-.reading.reading :global(.paper-reading-navigation) { position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: 'chapters tools progress'; align-items: center; gap: 12px; padding: 0 32px; border-block: 1px solid var(--paper-rule); background: var(--surface); }
+.reading.reading :global(.paper-reading-navigation) { position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; align-items: center; gap: 0 12px; padding: 8px 32px 0; border-block: 1px solid var(--paper-rule); background: var(--surface); }
 .reading.reading :global(.paper-reading-navigation .section-chips) { grid-area: chapters; min-width: 0; }
 .reading.reading :global(.paper-chapter-navigation) { grid-area: chapters; display: flex; align-items: center; gap: 16px; min-width: 0; }
 .reading.reading :global(.paper-chapter-navigation .section-chips) { flex: 1; }
@@ -171,9 +171,11 @@
 :global(.paper-reading-preferences select) { width: 64px; min-width: 64px; max-width: 64px; min-height: 36px; padding: 4px 6px; border: 1px solid var(--border-control); border-radius: 4px; background: var(--surface); color: var(--text); font: 13px var(--font-sans); }
 :global(.paper-reading-trail) { flex-wrap: wrap; }
 .reading.reading :global(.paper-reading-trail > button) { display: inline-flex; align-items: center; gap: 6px; width: auto; height: auto; min-height: 40px; padding: 8px 12px; white-space: nowrap; }
-:global(.paper-reading-trail details) { font: 12px/1.6 var(--font-sans); }
-:global(.paper-reading-trail summary) { padding: 8px; cursor: pointer; }
-:global(.paper-reading-trail nav) { display: grid; max-height: 180px; overflow: auto; }
+.reading.reading :global(.paper-reading-trail > button:disabled) { opacity: .45; cursor: not-allowed; }
+.reading.reading :global(.paper-reading-trail > button span) { color: inherit; font: inherit; }
+:global(.paper-reading-trail nav) { position: fixed; inset: auto; margin: 0; width: min(300px, calc(100vw - 32px)); max-height: min(200px, calc(100dvh - 32px)); overflow: auto; padding: 8px; border: 1px solid var(--border-control); border-radius: 8px; color: var(--text); background: var(--surface); box-shadow: var(--shadow-overlay); }
+:global(.paper-reading-trail nav:popover-open) { display: grid; }
+.reading.reading :global(.paper-reading-trail nav button) { width: 100%; height: auto; min-height: 44px; padding: 10px; border: 0; border-radius: 4px; text-align: left; font: 13px/1.6 var(--font-sans); }
 :global(.paper-note-source) { margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 :global(.paper-note-source blockquote) { margin: 0 0 8px; color: var(--text-2); font: 14px/1.7 var(--font-sans); }
 :global(.paper-note-source button[aria-pressed="true"]) { color: var(--brand-on-subtle); background: var(--brand-subtle); }
@@ -221,5 +223,12 @@
 @media (min-width: 761px) and (max-width: 1300px) {
   .reading.reading :global(.plab-workbench[data-notes-open="true"] .paper-reading-navigation) { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: 'tools progress' 'chapters chapters'; padding: 8px 16px 0; }
 }
-@media (max-width: 760px) { :global(.desktop-paper-tool) { display: none !important; } }
+@media (max-width: 760px) {
+  :global(.desktop-paper-tool) { display: none !important; }
+  .reading.reading :global(.paper-reading-navigation) { grid-template-areas: 'tools tools' 'chapters progress'; }
+  .reading.reading :global(.reader-controls) { justify-content: flex-start; }
+  .reading.reading :global(.paper-reading-trail) { flex-wrap: nowrap; }
+  .reading.reading :global(.paper-reading-trail > button) { min-width: 40px; padding: 8px; }
+  .reading.reading :global(.paper-reading-trail > button span) { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { :global(.paper-source-preview) { transition: none; } }
