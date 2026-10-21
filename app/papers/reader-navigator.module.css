@@ -22,5 +22,14 @@
 .match { background: #f7e6a0; color: var(--text); border-radius: 2px; }
 .surface .clear { align-self: flex-start; padding-inline: 0; text-decoration: underline; text-underline-offset: 3px; }
 .controls button:focus-visible, .surface :is(button,input):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.location { display: grid; gap: 12px; }
+.location label { display: grid; gap: 6px; font: 13px/1.6 var(--font-sans); }
+.location :is(input,select) { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--border-control); border-radius: 4px; color: var(--text); background: var(--surface); font: 14px var(--font-sans); caret-color: var(--brand); }
+.location input[aria-invalid='true'] { border-color: var(--text); }
+.location button[type='submit'] { justify-self: start; padding-inline: 16px; border: 1px solid var(--border-control); color: var(--brand); }
+.location details { border-top: 1px solid var(--border); padding-top: 8px; }
+.location summary { padding-block: 6px; color: var(--text-2); cursor: pointer; font: 13px/1.6 var(--font-sans); }
+.location details p { padding-top: 8px; }
+.location :is(select,summary):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 @media (hover: hover) { .controls > button:hover, .surface button:hover:not(:disabled) { background: var(--surface-2); color: var(--text); } }
 @media (max-width: 760px) { .controls { padding-right: 8px; } .controls > button { min-width: 40px; } .controls > button span { display: none; } .results { max-height: 35dvh; } }
