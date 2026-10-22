@@ -63,7 +63,7 @@ function record(value: unknown): PaperRecord {
   const bibliography = normalizeBibliography(p.bibliography);
   if (p.bibliography !== undefined && !bibliography) throw invalid();
   // A whitelist excludes owner IDs, provider settings, credentials and PDF bytes.
-  return {id:string(p.id,200),title:string(p.title,1000),fileName:string(p.fileName,1000),addedAt:number(p.addedAt),updatedAt:number(p.updatedAt),activeParagraph,paragraphs,aiMemory:memory(p.aiMemory),bibliography};
+  return {id:string(p.id,200),title:string(p.title,1000),fileName:string(p.fileName,1000),addedAt:number(p.addedAt),updatedAt:number(p.updatedAt),activeParagraph,paragraphs,aiMemory:memory(p.aiMemory),bibliography,...(p.favorite!==undefined?{favorite:boolean(p.favorite)}:{})};
 }
 export function exportPaperBackup(papers: PaperRecord[], now = Date.now()) {
   if (!papers.length || papers.length > 200) throw new Error('请一次备份 1 至 200 篇论文。');

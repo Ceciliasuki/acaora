@@ -65,6 +65,16 @@ test('paper backup whitelists research records and removes credentials, owner ID
   assert.deepEqual(source, before);
 });
 
+test('backups preserve paper favorites, accept legacy records and reject non-boolean flags', () => {
+  for (const favorite of [true, false]) {
+    const [restored] = parsePaperBackup(exportPaperBackup([{...paper(), favorite}]));
+    assert.equal(restored.favorite, favorite);
+    assert.deepEqual(restored.paragraphs, paper().paragraphs);
+  }
+  assert.equal(parsePaperBackup(exportPaperBackup([paper()]))[0].favorite, undefined);
+  for (const favorite of [1, 'true', null]) assert.throws(()=>exportPaperBackup([{...paper(), favorite}]));
+});
+
 test('backup parsing rejects unsupported versions and any malformed record before returning a recoverable batch', () => {
   const envelope = JSON.parse(exportPaperBackup([paper()], 5));
   for (const version of [0, 2, '1']) assert.throws(() => parsePaperBackup(JSON.stringify({...envelope, version})));

@@ -2,11 +2,11 @@ import {expect,test} from '@playwright/test';
 import {installApiMocks} from './helpers';
 import AxeBuilder from '@axe-core/playwright';
 
-test('COURSE-18 every checked comprehensive case is reachable directly from the main course centre',async({page})=>{
+test('COURSE-18 every checked comprehensive case is reachable after choosing its course',async({page})=>{
  await installApiMocks(page,{signedIn:true});await page.goto('/courses');
  for(const [code,name] of [['STAT-201','概率论与数理统计'],['ECON-204','微观经济学'],['STAT-302','回归分析'],['ECON-301','计量经济学'],['STAT-306','多元统计分析'],['TRADE-305','国际贸易学'],['FIN-308','国际金融']]){
-  await page.getByRole('button',{name:'课程目录',exact:true}).hover();
-  await page.getByRole('button',{name:`${code} ${name}`,exact:true}).click();await expect(page.getByRole('link',{name:'综合案例',exact:true})).toHaveAttribute('href',`/courses/${code}/assessments/case-study`);
+  await page.getByRole('link',{name:`选择课程：${name}`,exact:true}).click();await expect(page.getByRole('link',{name:'综合案例',exact:true})).toHaveAttribute('href',`/courses/${code}/assessments/case-study`);
+  await page.getByRole('link',{name:'返回课程列表',exact:true}).click();
  }
 });
 
@@ -100,6 +100,7 @@ test('COURSE-12 guided lessons show three exercises and preserve optional review
 });
 test('COURSE-01 preset lessons work without imported material or AI keys',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true});await page.goto('/courses');
+ await page.getByRole('link',{name:'选择课程：概率论与数理统计',exact:true}).click();
  await page.getByRole('link',{name:'开始学习概率论与数理统计'}).click();
  // Next dev compiles this route on first navigation; the trace measured 4.8s.
  await expect(page).toHaveURL('/courses/STAT-201/lesson-1',{timeout:15000});

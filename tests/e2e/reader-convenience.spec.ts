@@ -16,7 +16,7 @@ async function locate(page: Page, paragraph: number) {
 
 test('direct location validates numbers, preserves context on errors and distinguishes extracted pages', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.press('Control+Alt+g');
   const panel = page.getByRole('region', {name: '跳转位置', exact: true});
@@ -41,7 +41,7 @@ test('direct location validates numbers, preserves context on errors and disting
 test('back and forward retain exact offsets, support keyboard traversal and discard the replaced branch', async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await page.evaluate(() => document.fonts.ready);
   await reader.evaluate(el => {el.scrollTop = 480;}); await active(page, 0);
@@ -61,7 +61,7 @@ test('back and forward retain exact offsets, support keyboard traversal and disc
 
 test('history selection keeps intermediate forward destinations and resets on another paper', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper, {...paper, id: 'other-convenience', title: 'Another evidence source'}]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await locate(page, 9); await locate(page, 17);
   await page.getByText('阅读轨迹', {exact: true}).click();
   await page.getByRole('navigation', {name: '阅读轨迹', exact: true}).getByRole('button', {name: 'Introduction · 第 1 段', exact: true}).click();
@@ -78,7 +78,7 @@ test('history selection keeps intermediate forward destinations and resets on an
 test('mobile source jumps offer return and forward while preserving the source offset', async ({page}) => {
   await page.setViewportSize({width: 375, height: 812});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await locate(page, 4);
   const offset = () => page.locator('[data-paragraph-index="3"]').evaluate(el => el.getBoundingClientRect().top - document.querySelector('.paper-reading-navigation')!.getBoundingClientRect().bottom);
   const before = await offset();
@@ -91,7 +91,7 @@ test('mobile source jumps offer return and forward while preserving the source o
 for (const width of [1440, 768, 375]) test(`location and history controls fit ${width}px and expose accessible keyboard help`, async ({page}) => {
   await page.setViewportSize({width, height: 900}); await page.emulateMedia({reducedMotion: 'reduce'});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await locate(page, 9);
   await page.getByRole('button', {name: 'Results', exact: true}).click(); await active(page, 16);
   await page.getByRole('button', {name: '跳转位置', exact: true}).click();

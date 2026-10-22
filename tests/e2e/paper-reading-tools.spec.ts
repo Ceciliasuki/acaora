@@ -24,7 +24,7 @@ function textPdf(twoColumns = false, offset = 0, numericTable = false) {
 
 test('PDF zoom and last page survive close and reload, while mobile overflow stays inside the viewer', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'tools.pdf', mimeType: 'application/pdf', buffer: textPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});
@@ -50,7 +50,7 @@ test('PDF zoom and last page survive close and reload, while mobile overflow sta
 
 test('two-column import tolerates a one-point baseline offset', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'offset.pdf', mimeType: 'application/pdf', buffer: textPdf(true, 1)});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});
@@ -60,7 +60,7 @@ test('two-column import tolerates a one-point baseline offset', async ({page}) =
 
 test('a wide numeric table keeps its row associations instead of becoming text columns', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'table.pdf', mimeType: 'application/pdf', buffer: textPdf(true, 0, true)});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});
@@ -73,7 +73,7 @@ test('AI paragraph references navigate to their source and mark out-of-range ref
   await installApiMocks(page, {signedIn: true});
   await page.addInitScript(() => sessionStorage.setItem('statlab-deepseek-key', 'controlled-key'));
   await page.route('**/api/papers/ai', route => route.fulfill({json: {result: {answer: 'Check P2 and [P999].', citations: [{paragraph: 'P2', quote: 'repeated ten-fold cross-validation'}]}, model: 'test'}}));
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await page.getByRole('button', {name: 'AI 分析', exact: true}).click();
   await page.getByRole('tab', {name: '论文问答', exact: true}).click();
   await page.getByRole('button', {name: '向论文提问', exact: true}).click();
@@ -87,7 +87,7 @@ test('AI original-page links override saved PDF history and stay local', async (
   const state = await installApiMocks(page, {signedIn: true});
   await page.addInitScript(() => sessionStorage.setItem('statlab-deepseek-key', 'controlled-key'));
   await page.route('**/api/papers/ai', route => route.fulfill({json: {result: {answer: 'The supporting paragraph is P2.'}, model: 'test'}}));
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'citations.pdf', mimeType: 'application/pdf', buffer: textPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});
@@ -108,7 +108,7 @@ test('AI original-page links override saved PDF history and stay local', async (
 test('notes export includes the latest unsaved note, chapter, page and original excerpt', async ({page}) => {
   await installApiMocks(page);
   await page.addInitScript(() => localStorage.setItem('acaora:paper-panels', JSON.stringify({library: false, notes: true})));
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await page.getByLabel('段落笔记').fill('Fresh note before debounce **important**');
   await page.getByRole('button', {name: '笔记汇总', exact: true}).click();
   await expect(page.getByRole('region', {name: '笔记汇总'})).toContainText('Fresh note before debounce');
@@ -127,7 +127,7 @@ test('notes export includes the latest unsaved note, chapter, page and original 
 
 test('two-column import reads the whole left column before the right column', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'columns.pdf', mimeType: 'application/pdf', buffer: textPdf(true)});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});

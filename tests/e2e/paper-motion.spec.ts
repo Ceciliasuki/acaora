@@ -9,7 +9,7 @@ const paper = {id: 'motion-reader', title: 'Reading continuity example', fileNam
 test('Paper margins interrupt cleanly and never scale or move type vertically', async ({page}) => {
   await page.setViewportSize({width: 1440, height: 900});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.getByRole('button', {name: 'Methods', exact: true}).click();
@@ -58,7 +58,7 @@ test('Paper margins interrupt cleanly and never scale or move type vertically', 
 test('Live reduced motion cancels movement while retaining selected state', async ({page}) => {
   await installApiMocks(page);
   await page.setViewportSize({width: 1440, height: 900});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(/Statistical learning/);
   await page.evaluate(() => document.querySelector<HTMLButtonElement>('[aria-controls="paper-library"]')!.click());
   await page.emulateMedia({reducedMotion: 'reduce'});
@@ -72,7 +72,7 @@ test('Live reduced motion cancels movement while retaining selected state', asyn
 test('Mobile transitions retain a query and respond immediately to rapid tab changes', async ({page}) => {
   await page.setViewportSize({width: 375, height: 812});
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(/Statistical learning/);
   const tabs = page.getByRole('tablist', {name: '论文工作台面板'});
   await tabs.getByRole('tab', {name: '检索', exact: true}).click();

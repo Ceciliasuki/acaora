@@ -1,4 +1,17 @@
 /* Course-only composition. Shared shell and academic content keep their contracts. */
+.studio.studio[data-course-catalog="true"] { width: 100%; max-width: none; min-height: 100dvh; margin: 0; padding: 24px; background: var(--surface); }
+.studio.studio.studio[data-course-catalog="true"] :global(.workspace-header) { width: 100%; max-width: 1100px; min-height: 64px; margin: 0 auto; padding: 0 0 18px; }
+.studio.studio.studio[data-course-catalog="true"] :global(.workspace-header h1) { margin: 0; font-size: 22px; font-weight: 600; }
+.studio.studio.studio[data-course-catalog="true"] :global(.page-body) { padding-top: 0; }
+.studio.studio.studio :global(.course-catalog-return) { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border-radius: 6px; color: var(--brand-on-subtle); font: 500 14px/1.6 var(--font-sans); text-decoration: none; }
+.studio.studio.studio :global(.course-catalog-return:hover) { background: var(--brand-subtle); }
+.studio.studio.studio :global(.course-catalog-return:focus-visible) { outline: 2px solid var(--brand); outline-offset: -2px; }
+@media (max-width: 760px) {
+ .studio.studio[data-course-catalog="true"] { padding: 20px; }
+ .studio.studio.studio[data-course-catalog="true"] :global(.courses-shell) { padding: 60px 0 32px; }
+ .studio.studio.studio[data-course-catalog="true"] :global(.workspace-header) { align-items: flex-start; padding-top: 0; }
+ .studio.studio.studio[data-course-catalog="true"] :global(.workspace-header h1) { font-size: 20px; }
+}
 .studio.studio.studio :global(.course-catalog-layout),
 .studio.studio.studio :global(.course-study-layout) {
   grid-template-columns: 56px minmax(0, 1fr);

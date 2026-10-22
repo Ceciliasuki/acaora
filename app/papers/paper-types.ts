@@ -59,6 +59,7 @@ export type PaperRecord = {
   paragraphs: Paragraph[];
   aiMemory?: AiMemory;
   bibliography?: PaperBibliography;
+  favorite?: boolean;
 };
 
 export type CloudDeletion = {

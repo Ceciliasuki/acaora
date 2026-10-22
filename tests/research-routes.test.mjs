@@ -122,6 +122,26 @@ test('cloud paper PUT stores normalized bibliography under extracted content wit
   assert.deepEqual(legacyBody.p_extracted_content.paragraphs, paragraphs);
 });
 
+test('paper favorites round-trip through the existing JSON payload and reject invalid flags', async () => {
+  const {state, route} = await routeHarness('../app/api/cloud/papers/route.ts');
+  for (const favorite of [true, false]) {
+    state.payload = {status: 'saved'};
+    const source = {...paper(), favorite};
+    const response = await route.PUT(request('/api/cloud/papers', 'PUT', source));
+    assert.equal(response.status, 200);
+    const content = JSON.parse(state.calls.at(-1).init.body).p_extracted_content;
+    assert.equal(content.favorite, favorite);
+    assert.deepEqual(content.paragraphs, source.paragraphs);
+    state.payload = [{id: source.id, title: source.title, extracted_content: content}];
+    assert.equal((await (await route.GET()).json()).papers[0].favorite, favorite);
+  }
+  const writes = state.calls.length;
+  for (const favorite of ['true', null, 1, {}]) {
+    assert.equal((await route.PUT(request('/api/cloud/papers', 'PUT', {...paper(), favorite}))).status, 400);
+  }
+  assert.equal(state.calls.length, writes, 'invalid flags must not reach the authenticated storage boundary');
+});
+
 test('cloud paper PUT refuses invalid bibliography before any REST write', async () => {
   const {state, route} = await routeHarness('../app/api/cloud/papers/route.ts');
   for (const patch of [{year: '2024'}, {doi: 'not-a-doi'}, {url: 'https://user:password@example.org'}, {authors: ['Injected\nAuthor']}, {confirmed: 'true'}]) {

@@ -27,7 +27,8 @@ test('an import finishing its device file write after logout cannot repopulate t
   await expect.poll(() => page.evaluate(() => (window as typeof window & {originalBlocked?: boolean}).originalBlocked)).toBe(true);
   state.signedIn = false;
   await page.evaluate(() => window.dispatchEvent(new Event('acaora:auth-change')));
-  await expect(page.locator('.library-privacy strong')).toHaveText('设备端记忆');
+  await expect(page.getByRole('region',{name:'论文列表',exact:true})).toBeVisible();
+  await expect(page.getByRole('region',{name:'论文列表',exact:true}).getByRole('status')).toHaveText('设备端保存');
   await page.evaluate(() => (window as typeof window & {releaseOriginal?: () => void}).releaseOriginal?.());
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await expect(page.getByText('private-import.pdf', {exact: true})).toHaveCount(0);

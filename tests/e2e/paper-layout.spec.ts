@@ -9,7 +9,7 @@ const paper = {id:'wide-reader',title:'A paper for focused reading',fileName:'re
 test('PAPER-17 collapsed side panels give the reader space without losing paragraph notes',async({page})=>{
   await page.setViewportSize({width:1440,height:900});
   await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.plab-index')).toBeHidden();
   await expect(page.locator('.plab-rail')).toBeHidden();
@@ -45,7 +45,7 @@ test('PAPER-17 collapsed side panels give the reader space without losing paragr
 test('PAPER-18 mobile tabs work independently of desktop collapsed preferences',async({page})=>{
   await page.setViewportSize({width:375,height:812});
   await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const tabs=page.getByRole('tablist',{name:'论文工作台面板'});
   await tabs.getByRole('tab',{name:'笔记',exact:true}).click();

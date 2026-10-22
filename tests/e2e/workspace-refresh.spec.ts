@@ -43,7 +43,7 @@ for (const width of [1440, 669, 375]) {
 
 test('selection motion is interruptible and reduced motion still identifies the active mode', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const modes = page.getByRole('navigation', {name: '论文工作模式'});
   await modes.getByRole('button', {name: '学术检索', exact: true}).click();
@@ -73,22 +73,20 @@ test('selection motion is interruptible and reduced motion still identifies the 
   await expect.poll(()=>mobile.evaluate(element=>element.getAnimations({subtree:true}).length)).toBe(0);
 });
 
-test('course plates follow two-dimensional selection and settings directory follows its section', async ({page}) => {
+test('course filters follow selection and settings directory follows its section', async ({page}) => {
   await installApiMocks(page, {signedIn: true});
   await page.goto('/courses');
-  const courses = page.getByRole('navigation', {name: '选择课程', exact: true});
-  await page.getByRole('button', {name:'课程目录', exact:true}).hover();
-  await courses.getByRole('button', {name: 'ECON-204 微观经济学', exact: true}).click();
-  await expect(page.getByRole('heading', {name: '微观经济学', exact: true})).toBeVisible();
-  expect(await courses.locator('.motion-navigation-marker').evaluate(element => element.getAnimations().length)).toBeGreaterThan(0);
+  const courses = page.getByRole('group', {name: '课程方向', exact: true});
+  await courses.getByRole('button', {name: '经济学', exact: true}).click();
+  await expect(page.getByRole('link', {name: '选择课程：微观经济学', exact: true})).toBeVisible();
+  await expect(page.getByRole('link', {name: '选择课程：回归分析', exact: true})).toHaveCount(0);
+  await expect(courses.locator('.motion-navigation-marker')).toBeVisible();
   await page.emulateMedia({reducedMotion: 'reduce'});
   await page.setViewportSize({width: 669, height: 751});
-  await page.mouse.move(600, 0);
-  await expect(page.getByRole('button', {name:'课程目录', exact:true})).toHaveAttribute('aria-expanded', 'false');
-  await page.getByRole('button', {name:'课程目录', exact:true}).click();
-  await courses.getByRole('button', {name: 'STAT-302 回归分析', exact: true}).click();
+  await courses.getByRole('button', {name: '统计学', exact: true}).click();
+  await expect(page.getByRole('link', {name: '选择课程：回归分析', exact: true})).toBeVisible();
   await expect.poll(async () => {
-    const selected = await courses.getByRole('button', {name: 'STAT-302 回归分析', exact: true}).boundingBox();
+    const selected = await courses.getByRole('button', {name: '统计学', exact: true}).boundingBox();
     const marker = await courses.locator('.motion-navigation-marker').boundingBox();
     return Boolean(selected && marker && Math.abs(selected.x-marker.x)<1 && Math.abs(selected.y-marker.y)<1 && Math.abs(selected.width-marker.width)<1 && Math.abs(selected.height-marker.height)<1);
   }).toBe(true);

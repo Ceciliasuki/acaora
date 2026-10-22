@@ -9,7 +9,7 @@ const paper={id:'annotation-fixture',title:'示例：原文阅读与批注',file
  paragraphs:['Introduction','Methods','Results'].map((section,index)=>({id:`annotation-${index}`,section,page:index+1,original:`${section}: ${original}`,translation:'',note:index===0?'保留已有段落笔记':'',bookmarked:false,read:false,annotations:[] as unknown[]}))};
 
 test('the demonstration is labelled and directs annotations to an imported personal paper',async({page})=>{
- const state=await installApiMocks(page,{signedIn:true});await page.goto('/papers');
+ const state=await installApiMocks(page,{signedIn:true});await page.goto('/papers?view=reader');
  await expect(page.locator('.plab-reader-progress')).toHaveText('示例论文');
  await selectText(page);await page.getByRole('button',{name:'添加批注',exact:true}).click();
  await expect(page.locator('.paper-message')).toContainText('请先导入 PDF，再添加批注');
@@ -29,7 +29,7 @@ async function selectText(page:Page,start=14,end=56,crossParagraph=false){
 for(const width of [1440,375])test(`annotations ${width}px retain original text, notes, edits and durable storage`,async({page})=>{
  await page.setViewportSize({width,height:width===375?812:1000});
  const state=await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
- await page.goto('/papers');
+ await page.goto('/papers?view=reader');
  await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
  await mkdir(captures,{recursive:true});
  await page.screenshot({path:`${captures}/reading-minimal-${width}.png`,animations:'disabled'});
@@ -69,10 +69,10 @@ test('a cross-paragraph highlight reaches a second browser through the existing 
   await target.route('**/api/cloud/papers',async route=>{if(!state.signedIn)return route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:'请先登录。'})});if(route.request().method()==='PUT')stored=route.request().postDataJSON();await route.fulfill({status:200,contentType:'application/json',headers:{'Cache-Control':'private, no-store'},body:JSON.stringify(route.request().method()==='GET'?{papers:[stored],deletions:[]}:{synced:true})});});
   return state;
  }
- await setup(page);await page.goto('/papers');await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+ await setup(page);await page.goto('/papers?view=reader');await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
  await selectText(page,14,56,true);await page.getByRole('button',{name:'高亮',exact:true}).click();
  await expect.poll(()=>JSON.stringify(stored).includes('"annotations":[{')).toBe(true);
- const context=await browser.newContext({viewport:{width:1440,height:1000}});const second=await context.newPage();const account=await setup(second);await second.goto('/papers');
+ const context=await browser.newContext({viewport:{width:1440,height:1000}});const second=await context.newPage();const account=await setup(second);await second.goto('/papers?view=reader');
  await expect(second.getByLabel('论文标题')).toHaveValue(paper.title);
  await expect(second.locator('.paper-text-mark')).toHaveCount(2);
  await second.locator('.paper-text-mark').first().click();
@@ -95,7 +95,7 @@ test('public literature filters, page navigation, citation export and failure st
   const number=Number(query.get('page')??1);
   await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({source:'Crossref',total:21,page:number,hasMore:number===1,papers:[{id:`fixture-${number}`,title:`示例文献 ${number}：中英文检索`,authors:['测试作者'],year:2024,venue:'示例期刊',abstract:'示例摘要，用于检查检索页面。',citationCount:null,type:'journal-article',doi:`10.1000/example${number}`,url:'https://doi.org/10.1000/example',pdfUrl:'',source:'Crossref'}]})});
  });
- await page.goto('/papers');await page.getByRole('button',{name:'学术检索',exact:true}).click();
+ await page.goto('/papers?view=reader');await page.getByRole('button',{name:'学术检索',exact:true}).click();
  await page.getByLabel('检索字段',{exact:true}).selectOption('author');await page.getByLabel('论文检索关键词').fill('测试作者');
  await page.getByLabel('起始年份').fill('2020');await page.getByLabel('结束年份').fill('2025');await page.getByLabel('文献类型').selectOption('journal-article');await page.getByLabel('结果排序').selectOption('newest');
  await page.getByRole('button',{name:'检索',exact:true}).click();await expect(page.getByRole('heading',{name:'示例文献 1：中英文检索'})).toBeVisible();

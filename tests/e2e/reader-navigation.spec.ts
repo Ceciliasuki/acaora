@@ -12,7 +12,7 @@ const paper = {id: 'reader-navigation-proof', title: 'Reading research evidence 
 
 test('literal find highlights original text across annotation boundaries and cycles without taking input focus', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const original = page.locator('[data-paragraph-index="0"] [data-original-text]');
   await page.getByRole('button', {name: '文内查找', exact: true}).click();
@@ -43,7 +43,7 @@ test('literal find highlights original text across annotation boundaries and cyc
 
 test('filterable chapter directory jumps to the source and uses the existing return trail', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '章节目录', exact: true}).click();
   const directory = page.getByRole('region', {name: '章节目录', exact: true});
@@ -60,7 +60,7 @@ test('filterable chapter directory jumps to the source and uses the existing ret
 
 test('new annotations preserve exact source offsets while search marks wrap the selected text', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '文内查找', exact: true}).click();
   await page.getByRole('searchbox', {name: '查找论文原文'}).fill('sample');
@@ -91,7 +91,7 @@ test('new annotations preserve exact source offsets while search marks wrap the 
 
 test('annotation filters combine quote, comment, color and comment presence without changing records', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   const annotations = page.getByRole('region', {name: '划线批注', exact: true});
@@ -112,7 +112,7 @@ test('annotation filters combine quote, comment, color and comment presence with
 
 test('find state is scoped to the current paper and keyboard shortcut is scoped to the reader', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper, {...paper, id: 'other-reader-proof', title: 'Another reading source', updatedAt: 0}]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.focus(); await reader.press('Control+f');
@@ -132,7 +132,7 @@ test('find state is scoped to the current paper and keyboard shortcut is scoped 
 test('desktop and mobile navigation stay visible, fit the viewport and expose accessible controls', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
   await page.setViewportSize({width: 1440, height: 1000});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await mkdir('outputs/reader-navigation-2026-10-18', {recursive: true});
   await page.getByRole('button', {name: '文内查找', exact: true}).click();

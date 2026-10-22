@@ -568,6 +568,26 @@ The navigation rail and app shell still speak the earlier dark-navigation langua
 - **Don't** update visual baselines to make a test pass. Baselines change only after a human has reviewed the diff and approved the new design.
 - **Don't** allow the Impeccable launcher or its hook to execute a downloaded binary in this project, and don't commit platform executables.
 
+## PaperLab paper selection · 2026-10-22
+
+The owner explicitly requested a selection screen before entering the research workspace. `/papers` now opens a full-width paper list, rather than automatically presenting the latest paper. Selecting a title enters the existing reading room; a return action preserves the current paragraph and notes. Direct paper/paragraph source links and explicit reader URLs remain supported. Browser history follows the two views. This supersedes only the previous immediate-reader entry, not the reading-room design below or other workspaces.
+
+The library is an Operate surface in the existing flat, light PaperLab world: one ordered list, system sans, real title/source/progress metadata, ordinary blue actions. Search, all/favorites scope and actual timestamp/title sorting sit above the list. Each row has a star and native top-layer ellipsis menu containing bibliography and deletion actions. Menus support arrow keys, Escape and focus return; deletion retains the existing confirmation. Empty libraries show zero real papers and a separately labelled demo action. Loading/error states never pretend the library is empty. Large desktop libraries scroll within their field; mobile uses the document flow. Mobile reading has a return-to-list action in the sticky reading toolbar.
+
+Paper-level favorites are an optional boolean on the existing research record, separate from paragraph bookmarks. The existing JSON payload, account-scoped queue and backup whitelist preserve it; legacy records remain valid. No new table, permission, provider or PDF upload path is introduced. Atomic library patches read the latest record and refuse deleted records so a stale list row cannot replace notes or recreate a deletion. Reference and verification scope: `docs/reviews/2026-10-22-paper-library.md`.
+
+Owner refinement: omit the selection-page subtitle and the footer's general PDF/sync explanation. Keep list typography consistent across desktop and mobile: 20px section heading, 16px paper/empty-state titles, and 14px metadata, status, labels and controls. Preserve the existing reading workspace typography.
+
+The list search uses a compact 44px pale field with an 18px non-shrinking search icon, a short placeholder and a conditional clear action that returns focus to the input. Keep a single visible keyboard focus outline fully inset by 2px so the list's scroll container cannot clip its left edge. On mobile the search spans the toolbar and filters/sort share the next row.
+
+## Course selection before learning · 2026-10-22
+
+The owner requested the same list-first entry for courses. `/courses` presents all curated courses as flat rows, with search and track filters above the list. It does not automatically select a course or mount a syllabus. Each row links to the existing `/courses/[courseId]` syllabus, where the existing start/resume action opens a lesson. Headers on course-specific pages provide an explicit return-to-list link. Existing lesson URLs, progress/answer storage and the collapsible chapter rail remain authoritative; the course chooser is no longer a rail inside another course's syllabus.
+
+Use the paper-selection family's 20px section heading, 16px row title and 14px metadata/controls, pale 44px search field and inset focus indicator. Show actual curriculum chapters/core-lesson counts, not invented progress. The catalog uses a white field and the existing course track selection marker with brand-blue/white settled colors; moving-state colors follow the shared motion contract. Preserve the learning surface's typography and compact chapter rail. Catalog scope and evidence: `docs/reviews/2026-10-22-course-selection.md`.
+
+Owner refinement: hide internal course codes from list copy, retaining the identifiers in routing/storage and search matching. Align the catalog and running head to a 1100px measure. Put search beside the section heading on desktop and below it on mobile. Flat rows group the course title, track and actual prerequisites; curriculum counts align in a separate desktop column and sit below the title on mobile. A pale book icon and explicit “查看课程” affordance clarify the destination. Hover tint and a small arrow movement support the whole-row link; reduced motion disables the movement. No extra overview panels or promotional copy.
+
 ## PaperLab Reading Room — 2026-10-14 replacement
 
 The owner explicitly authorized replacing the interface and broad refactoring. This section supersedes earlier three-column composition prescriptions for `/papers` only. Other routes, the shared navigation, light-only commitment, tokens, AI-only teal semantics, content truth and data contracts keep their existing authority.
