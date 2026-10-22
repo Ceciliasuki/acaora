@@ -23,7 +23,7 @@ test('LOAD-01 page and sidebar share concurrent session reads', async ({page}) =
 
 test('LOAD-02 a confirmed owner can read and edit the local paper before cloud returns', async ({page}) => {
   const state = await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
   await page.goto('/data');
@@ -35,7 +35,7 @@ test('LOAD-02 a confirmed owner can read and edit the local paper before cloud r
     await route.fallback();
   });
   try {
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect.poll(()=>cloudStarted).toBe(true);
     await expect(page.getByLabel('论文标题')).toHaveValue(paper.title,{timeout:1200});
     await expect(page.getByRole('region',{name:'论文正文'})).toContainText(paper.paragraphs[0].original);
@@ -54,14 +54,14 @@ test('LOAD-02 a confirmed owner can read and edit the local paper before cloud r
 
 test('LOAD-03 failed cloud refresh keeps the confirmed owner local paper usable', async ({page})=>{
   await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.goto('/data');
   await page.route('**/api/cloud/papers',async route=>{
     if(route.request().method()==='GET')return route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Temporary cloud outage'})});
     await route.fallback();
   });
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('同步暂不可用');
 });
@@ -91,10 +91,12 @@ test('LOAD-05 a late initial cloud response cannot restore the previous account 
     await route.fallback();
   });
   try {
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect.poll(()=>started).toBe(true);
     state.signedIn=false;
     await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));
+    await expect(page.getByRole('region',{name:'论文列表',exact:true})).toBeVisible();
+    await page.getByRole('button',{name:'打开示例论文',exact:true}).click();
     await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('示例演示');
     await openPaperLibrary(page);
     await expect(page.locator('.library-privacy strong')).toHaveText('设备端记忆');
@@ -106,7 +108,7 @@ test('LOAD-05 a late initial cloud response cannot restore the previous account 
 
 test('LOAD-06 a cloud deletion takes precedence over a draft made during refresh', async ({page})=>{
   await installApiMocks(page,{signedIn:true,cloudPapers:[paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.goto('/data');
   let release!:()=>void;
@@ -120,7 +122,7 @@ test('LOAD-06 a cloud deletion takes precedence over a draft made during refresh
     await route.fallback();
   });
   try {
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect.poll(()=>started).toBe(true);
     await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
     await page.getByRole('button',{name:'笔记',exact:true}).click();
@@ -159,7 +161,7 @@ test('LOAD-08 failed session recheck does not leave initial reading skeleton for
   let started=false;
   await page.route('**/api/cloud/papers',async route=>{started=true;await held;await route.fallback();});
   try {
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect.poll(()=>started).toBe(true);
     await page.route('**/api/auth/session',route=>route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Session unavailable'})}));
     await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));

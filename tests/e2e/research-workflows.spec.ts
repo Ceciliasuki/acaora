@@ -19,7 +19,7 @@ for(const width of [1440,375]) {
   test(`reader bibliography tool fits the existing reading toolbar ${width}px`,async({page})=>{
     await page.setViewportSize({width,height:width===375?812:1000});
     await installApiMocks(page,{signedIn:true,cloudPapers:[{...source,bibliography:{authors:['A Researcher'],year:2024,venue:'Research Methods',doi:'10.1234/evidence',url:'',tags:['证据'],source:'manual',confirmed:true}}]});
-    await page.goto('/papers');await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
+    await page.goto('/papers?view=reader');await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
     const tool=page.getByRole('button',{name:'文献资料与引用 · 已确认'});await expect(tool).toBeVisible();
     await noOverflow(page);await capture(page,`reader-toolbar-${width}`);
     await tool.click();await expect(page.getByRole('dialog',{name:'书目信息与引用'})).toBeVisible();
@@ -29,7 +29,7 @@ for(const width of [1440,375]) {
     await page.addInitScript(()=>localStorage.setItem('acaora:paper-panels',JSON.stringify({library:false,notes:true})));
     const state=await installApiMocks(page,{signedIn:true,cloudPapers:[source],projects:[project]});
     await page.route('**/api/papers/search?**',route=>route.fulfill({json:{papers:[{title:'Crossref candidate title',authors:['A Researcher','B Scholar'],year:2024,venue:'Research Methods',doi:'10.1234/evidence',url:'https://doi.org/10.1234/evidence'}]}}));
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
     await page.getByRole('button',{name:/文献资料与引用/}).click();
     const dialog=page.getByRole('dialog',{name:'书目信息与引用'});

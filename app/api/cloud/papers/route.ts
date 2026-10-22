@@ -12,6 +12,7 @@ type CloudPaper = {
   paragraphs?: unknown[];
   aiMemory?: Record<string, unknown>;
   bibliography?: unknown;
+  favorite?: boolean;
 };
 
 function json(data: unknown, init?: ResponseInit) {
@@ -44,6 +45,7 @@ export async function GET() {
       paragraphs: Array.isArray(row.extracted_content?.paragraphs) ? row.extracted_content.paragraphs : [],
       aiMemory: row.ai_memory ?? undefined,
       bibliography: normalizeBibliography(row.extracted_content?.bibliography),
+      ...(typeof row.extracted_content?.favorite === 'boolean' ? {favorite: row.extracted_content.favorite} : {}),
     }));
     const deletions = rows
       .filter((row) => row.deleted_at)
@@ -63,6 +65,7 @@ export async function PUT(request: NextRequest) {
       return json({ error: "论文记忆格式不正确。" }, { status: 400 });
     }
     const serialized = JSON.stringify(paper);
+    if (paper.favorite !== undefined && typeof paper.favorite !== 'boolean') return json({error:'收藏状态格式不正确。'}, {status:400});
     const bibliography = normalizeBibliography(paper.bibliography);
     if (paper.bibliography !== undefined && !bibliography) return json({error:'文献资料格式不正确。'}, {status:400});
     if (serialized.length > 1_500_000) return json({ error: "论文文本过长，暂时只保存在本机。" }, { status: 413 });
@@ -74,7 +77,7 @@ export async function PUT(request: NextRequest) {
         p_id: paper.id,
         p_title: paper.title,
         p_file_name: paper.fileName ?? "",
-        p_extracted_content: { addedAt: paper.addedAt ?? Date.now(), activeParagraph: paper.activeParagraph ?? 0, paragraphs: paper.paragraphs, bibliography },
+        p_extracted_content: { addedAt: paper.addedAt ?? Date.now(), activeParagraph: paper.activeParagraph ?? 0, paragraphs: paper.paragraphs, bibliography, ...(paper.favorite !== undefined ? {favorite: paper.favorite} : {}) },
         p_ai_memory: paper.aiMemory ?? {},
         p_updated_at: new Date(updatedAt).toISOString(),
       }),

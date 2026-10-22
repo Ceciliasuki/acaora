@@ -111,6 +111,31 @@ export async function deletePaperAndQueue(id: string, updatedAt: number, ownerId
   });
 }
 
+// Patch the latest stored record atomically; an open/cloud-deleted paper cannot
+// be recreated by a delayed library action or lose its notes to a stale row.
+export async function setPaperFavorite(id: string, ownerId: string | null, favorite: boolean): Promise<PaperRecord | null> {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([storeName, syncStoreName], 'readwrite');
+    const papers = transaction.objectStore(storeName), queue = transaction.objectStore(syncStoreName);
+    const recordRequest = papers.get(id), operationRequest = queue.get(id);
+    let recordReady = false, operationReady = false, result: PaperRecord | null = null;
+    const patch = () => {
+      if (!recordReady || !operationReady) return;
+      const record = recordRequest.result as PaperRecord | undefined;
+      if (!record || (record.ownerId ?? null) !== ownerId || operationRequest.result?.type === 'delete') return;
+      result = {...record, favorite, updatedAt: Math.max(Date.now(), record.updatedAt + 1)};
+      papers.put(result);
+      if (ownerId) queue.put({id, ownerId, type: 'upsert', updatedAt: result.updatedAt, paper: result, attempts: 0, nextAttemptAt: 0} satisfies PaperSyncOperation);
+    };
+    recordRequest.onsuccess = () => {recordReady = true; patch();};
+    operationRequest.onsuccess = () => {operationReady = true; patch();};
+    transaction.oncomplete = () => {database.close(); resolve(result);};
+    transaction.onerror = () => {database.close(); reject(transaction.error);};
+    transaction.onabort = () => {database.close(); reject(transaction.error);};
+  });
+}
+
 export async function getPaperSyncOperations(ownerId: string): Promise<PaperSyncOperation[]> {
   const database = await openDatabase();
   return new Promise((resolve, reject) => {

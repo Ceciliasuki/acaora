@@ -13,7 +13,7 @@ test.beforeEach(async ({page}) => {
 
 test('editing a note then immediately switching papers preserves the source note after reload', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [first, second]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByLabel('段落笔记').fill('Unsaved source note');
   await openPaperLibrary(page);
@@ -35,7 +35,7 @@ test('a delayed AI translation belongs to its source paragraph even after select
     await pending;
     await route.fulfill({json: {result: {translation: 'Source translation'}, model: 'test', usage: {total_tokens: 1}}});
   });
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByRole('button', {name: 'AI 分析', exact: true}).click();
   await page.getByRole('tab', {name: '增强翻译', exact: true}).click();
@@ -56,7 +56,7 @@ test('AI results arriving after a paper switch never overwrite the other paper',
   let release!: () => void;
   const pending = new Promise<void>(resolve => {release = resolve;});
   await page.route('**/api/papers/ai', async route => {await pending; await route.fulfill({json: {result: {plain_explanation: 'Source analysis'}, model: 'test'}});});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByRole('button', {name: 'AI 分析', exact: true}).click();
   const request = page.waitForRequest('**/api/papers/ai');
@@ -103,7 +103,7 @@ function manuscriptPdf() {
 
 test('PDF import keeps the multiline title and numbered custom section navigation', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'manuscript.pdf', mimeType: 'application/pdf', buffer: manuscriptPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Analyzing Academic Abstracts Across Cohorts: A Transparent Validation Study with Sensitivity Checks', {timeout: 30_000});
@@ -139,7 +139,7 @@ test('edits made while the target paper storage is slow survive the eventual swi
       return result;
     };
   });
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.evaluate(() => {(window as typeof window & {holdTarget?: boolean}).holdTarget = true;});
   await openPaperLibrary(page);
@@ -155,7 +155,7 @@ test('edits made while the target paper storage is slow survive the eventual swi
 
 test('original PDF renders its graphic locally and survives reload without entering cloud payloads', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.locator('.library-privacy strong')).not.toHaveText('正在检查账户');
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'manuscript.pdf', mimeType: 'application/pdf', buffer: manuscriptPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Analyzing Academic Abstracts Across Cohorts: A Transparent Validation Study with Sensitivity Checks');
@@ -193,7 +193,7 @@ test('original PDF renders its graphic locally and survives reload without enter
 
 test('an unrelated original PDF is rejected and does not change the existing paper', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [first]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
   await page.getByLabel('选择当前论文的原 PDF').setInputFiles({name: 'wrong.pdf', mimeType: 'application/pdf', buffer: manuscriptPdf()});
@@ -205,13 +205,14 @@ test('an unrelated original PDF is rejected and does not change the existing pap
 
 test('logging out closes the original PDF and removes the previous account paper from the reader', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [first]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(first.title);
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
   state.signedIn = false;
   await page.evaluate(() => window.dispatchEvent(new Event('acaora:auth-change')));
   await expect(page.getByRole('dialog', {name: '原 PDF', exact: true})).toHaveCount(0);
-  await expect(page.getByLabel('论文标题')).not.toHaveValue(first.title);
+  await expect(page.getByRole('region',{name:'论文列表',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:`打开论文：${first.title}`,exact:true})).toHaveCount(0);
   await expect(page.getByRole('button', {name: '查看原 PDF', exact: true})).toHaveCount(0);
 });
 
@@ -221,7 +222,7 @@ test('attaching the original repairs old metadata without replacing paragraph id
     {...first.paragraphs[1], section: 'Abstract', original: '2 Dataset Construction The dataset contains controlled documents with documented inclusion criteria. Each abstract is checked for duplicates and assigned a stable identifier.', note: 'Keep dataset note'},
   ]};
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [old]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(old.title);
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
   await page.getByLabel('选择当前论文的原 PDF').setInputFiles({name: 'manuscript.pdf', mimeType: 'application/pdf', buffer: manuscriptPdf()});

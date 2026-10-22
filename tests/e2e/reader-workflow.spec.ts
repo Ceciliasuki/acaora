@@ -21,7 +21,7 @@ function researchPdf(pages = 4) {
 test('reference source stays independent, resizes by keyboard, swaps positions and preserves notes', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
   await page.setViewportSize({width: 1440, height: 1000});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '原文对照', exact: true}).click();
   const reference = page.getByRole('complementary', {name: '固定原文对照'});
@@ -54,7 +54,7 @@ test('reference source stays independent, resizes by keyboard, swaps positions a
 
 test('preview can become a fixed comparison without moving the main source; paper switches isolate it', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper, {...paper, id: 'other-workflow', title: 'Another source', updatedAt: 0}]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   const entries = page.getByRole('region', {name: '划线批注'});
@@ -69,7 +69,7 @@ test('preview can become a fixed comparison without moving the main source; pape
 
 test('selected annotations export source-linked extracts, keep hidden choices and sort without editing records', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   const entries = page.getByRole('region', {name: '划线批注'});
@@ -95,7 +95,7 @@ test('clipboard denial gives a usable export alternative and mobile annotation c
   await page.setViewportSize({width: 375, height: 812});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
   await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: () => Promise.reject(new Error('denied'))}}));
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('tab', {name: '笔记', exact: true}).click();
   const entries = page.getByRole('region', {name: '划线批注'});
@@ -108,7 +108,7 @@ test('clipboard denial gives a usable export alternative and mobile annotation c
 
 test('PDF page thumbnails navigate with keyboard, rotation restores and original bytes stay local', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'navigation.pdf', mimeType: 'application/pdf', buffer: researchPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled PDF Navigation Study', {timeout: 30_000});
@@ -139,7 +139,7 @@ test('PDF page thumbnails navigate with keyboard, rotation restores and original
 
 test('long PDF thumbnail rendering is limited to visible pages and fits mobile', async ({page}) => {
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'long-navigation.pdf', mimeType: 'application/pdf', buffer: researchPdf(80)});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled PDF Navigation Study', {timeout: 30_000});
@@ -159,7 +159,7 @@ test('long PDF thumbnail rendering is limited to visible pages and fits mobile',
 test('comparison and selection UI render at desktop and mobile with no serious accessibility findings', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
   await page.setViewportSize({width: 1440, height: 1000});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await mkdir('outputs/reader-workflow-2026-10-19', {recursive: true});
   await page.getByRole('button', {name: '原文对照', exact: true}).click();

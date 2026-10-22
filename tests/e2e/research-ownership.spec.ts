@@ -19,7 +19,7 @@ test('RESEARCH-OWNER-01 a cloud-only source link waits for cloud hydration after
   const local = sourcePaper('local-a', 'Local source A');
   const target = sourcePaper('cloud-b', 'Cloud source B');
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [local]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(local.title);
   // The completed first hydration seeds only A in the real device store.
   const ids = await page.evaluate(async () => {
@@ -83,7 +83,7 @@ test('RESEARCH-OWNER-02 account switching closes a loading evidence picker and d
     finally {markFinished();}
   });
   try {
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(first.title);
     await page.locator('.plab-rail-actions').getByRole('button', {name: '加入项目', exact: true}).click();
     const dialog = page.getByRole('dialog', {name: '将摘录加入项目'});
@@ -97,6 +97,7 @@ test('RESEARCH-OWNER-02 account switching closes a loading evidence picker and d
     await expect(dialog).toHaveCount(0);
     release();
     await readFinished;
+    await page.getByRole('button',{name:`打开论文：${second.title}`,exact:true}).click();
     await expect(page.getByLabel('论文标题', {exact: true})).toHaveValue(second.title);
     await expect(page.getByText(privateProject.title, {exact: true})).toHaveCount(0);
     await expect(dialog).toHaveCount(0);

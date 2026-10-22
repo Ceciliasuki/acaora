@@ -12,7 +12,7 @@ for (const width of [1440, 1024]) {
     await page.setViewportSize({width, height: 900});
     await page.addInitScript(() => localStorage.setItem('acaora:paper-panels', JSON.stringify({library: true, notes: false})));
     await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     const title = page.getByLabel('论文标题');
     await expect(title).toHaveValue(paper.title);
     await expect(page.locator('#paper-library')).toBeHidden();
@@ -50,7 +50,7 @@ for (const width of [1440, 1024]) {
 test('Reading room on mobile keeps all tools reachable without changing the paper', async ({page}) => {
   await page.setViewportSize({width: 375, height: 812});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await mkdir('outputs/papers-room-2026-10-14', {recursive: true});

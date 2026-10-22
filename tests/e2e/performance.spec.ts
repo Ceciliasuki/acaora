@@ -36,7 +36,7 @@ test('PERF-01 idle workspace does not continuously render a decorative backgroun
 
 test('PERF-02 reading position survives reload without full-paper uploads at each pause', async ({page}, testInfo) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
   const start = state.requests.length;
@@ -59,7 +59,7 @@ test('PERF-02 reading position survives reload without full-paper uploads at eac
 
 test('PERF-03 note saving does not reload the sidebar profile', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.sidebar-profile-link')).toContainText('测试同学');
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
@@ -75,7 +75,7 @@ test('PERF-03 note saving does not reload the sidebar profile', async ({page}) =
 
 test('PERF-04 scrolling during a pending note save preserves the latest cursor', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.getByLabel('段落笔记').fill('A note saved while reading continues.');
@@ -91,7 +91,7 @@ test('PERF-04 scrolling during a pending note save preserves the latest cursor',
 test('PERF-05 switching papers restores the target device cursor before updating recency', async ({page}) => {
   const other = {...paper, id: 'performance-other', title: 'Other controlled paper'};
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper, other]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   // The target cursor may have been saved immediately before a previous tab
   // closed, before the interval could upload a complete PaperRecord.
@@ -111,7 +111,7 @@ test('PERF-05 switching papers restores the target device cursor before updating
 
 test('PERF-06 continuous reading commits its latest position once per interval', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
   await page.clock.install();
@@ -125,7 +125,7 @@ test('PERF-06 continuous reading commits its latest position once per interval',
 
 test('PERF-07 editing notes does not snap the reader back to the paragraph start', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.getByRole('button', {name: 'Section 4', exact: true}).click();
@@ -141,7 +141,7 @@ test('PERF-07 editing notes does not snap the reader back to the paragraph start
 
 test('PERF-08 an account switch cancels the pending cursor commit and isolates device history', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.locator('.paper-layout-controls [role="status"]')).toHaveText('已同步');
   await page.clock.install();

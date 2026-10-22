@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 import SourcePreview from './source-preview';
 import PaperBibliographyEditor from './paper-bibliography-editor';
 import PaperBackupTools from './paper-backup-tools';
+import PaperLibrary, {defaultLibraryView, type LibraryView} from './paper-library';
+import PaperLocation from './paper-location';
 import {restoredPaperCopies} from './paper-backup';
 import ProjectEvidencePicker from './project-evidence-picker';
 import type {ProjectEvidenceDraft} from '../lib/project-evidence';
@@ -16,8 +18,8 @@ import AppSidebar from "../components/app-sidebar";
 import {PageHeader} from "../components/ui";
 import MotionNavigation from "../components/motion-navigation";
 
-import { ChangeEvent, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, restorePaperBatch, savePaper, savePaperAndQueue } from "./paper-storage";
+import { ChangeEvent, Suspense, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, restorePaperBatch, savePaper, savePaperAndQueue, setPaperFavorite } from "./paper-storage";
 import ContinuousReader, {type ReaderNavigation, type ReadingAnchor} from './continuous-reader';
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
 import AnnotationPanel, {AnnotationEditor} from './annotation-panel';
@@ -69,10 +71,16 @@ export default function PaperLab() {
   const [saveFeedback, setSaveFeedback] = useState<{key: string; state: 'saving' | 'saved' | 'error'} | null>(null);
   const paperRef = useRef(paper);
   const [library, setLibrary] = useState<PaperRecord[]>([]);
+  const [screen, setScreen] = useState<'library' | 'workspace'>('library');
+  const [libraryView, setLibraryView] = useState<LibraryView>(defaultLibraryView);
+  const [libraryAction, setLibraryAction] = useState<string | null>(null);
+  const returnPaperRef = useRef<string | null>(null);
+  const [locationQuery, setLocationQuery] = useState<string | null>(null);
+  const handledLocation = useRef<string | null>(null);
   const [bibliographyKey,setBibliographyKey] = useState<string|null>(null);
   const [tagFilter,setTagFilter] = useState('');
   const [evidenceDraft,setEvidenceDraft] = useState<{key:string;draft:ProjectEvidenceDraft}|null>(null);
-  const [sourceTarget,setSourceTarget] = useState<{paperId:string;paragraphId:string}|null>(null);
+  const [sourceTarget,setSourceTarget] = useState<{paperId:string;paragraphId?:string}|null>(null);
   const [cloudReadSettled,setCloudReadSettled] = useState(false);
   const resolvingSource = useRef(false);
   const [hydrated, setHydrated] = useState(false);
@@ -158,11 +166,24 @@ export default function PaperLab() {
   const forwardEntries = trail.key === paperKey ? trail.forward : [];
   const saveLabel = paper.id === samplePaper.id ? '本次演示有效 · 导入后可保存' : saveFeedback?.key === paperKey ? {saving: '正在保存到设备', saved: '已保存到设备', error: '设备保存未完成'}[saveFeedback.state] : '设备端记忆';
   const workspaceStatus = paper.id === samplePaper.id ? '示例演示' : saveFeedback?.key === paperKey && (saveFeedback.state !== 'saved' || !paper.ownerId) ? saveLabel : {ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState];
+  const readPaperLocation = useEffectEvent(() => {
+    if (screen === 'workspace') {navigationRef.current?.getPosition(); void persistCurrentPaper().catch(()=>setMessage('阅读记录尚未保存，请重试。'));}
+    const params = new URLSearchParams(location.search), paperId = params.get('paper'), paragraphId = params.get('paragraph');
+    handledLocation.current = params.toString();
+    setScreen(paperId || params.get('view') === 'reader' ? 'workspace' : 'library');
+    setSourceTarget(paperId ? {paperId, paragraphId: paragraphId ?? undefined} : null);
+  });
   useEffect(() => {
     try {const size = Number(localStorage.getItem('acaora:paper-font-size')); if ([18,20,22].includes(size)) queueMicrotask(() => setFontSize(size));} catch { /* Reading preferences are optional. */ }
-    const params = new URLSearchParams(location.search), paperId = params.get('paper'), paragraphId=params.get('paragraph');
-    if(paperId&&paragraphId)queueMicrotask(()=>setSourceTarget({paperId,paragraphId}));
   }, []);
+  useEffect(() => {
+    if (locationQuery !== null && locationQuery !== handledLocation.current) queueMicrotask(()=>readPaperLocation());
+  }, [locationQuery]);
+  useEffect(() => {
+    if (screen !== 'library' || !returnPaperRef.current || !hydrated) return;
+    const handle = requestAnimationFrame(()=>document.getElementById(`paper-open-${returnPaperRef.current}`)?.focus({preventScroll:true}));
+    return () => cancelAnimationFrame(handle);
+  }, [screen, hydrated]);
   useEffect(() => {
     if (!panels.library || mobilePanel !== 'reader' || innerWidth <= 760) return;
     const node = document.querySelector<HTMLButtonElement>('#paper-library button');
@@ -352,6 +373,8 @@ export default function PaperLab() {
         signedInRef.current = Boolean(session.user);
         userIdRef.current = session.user?.id ?? null;
         if (previousOwner !== userIdRef.current) {
+          setScreen('library'); setLibraryView(defaultLibraryView); setLibraryAction(null);
+          writePaperLocation(null, true);
           dirtyRef.current = false;
           skipPersistRef.current = true;
           setPaper(samplePaper);
@@ -564,6 +587,7 @@ export default function PaperLab() {
       if (sourceUser !== userIdRef.current) throw new Error('账户已切换，导入记录仍按原账号保存在设备中。');
       setLibrary((current) => [extracted, ...current.filter((item) => item.id !== extracted.id)]);
       setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。${originalSaved ? '' : '设备空间不足或存储不可用；查看原 PDF 时请重新选择文件。'}`);
+      setScreen('workspace'); writePaperLocation(extracted.id);
       setMobilePanel("reader");
       if (signedInRef.current) void syncNow();
     } catch (error) {
@@ -634,17 +658,21 @@ export default function PaperLab() {
   }
 
   async function removeFromLibrary(record: PaperRecord) {
+    const sourceOwner = userIdRef.current;
+    if ((record.ownerId ?? null) !== sourceOwner) return;
     const confirmation = signedInRef.current
       ? `从所有设备删除“${record.title}”的论文记忆？原始 PDF 不受影响；提取文本、翻译、笔记、阅读进度和 AI 结果将被删除。`
       : `从当前设备删除“${record.title}”的论文记忆？原始 PDF 不受影响。`;
     if (!window.confirm(confirmation)) return;
     try {
-      if (signedInRef.current && userIdRef.current) await deletePaperAndQueue(record.id, Date.now(), userIdRef.current);
+      if (sourceOwner) await deletePaperAndQueue(record.id, Date.now(), sourceOwner);
       else await deletePaper(record.id);
       await deletePaperPdf(record.id, record.ownerId ?? null);
+      if (userIdRef.current !== sourceOwner) return;
       const remaining = library.filter((item) => item.id !== record.id);
       setLibrary(remaining);
       if (paper.id === record.id) {
+        dirtyRef.current = false;
         skipPersistRef.current = true;
         setCitationJump(null); setPdfRequest(undefined);
         setPaper(remaining[0] ?? samplePaper);
@@ -666,7 +694,6 @@ export default function PaperLab() {
       let source: PaperRecord;
       do {
         source = await persistCurrentPaper();
-        // eslint-disable-next-line react-hooks/purity -- User-triggered async transition; this function is never called during render.
         opened = {...restoreReadingPosition(record), updatedAt: Date.now() + 1};
         const saved = await (signedInRef.current ? savePaperAndQueue(opened, {requireExisting: true}) : savePaper(opened));
         if (saved === false) throw new Error('论文已从本机删除。');
@@ -687,7 +714,6 @@ export default function PaperLab() {
     const current = paperRef.current;
     const owner = userIdRef.current;
     if (current.id === samplePaper.id || (current.ownerId ?? null) !== owner) return current;
-    // eslint-disable-next-line react-hooks/purity -- Only invoked by import/switch handlers, never while rendering.
     const updated = {...withReadingPosition(current), updatedAt: Date.now()};
     const saved = await (signedInRef.current ? savePaperAndQueue(updated, {requireExisting: true}) : savePaper(updated));
     if (saved === false) throw new Error('论文已从本机删除。');
@@ -698,6 +724,86 @@ export default function PaperLab() {
     if (signedInRef.current) void syncNow();
     return current;
   }
+
+  function writePaperLocation(id: string | null, replace = false) {
+    const url = new URL(location.href);
+    url.searchParams.delete('paragraph');
+    if (id) {url.searchParams.set('view', 'reader'); url.searchParams.set('paper', id);}
+    else {url.searchParams.delete('view'); url.searchParams.delete('paper');}
+    handledLocation.current = url.searchParams.toString();
+    window.history[replace ? 'replaceState' : 'pushState'](null, '', `${url.pathname}${url.search}`);
+  }
+
+  async function enterPaper(record: PaperRecord) {
+    const owner = userIdRef.current, epoch = hydrationEpochRef.current, actionKey = JSON.stringify([owner, epoch, record.id]);
+    if (libraryAction || (record.ownerId ?? null) !== owner) return;
+    setLibraryAction(actionKey);
+    try {
+      if (!await openPaper(record)) return;
+      if (owner !== userIdRef.current || epoch !== hydrationEpochRef.current) return;
+      returnPaperRef.current = record.id;
+      changePanels({...panels, library: false});
+      setScreen('workspace'); writePaperLocation(record.id);
+    } finally {setLibraryAction(current => current === actionKey ? null : current);}
+  }
+
+  async function returnToLibrary() {
+    try {
+      navigationRef.current?.getPosition();
+      await persistCurrentPaper();
+      returnPaperRef.current = paperRef.current.id;
+      setScreen('library'); writePaperLocation(null);
+    } catch {setMessage('保存未完成，暂未离开阅读界面。请重试。');}
+  }
+
+  async function openDemo() {
+    const owner = userIdRef.current;
+    try {
+      await persistCurrentPaper();
+      if (owner !== userIdRef.current) return;
+      skipPersistRef.current = true;
+      setPaper(samplePaper); setMobilePanel('reader'); setScreen('workspace'); writePaperLocation(samplePaper.id);
+    } catch {setMessage('保存未完成，暂未打开示例。请重试。');}
+  }
+
+  async function favoritePaper(record: PaperRecord) {
+    const owner = userIdRef.current, epoch = hydrationEpochRef.current;
+    const actionKey = JSON.stringify([owner, epoch, record.id]);
+    if (libraryAction || (record.ownerId ?? null) !== owner) return;
+    setLibraryAction(actionKey);
+    try {
+      if (paperRef.current.id === record.id) await persistCurrentPaper();
+      const source = paperRef.current;
+      const updated = await setPaperFavorite(record.id, owner, !record.favorite);
+      if (owner !== userIdRef.current || epoch !== hydrationEpochRef.current) return;
+      if (!updated) throw new Error('论文已删除或账户已变化，未更改收藏。');
+      if (source.id === updated.id && source.ownerId === updated.ownerId) {
+        if (paperRef.current === source) {skipPersistRef.current = true; setPaper(updated);}
+        else updatePaper(current => current.id === updated.id ? {...current, favorite: updated.favorite} : current);
+      }
+      setLibrary(items => items.map(item => item.id === updated.id ? updated : item));
+      if (owner) void syncNow();
+    } catch (error) {setMessage(error instanceof Error ? error.message : '收藏未保存，请重试。');}
+    finally {setLibraryAction(current => current === actionKey ? null : current);}
+  }
+
+  async function editLibraryDetails(record: PaperRecord) {
+    const owner = userIdRef.current, epoch = hydrationEpochRef.current;
+    if ((record.ownerId ?? null) !== owner) return;
+    if (await openPaper(record) && owner === userIdRef.current && epoch === hydrationEpochRef.current) setBibliographyKey(JSON.stringify([record.ownerId ?? null, record.id]));
+  }
+
+  const backupTools = <PaperBackupTools key={paper.ownerId??'guest'} disabled={!hydrated} getRecords={async()=>{
+    const owner=userIdRef.current,epoch=hydrationEpochRef.current;await persistCurrentPaper();const records=await getPaperLibrary(owner);
+    if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，备份已取消。');return records;
+  }} onRestore={async records=>{
+    const owner=userIdRef.current,epoch=hydrationEpochRef.current;const user=await getCurrentUser();
+    if((user?.id??null)!==owner||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，恢复已取消。');
+    await persistCurrentPaper();const copies=restoredPaperCopies(records,owner);
+    await restorePaperBatch(copies,()=>owner===userIdRef.current&&epoch===hydrationEpochRef.current);
+    if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)return;
+    setLibrary(await getPaperLibrary(owner));if(owner)void syncNow();
+  }}/>;
 
   function applyAiResult(result: AiSavedResult, source: PaperRecord, paragraph?: Paragraph) {
     if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
@@ -723,25 +829,29 @@ export default function PaperLab() {
 
   const resolveSource = useEffectEvent(async () => {
     if (!sourceTarget || !hydrated || resolvingSource.current) return;
+    if (sourceTarget.paperId === samplePaper.id) {skipPersistRef.current = true; setPaper(samplePaper); setSourceTarget(null); return;}
     const record = library.find(item=>item.id===sourceTarget.paperId && (item.ownerId??null)===userIdRef.current);
     if (!record) {
       if (!cloudReadSettled) return;
       setMessage(cloudState==='error'||cloudState==='offline'?'当前设备未找到来源，云端读取暂不可用。恢复网络后可重新打开来源链接。':'当前账户未找到原论文，可能已删除或尚未同步。项目中的摘录仍保留。');
-      setSourceTarget(null);return;
+      setSourceTarget(null);setScreen('library');return;
     }
-    const index=record.paragraphs.findIndex(item=>item.id===sourceTarget.paragraphId);
+    const index=sourceTarget.paragraphId ? record.paragraphs.findIndex(item=>item.id===sourceTarget.paragraphId) : record.activeParagraph;
     if(index<0){setMessage('原段落已不存在或已重新提取，未跳转到其他段落。项目中的摘录仍保留。');setSourceTarget(null);return;}
     if(paper.id!==record.id||paper.ownerId!==record.ownerId){
       resolvingSource.current=true;
       try {if(!await openPaper(record))setSourceTarget(null);} finally {resolvingSource.current=false;}
       return;
     }
-    jumpToParagraph(index);setSourceTarget(null);
+    setScreen('workspace');
+    if (sourceTarget.paragraphId) jumpToParagraph(index);
+    setSourceTarget(null);
   });
   useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void resolveSource();});return()=>{active=false;};},[sourceTarget,hydrated,cloudReadSettled,library,paperKey]);
 
   return (
     <main className={`student-app paper-layout workspace-refresh ${craft.reading}`}>
+      <Suspense fallback={null}><PaperLocation onChange={setLocationQuery}/></Suspense>
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
       <section ref={shellRef} className="student-main plab-shell" style={{'--paper-reading-size': `${fontSize}px`, '--paper-reference-width': `${referenceWidth}%`} as CSSProperties}>
       {/* Running head: the surface's own line, then only the tools that act on the
@@ -749,7 +859,8 @@ export default function PaperLab() {
           every value in it is already printed where it belongs: the library count in
           the index, the paragraph position and reading progress in the reader, the
           sync state beside the library, and the privacy facts in the colophon. */}
-      <PageHeader className="workspace-header plab-head" title="论文研究" description="阅读原文、整理笔记，核对引用对应的段落。" actions={<div className="plab-head-tools">
+      <PageHeader className="workspace-header plab-head" title="论文研究" description={screen==='workspace'?'阅读原文、整理笔记，核对引用对应的段落。':undefined} actions={<div className="plab-head-tools">
+          {screen==='workspace'&&<button className={`plab-tool ${mobilePanel==='reader'?'desktop-paper-tool':''}`} type="button" onClick={()=>void returnToLibrary()} disabled={extracting}><ArrowLeft size={16} aria-hidden="true"/>返回论文列表</button>}
           {['working','done','error'].includes(translationState)&&<span className="paper-translation-feedback" role="status">{translatorStatusLabel(translationState,isEdge)}</span>}
           <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>
             <Upload size={16} aria-hidden="true" />{extracting ? `解析中 ${extractProgress}%` : "导入 PDF"}
@@ -761,6 +872,7 @@ export default function PaperLab() {
       {bibliographyKey===paperKey&&<PaperBibliographyEditor key={paperKey} paper={paper} library={library} onClose={()=>setBibliographyKey(null)} onSave={bibliography=>{updatePaper(current=>({...current,bibliography}));setBibliographyKey(null);setMessage('文献资料已更新，正在保存。');}}/>}
       {evidenceDraft?.key===paperKey&&paper.ownerId&&<ProjectEvidencePicker key={paperKey} ownerId={paper.ownerId} draft={evidenceDraft.draft} onClose={()=>setEvidenceDraft(null)} onSaved={()=>{setEvidenceDraft(null);setMessage('摘录已加入项目，可从项目返回原段落。');}}/>}
 
+      {screen==='library'?<PaperLibrary papers={library} hydrated={hydrated} error={libraryError} status={libraryAction?'正在处理…':{ready:'已同步',syncing:'正在同步',checking:'正在检查账户',error:'同步暂不可用',offline:'离线保存',guest:'设备端保存'}[cloudState]} view={libraryView} onView={setLibraryView} busy={Boolean(libraryAction)||extracting} tools={backupTools} onRetry={()=>{setLibraryError('');setHydrated(false);setHydrationAttempt(value=>value+1);}} onOpen={record=>void enterPaper(record)} onFavorite={record=>void favoritePaper(record)} onDetails={record=>void editLibraryDetails(record)} onDelete={record=>void removeFromLibrary(record)} onDemo={()=>void openDemo()}/>:<>
       <div className="paper-navigation-bar">
       <MotionNavigation className="paper-workspace-nav" label="论文工作模式" value={mobilePanel === 'ai' || mobilePanel === 'search' ? mobilePanel : 'reader'}>
         <button type="button" aria-pressed={!["ai", "search"].includes(mobilePanel)} onClick={() => setMobilePanel("reader")}><BookOpen size={16} aria-hidden="true" />阅读与笔记</button>
@@ -811,17 +923,7 @@ export default function PaperLab() {
             {libraryError}
             <button className="plab-index-retry" type="button" onClick={() => { setLibraryError(""); setHydrated(false); setHydrationAttempt((attempt) => attempt + 1); }}>重试读取</button>
           </p> : null}
-          {!libraryError&&<><label className="paper-library-tags">按标签筛选<select aria-label="论文标签筛选" value={activeTagFilter} onChange={event=>setTagFilter(event.target.value)}><option value="">全部论文</option>{libraryTags.map(tag=><option key={tag}>{tag}</option>)}</select></label><PaperBackupTools key={paper.ownerId??'guest'} disabled={!hydrated} getRecords={async()=>{
-            const owner=userIdRef.current,epoch=hydrationEpochRef.current;await persistCurrentPaper();const records=await getPaperLibrary(owner);
-            if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，备份已取消。');return records;
-          }} onRestore={async records=>{
-            const owner=userIdRef.current,epoch=hydrationEpochRef.current;const user=await getCurrentUser();
-            if((user?.id??null)!==owner||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，恢复已取消。');
-            await persistCurrentPaper();const copies=restoredPaperCopies(records,owner);
-            await restorePaperBatch(copies,()=>owner===userIdRef.current&&epoch===hydrationEpochRef.current);
-            if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)return;
-            setLibrary(await getPaperLibrary(owner));if(owner)void syncNow();
-          }}/></>}
+          {!libraryError&&<><label className="paper-library-tags">按标签筛选<select aria-label="论文标签筛选" value={activeTagFilter} onChange={event=>setTagFilter(event.target.value)}><option value="">全部论文</option>{libraryTags.map(tag=><option key={tag}>{tag}</option>)}</select></label>{backupTools}</>}
           <div className="plab-index-list">
             {!libraryError && (filteredLibrary.length ? filteredLibrary.map((record) => {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
@@ -848,6 +950,7 @@ export default function PaperLab() {
               <PaperTitle key={paperKey} value={paper.title} onChange={title => updatePaper(current => ({...current, title,bibliography:current.bibliography?{...current.bibliography,confirmed:false}:undefined}))} />
             </div>
           </div>} tools={<><div className="reader-controls">
+              <button className="mobile-paper-tool" type="button" aria-label="返回论文列表" onClick={()=>void returnToLibrary()}><ArrowLeft size={15} aria-hidden="true"/>论文列表</button>
               <span>全文阅读</span>
               {paper.id!==samplePaper.id&&<button type="button" onClick={()=>setBibliographyKey(paperKey)}>文献资料与引用{paper.bibliography?.confirmed?' · 已确认':''}</button>}
           {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
@@ -922,6 +1025,7 @@ export default function PaperLab() {
         <div id="paper-search" className="paper-mode-content" hidden={mobilePanel !== "search"}>
           {hydrated && (visited.search || mobilePanel === 'search') ? <LiteratureSearch seed={searchQuery}/> : mobilePanel === 'search' ? <DiscoverySkeleton/> : null}
         </div>
+        </>}
       </section>
     </main>
   );

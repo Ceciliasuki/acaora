@@ -13,7 +13,7 @@ for (const width of [1440, 1024, 768, 375]) {
   test(`PaperLab long titles wrap completely at ${width}px and remain editable`, async ({page}) => {
     await page.setViewportSize({width, height: 900});
     await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     const field = page.getByLabel('论文标题', {exact: true});
     await expect(field).toHaveValue(title);
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
@@ -43,7 +43,7 @@ test('PaperLab title fallback shrinks and resizes without a measurement copy', a
   });
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
   await page.setViewportSize({width: 1440, height: 900});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await page.addStyleTag({content: 'textarea[aria-label="论文标题"] { field-sizing: fixed !important; }'});
   const field = page.getByLabel('论文标题');
   await expect(field).toHaveValue(title);
@@ -59,7 +59,7 @@ test('PaperLab title fallback shrinks and resizes without a measurement copy', a
 test('PaperLab mobile tabs support directional keyboard focus and one tab stop', async ({page}) => {
   await page.setViewportSize({width: 375, height: 812});
   await installApiMocks(page);
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(/Statistical learning/);
   const tabs = page.getByRole('tablist', {name: '论文工作台面板'});
   const reader = tabs.getByRole('tab', {name: '阅读', exact: true});
@@ -91,7 +91,7 @@ test('PaperLab keeps chapter navigation visible without covering a jumped paragr
   await page.setViewportSize({width: 1440, height: 900});
   const longPaper = {...paper, paragraphs: paper.paragraphs.map(p => ({...p, original: p.original.repeat(4)}))};
   await installApiMocks(page, {signedIn: true, cloudPapers: [longPaper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(title);
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.press('End');
@@ -112,7 +112,7 @@ for (const width of [1440, 375]) {
     await page.setViewportSize({width, height: 900});
     await page.emulateMedia({reducedMotion: 'reduce'});
     await installApiMocks(page);
-    await page.goto('/papers');
+    await page.goto('/papers?view=reader');
     await expect(page.getByLabel('论文标题')).toHaveValue(/Statistical learning/);
     await mkdir('outputs/papers-design-2026-10-13', {recursive: true});
     await page.screenshot({path: `outputs/papers-design-2026-10-13/reader-${width}.png`, fullPage: true});

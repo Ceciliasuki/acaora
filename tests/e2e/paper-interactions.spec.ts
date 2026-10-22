@@ -8,7 +8,7 @@ const paper = {id: 'interaction-proof', title: 'A controlled reading study: evid
 
 test('Source peek preserves position, owns keyboard focus and navigates only on request', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await expect(page.getByRole('heading', {name: paper.title, exact: true})).toBeInViewport();
@@ -34,7 +34,7 @@ test('Source peek preserves position, owns keyboard focus and navigates only on 
 
 test('Reading trail returns to an exact paragraph offset and is scoped to the source', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper, {...paper, id: 'other-reading-source', title: 'Another controlled source'}]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
@@ -55,7 +55,7 @@ test('Reading trail returns to an exact paragraph offset and is scoped to the so
 test('Returning to an AI report also restores the hidden reader anchor', async ({page}) => {
   const source = {...paper, aiMemory: {paragraph: {}, chats: [], summary: {action: 'summary', title: 'Saved controlled summary', data: {answer: 'Check [P9] before continuing.'}, createdAt: 1}}};
   await installApiMocks(page, {signedIn: true, cloudPapers: [source]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   const reader = page.getByRole('region', {name: '论文正文', exact: true});
   await reader.evaluate(el => {el.scrollTop = 480;});
@@ -72,7 +72,7 @@ test('Returning to an AI report also restores the hidden reader anchor', async (
 
 test('Pinned notes edit their own source while the reader moves', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.getByRole('button', {name: '固定笔记', exact: true}).click();
@@ -90,7 +90,7 @@ test('Pinned notes edit their own source while the reader moves', async ({page})
 test('Analyzing a pinned note keeps its context and a route back to the prior reading position', async ({page}) => {
   const source = {...paper, aiMemory: {paragraph: {}, chats: [], summary: {action: 'summary', title: 'Controlled summary', data: {answer: 'Source P9.'}, createdAt: 1}}};
   await installApiMocks(page, {signedIn: true, cloudPapers: [source]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.getByRole('button', {name: '固定笔记', exact: true}).click();
   await page.getByRole('button', {name: 'Results', exact: true}).click();
@@ -107,7 +107,7 @@ test('Analyzing a pinned note keeps its context and a route back to the prior re
 
 test('Desktop library Escape works from the trigger and AI tabs follow keyboard semantics', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers');
+  await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   const trigger = page.getByRole('button', {name: '论文库', exact: true});
   await trigger.click();
@@ -125,7 +125,7 @@ test('Desktop library Escape works from the trigger and AI tabs follow keyboard 
 
 test('Explicit title editing can cancel without modifying the paper and confirms a real save', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await expect(page.getByRole('heading', {name: paper.title, exact: true})).toBeVisible();
   await expect(page.getByLabel('论文标题')).toHaveAttribute('readonly', '');
   await page.getByRole('button', {name: '编辑标题', exact: true}).click();
@@ -139,7 +139,7 @@ test('Explicit title editing can cancel without modifying the paper and confirms
 for (const width of [1024,1440]) test(`Desktop at ${width}px fits the window with notes and offers adjustable type @a11y`, async ({page}) => {
   await page.setViewportSize({width, height: 768});
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.getByLabel('正文字号').selectOption('22');
@@ -153,7 +153,7 @@ for (const width of [1024,1440]) test(`Desktop at ${width}px fits the window wit
 });
 
 test('Demo notes describe their actual lifetime', async ({page}) => {
-  await installApiMocks(page); await page.goto('/papers');
+  await installApiMocks(page); await page.goto('/papers?view=reader');
   await expect(page.getByLabel('论文标题')).toHaveValue(/Statistical learning/);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await expect(page.locator('.plab-rail-head')).toContainText('本次演示有效');
@@ -162,7 +162,7 @@ test('Demo notes describe their actual lifetime', async ({page}) => {
 
 test('A failed device write is reported and can be retried without losing the note', async ({page}) => {
   await installApiMocks(page, {signedIn: true, cloudPapers: [paper]});
-  await page.goto('/papers'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+  await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.getByRole('button', {name: '笔记', exact: true}).click();
   await page.evaluate(() => {
     const original = IDBObjectStore.prototype.put;

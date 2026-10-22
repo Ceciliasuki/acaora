@@ -43,30 +43,12 @@ test('hover rails make room for content, leave with delay, and support keyboard 
   await expect(sidebar).toHaveAttribute('data-expanded', 'false');
   await expect(sidebar.getByRole('button', {name:'展开或收起主导航'})).toBeFocused();
 
-  const toggle = page.getByRole('button', {name:'课程目录', exact:true});
   const directory = page.getByRole('navigation', {name:'选择课程', exact:true});
-  const sheet = page.locator('.course-overview');
-  const sheetPosition = await sheet.boundingBox();
-  await toggle.hover();
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await directory.getByRole('button', {name:'ECON-204 微观经济学', exact:true}).hover();
-  expect((await sheet.boundingBox())?.x).toBe(sheetPosition?.x);
-  await page.screenshot({path:`${captures}/course-directory-expanded-1440.png`, animations:'disabled'});
-  await directory.getByRole('button', {name:'ECON-204 微观经济学', exact:true}).click();
+  await expect(page.locator('.course-overview')).toHaveCount(0);
+  await directory.getByRole('link', {name:'选择课程：微观经济学', exact:true}).click();
   await expect(page.getByRole('heading', {name:'微观经济学', exact:true})).toBeVisible();
-  await page.mouse.move(1100, 100);
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(directory).toBeHidden();
-  await toggle.focus();
-  // Switch to keyboard modality before entering the disclosure.
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Shift+Tab');
-  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await page.keyboard.press('Tab');
-  await expect(directory.getByRole('button').first()).toBeFocused();
-  await page.keyboard.press('Escape');
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(toggle).toBeFocused();
+  await page.getByRole('link', {name:'返回课程列表', exact:true}).click();
+  await expect(directory).toBeVisible();
   await page.goto('/dashboard');
   await expect(page.locator('.dashboard-loading')).toBeHidden();
   await expect(page.locator('.sidebar-auto-slot')).toHaveAttribute('data-expanded','false');
@@ -109,19 +91,19 @@ test('touch disclosures close outside, main drawer keeps its focus trap, and ope
   const page = await context.newPage();
   await page.emulateMedia({reducedMotion:'reduce'});
   await installApiMocks(page, {signedIn:true});
-  await page.goto('/courses');
+  await page.goto('/courses/STAT-201/lesson-1');
   await expect.poll(async () => {
     const sidebar = await page.locator('.app-sidebar').boundingBox();
     return Boolean(sidebar && sidebar.x + sidebar.width <= 0);
   }).toBe(true);
-  const toggle = page.getByRole('button', {name:'课程目录', exact:true});
+  const toggle = page.getByRole('button', {name:'章节导航', exact:true});
   await toggle.tap();
   await expect(toggle).toHaveAttribute('aria-expanded','true');
   await mkdir(captures, {recursive:true});
   await page.screenshot({path:`${captures}/course-directory-expanded-375.png`, animations:'disabled'});
   const audit = await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
   expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
-  await page.getByRole('heading', {name:'课程中心', level:1, exact:true}).tap();
+  await page.getByRole('heading', {name:'概率论与数理统计', level:1, exact:true}).tap();
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await page.getByRole('button', {name:'打开主导航', exact:true}).tap();
   const drawer = page.getByRole('complementary', {name:'应用导航'});
