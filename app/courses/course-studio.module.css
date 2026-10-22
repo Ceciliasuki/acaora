@@ -1,17 +1,11 @@
 /* Course-only composition. Shared shell and academic content keep their contracts. */
 .studio.studio.studio :global(.course-catalog-layout),
 .studio.studio.studio :global(.course-study-layout) {
-  grid-template-columns: 218px minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
-.studio.studio.studio :global(.course-navigation-rail) { width: auto; top: 24px; z-index: 20; }
-.studio.studio.studio :global(.course-navigation-rail[data-desktop="true"] .course-navigation-toggle) { display: none; }
-.studio.studio.studio :global(.course-navigation-rail[data-desktop="true"] .course-navigation-panel) {
-  position: static; width: 100%; max-height: calc(100dvh - 48px); overflow: auto;
-  opacity: 1; visibility: visible; transform: none; pointer-events: auto;
-  padding: 8px 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; transition: none;
-}
+.studio.studio.studio :global(.course-navigation-rail) { width: 56px; top: 24px; z-index: 30; }
 .studio.studio.studio :global(.course-navigation-heading) { padding: 0 12px; margin: 0 0 16px; color: var(--text-2); font-size: 13px; animation: none; }
 .studio.studio.studio :global(.course-catalog-index) { background: transparent; border: 0; }
 .studio.studio.studio :global(.course-catalog-index ul) { display: flex; flex-direction: column; gap: 6px; }
@@ -91,12 +85,10 @@
   .studio.studio.studio :global(.course-focus-toggle) { left: auto; right: 24px; transform: none; }
 }
 @media (max-width: 1100px) and (min-width: 1001px) {
-  .studio.studio.studio :global(.course-catalog-layout),
-  .studio.studio.studio :global(.course-study-layout) { grid-template-columns: 190px minmax(0, 1fr); gap: 20px; }
   .studio.studio.studio :global(.course-overview) { padding: 28px; }
   .studio.studio.studio :global(.course-overview > ol) { grid-template-columns: minmax(0,1fr); }
 }
-@media (max-width: 1000px) {
+@media (max-width: 760px) {
   .studio.studio.studio :global(.course-catalog-layout),
   .studio.studio.studio :global(.course-study-layout) { grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .studio.studio.studio :global(.course-navigation-rail) { position: relative; top: 0; width: 100%; }

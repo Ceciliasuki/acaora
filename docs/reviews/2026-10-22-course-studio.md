@@ -20,8 +20,8 @@ Native site screenshots, taken in this turn, are saved locally under `outputs/co
 
 ## Implemented composition
 
-- Desktop above 1000px: persistent course/chapter index, beside one white content sheet. At 1001–1100px, reduce directory width and use a single syllabus column.
-- At 1000px and below: bounded disclosure with existing tap, outside-dismiss and Escape behavior. Hidden links remain inert; a media-query subscription keeps visibility and accessible state together across resizing.
+- Owner correction after the first preview: the persistent directory occupied too much of the learning field. Restore the preceding 56px collapsible rail above 760px, including hover/focus reveal, click-to-pin, outside dismissal and Escape. The reading sheet regains the reserved space; all other visual refinements remain.
+- At 760px and below: bounded disclosure with existing tap, outside-dismiss and Escape behavior. Hidden links remain inert. Remove the preview's desktop media-query subscription because the shared disclosure owns the open state again.
 - Merge identical chapter/lesson titles. Keep grouped headings for multi-lesson chapters, actual level/read status, availability and original destinations.
 - Replace link underlines with row hover tint, arrows, selected tint/weight and focus outlines. Inline reference links have a tint plus an external-link cue. Mathematical marks retain their rendering.
 - Limit reading measure to 72ch, clarify heading scale, use neutral example insets and consistent practice regions. Keep radio inputs 16px and vertically aligned inside full-row targets of at least 44px.
@@ -45,3 +45,5 @@ Rendered review covered desktop catalogue/reader, 1024px catalogue, 375px catalo
 - After moving the desktop focus control, the final build and affected studio navigation/focus/draft case passed. Native-browser practice inspection confirmed the control sits outside the answer input field.
 
 Local evidence directory: `outputs/course-ui-2026-10-22/` (ignored build/review artifacts). Catalogue and reader captures at 1440px and 375px, plus a 1024px catalogue and native-browser previews, are available there. Runtime build paths in `next-env.d.ts`/`tsconfig.json` are restored after local compilation rather than committed.
+
+Owner-requested sidebar rollback: the final collapsible version passed the build, TypeScript, targeted ESLint and six directory-focused Playwright cases. These covered seven-course selection, hover and keyboard Escape, 900px chapter navigation, touch dismissal, focus/draft retention and selection-marker positioning. The native-browser collapsed view is `outputs/course-ui-2026-10-22/sidebar-collapsed-preview.jpg`. This correction is a local preview, not a production deployment.
