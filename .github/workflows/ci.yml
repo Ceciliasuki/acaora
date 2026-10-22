@@ -64,6 +64,15 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
+      - name: Set up Python for downloaded reproduction packages
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install reproduction runtime dependencies
+        # Keep these aligned with the requirements.txt exported by DataLab.
+        run: python -m pip install numpy==2.5.4 scipy==1.18.1 statsmodels==0.15.0 pandas==3.0.6
+
       - name: Deterministic mock E2E
         run: pnpm test:e2e
 
