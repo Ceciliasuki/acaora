@@ -1,0 +1,111 @@
+/* Course-only composition. Shared shell and academic content keep their contracts. */
+.studio.studio.studio :global(.course-catalog-layout),
+.studio.studio.studio :global(.course-study-layout) {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.studio.studio.studio :global(.course-navigation-rail) { width: 56px; top: 24px; z-index: 30; }
+.studio.studio.studio :global(.course-navigation-heading) { padding: 0 12px; margin: 0 0 16px; color: var(--text-2); font-size: 13px; animation: none; }
+.studio.studio.studio :global(.course-catalog-index) { background: transparent; border: 0; }
+.studio.studio.studio :global(.course-catalog-index ul) { display: flex; flex-direction: column; gap: 6px; }
+.studio.studio.studio :global(.course-catalog-index button) {
+  display: flex; align-items: flex-start; gap: 4px; min-height: 74px; padding: 14px 16px;
+  border: 0; border-radius: 8px; background: transparent; color: var(--text); line-height: 1.6;
+}
+.studio.studio.studio :global(.course-catalog-index button small) { color: var(--text-2); font-size: 12px; letter-spacing: .025em; font-variant-numeric: tabular-nums; }
+.studio.studio.studio :global(.course-catalog-index button span) { font-size: 15px; font-weight: 500; }
+.studio.studio.studio :global(.course-catalog-index button[aria-current="true"]) { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.studio.studio.studio :global(.course-catalog-index button[aria-current="true"] small) { color: var(--brand-on-subtle); }
+.studio.studio.studio :global(.course-catalog-index button:not([aria-current="true"]):hover) { background: #e3e9f2; }
+.studio.studio.studio :global(.course-overview) { padding: 32px 36px; line-height: 1.75; }
+.studio.studio.studio :global(.course-overview > header) { padding-bottom: 0; border: 0; }
+.studio.studio.studio :global(.course-overview > header h2) { margin: 8px 0 16px; font-size: clamp(28px, 2.5vw, 36px); font-weight: 600; line-height: 1.35; }
+.studio.studio.studio :global(.course-overview > header p) { margin: 8px 0; }
+.studio.studio.studio :global(.course-start) { align-items: center; gap: 18px; margin-top: 22px; }
+.studio.studio.studio :global(.course-overview > header > [role="status"]) { min-height: 24px; margin: 14px 0 0; font-size: 12px; color: var(--text-2); }
+.studio.studio.studio :global(.course-syllabus-heading) { display: flex; align-items: baseline; gap: 12px; margin-top: 32px; }
+.studio.studio.studio :global(.course-syllabus-heading h3) { margin: 0; font-size: 17px; font-weight: 600; }
+.studio.studio.studio :global(.course-syllabus-heading > span) { color: var(--text-2); font-size: 12px; }
+.studio.studio.studio :global(.course-overview > ol) { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px 20px; margin: 16px 0 24px; padding: 0; list-style: none; }
+.studio.studio.studio :global(.course-overview > ol > li) { border: 0; padding: 0; min-width: 0; }
+.studio.studio.studio :global(.course-overview > ol > li h3) { margin: 16px 10px 4px; font-size: 14px; }
+.studio.studio.studio :global(.course-overview > ol > li ul li) { display: block; padding: 0; }
+.studio.studio.studio :global(.course-overview .course-lesson-link) {
+  display: flex; align-items: center; gap: 12px; padding: 14px 10px;
+  min-height: 78px; border-radius: 8px; color: var(--text); text-decoration: none;
+}
+.studio.studio.studio :global(.course-overview .course-lesson-link:hover) { background: var(--brand-subtle); color: var(--brand-on-subtle); }
+.studio.studio.studio :global(.course-chapter-number) { flex: 0 0 24px; width: auto; height: auto; background: transparent; color: var(--text-2); font-size: 12px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.studio.studio.studio :global(.course-lesson-copy) { flex: 1; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.65; }
+.studio.studio.studio :global(.course-lesson-copy small) { display: block; margin-top: 3px; font-size: 12px; font-weight: 400; color: var(--text-2); }
+.studio.studio.studio :global(.course-lesson-link > svg) { flex-shrink: 0; color: var(--brand); }
+.studio.studio.studio :global(.course-lesson-unavailable) { color: var(--text-2); }
+.studio.studio.studio :global(.course-case-link) { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 18px 20px; background: var(--surface-2); border-radius: 8px; }
+.studio.studio.studio :global(.course-case-link > a),
+.studio.studio.studio :global(.course-record-link) { display: inline-flex; gap: 12px; align-items: center; min-height: 44px; font-weight: 500; color: var(--brand-on-subtle); }
+.studio.studio.studio :global(.course-case-link > span) { color: var(--text-2); font-size: 13px; }
+.studio.studio.studio :global(.course-overview > details) { border: 0; margin-top: 20px; padding-top: 0; }
+.studio.studio.studio :global(summary) { min-height: 44px; padding: 10px 0; }
+/* Link treatments replace underlines; KaTeX's mathematical marks are untouched. */
+.studio.studio.studio :global(.page-body a) { text-decoration: none; }
+.studio.studio.studio :global(.page-body a:focus-visible) { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 4px; }
+.studio.studio.studio :global(.page-body a:not([class*="primaryLink"]):hover) { color: var(--brand-on-subtle); background-color: var(--brand-subtle); }
+.studio.studio.studio :global(.course-study-layout > div:last-child) { max-width: none; padding: 32px clamp(24px, 3vw, 44px); border-radius: 12px; }
+.studio.studio.studio :global(.course-study-layout > div:last-child > header) { margin-bottom: 14px; }
+.studio.studio.studio :global(.course-study-layout > div:last-child > header p) { margin-top: 0; }
+.studio.studio.studio :global(.course-study-layout > div:last-child > header h2) { margin: 8px 0 18px; font-size: clamp(26px, 2.5vw, 34px); font-weight: 600; }
+.studio.studio.studio :global(.course-study-layout > div:last-child > [role="status"]) { min-height: 24px; margin: 0 0 24px; font-size: 12px; }
+.studio.studio.studio :global(.course-lesson-directory) { list-style: none; padding: 0; counter-reset: lesson; }
+.studio.studio.studio :global(.course-lesson-directory li) { counter-increment: lesson; margin: 4px 0; }
+.studio.studio.studio :global(.course-lesson-directory a),
+.studio.studio.studio :global(.course-lesson-directory li > span) { display: flex; gap: 10px; padding: 12px; font-size: 13px; line-height: 1.7; color: var(--text-2); border-radius: 8px; }
+.studio.studio.studio :global(.course-lesson-directory a::before),
+.studio.studio.studio :global(.course-lesson-directory li > span::before) { content: counter(lesson, decimal-leading-zero); flex-shrink: 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.studio.studio.studio :global(.course-lesson-directory a[aria-current="page"]) { background: var(--brand-subtle); color: var(--brand-on-subtle); font-weight: 600; }
+.studio.studio.studio :global(.course-navigation-panel nav > a) { padding: 10px 12px; color: var(--brand-on-subtle); font-weight: 500; }
+.studio.studio.studio :global(.course-study-layout article) { max-width: 72ch; color: var(--text); font-size: 16px; line-height: 1.95; }
+.studio.studio.studio :global(.course-study-layout article section) { margin-block: 32px; }
+.studio.studio.studio :global(.course-study-layout article h2),
+.studio.studio.studio :global([aria-labelledby="practice"] > h2) { font-size: 21px; font-weight: 600; line-height: 1.5; color: var(--text); }
+.studio.studio.studio :global(.course-study-layout article a) { padding: 2px 5px; border-radius: 4px; background: var(--brand-subtle); color: var(--brand-on-subtle); font-weight: 500; box-decoration-break: clone; }
+.studio.studio.studio :global(.course-study-layout article a::after) { content: ' ↗'; }
+.studio.studio.studio :global(.course-study-layout [class*="example"]) { border: 0; border-radius: 8px; padding: 22px 24px; background: var(--surface-2); }
+.studio.studio.studio :global([aria-labelledby="practice"]) { margin-top: 40px; }
+.studio.studio.studio :global([aria-labelledby="practice"] > section) { padding: 24px; margin: 20px 0; border-radius: 8px; border-color: var(--border); }
+.studio.studio.studio :global([aria-labelledby="practice"] h3) { margin-top: 0; }
+.studio.studio.studio :global([aria-labelledby="practice"] label:has(input[type="radio"])) { align-items: center; gap: 12px; min-height: 44px; border-radius: 6px; font-size: 15px; line-height: 1.7; color: var(--text); }
+.studio.studio.studio :global([aria-labelledby="practice"] label:has(input:checked)) { background: var(--brand-subtle); }
+.studio.studio.studio :global([aria-labelledby="practice"] input[type="radio"]) { width: 16px; height: 16px; min-height: 16px; margin: 0; padding: 0; accent-color: var(--brand); }
+.studio.studio.studio :global([aria-labelledby="practice"] button:not([type="submit"])) { background: var(--surface); border-color: var(--border-strong); }
+.studio.studio.studio[data-reading-focus="true"] :global(.course-study-layout) { grid-template-columns: minmax(0, 1fr); }
+.studio.studio.studio[data-reading-focus="true"] :global(.course-navigation-rail) { display: none; }
+.studio.studio.studio[data-reading-focus="true"] :global(.course-study-layout > div:last-child) { max-width: 850px; width: 100%; margin-inline: auto; }
+@media (min-width: 1001px) {
+  .studio.studio.studio :global(.course-focus-toggle) { left: auto; right: 24px; transform: none; }
+}
+@media (max-width: 1100px) and (min-width: 1001px) {
+  .studio.studio.studio :global(.course-overview) { padding: 28px; }
+  .studio.studio.studio :global(.course-overview > ol) { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 760px) {
+  .studio.studio.studio :global(.course-catalog-layout),
+  .studio.studio.studio :global(.course-study-layout) { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .studio.studio.studio :global(.course-navigation-rail) { position: relative; top: 0; width: 100%; }
+  .studio.studio.studio :global(.course-navigation-toggle) { width: 100%; min-height: 48px; flex-direction: row; padding: 12px 16px; gap: 12px; border-radius: 8px; box-shadow: none; }
+  .studio.studio.studio :global(.course-navigation-toggle > span) { writing-mode: horizontal-tb; letter-spacing: 0; }
+  .studio.studio.studio :global(.course-navigation-toggle > svg:last-child) { margin-left: auto; transform: rotate(90deg); }
+  .studio.studio.studio :global(.course-navigation-rail[data-expanded="true"] .course-navigation-toggle > svg:last-child) { transform: rotate(-90deg); }
+  .studio.studio.studio :global(.course-navigation-panel) { top: 56px; left: 0; width: 100%; max-height: min(60dvh, 540px); padding: 16px; border-radius: 8px; }
+  .studio.studio.studio :global(.course-navigation-heading) { display: none; }
+}
+@media (max-width: 600px) {
+  .studio.studio.studio :global(.course-overview),
+  .studio.studio.studio :global(.course-study-layout > div:last-child) { padding: 24px 18px; }
+  .studio.studio.studio :global(.course-overview > ol) { grid-template-columns: minmax(0,1fr); gap: 2px; }
+  .studio.studio.studio :global(.course-overview > header h2) { font-size: 27px; }
+  .studio.studio.studio :global(.course-start) { gap: 12px; }
+  .studio.studio.studio :global(.course-case-link) { gap: 0; padding: 14px 16px; }
+  .studio.studio.studio :global([aria-labelledby="practice"] > section),
+  .studio.studio.studio :global(.course-study-layout [class*="example"]) { padding: 18px 16px; }
+}
