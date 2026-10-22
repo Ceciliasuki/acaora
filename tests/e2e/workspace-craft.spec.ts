@@ -38,18 +38,52 @@ test('Data method tabs and the account tabs activate with keyboard and expose th
   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby','account-tab-register');
 });
 
-test('A click pins the hover-open directory and a second click closes it', async ({page})=>{
+test('Course studio keeps a visible desktop directory and a keyboard-safe mobile disclosure', async ({page})=>{
   await installApiMocks(page);
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await mkdir('outputs/course-ui-2026-10-22',{recursive:true});
+  await page.setViewportSize({width:1440,height:900});
   await page.goto('/courses');
   const trigger=page.getByRole('button',{name:'课程目录',exact:true});
-  await trigger.hover(); await expect(trigger).toHaveAttribute('aria-expanded','true');
-  await trigger.click(); await page.mouse.move(1000,100);
-  await expect(trigger).toHaveAttribute('aria-expanded','true');
-  await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded','false');
+  await expect(trigger).toBeHidden();
+  const course=page.getByRole('button',{name:'STAT-302 回归分析',exact:true});
+  await expect(course).toBeVisible();await course.click();
+  await expect(page.getByRole('heading',{name:'回归分析',exact:true})).toBeVisible();
+  // The course rows are links with a tint and arrow, without browser underlines.
+  const firstLesson=page.locator('.course-lesson-link').first();
+  await expect(firstLesson).toHaveCSS('text-decoration-line','none');
+  await page.screenshot({path:'outputs/course-ui-2026-10-22/catalog-1440.png'});
+  await page.setViewportSize({width:1024,height:900});
+  await expect(course).toBeVisible();
+  await page.screenshot({path:'outputs/course-ui-2026-10-22/catalog-1024.png'});
+  await page.setViewportSize({width:375,height:900});
+  await expect(trigger).toBeVisible();
   await page.getByRole('heading',{name:'课程中心',exact:true}).click();
-  await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded','true');
-  await trigger.press('Escape'); await expect(trigger).toHaveAttribute('aria-expanded','false');
-  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute('aria-expanded','false');
+  await expect(course).toBeHidden();
+  await trigger.click();await expect(course).toBeVisible();
+  await trigger.press('Escape');await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute('aria-expanded','false');
+  await page.screenshot({path:'outputs/course-ui-2026-10-22/catalog-375.png'});
+  const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,width:document.documentElement.clientWidth}));
+  expect(size.scroll).toBeLessThanOrEqual(size.width+1);
+  // Keep the legacy click-to-pin behavior on smaller screens.
+  await trigger.click();await expect(trigger).toHaveAttribute('aria-expanded','true');
+  await trigger.click(); await expect(trigger).toHaveAttribute('aria-expanded','false');
+  // A draft stays mounted when focus mode changes the reading composition.
+  await page.goto('/courses/STAT-201/lesson-1');
+  const draft=page.getByLabel('输入数值答案').first();await draft.fill('0.6');
+  await page.getByRole('button',{name:'专注阅读',exact:true}).click();
+  await expect(draft).toHaveValue('0.6');
+  await page.getByRole('button',{name:/退出专注/}).press('Escape');
+  await expect(draft).toHaveValue('0.6');
+  await page.goto('/courses/STAT-201/lesson-1');
+  await page.screenshot({path:'outputs/course-ui-2026-10-22/lesson-375.png'});
+  await page.setViewportSize({width:1440,height:900});
+  await expect(page.getByRole('link',{name:'条件概率与独立',exact:true})).toBeVisible();
+  await page.screenshot({path:'outputs/course-ui-2026-10-22/lesson-1440.png'});
+  const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
+  expect(audit.violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
 });
 
 test('Failed project writes preserve drafts and an in-flight write cannot be duplicated', async ({page})=>{
