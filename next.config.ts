@@ -8,6 +8,7 @@ const segmentRequest = (segment: string) => [
 ];
 
 const nextConfig: NextConfig = {
+  distDir: process.env.ACAORA_NEXT_DIST_DIR ?? '.next',
   poweredByHeader: false,
   devIndicators: false,
   generateBuildId: async () => BUILD_COMMIT,

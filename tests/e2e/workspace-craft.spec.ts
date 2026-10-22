@@ -28,7 +28,7 @@ test('Data method tabs and the account tabs activate with keyboard and expose th
   await expect(tabs.getByRole('tab',{name:'相关与回归',exact:true})).toBeFocused();
   await expect(page.getByRole('tabpanel')).toHaveAttribute('aria-labelledby','analysis-tab-relation');
   await page.keyboard.press('End');
-  await expect(tabs.getByRole('tab',{name:'独立样本 t 检验',exact:true})).toHaveAttribute('aria-selected','true');
+  await expect(tabs.getByRole('tab',{name:'进阶方法',exact:true})).toHaveAttribute('aria-selected','true');
   await page.keyboard.press('Home');
   await expect(tabs.getByRole('tab',{name:'描述统计',exact:true})).toHaveAttribute('tabindex','0');
   await page.goto('/auth');
@@ -131,13 +131,15 @@ test('Data section navigation preserves selection and can reveal every imported 
   const csv=Array.from({length:10},(_,i)=>`variable_${i}`).join(',')+'\n'+Array.from({length:10},(_,i)=>i+1).join(',')+'\n'+Array.from({length:10},(_,i)=>i+2).join(',');
   await page.getByLabel('选择数据文件',{exact:true}).setInputFiles({name:'controlled-ui.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});
   await expect(page.getByRole('status')).toContainText('刷新后需重新选择原文件');
+  await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'变量检查',exact:true}).click();
+  await expect(page.locator('#quality > details')).toHaveAttribute('open');
   await expect(page.locator('.variable-card')).toHaveCount(8);
   await page.getByRole('button',{name:'查看全部 10 个变量',exact:true}).click();
   await expect(page.locator('.variable-card')).toHaveCount(10);
   await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'分析结果',exact:true}).click();
   await expect(page.locator('#analysis')).toBeInViewport();
   await page.getByRole('tab',{name:'描述统计',exact:true}).press('ArrowRight');
-  await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'原始数据',exact:true}).click();
+  await page.getByRole('navigation',{name:'数据分析分区',exact:true}).getByRole('link',{name:'处理表预览',exact:true}).click();
   await expect(page.getByRole('tab',{name:'相关与回归',exact:true})).toHaveAttribute('aria-selected','true');
 });
 

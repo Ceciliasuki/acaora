@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authError, privateNoStore, readRequestSession, supabaseRest } from "../../auth/_shared";
+import {normalizeBibliography} from '../../../papers/paper-bibliography';
 
 type CloudPaper = {
   id?: string;
@@ -10,6 +11,7 @@ type CloudPaper = {
   activeParagraph?: number;
   paragraphs?: unknown[];
   aiMemory?: Record<string, unknown>;
+  bibliography?: unknown;
 };
 
 function json(data: unknown, init?: ResponseInit) {
@@ -41,6 +43,7 @@ export async function GET() {
       activeParagraph: Number(row.extracted_content?.activeParagraph ?? 0),
       paragraphs: Array.isArray(row.extracted_content?.paragraphs) ? row.extracted_content.paragraphs : [],
       aiMemory: row.ai_memory ?? undefined,
+      bibliography: normalizeBibliography(row.extracted_content?.bibliography),
     }));
     const deletions = rows
       .filter((row) => row.deleted_at)
@@ -60,6 +63,8 @@ export async function PUT(request: NextRequest) {
       return json({ error: "论文记忆格式不正确。" }, { status: 400 });
     }
     const serialized = JSON.stringify(paper);
+    const bibliography = normalizeBibliography(paper.bibliography);
+    if (paper.bibliography !== undefined && !bibliography) return json({error:'文献资料格式不正确。'}, {status:400});
     if (serialized.length > 1_500_000) return json({ error: "论文文本过长，暂时只保存在本机。" }, { status: 413 });
     const updatedAt = Number(paper.updatedAt ?? Date.now());
     if (!Number.isFinite(updatedAt)) return json({ error: "论文更新时间不正确。" }, { status: 400 });
@@ -69,7 +74,7 @@ export async function PUT(request: NextRequest) {
         p_id: paper.id,
         p_title: paper.title,
         p_file_name: paper.fileName ?? "",
-        p_extracted_content: { addedAt: paper.addedAt ?? Date.now(), activeParagraph: paper.activeParagraph ?? 0, paragraphs: paper.paragraphs },
+        p_extracted_content: { addedAt: paper.addedAt ?? Date.now(), activeParagraph: paper.activeParagraph ?? 0, paragraphs: paper.paragraphs, bibliography },
         p_ai_memory: paper.aiMemory ?? {},
         p_updated_at: new Date(updatedAt).toISOString(),
       }),

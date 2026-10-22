@@ -1,0 +1,54 @@
+/* Task tools share the existing quiet workspace palette. */
+:is(.plab-reference-editor,.plab-evidence-picker,.recipe-tools,.paper-backup-tools,.project-evidence) { font-size: 14px; line-height: 1.75; overflow-wrap: anywhere; min-width: 0; }
+:is(.plab-reference-editor,.plab-evidence-picker) p { margin: 0 0 12px; }
+:is(.plab-reference-editor,.plab-evidence-picker) form,.plab-evidence-picker { display: grid; gap: 16px; }
+.plab-reference-editor label,.paper-library-tags,.recipe-mappings label { display: grid; gap: 6px; color: var(--text-2); font-size: 13px; }
+:is(.plab-reference-editor,.paper-library-tags,.recipe-mappings) :is(input,textarea,select) { width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--border-strong); border-radius: 6px; background: var(--surface); color: var(--text); padding: 8px 10px; font: inherit; }
+.plab-reference-editor textarea { resize: vertical; }
+.plab-reference-fields,.recipe-mappings { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.plab-reference-source,.plab-reference-help,.recipe-policy,.project-evidence-source { color: var(--text-2); font-size: 12px; }
+.plab-reference-title { font-weight: 600; }
+:is(.plab-reference-actions,.paper-backup-actions,.recipe-actions),.plab-evidence-picker footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+:is(.plab-reference-editor,.paper-backup-tools,.project-evidence) button { min-height: 40px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: 500 13px var(--font-sans); cursor: pointer; }
+:is(.plab-reference-editor,.paper-backup-tools,.project-evidence) button:disabled { opacity: .5; cursor: not-allowed; }
+:is(.plab-reference-editor,.plab-evidence-picker,.paper-backup-tools,.project-evidence,.recipe-tools,.interval-experiment) :is(input,textarea,select,button,a,summary):focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+@media (hover:hover) { :is(.plab-reference-editor,.paper-backup-tools,.project-evidence) button:hover:not(:disabled) { background: var(--brand-subtle); color: var(--brand-on-subtle); } }
+.plab-reference-editor .plab-reference-confirm,.recipe-acknowledgment { display: flex; align-items: start; gap: 8px; cursor: pointer; }
+.plab-reference-confirm input,.recipe-acknowledgment input { width: 18px; height: 18px; min-height: 18px; margin-top: 3px; accent-color: var(--brand); flex-shrink: 0; }
+.plab-reference-candidate { padding: 12px; border: 1px solid var(--border); background: var(--surface-2); }
+.plab-reference-error,.plab-reference-warning { color: var(--danger); }
+.paper-library-tags { padding: 12px 0; }
+.paper-backup-tools { padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.paper-backup-tools p { font-size: 12px; margin: 8px 0 0; }
+.paper-backup-tools .ui-dialog li { margin-block: 12px; }
+.plab-evidence-picker blockquote,.project-evidence blockquote { margin: 0 0 12px; padding: 8px 12px; border-left: 2px solid var(--border-strong); white-space: pre-wrap; max-height: 240px; overflow: auto; }
+.plab-evidence-picker footer { justify-content: flex-end; }
+.recipe-tools { margin: 8px 0 20px; border-block: 1px solid var(--border); }
+.recipe-tools summary { cursor: pointer; padding: 12px 0; color: var(--text); font-weight: 500; }
+.recipe-tools-body { padding: 0 0 16px; max-width: 780px; }
+.recipe-tools-body p { margin: 8px 0 12px; }
+.recipe-staging { border-top: 1px solid var(--border); padding: 16px 0 4px; margin-top: 16px; }
+.recipe-staging h3 { font-size: 15px; margin: 0 0 12px; }
+.recipe-mappings { margin-block: 12px; }
+.recipe-acknowledgment { margin: 16px 0; }
+.project-evidence { margin: 24px 0 0; padding-top: 20px; border-top: 1px solid var(--border); }
+.project-evidence h3 { font-size: 16px; margin: 0 0 8px; }
+.project-evidence header p { color: var(--text-2); margin: 0 0 16px; }
+.project-evidence article { padding: 16px 0; border-top: 1px solid var(--border); }
+.project-evidence article > div { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.project-evidence a { color: var(--brand); text-underline-offset: 3px; }
+.project-evidence article > p { white-space: pre-wrap; }
+.interval-experiment { border-block: 1px solid var(--border); padding-block: 16px; }
+.interval-experiment-controls { display: flex; align-items: end; flex-wrap: wrap; gap: 16px; }
+.interval-experiment-control { display: grid; gap: 6px; flex: 1 1 150px; font-size: 14px; }
+.interval-experiment-control :is(input,select) { min-width: 0; width: 100%; min-height: 44px; border: 1px solid var(--border-strong); border-radius: 6px; padding: 8px 10px; color: var(--text); background: var(--surface); font: inherit; }
+.interval-experiment-control input[type=range] { padding-inline: 0; accent-color: var(--brand); }
+.interval-experiment-status,.interval-experiment-latest { font-variant-numeric: tabular-nums; }
+.interval-experiment-plot { margin: 16px 0; }
+.interval-experiment-plot svg { display: block; max-width: 100%; height: auto; }
+@media (max-width:760px) {
+ .plab-reference-fields,.recipe-mappings { grid-template-columns: minmax(0,1fr); }
+ :is(.paper-backup-actions,.plab-reference-actions,.recipe-actions) > button { min-height: 44px; }
+ .project-evidence blockquote { max-height: 320px; }
+ .interval-experiment-controls { gap: 12px; }
+}

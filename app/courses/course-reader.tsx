@@ -2,6 +2,7 @@ import type {Lesson} from "./course-types";
 import Image from 'next/image';
 import {CourseText,Formula} from "./course-text";
 import styles from "./courses.module.css";
+import IntervalExperiment from './interval-experiment';
 export default function CourseReader({lesson}:{lesson:Lesson}) {
   return <article className={styles.reader}>
     <section aria-labelledby="objectives"><h2 id="objectives">学习目标</h2><ul>{lesson.objectives.map(x=><li key={x}><CourseText text={x}/></li>)}</ul>
@@ -21,6 +22,7 @@ export default function CourseReader({lesson}:{lesson:Lesson}) {
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
       {section.table&&<div className={styles.tableScroll} tabIndex={0} role="region" aria-label={section.table.caption}><table><caption>{section.table.caption}</caption><thead><tr>{section.table.headers.map(x=><th key={x} scope="col">{x}</th>)}</tr></thead><tbody>{section.table.rows.map((row,j)=><tr key={j}>{row.map((x,k)=><td key={k}><CourseText text={x}/></td>)}</tr>)}</tbody></table></div>}
     </section>;return section.optional?<details className={styles.references} key={section.heading}><summary>选学：{section.heading}</summary>{content}</details>:<div key={section.heading}>{content}</div>;})}
+    {lesson.courseId === 'STAT-201' && lesson.id === 'lesson-8' && <IntervalExperiment/>}
     <section aria-labelledby="examples"><h2 id="examples">完整例题</h2>{lesson.examples.map((example,i)=>{const content=<div className={styles.example}>
       <h3>例 {i+1} · {example.title}</h3><p><CourseText text={example.problem}/></p>
       <ol>{example.steps.map((step,j)=><li key={j}><CourseText text={step}/></li>)}</ol><p><strong>结论：</strong><CourseText text={example.conclusion}/></p>

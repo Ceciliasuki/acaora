@@ -10,6 +10,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState, type KeyboardEvent as 
 import { authFetch, getCurrentUser } from "../lib/auth-client";
 import { Button, Dialog, ErrorState, PageHeader } from "../components/ui";
 import MotionNavigation from '../components/motion-navigation';
+import {paperSourceHref, validateProjectEvidence, type ProjectEvidence} from '../lib/project-evidence';
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -18,6 +19,7 @@ type ProjectMetadata = {
   deadline?: string;
   notes?: string;
   tasks?: Task[];
+  evidence?: ProjectEvidence[];
 };
 type Project = {
   id: string;
@@ -60,6 +62,7 @@ export default function ProjectsPage() {
   const [message, setMessage] = useState("");
   const [taskDrafts, setTaskDrafts] = useState<Record<string, string>>({});
   const operationLock = useRef(false);
+  const accountEpoch = useRef(0);
   const [messageTone, setMessageTone] = useState<"success" | "error">("success");
   const [query, setQuery] = useState("");
   const [taskFilters, setTaskFilters] = useState<Record<string,"all"|"todo"|"done">>({});
@@ -84,20 +87,33 @@ export default function ProjectsPage() {
   const activeCount = projects.filter((project) => project.status === "active").length;
 
   useEffect(() => {
+    let active = true;
+    const epochs = accountEpoch;
+    const load = () => {
+    if(!active)return;
+    const epoch = ++accountEpoch.current;
+    setProjects([]); setViewer(null); setLoaded(false); setShowCreate(false); setDeleteOpen(false); setNoteDrafts({}); setTaskDrafts({}); setMessage(''); setLoadError('');
     void getCurrentUser()
       .then(async (user) => {
+        if (!active || epoch !== accountEpoch.current) return;
         setViewer(user);
         if (!user) return;
         const response = await authFetch("/api/projects");
         const data = await response.json() as { projects?: Project[]; error?: string };
+        if (!active || epoch !== accountEpoch.current) return;
         if (!response.ok) throw new Error(data.error ?? "项目读取失败。");
         const nextProjects = data.projects ?? [];
         setProjects(nextProjects);
-        setSelectedId(nextProjects[0]?.id ?? "");
+        const requested = new URLSearchParams(window.location.search).get('project');
+        setSelectedId(nextProjects.find(project=>project.id===requested)?.id ?? nextProjects[0]?.id ?? '');
         if (new URLSearchParams(window.location.search).get("new") === "1" || !nextProjects.length) setShowCreate(true);
       })
-      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "项目读取失败。"))
-      .finally(() => setLoaded(true));
+      .catch((error: unknown) => {if(active && epoch===accountEpoch.current)setLoadError(error instanceof Error ? error.message : '项目读取失败。');})
+      .finally(() => {if(active && epoch===accountEpoch.current)setLoaded(true);});
+    };
+    queueMicrotask(load);
+    window.addEventListener('acaora:auth-change',load);
+    return ()=>{active=false; epochs.current++; window.removeEventListener('acaora:auth-change',load);};
   }, []);
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
@@ -107,18 +123,22 @@ export default function ProjectsPage() {
     const form = new FormData(event.currentTarget);
     setSaving(true);
     setMessage("");
+    const epoch = accountEpoch.current;
     try {
+      if ((await getCurrentUser())?.id !== viewer?.id || epoch !== accountEpoch.current) throw new Error('账户已切换，请重新操作。');
       const response = await authFetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.get("title"),
+          expectedOwnerId: viewer?.id,
           kind: form.get("kind"),
           status: "active",
           metadata: { goal: form.get("goal"), deadline: form.get("deadline"), notes: "", tasks: [] },
         }),
       });
       const payload = await response.json() as { project?: Project; error?: string };
+      if (epoch !== accountEpoch.current) return;
       if (!response.ok || !payload.project) throw new Error(payload.error ?? "创建项目失败。");
       setProjects((current) => [payload.project!, ...current]);
       setSelectedId(payload.project.id);
@@ -126,6 +146,7 @@ export default function ProjectsPage() {
       setMessageTone("success");
       setMessage("项目已创建，可以开始拆解任务了。");
     } catch (error) {
+      if (epoch !== accountEpoch.current) return;
       setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "创建项目失败。");
     } finally {
@@ -139,19 +160,29 @@ export default function ProjectsPage() {
     operationLock.current = true;
     setSaving(true);
     setMessage("");
+    const epoch = accountEpoch.current;
     try {
+      if ((await getCurrentUser())?.id !== viewer?.id || epoch !== accountEpoch.current) throw new Error('账户已切换，请重新操作。');
       const response = await authFetch(`/api/projects?id=${encodeURIComponent(next.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
+        body: JSON.stringify({...next,expectedUpdatedAt:next.updated_at,expectedOwnerId:viewer?.id}),
       });
       const payload = await response.json() as { project?: Project; error?: string };
+      if (epoch !== accountEpoch.current) return false;
+      if (response.status === 409) {
+        const latest = await authFetch('/api/projects');
+        const data = await latest.json() as {projects?:Project[]};
+        if (epoch !== accountEpoch.current) return false;
+        if (latest.ok && data.projects) setProjects(data.projects);
+      }
       if (!response.ok || !payload.project) throw new Error(payload.error ?? "项目保存失败。");
       setProjects((current) => current.map((project) => project.id === next.id ? payload.project! : project));
       setMessageTone("success");
       setMessage(successMessage);
       return true;
     } catch (error) {
+      if (epoch !== accountEpoch.current) return false;
       setMessageTone("error");
       setMessage(error instanceof Error ? error.message : "项目保存失败。");
       return false;
@@ -185,13 +216,17 @@ export default function ProjectsPage() {
     if (!selected || operationLock.current) return;
     operationLock.current = true;
     setSaving(true); setMessage("");
+    const epoch=accountEpoch.current;
     try {
+      if((await getCurrentUser())?.id!==viewer?.id||epoch!==accountEpoch.current)throw new Error('账户已切换，请重新操作。');
       const response = await authFetch(`/api/projects?id=${encodeURIComponent(selected.id)}`, {method:"DELETE"});
       const payload = await response.json() as {error?:string};
+      if(epoch!==accountEpoch.current)return;
       if (!response.ok) throw new Error(payload.error ?? "删除项目失败。");
       setProjects(current => current.filter(project => project.id !== selected.id));
       setSelectedId(""); setDeleteOpen(false); setMessageTone("success"); setMessage("项目已删除。");
     } catch (error) {
+      if(epoch!==accountEpoch.current)return;
       setMessageTone("error"); setMessage(error instanceof Error ? error.message : "删除项目失败，请重试。");
     } finally {operationLock.current = false; setSaving(false);}
   }
@@ -294,6 +329,10 @@ export default function ProjectsPage() {
                     <section className="project-note-card"><header><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈或待解决的问题…" id="project-notes" aria-label="项目笔记" /><div className="project-note-actions"><span className="workspace-draft-state">{notes !== (selected.metadata.notes ?? "") ? "有未保存修改" : "与已保存笔记一致"}</span><Button disabled={saving || notes === (selected.metadata.notes ?? "")} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</Button></div></section>
                   </div>
 
+                  <section className="project-evidence" aria-labelledby="project-evidence-title"><header><h3 id="project-evidence-title">论文证据</h3><p>在论文笔记或批注中选择“加入项目”，保留摘录和来源位置。</p></header>
+                    {(selected.metadata.evidence ?? []).filter(validateProjectEvidence).map(entry=><article key={entry.id}><p className="project-evidence-source">{entry.paperTitle} · 第 {entry.page} 页 · {entry.section}</p><blockquote>{entry.quote}</blockquote>{entry.comment&&<p><strong>个人评论：</strong>{entry.comment}</p>}<div><Link href={paperSourceHref(entry)}>返回原文</Link><button type="button" disabled={saving} onClick={()=>void saveProject({...selected,metadata:{...selected.metadata,evidence:(selected.metadata.evidence??[]).filter(item=>item.id!==entry.id)}},'已移除关联，原论文和批注保留。')}>移除关联</button></div></article>)}
+                    {!selected.metadata.evidence?.length&&<p>还没有关联的论文摘录。</p>}
+                  </section>
                   <nav className="project-related" aria-label="项目相关工作台"><Link href="/papers">查阅论文 <ArrowRight size={15} aria-hidden="true" /></Link><Link href="/data">分析数据 <ArrowRight size={15} aria-hidden="true" /></Link></nav>
                 </article>}
               </section>

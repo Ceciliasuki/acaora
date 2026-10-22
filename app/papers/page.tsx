@@ -6,13 +6,18 @@ import usePaperMotion from './use-paper-motion';
 import {ArrowLeft, ArrowRight, Bookmark, BookOpen, Check, Columns2, History, Library, PanelRight, Pin, Scan, Search, Sparkles, Upload, X} from "lucide-react";
 import dynamic from 'next/dynamic';
 import SourcePreview from './source-preview';
+import PaperBibliographyEditor from './paper-bibliography-editor';
+import PaperBackupTools from './paper-backup-tools';
+import {restoredPaperCopies} from './paper-backup';
+import ProjectEvidencePicker from './project-evidence-picker';
+import type {ProjectEvidenceDraft} from '../lib/project-evidence';
 
 import AppSidebar from "../components/app-sidebar";
 import {PageHeader} from "../components/ui";
 import MotionNavigation from "../components/motion-navigation";
 
-import { ChangeEvent, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
-import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, savePaper, savePaperAndQueue } from "./paper-storage";
+import { ChangeEvent, useCallback, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { acknowledgePaperSyncOperation, applyPaperSyncSnapshot, deletePaper, deletePaperAndQueue, getPaperLibrary, getPaperSyncOperations, reschedulePaperSyncOperation, restorePaperBatch, savePaper, savePaperAndQueue } from "./paper-storage";
 import ContinuousReader, {type ReaderNavigation, type ReadingAnchor} from './continuous-reader';
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
 import AnnotationPanel, {AnnotationEditor} from './annotation-panel';
@@ -64,6 +69,12 @@ export default function PaperLab() {
   const [saveFeedback, setSaveFeedback] = useState<{key: string; state: 'saving' | 'saved' | 'error'} | null>(null);
   const paperRef = useRef(paper);
   const [library, setLibrary] = useState<PaperRecord[]>([]);
+  const [bibliographyKey,setBibliographyKey] = useState<string|null>(null);
+  const [tagFilter,setTagFilter] = useState('');
+  const [evidenceDraft,setEvidenceDraft] = useState<{key:string;draft:ProjectEvidenceDraft}|null>(null);
+  const [sourceTarget,setSourceTarget] = useState<{paperId:string;paragraphId:string}|null>(null);
+  const [cloudReadSettled,setCloudReadSettled] = useState(false);
+  const resolvingSource = useRef(false);
   const [hydrated, setHydrated] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [extractProgress, setExtractProgress] = useState(0);
@@ -132,6 +143,9 @@ export default function PaperLab() {
   const {activeIndex, select: selectParagraph, snapshot: withReadingPosition} = useReadingPosition(paper, commitReadingPosition);
   const activeParagraph = paper.paragraphs[activeIndex];
   const paperKey = JSON.stringify([paper.ownerId ?? null, paper.id]);
+  const libraryTags = [...new Set(library.flatMap(record=>record.bibliography?.tags??[]))].sort();
+  const activeTagFilter = libraryTags.includes(tagFilter) ? tagFilter : '';
+  const filteredLibrary = activeTagFilter ? library.filter(record=>record.bibliography?.tags.includes(activeTagFilter)) : library;
   const referenceOpen = reference?.key === paperKey && Boolean(paper.paragraphs[reference.index]);
   useLayoutEffect(() => {
     const anchor = referencePendingAnchor.current;
@@ -146,6 +160,8 @@ export default function PaperLab() {
   const workspaceStatus = paper.id === samplePaper.id ? '示例演示' : saveFeedback?.key === paperKey && (saveFeedback.state !== 'saved' || !paper.ownerId) ? saveLabel : {ready:'已同步', syncing:'正在同步', checking:'正在检查账户', error:'同步暂不可用', offline:'离线保存', guest:'设备端保存'}[cloudState];
   useEffect(() => {
     try {const size = Number(localStorage.getItem('acaora:paper-font-size')); if ([18,20,22].includes(size)) queueMicrotask(() => setFontSize(size));} catch { /* Reading preferences are optional. */ }
+    const params = new URLSearchParams(location.search), paperId = params.get('paper'), paragraphId=params.get('paragraph');
+    if(paperId&&paragraphId)queueMicrotask(()=>setSourceTarget({paperId,paragraphId}));
   }, []);
   useEffect(() => {
     if (!panels.library || mobilePanel !== 'reader' || innerWidth <= 760) return;
@@ -312,7 +328,7 @@ export default function PaperLab() {
         if (!hasLocalRecords) setLibraryError("无法读取论文库状态。请检查网络或账户状态后重试。");
         setCloudStatus(navigator.onLine ? "error" : "offline");
       } finally {
-        if (isCurrent()) setHydrated(true);
+        if (isCurrent()) {setHydrated(true);setCloudReadSettled(true);}
       }
     })();
     return () => { if (isCurrent()) hydrationEpoch.current++; };
@@ -326,6 +342,7 @@ export default function PaperLab() {
       void syncNow();
     };
     const authChanged = () => {
+      setBibliographyKey(null); setEvidenceDraft(null); setSourceTarget(null); setTagFilter(''); setCloudReadSettled(false);
       const epoch = ++hydrationEpochRef.current;
       void authFetch("/api/auth/session").then(async (response) => {
         if (!response.ok) throw new Error("账户状态不可用。");
@@ -352,8 +369,8 @@ export default function PaperLab() {
           setPaper(guest[0] ?? samplePaper);
           setCloudStatus("guest");
         }
-        if (hydrationEpochRef.current === epoch) setHydrated(true);
-      }).catch(() => { if (hydrationEpochRef.current === epoch) {setCloudStatus("error"); setHydrated(true);} });
+        if (hydrationEpochRef.current === epoch) {setHydrated(true);setCloudReadSettled(true);}
+      }).catch(() => { if (hydrationEpochRef.current === epoch) {setCloudStatus("error"); setHydrated(true);setCloudReadSettled(true);} });
     };
     window.addEventListener("offline", offline);
     window.addEventListener("online", online);
@@ -640,7 +657,8 @@ export default function PaperLab() {
   }
 
   async function openPaper(record: PaperRecord) {
-    if (switchingRef.current || record.id === paperRef.current.id || (record.ownerId ?? null) !== userIdRef.current) return;
+    if (record.id === paperRef.current.id && record.ownerId === paperRef.current.ownerId) return true;
+    if (switchingRef.current || (record.ownerId ?? null) !== userIdRef.current) return false;
     switchingRef.current = true;
     const owner = userIdRef.current;
     try {
@@ -660,7 +678,8 @@ export default function PaperLab() {
       setPaper(opened);
       setSearchQuery(record.title);
       setMobilePanel("reader");
-    } catch { setMessage('保存未完成，暂未切换论文。请重试。'); }
+      return true;
+    } catch { setMessage('保存未完成，暂未切换论文。请重试。'); return false; }
     finally { switchingRef.current = false; }
   }
 
@@ -692,6 +711,35 @@ export default function PaperLab() {
     });
   }
 
+  function addEvidence(paragraph: Paragraph, annotation?: PaperAnnotation) {
+    const current = paperRef.current;
+    if (!current.ownerId || current.ownerId !== userIdRef.current || current.id === samplePaper.id) {setMessage('请登录并导入论文后再关联项目。');return;}
+    const source = current.paragraphs.find(item=>item.id===paragraph.id);
+    if (!source || source.original !== paragraph.original || (annotation && source.original.slice(annotation.start,annotation.end)!==annotation.quote)) {setMessage('原文已变化，请重新选择摘录。');return;}
+    const quote = annotation?.quote ?? source.original;
+    if (quote.length>30000) {setMessage('该段过长，请先选择部分文字添加批注，再加入项目。');return;}
+    setEvidenceDraft({key:paperKey,draft:{paperId:current.id,paragraphId:source.id,paperTitle:current.title,fileName:current.fileName,page:source.page,section:source.section,quote,comment:annotation?.comment??source.note,...(annotation?{annotationId:annotation.id,start:annotation.start,end:annotation.end}:{})}});
+  }
+
+  const resolveSource = useEffectEvent(async () => {
+    if (!sourceTarget || !hydrated || resolvingSource.current) return;
+    const record = library.find(item=>item.id===sourceTarget.paperId && (item.ownerId??null)===userIdRef.current);
+    if (!record) {
+      if (!cloudReadSettled) return;
+      setMessage(cloudState==='error'||cloudState==='offline'?'当前设备未找到来源，云端读取暂不可用。恢复网络后可重新打开来源链接。':'当前账户未找到原论文，可能已删除或尚未同步。项目中的摘录仍保留。');
+      setSourceTarget(null);return;
+    }
+    const index=record.paragraphs.findIndex(item=>item.id===sourceTarget.paragraphId);
+    if(index<0){setMessage('原段落已不存在或已重新提取，未跳转到其他段落。项目中的摘录仍保留。');setSourceTarget(null);return;}
+    if(paper.id!==record.id||paper.ownerId!==record.ownerId){
+      resolvingSource.current=true;
+      try {if(!await openPaper(record))setSourceTarget(null);} finally {resolvingSource.current=false;}
+      return;
+    }
+    jumpToParagraph(index);setSourceTarget(null);
+  });
+  useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void resolveSource();});return()=>{active=false;};},[sourceTarget,hydrated,cloudReadSettled,library,paperKey]);
+
   return (
     <main className={`student-app paper-layout workspace-refresh ${craft.reading}`}>
       <AppSidebar active="papers" profileTitle="PaperLab 工作台" profileSubtitle={cloudState === "ready" ? "论文记忆已同步" : cloudState === "syncing" ? "正在同步论文记忆" : "本地研究模式"} />
@@ -710,6 +758,8 @@ export default function PaperLab() {
         </div>} />
 
       {message && <div className="paper-message" role="status">{message}</div>}
+      {bibliographyKey===paperKey&&<PaperBibliographyEditor key={paperKey} paper={paper} library={library} onClose={()=>setBibliographyKey(null)} onSave={bibliography=>{updatePaper(current=>({...current,bibliography}));setBibliographyKey(null);setMessage('文献资料已更新，正在保存。');}}/>}
+      {evidenceDraft?.key===paperKey&&paper.ownerId&&<ProjectEvidencePicker key={paperKey} ownerId={paper.ownerId} draft={evidenceDraft.draft} onClose={()=>setEvidenceDraft(null)} onSaved={()=>{setEvidenceDraft(null);setMessage('摘录已加入项目，可从项目返回原段落。');}}/>}
 
       <div className="paper-navigation-bar">
       <MotionNavigation className="paper-workspace-nav" label="论文工作模式" value={mobilePanel === 'ai' || mobilePanel === 'search' ? mobilePanel : 'reader'}>
@@ -761,19 +811,31 @@ export default function PaperLab() {
             {libraryError}
             <button className="plab-index-retry" type="button" onClick={() => { setLibraryError(""); setHydrated(false); setHydrationAttempt((attempt) => attempt + 1); }}>重试读取</button>
           </p> : null}
+          {!libraryError&&<><label className="paper-library-tags">按标签筛选<select aria-label="论文标签筛选" value={activeTagFilter} onChange={event=>setTagFilter(event.target.value)}><option value="">全部论文</option>{libraryTags.map(tag=><option key={tag}>{tag}</option>)}</select></label><PaperBackupTools key={paper.ownerId??'guest'} disabled={!hydrated} getRecords={async()=>{
+            const owner=userIdRef.current,epoch=hydrationEpochRef.current;await persistCurrentPaper();const records=await getPaperLibrary(owner);
+            if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，备份已取消。');return records;
+          }} onRestore={async records=>{
+            const owner=userIdRef.current,epoch=hydrationEpochRef.current;const user=await getCurrentUser();
+            if((user?.id??null)!==owner||epoch!==hydrationEpochRef.current)throw new Error('账户已切换，恢复已取消。');
+            await persistCurrentPaper();const copies=restoredPaperCopies(records,owner);
+            await restorePaperBatch(copies,()=>owner===userIdRef.current&&epoch===hydrationEpochRef.current);
+            if(owner!==userIdRef.current||epoch!==hydrationEpochRef.current)return;
+            setLibrary(await getPaperLibrary(owner));if(owner)void syncNow();
+          }}/></>}
           <div className="plab-index-list">
-            {!libraryError && (library.length ? library.map((record) => {
+            {!libraryError && (filteredLibrary.length ? filteredLibrary.map((record) => {
               const progress = record.paragraphs.length ? Math.round(record.paragraphs.filter((item) => item.read).length / record.paragraphs.length * 100) : 0;
               const current = record.id === paper.id;
               return <article className={current ? "plab-index-row plab-index-row--current" : "plab-index-row"} key={record.id}>
                 <button className="plab-index-open" type="button" onClick={() => {changePanels({...panels, library: false}); setMobilePanel('reader'); void openPaper(record);}}>
                   <strong>{record.title}</strong>
                   <small className="journal-num">{record.paragraphs.length} 段 · 已读 {progress}%</small>
+                  {record.bibliography&&<small>{[record.bibliography.authors[0],record.bibliography.year,...record.bibliography.tags].filter(Boolean).join(' · ')}</small>}
                 </button>
                 <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}><X size={14} aria-hidden="true" /></button>
                 <span className="paper-library-filename">{record.fileName}</span>
               </article>;
-            }) : <div className="plab-index-empty"><strong>还没有保存的论文</strong><span>导入 PDF 后，翻译、笔记和进度会保存在当前 Edge 设备。</span></div>)}
+            }) : <div className="plab-index-empty"><strong>{activeTagFilter?'此标签下没有论文':'还没有保存的论文'}</strong><span>{activeTagFilter?'选择全部论文可返回完整论文库。':'导入 PDF 后，翻译、笔记和进度会保存在当前设备。'}</span></div>)}
           </div>
           <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仅保存在当前设备，不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 仅保存在当前设备；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
         </aside>
@@ -783,13 +845,14 @@ export default function PaperLab() {
           <ContinuousReader noteIndex={noteIndex} navigationRef={navigationRef} onNavigate={jumpToParagraph} onBack={trailEntries.length ? () => returnToReading(trailEntries.length - 1) : undefined} onForward={forwardEntries.length ? forwardToReading : undefined} key={`${paper.ownerId??'guest'}:${paper.id}`} paperId={paper.id} paragraphs={paper.paragraphs} activeIndex={activeIndex} showTranslations={showTranslations} mode={`${mobilePanel}-${panels.library}-${panels.notes}`} jump={citationJump?.paperId === paper.id && citationJump.ownerId === paper.ownerId ? citationJump : null} onSelect={selectParagraph} onCreateAnnotation={createAnnotation} onEditAnnotation={editAnnotation} header={<div className="plab-reader-bar">
             <div className="paper-source-record"><span>{paper.id === samplePaper.id ? '示例论文 · 仅供阅读演示' : paper.fileName}</span><span>{paper.paragraphs.length} 段 · {new Set(paper.paragraphs.map(paragraph => paragraph.section)).size} 个章节</span></div>
             <div className="paper-title-edit">
-              <PaperTitle key={paperKey} value={paper.title} onChange={title => updatePaper(current => ({...current, title}))} />
+              <PaperTitle key={paperKey} value={paper.title} onChange={title => updatePaper(current => ({...current, title,bibliography:current.bibliography?{...current.bibliography,confirmed:false}:undefined}))} />
             </div>
           </div>} tools={<><div className="reader-controls">
               <span>全文阅读</span>
+              {paper.id!==samplePaper.id&&<button type="button" onClick={()=>setBibliographyKey(paperKey)}>文献资料与引用{paper.bibliography?.confirmed?' · 已确认':''}</button>}
           {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
             if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
-            updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
+            updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title,bibliography:current.bibliography&&current.title===source.title&&title!==current.title?{...current.bibliography,confirmed:false}:current.bibliography, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
           }} />}
               <div className="paper-reading-preferences desktop-paper-tool"><label>字号<select aria-label="正文字号" value={fontSize} onChange={event => {const size = Number(event.target.value); setFontSize(size); try {localStorage.setItem('acaora:paper-font-size', String(size));} catch { /* Optional preference. */ }}}>{[18,20,22].map(size => <option key={size} value={size}>{size}</option>)}</select></label></div>
               {(trailEntries.length > 0 || forwardEntries.length > 0) && <div className="paper-reading-trail"><button type="button" aria-label="返回刚才的位置" title="返回（阅读区内 Alt＋←）" disabled={!trailEntries.length} onClick={() => returnToReading(trailEntries.length - 1)}><ArrowLeft size={15} aria-hidden="true" /><span>返回</span></button><button type="button" aria-label="前进到下一处阅读位置" title="前进（阅读区内 Alt＋→）" disabled={!forwardEntries.length} onClick={forwardToReading}><ArrowRight size={15} aria-hidden="true" /><span>前进</span></button>{trailEntries.length > 0 && <><button type="button" aria-label="阅读轨迹" popoverTarget="paper-reading-history" onClick={event => {
@@ -819,13 +882,14 @@ export default function PaperLab() {
             <div className="plab-rail-actions">
               <button type="button" aria-pressed={noteParagraph.bookmarked} onClick={() => updateActiveParagraph({bookmarked: !noteParagraph.bookmarked})}><Bookmark size={14} fill={noteParagraph.bookmarked ? 'currentColor' : 'none'} aria-hidden="true" />{noteParagraph.bookmarked ? '已收藏' : '收藏'}</button>
               <button type="button" aria-pressed={noteParagraph.read} onClick={() => updateActiveParagraph({read: !noteParagraph.read})}><Check size={14} aria-hidden="true" />{noteParagraph.read ? '已读' : '标记为已读'}</button>
+              {paper.ownerId&&paper.id!==samplePaper.id&&<button type="button" onClick={()=>addEvidence(noteParagraph)}>加入项目</button>}
               <button type="button" onClick={() => {if (noteIndex !== activeIndex) jumpToParagraph(noteIndex); setMobilePanel('ai');}}>分析当前段落</button>
               <button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('current', noteIndex)}>翻译当前段落</button>
               <details className="paper-note-more desktop-paper-tool"><summary>更多工具</summary><button type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button></details><button className="mobile-paper-tool" type="button" disabled={translationState === 'unsupported' || translationState === 'working'} onClick={() => void translateParagraphs('all')}>{translationState === 'working' ? `翻译中 ${translationProgress}%` : '翻译全部未译段落'}</button>
             </div>
           </div>}
           <NotesSummary key={`summary:${paperKey}`} paper={paper} onSelect={jumpToParagraph} onCompare={pinReference}/>
-          <AnnotationPanel key={`annotations:${paperKey}`} paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation} onCompare={pinReference}/>
+          <AnnotationPanel key={`annotations:${paperKey}`} paper={paper} onEdit={editAnnotation} onDelete={deleteAnnotation} onJump={jumpToParagraph} onCreate={createAnnotation} onCompare={pinReference} onAddToProject={paper.ownerId&&paper.id!==samplePaper.id?addEvidence:undefined}/>
           <details className="paper-reading-tools"><summary>翻译状态</summary>{!['working','done','error'].includes(translationState)&&<p>{translatorStatusLabel(translationState,isEdge)}</p>}<p>{translationStatusDetail(translationState,modelProgress)}</p></details>
           {insight && <details className="paper-hints">
             <summary>段落提示 <span>非 AI · 规则识别</span></summary>
