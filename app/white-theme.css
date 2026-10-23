@@ -147,7 +147,6 @@ body:has(.light-curtain-canvas[data-motion="unavailable"]) .ambient-toggle { dis
 .acaora-brand strong { font-family: var(--font-sans); font-weight: 500; }
 .acaora-hero { background: transparent; }
 .acaora-hero h1 { font-size: clamp(34px, 4.4vw, 58px); max-width: 18ch; margin-inline: auto; font-weight: 500; line-height: 1.25; }
-.approved-preview { border: 1px solid rgb(255 255 255 / 85%); border-radius: 18px; box-shadow: 0 4px 10px rgb(24 32 48 / 4%), 0 35px 90px rgb(24 32 48 / 10%); }
 .acaora-modules, .acaora-principles { background: transparent; }
 .acaora-principles h2 { font-family: var(--font-sans); }
 .principle-list article { grid-template-columns: 1fr; }
@@ -289,8 +288,6 @@ body:has(.light-curtain-canvas[data-motion="unavailable"]) .ambient-toggle { dis
 .acaora-hero .home-intro > p { margin: 24px 0; max-width: 28ch; font-size: 14px; line-height: 1.9; color: var(--text-2); }
 .acaora-hero .hero-actions { justify-content: flex-start; }
 .hero-main { display: inline-flex; align-items: center; gap: 22px; border-radius: 10px; min-height: 44px; font-size: 14px; padding: 12px 18px; }
-.acaora-hero .approved-preview { margin: 0; padding: 0; border-radius: 14px; overflow: hidden; box-shadow: 0 24px 70px rgb(45 66 95 / 13%); }
-.acaora-hero .approved-preview img { display: block; width: 100%; height: auto; max-width: 100%; transform: none; }
 .acaora-modules { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; padding: 40px 68px; }
 .section-intro { display: block; align-self: start; }
 .section-intro h2 { margin: 0; font-size: 21px; font-weight: 500; }

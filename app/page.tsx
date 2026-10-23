@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { ArrowUpRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import dashboardPreview from "../public/preview-dashboard.webp";
+import {samplePaper} from './papers/paper-types';
+import previewStyles from './home-preview.module.css';
 import { getServerViewer } from "./lib/auth/server-viewer";
 
 const modules = [
@@ -30,8 +30,11 @@ export default async function AcaoraHome() {
           <p>导入 PDF，阅读、标注并整理笔记。课程资料、数据分析和项目也在同一个工作台。</p>
           <div className="hero-actions"><Link className="hero-main" href="/dashboard">进入工作台<ArrowUpRight size={18} aria-hidden="true" /></Link></div>
         </div>
-        <figure className="approved-preview">
-          <Image src={dashboardPreview} preload unoptimized sizes="(max-width: 768px) 100vw, 1200px" alt="Acaora 工作台的空状态" />
+        <figure className={previewStyles.preview} aria-label="原文与笔记示例">
+          <header className={previewStyles.header}><h2>原文与独立笔记</h2><p>产品自带示例 · 不是真实研究成果</p></header>
+          <div className={previewStyles.source}><h3>原文 · Methods · 第 2 页</h3><blockquote lang="en">{samplePaper.paragraphs[1].original}</blockquote></div>
+          <div className={previewStyles.note}><h3>我的笔记</h3><p>{samplePaper.paragraphs[1].note}</p><span>对应上方方法段落，保留独立判断。</span></div>
+          <figcaption><span>来源：示例论文 Methods 段落</span><Link href="/papers?view=reader&amp;paper=sample-paper">打开示例工作台，核对原文</Link></figcaption>
         </figure>
       </section>
 
@@ -45,7 +48,7 @@ export default async function AcaoraHome() {
         <div className="principle-list"><article><div><h3>留在本机</h3><p>PDF 与数据文件在浏览器中解析，原始文件默认不上传。</p></div></article><article><div><h3>跟随账户</h3><p>登录后，阅读进度、笔记和项目记录按账户同步。</p></div></article></div>
       </section>
 
-      <footer className="acaora-footer"><div className="acaora-brand"><span>A</span><div><strong>Acaora</strong><small>学习与研究工作台</small></div></div><div><Link href="/papers">论文</Link><Link href="/data">数据</Link><Link href="/projects">项目</Link><Link href={viewer ? "/settings" : "/auth"}>账户</Link></div></footer>
+      <footer className="acaora-footer"><div className="acaora-brand"><span>A</span><div><strong>Acaora</strong><small>学习与研究工作台</small></div></div><div><Link href="/papers">论文</Link><Link href="/data">数据</Link><Link href="/projects">项目</Link><Link href="/help">帮助</Link><Link href={viewer ? "/settings" : "/auth"}>账户</Link></div></footer>
     </main>
   );
 }

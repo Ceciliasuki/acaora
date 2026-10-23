@@ -1,0 +1,7 @@
+.conflict { margin-bottom: 16px; }
+.conflict p { margin: 0 0 12px; }
+.comparison { display: grid; gap: 12px; margin-top: 12px; }
+.comparison section { min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+.comparison h4 { margin: 0 0 8px; font-size: 14px; }
+.comparison p { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 240px; overflow: auto; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

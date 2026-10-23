@@ -635,3 +635,19 @@ The subsequent decorative preview was rejected. The owner explicitly chose the i
 This supersedes the earlier over-content main rail reveal: the desktop shell now makes room for the 72px → 232px navigation with a synchronized, bounded grid transition. Hover, keyboard disclosure and Escape remain; reduced motion cancels both transitions. The owner-selected overview typography and reader topology remain intact. Primary account/empty-state/course actions use the existing brand tokens; guests see the existing settings login path without an unusable save action. Ambient motion remains off for a first visit, remembers explicit user choices on this device, tolerates unavailable storage, and always yields to system reduced motion. Formula styles belong to the course rendering component rather than every entry route. Rationale, rejected audit prescriptions and verification boundaries are recorded in docs/reviews/2026-10-15-audit-decisions.md. These changes are local until separately released.
 
 The subsequent research-desk redesign was rejected. The owner selected the preceding refinement on 2026-10-15 and authorized deployment: preserve the established overview and workspace compositions, plus the shared fixes in this section. The rejected visual patch and its direction brief remain in ignored local release artifacts. Release status belongs to the PR and public `/api/version`.
+
+## Current role rules · 2026-10-23
+
+This is a refinement of the light workspace, not a replacement visual identity. It resolves roles for the revision batches; the owner-approved editorial Dashboard and reader density stay intact.
+
+| Role | Current rule |
+|---|---|
+| Page identity | Existing PageHeader, normally 30–38px operational headings; keep the Dashboard's approved 46px title. Safe static document titles name the route, never private records. |
+| Current object | Paper/project/dataset title leads its local content, wraps without clipping; keep reader source titles separate from route identity. |
+| Content heading | 16–20px UI headings; source reading uses its existing academic typography and adjustable 18/20/22px body. |
+| Body and metadata | Existing sans UI body, 14px forms and 12–13px metadata at readable contrast; source prose keeps reader typography. Never enlarge everything to force hierarchy. |
+| Primary / secondary actions | Existing cobalt Button for the current committed action; secondary/ghost for edits, comparisons and cancellation. Teal remains reserved for AI. |
+| Local navigation | Existing labelled tabs/directories, visible focus and current state. Low-frequency mobile paper controls live in a named native popover. |
+| Saved / error state | State the actual location: device draft, account record, current page result, local named snapshot. Text accompanies color; failures preserve input and name a recovery action. |
+
+New rules belong to the touched component's CSS module. Home uses a real, labelled built-in paper example with a mobile source excerpt; no private account capture, fabricated research, extra decorative palette or new motion runtime. Snapshot/project association reuses existing records and makes local-only source availability visible.

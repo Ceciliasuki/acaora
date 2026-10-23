@@ -3,6 +3,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {ArrowLeftRight, ChevronLeft, ChevronRight, X} from 'lucide-react';
 import type {PaperRecord} from './paper-types';
+import {inferTextLanguage} from './pdf-text';
 import styles from './reference-pane.module.css';
 
 type Props = {paper: PaperRecord; index: number; activeIndex: number; width: number; onIndex: (index: number) => void; onWidth: (width: number) => void; onResizeStart: () => void; onResizeEnd: () => void; onJump: (index: number, pdf?: boolean) => void; onClose: () => void};
@@ -15,6 +16,7 @@ export default function ReferencePane({paper, index, activeIndex, width, onIndex
   const drag = useRef<number | null>(null);
   const paragraph = paper.paragraphs[index];
   const selected = Math.min(index, paper.paragraphs.length - 1);
+  const translationLanguage = inferTextLanguage(paragraph?.translation ?? '');
   useEffect(() => {body.current?.scrollTo({top: 0});}, [index]);
   if (!paragraph) return null;
   const clamp = (next: number) => Math.max(30, Math.min(50, Math.round(next)));
@@ -43,8 +45,8 @@ export default function ReferencePane({paper, index, activeIndex, width, onIndex
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- A named scrolling region needs keyboard scrolling even though its source text is read-only. */}
       <div ref={body} className={styles.body} role="region" aria-label="对照原文" tabIndex={0}>
         <p className={styles.location}>P{index + 1} · {paragraph.section} · 第 {paragraph.page} 页</p>
-        <p className={styles.original}>{paragraph.original}</p>
-        {translation && <div className={styles.translation}><strong>已有译文</strong><p>{paragraph.translation || '这一段还没有译文。可在主阅读区翻译后再对照。'}</p></div>}
+        <p className={styles.original} lang={inferTextLanguage(paragraph.original)}>{paragraph.original}</p>
+        {translation && <div className={styles.translation}><strong>已有译文</strong><p lang={translationLanguage === 'zh' ? 'zh-CN' : translationLanguage}>{paragraph.translation || '这一段还没有译文。可在主阅读区翻译后再对照。'}</p></div>}
       </div>
       <footer><button type="button" onClick={() => onJump(index)}>定位主阅读区</button><button type="button" disabled={index === activeIndex} onClick={() => {onIndex(activeIndex); onJump(index);}}><ArrowLeftRight size={15} aria-hidden="true"/>交换阅读位置</button><button type="button" aria-pressed={translation} onClick={() => setTranslation(value => !value)}>{translation ? '隐藏对照译文' : '显示对照译文'}</button>{paper.id !== 'sample-paper' && <button type="button" onClick={() => onJump(index, true)}>查看对应原 PDF 页</button>}</footer>
     </aside>

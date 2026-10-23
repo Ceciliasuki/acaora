@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore, type MouseEvent } from "react";
 import Link from "next/link";
 import SourcePreview from './source-preview';
 import { getServerAiKeySnapshot, readAiKey, subscribeAiKey } from "../lib/ai-settings";
@@ -13,6 +13,7 @@ type Props = {
   activeParagraph?: Paragraph;
   activeIndex: number;
   mobileVisible: boolean;
+  initialAction?: string;
   onResult: (result: AiSavedResult, source: PaperRecord, paragraph?: Paragraph) => void;
   onSearchQuery: (query: string) => void;
   onCitation: (index: number, originalPdf?: boolean) => void;
@@ -28,16 +29,45 @@ const actionMeta: Record<AiAction, { label: string; kicker: string; description:
   search: { label: "检索策略", kicker: "SEARCH STRATEGY", description: "把研究主题拆成英文检索式、关键词和纳排标准。", button: "生成检索方案" },
 };
 
-export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, onResult, onSearchQuery, onCitation }: Props) {
-  const [action, setAction] = useState<AiAction>("paragraph");
+function validAction(value: string | undefined): AiAction {
+  return value && Object.prototype.hasOwnProperty.call(actionMeta, value) ? value as AiAction : 'paragraph';
+}
+
+type TaskDraft = {version: 1; question: string; researchTopic: string; translationStyle: string};
+function taskDraftKey(paper: PaperRecord) {return `acaora:ai-task-draft:v1:${JSON.stringify([paper.ownerId ?? null, paper.id])}`;}
+function readTaskDraft(paper: PaperRecord): TaskDraft | null {
+  try {
+    if (typeof window === 'undefined') return null;
+    const value = JSON.parse(sessionStorage.getItem(taskDraftKey(paper)) ?? 'null') as Partial<TaskDraft> | null;
+    return value?.version === 1 && typeof value.question === 'string' && typeof value.researchTopic === 'string' && typeof value.translationStyle === 'string' ? value as TaskDraft : null;
+  } catch {return null;}
+}
+
+export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVisible, initialAction, onResult, onSearchQuery, onCitation }: Props) {
+  const [action, setAction] = useState<AiAction>(() => validAction(initialAction));
   const apiKey = useSyncExternalStore(subscribeAiKey, readAiKey, getServerAiKeySnapshot);
-  const [question, setQuestion] = useState("这篇论文的统计方法是否足以支持其主要结论？");
-  const [researchTopic, setResearchTopic] = useState(paper.title);
-  const [translationStyle, setTranslationStyle] = useState("统计术语优先，表达自然");
+  const [taskDraft] = useState(() => readTaskDraft(paper));
+  const [question, setQuestion] = useState(taskDraft?.question ?? "这篇论文的统计方法是否足以支持其主要结论？");
+  const [researchTopic, setResearchTopic] = useState(taskDraft?.researchTopic ?? paper.title);
+  const [translationStyle, setTranslationStyle] = useState(taskDraft?.translationStyle ?? "统计术语优先，表达自然");
   const [working, setWorking] = useState(false);
   const [error, setError] = useState("");
   const [usage, setUsage] = useState("");
   const [sessionResult, setSessionResult] = useState<AiSavedResult | null>(null);
+  const returnQuery = new URLSearchParams({view: 'reader', paper: paper.id, mode: 'ai', action});
+  if (activeParagraph) returnQuery.set('paragraph', activeParagraph.id);
+  const settingsHref = `/settings?${new URLSearchParams({returnTo: `/papers?${returnQuery}`})}#ai-models`;
+  const contextScope = action === 'paragraph' || action === 'translate' ? '当前段落原文' : action === 'search' ? '研究主题输入' : action === 'chat' ? `你的问题与最多 ${Math.min(paper.paragraphs.length, 12)} 个相关段落原文` : `前 ${Math.min(paper.paragraphs.length, 80)} 个编号段落的原文（上下文最多 85,000 字符）`;
+
+  function preserveTask(event: MouseEvent<HTMLAnchorElement>) {
+    try {
+      const draft: TaskDraft = {version: 1, question, researchTopic, translationStyle};
+      sessionStorage.setItem(taskDraftKey(paper), JSON.stringify(draft));
+    } catch {
+      event.preventDefault();
+      setError('无法保留当前 AI 输入，配置跳转已暂停。请允许当前浏览器使用会话存储后重试；输入仍保留在此处。');
+    }
+  }
 
   const savedResult = useMemo(() => {
     const memory = paper.aiMemory;
@@ -108,7 +138,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
           <div className="ai-console-key">
             <strong>{apiKey ? "当前会话已配置 DeepSeek Key" : "当前会话未配置 AI Key"}</strong>
             <small>Key 只保存在当前浏览器会话；发起分析时会发送到 Acaora 服务端并转发给 DeepSeek，不写入账户数据库。</small>
-            <Link href="/settings#ai-models">管理 AI 与模型 →</Link>
+            <Link href={settingsHref} onClick={preserveTask}>管理 AI 与模型 →</Link>
           </div>
         </header>
 
@@ -119,7 +149,7 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
               as much as for the test suite. Chinese title marks keep it a label. */}
           <div><dt>论文</dt><dd>{`当前论文《${paper.title}》`}</dd></div>
           <div><dt>段落</dt><dd>{activeParagraph ? `${activeIndex + 1} / ${paper.paragraphs.length} · ${activeParagraph.section} · P${activeParagraph.page}` : "未选择段落"}</dd></div>
-          <div><dt>上下文</dt><dd>{action === "paragraph" || action === "translate" ? "当前段落原文" : action === "search" ? "研究主题输入" : `最多 ${Math.min(paper.paragraphs.length, 80)} 个带编号段落`}</dd></div>
+          <div><dt>上下文</dt><dd>{contextScope}</dd></div>
         </dl>
 
         <div className="ai-mode" role="tablist" aria-label="AI 研究功能">
@@ -152,9 +182,10 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
           </label>}
 
           <div className="ai-run-row">
-            <button className="ai-run" type="button" disabled={working || !activeParagraph} onClick={() => void runAction()}>{working ? "DeepSeek 正在分析…" : actionMeta[action].button}</button>
-            <span className="ai-run-note">{usage || (action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : `将使用最多 ${Math.min(paper.paragraphs.length, 80)} 个带编号段落`)}</span>
+            {!apiKey.trim() ? <Link className="ai-run" href={settingsHref} onClick={preserveTask}>配置模型，返回后执行</Link> : <button className="ai-run" type="button" disabled={working || !activeParagraph} onClick={() => void runAction()}>{working ? "DeepSeek 正在分析…" : actionMeta[action].button}</button>}
+            <span className="ai-run-note">{usage || (!apiKey.trim() ? '先配置当前会话的 Key；返回后由你点击运行。' : action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : contextScope)}</span>
           </div>
+          <p className="ai-run-note">点击运行后，论文题名、当前章节和{contextScope}{action === 'translate' ? '及翻译风格' : ''}将经 Acaora 服务端发送给 DeepSeek。原 PDF 和个人笔记不随请求发送。</p>
           {error && <p className="ai-error" role="alert">{error}</p>}
         </div>
 

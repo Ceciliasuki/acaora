@@ -6,6 +6,7 @@ import type {CourseSummary} from './course-types';
 import CourseShell from './course-shell';
 import styles from './course-selection.module.css';
 import MotionNavigation from '../components/motion-navigation';
+import CourseResume from './course-resume';
 export default function CourseCatalog({courses}:{courses:CourseSummary[]}) {
  const [track,setTrack]=useState('全部');const [query,setQuery]=useState('');
  const searchInput=useRef<HTMLInputElement>(null);
@@ -13,6 +14,7 @@ export default function CourseCatalog({courses}:{courses:CourseSummary[]}) {
  const visible=courses.filter(c=>(track==='全部'||c.track===track)&&(!term||[c.code,c.name,c.track,c.description,...c.prerequisites].join(' ').toLocaleLowerCase().includes(term)));
  return <CourseShell title="课程中心" catalog>
   <section className={styles.selection} aria-label="课程选择">
+   <CourseResume courses={courses}/>
    <header className={styles.heading}><div><h2>全部课程</h2><span>{courses.length} 门课程</span></div>
     <div className={styles.search}><Search size={18} aria-hidden="true"/><input ref={searchInput} type="search" aria-label="搜索课程" placeholder="搜索课程" value={query} onChange={event=>setQuery(event.target.value)}/>{query&&<button type="button" aria-label="清空课程搜索" onClick={()=>{setQuery('');searchInput.current?.focus();}}><X size={16} aria-hidden="true"/></button>}</div>
    </header>

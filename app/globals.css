@@ -4175,9 +4175,6 @@ input.ui-input, textarea.ui-textarea, select.ui-select {
 .acaora-hero > p { max-width: 660px; margin: 22px auto 0; color: var(--text-2); font: 400 17px/1.75 var(--font-sans); text-wrap: pretty; }
 .hero-actions a { min-height: 44px; padding: 0 18px; border-radius: var(--r-md); font: 700 14px/1 var(--font-sans); }
 .hero-demo { border: 1px solid var(--border-control); color: var(--text); background: var(--surface); }
-.approved-preview { position: relative; width: min(1180px, 100%); max-height: 650px; display: block; overflow: hidden; margin: 58px auto 0; border: 1px solid var(--border-strong); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-overlay); }
-.approved-preview img { width: 100%; height: auto; display: block; }
-.approved-preview figcaption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .acaora-modules, .acaora-principles { background: var(--surface); border-top: 1px solid var(--border); }
 .section-intro { align-items: end; }
 .section-intro h2, .principle-copy h2 { color: var(--text); font: 600 clamp(26px, 3vw, 38px)/1.2 var(--font-sans); letter-spacing: -.025em; }
@@ -4259,8 +4256,6 @@ input.ui-input, textarea.ui-textarea, select.ui-select {
   .acaora-nav-links { display: none; }
   .acaora-hero { padding-top: 52px; }
   .acaora-hero h1 { font-size: clamp(34px, 10vw, 48px); }
-  .approved-preview { max-height: 430px; margin-top: 38px; border-radius: var(--r-md); }
-  .approved-preview img { width: 920px; max-width: none; transform: translateX(-3%); }
   .module-grid { grid-template-columns: 1fr; }
   .module-card { min-height: 0; border-right: 0; border-bottom: 1px solid var(--border); }
   .module-card:last-child { border-bottom: 0; }

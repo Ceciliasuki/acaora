@@ -86,15 +86,17 @@ export default function Home() {
   const activeY = numeric.includes(yVariable) && yVariable !== activeX ? yVariable : numeric.find((item) => item !== activeX) ?? activeX;
   const activeGroup = categorical.includes(groupVariable) ? groupVariable : categorical[0] ?? "";
   const activeTest = numeric.includes(testVariable) ? testVariable : numeric[0] ?? "";
-  const distribution = activeX ? histogram(data, activeX) : [];
+  const distribution = useMemo(() => tab === 'describe' && activeX ? histogram(data, activeX) : [], [data, activeX, tab]);
   const maxBin = Math.max(1, ...distribution.map((bin) => bin.count));
-  const model = activeX && activeY && activeX !== activeY ? regression(data, activeX, activeY) : null;
-  const test = activeGroup && activeTest ? welchTest(data, activeGroup, activeTest) : null;
+  const model = useMemo(() => tab === 'relation' && activeX && activeY && activeX !== activeY ? regression(data, activeX, activeY) : null, [data, activeX, activeY, tab]);
+  const test = useMemo(() => tab === 'test' && activeGroup && activeTest ? welchTest(data, activeGroup, activeTest) : null, [data, activeGroup, activeTest, tab]);
+  const histogramUnit = dictionary.find(entry=>entry.name===activeX)?.unit.trim() || '单位未提供';
+  const activeSummary = summaries.find(summary=>summary.name===activeX);
 
   const result: AnalysisResult | null = (() => {
     const source = {source:data.name,sample:isSample};
     if (tab === "describe" && activeX) {
-      const summary = summarize(data, activeX);
+      const summary = activeSummary!;
       return {...source,method:"描述统计",context:`分析变量：${activeX}`,metrics:[["有效样本",String(summary.n)],["均值",formatNumber(summary.mean)],["标准差",formatNumber(summary.sd)],["最小值",formatNumber(summary.min)],["中位数",formatNumber(summary.median)],["最大值",formatNumber(summary.max)]]};
     }
     if (tab === "relation" && model) return {...source,method:"Pearson 相关与一元回归",context:`X：${activeX}；Y：${activeY}`,metrics:[["有效样本",String(model.n)],["相关系数 r",formatNumber(model.r,3)],["p",formatP(model.p)],["回归斜率",formatNumber(model.slope,3)],["截距",formatNumber(model.intercept,3)],["R²",formatNumber(model.r2,3)],["t 统计量",formatNumber(model.t,3)]]};
@@ -185,6 +187,7 @@ export default function Home() {
         <section className={ui.dataset} id="import" aria-label="当前数据集">
           <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'示例数据':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
           {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}{error && <p className="error-message" role="alert">{error}</p>}
+          <p className={ui.storageSummary}>原文件不上传；当前数据与固定结果仅在本次页面会话，刷新后需重选文件。方案需导出保存；命名快照仅保存在本机，登录后按账户隔离、匿名时仅在当前标签页，不含数据行，不作云同步。</p>
           <div className={ui.importOptions}><details className={ui.importDetails}><summary>文件格式与导入说明<ChevronDown size={16} aria-hidden="true"/></summary>
           <div className="upload-panel">
             <div className="panel-heading">
@@ -245,20 +248,21 @@ export default function Home() {
                   <div><p>分布直方图</p><h3>{activeX}</h3></div>
                   <label>分析变量<select value={activeX} onChange={(event) => setXVariable(event.target.value)}>{numeric.map((item) => <option key={item}>{item}</option>)}</select></label>
                 </div>
-                <div className="histogram" role="img" aria-label={`${activeX}的直方图`}>
+                <div className={`histogram ${ui.continuousHistogram}`} role="img" aria-label={`${activeX}的直方图；${histogramUnit}；分组频数见下表`}>
                   {distribution.map((bin, index) => (
                     <div className="histogram-column" key={index}>
                       <span>{bin.count || ""}</span>
-                      <i style={{ height: `calc(${(bin.count / maxBin) * 100}% - ${(bin.count / maxBin) * 22}px)` }} />
+                      <i title={`${formatNumber(bin.from,6)} 至 ${formatNumber(bin.to,6)}：${bin.count}`} style={{ height: `calc(${(bin.count / maxBin) * 100}% - ${(bin.count / maxBin) * 22}px)`,minHeight:bin.count?'2px':'0' }} />
                     </div>
                   ))}
                 </div>
                 <div className="axis-labels"><span>{formatNumber(distribution[0]?.from ?? 0, 1)}</span><strong>{activeX}</strong><span>{formatNumber(distribution.at(-1)?.to ?? 0, 1)}</span></div>
+                <details className={ui.frequency}><summary>查看区间与频数表 · {histogramUnit}</summary><p>按有效数值的最小值至最大值等宽分为 9 组，左闭右开；最后一组包含右端点。常量列使用组宽 1。缺失值不计入频数。</p><table><caption>{activeX} · 原始区间端点与频数</caption><thead><tr><th scope="col">区间</th><th scope="col">频数</th></tr></thead><tbody>{distribution.map((bin,index)=><tr key={index}><th scope="row">[{bin.from}, {bin.to}{index===distribution.length-1?']':')'}</th><td>{bin.count}</td></tr>)}</tbody></table></details>
               </div>
               <div className="result-card">
                 <p className="result-label">统计摘要</p>
                 {(() => {
-                  const current = summarize(data, activeX);
+                  const current = activeSummary??summarize(data,activeX);
                   return <>
                     <div className="big-result"><span>均值</span><strong>{formatNumber(current.mean)}</strong><small>标准差 {formatNumber(current.sd)}</small></div>
                     <dl className="stats-list">

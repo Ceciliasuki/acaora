@@ -15,6 +15,7 @@ export default function CourseOverview({course,available,assessments=[]}:{course
  const resume=last&&available.includes(last)?last:available[0];
  const coreLessons=course.chapters.flatMap(c=>c.lessons).filter(l=>!l.optional);
  const completed=coreLessons.filter(l=>available.includes(l.id)&&progress.snapshot.completedLessonIds.includes(l.id)).length;
+ const confirmed=progress.initialized&&['synced','local','pending','reset'].includes(progress.status);
 
  return <article className={`${styles.overview} course-overview`}>
   <header>
@@ -24,7 +25,7 @@ export default function CourseOverview({course,available,assessments=[]}:{course
    <p className={styles.muted}>先修：{course.prerequisites.join('、')}</p>
    <div className={`${styles.actions} course-start`}>
     {resume&&<Link className={styles.primaryLink} prefetch={false} href={`/courses/${course.code}/${resume}`} aria-label={last?'继续学习':`开始学习${course.name}`}>{last?'继续学习':'开始学习'}<ArrowRight size={17} aria-hidden="true"/></Link>}
-    <span className={styles.muted}>核心已读 {completed} / {coreLessons.length} 节</span>
+    <span className={styles.muted}>{progress.status==='loading'?'正在读取学习进度…':progress.status==='anonymous'?'未登录，阅读不会计入账户完成进度':confirmed?`核心已读 ${completed} / ${coreLessons.length} 节`:'账户进度尚未确认，请查看同步状态'}</span>
    </div>
    <CourseStatus progress={progress}/>
   </header>

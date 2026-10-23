@@ -135,6 +135,9 @@ test('RESEARCH-OWNER-03 conflict reload preserves a note draft and retry retains
   await expect(page.locator('.project-tasks')).toContainText('Task from another window');
   await expect(page.locator('.project-evidence')).toContainText(entry.quote);
   await expect(notes).toHaveValue('My unsaved note must survive conflict.');
+  await expect(page.getByRole('button', {name: '保存笔记', exact: true})).toBeDisabled();
+  await page.getByRole('button', {name: '恢复草稿继续编辑', exact: true}).click();
+  await expect(notes).toBeFocused();
   await page.getByRole('button', {name: '保存笔记', exact: true}).click();
   await expect(page.getByText('项目笔记已保存。', {exact: true})).toBeVisible();
   expect(sent).toHaveLength(2);

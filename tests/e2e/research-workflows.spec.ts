@@ -20,9 +20,11 @@ for(const width of [1440,375]) {
     await page.setViewportSize({width,height:width===375?812:1000});
     await installApiMocks(page,{signedIn:true,cloudPapers:[{...source,bibliography:{authors:['A Researcher'],year:2024,venue:'Research Methods',doi:'10.1234/evidence',url:'',tags:['证据'],source:'manual',confirmed:true}}]});
     await page.goto('/papers?view=reader');await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
-    const tool=page.getByRole('button',{name:'文献资料与引用 · 已确认'});await expect(tool).toBeVisible();
+    if(width===375)await page.getByRole('button',{name:'论文工具',exact:true}).click();
+    const tool=page.getByRole('button',{name:'文献资料与引用 · 已确认'});
+    const activeTool=width===375?page.locator('#mobile-paper-tools').getByRole('button',{name:'文献资料与引用',exact:true}):tool;await expect(activeTool).toBeVisible();
     await noOverflow(page);await capture(page,`reader-toolbar-${width}`);
-    await tool.click();await expect(page.getByRole('dialog',{name:'书目信息与引用'})).toBeVisible();
+    await activeTool.click();await expect(page.getByRole('dialog',{name:'书目信息与引用'})).toBeVisible();
   });
   test(`research bibliography, backup and project source round trip ${width}px`,async({page})=>{
     await page.setViewportSize({width,height:width===375?812:1000});

@@ -24,7 +24,7 @@ import ContinuousReader, {type ReaderNavigation, type ReadingAnchor} from './con
 import type { AiSavedResult, PaperRecord, PaperSyncOperation, Paragraph, PaperAnnotation, TextAnchor, AnnotationDraft } from "./paper-types";
 import AnnotationPanel, {AnnotationEditor} from './annotation-panel';
 import {saveResult} from './ai-memory';
-import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines} from './pdf-text';
+import {bodyFontSize, detectSection, inferPdfTitle, readingOrderLines,stripRepeatedMargins,joinPdfLines,buildPdfJoinEvidence,type PdfLine} from './pdf-text';
 import OriginalPdf from './original-pdf';
 import NotesSummary from './notes-summary';
 import {savePaperPdf, deletePaperPdf} from './paper-original-storage';
@@ -172,6 +172,7 @@ export default function PaperLab() {
     handledLocation.current = params.toString();
     setScreen(paperId || params.get('view') === 'reader' ? 'workspace' : 'library');
     setSourceTarget(paperId ? {paperId, paragraphId: paragraphId ?? undefined} : null);
+    if(params.get('mode')==='ai')setMobilePanel('ai');
   });
   useEffect(() => {
     try {const size = Number(localStorage.getItem('acaora:paper-font-size')); if ([18,20,22].includes(size)) queueMicrotask(() => setFontSize(size));} catch { /* Reading preferences are optional. */ }
@@ -837,7 +838,7 @@ export default function PaperLab() {
       setSourceTarget(null);setScreen('library');return;
     }
     const index=sourceTarget.paragraphId ? record.paragraphs.findIndex(item=>item.id===sourceTarget.paragraphId) : record.activeParagraph;
-    if(index<0){setMessage('原段落已不存在或已重新提取，未跳转到其他段落。项目中的摘录仍保留。');setSourceTarget(null);return;}
+    if(index<0){setMessage('原段落已不存在或已重新提取，未跳转到其他段落。项目中的摘录仍保留。');setSourceTarget(null);setScreen('library');return;}
     if(paper.id!==record.id||paper.ownerId!==record.ownerId){
       resolvingSource.current=true;
       try {if(!await openPaper(record))setSourceTarget(null);} finally {resolvingSource.current=false;}
@@ -845,6 +846,7 @@ export default function PaperLab() {
     }
     setScreen('workspace');
     if (sourceTarget.paragraphId) jumpToParagraph(index);
+    if(new URLSearchParams(locationQuery??'').get('mode')==='ai')setMobilePanel('ai');
     setSourceTarget(null);
   });
   useEffect(()=>{let active=true;queueMicrotask(()=>{if(active)void resolveSource();});return()=>{active=false;};},[sourceTarget,hydrated,cloudReadSettled,library,paperKey]);
@@ -867,6 +869,8 @@ export default function PaperLab() {
           </button>
           <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" disabled={!hydrated || extracting} onChange={handlePdf} />
         </div>} />
+
+      <p className={craft.dataNotice}>{cloudState==='checking'?'正在确认账户。原 PDF 不上传；账户确认后才会恢复其论文记录。':userIdRef.current?'原 PDF 不上传；提取后的论文文本、译文与笔记按账户同步。表格、公式与复杂版式请核对原 PDF。':cloudState!=='guest'?'账户状态尚未确认，请保留本机内容；原 PDF 不上传。':'匿名模式：原 PDF 和提取文本、笔记仅保留在此浏览器，不会自动合入账户。表格与公式请核对原 PDF。'}</p>
 
       {message && <div className="paper-message" role="status">{message}</div>}
       {bibliographyKey===paperKey&&<PaperBibliographyEditor key={paperKey} paper={paper} library={library} onClose={()=>setBibliographyKey(null)} onSave={bibliography=>{updatePaper(current=>({...current,bibliography}));setBibliographyKey(null);setMessage('文献资料已更新，正在保存。');}}/>}
@@ -952,10 +956,17 @@ export default function PaperLab() {
           </div>} tools={<><div className="reader-controls">
               <button className="mobile-paper-tool" type="button" aria-label="返回论文列表" onClick={()=>void returnToLibrary()}><ArrowLeft size={15} aria-hidden="true"/>论文列表</button>
               <span>全文阅读</span>
-              {paper.id!==samplePaper.id&&<button type="button" onClick={()=>setBibliographyKey(paperKey)}>文献资料与引用{paper.bibliography?.confirmed?' · 已确认':''}</button>}
+              {paper.id!==samplePaper.id&&<button className="desktop-paper-tool" type="button" onClick={()=>setBibliographyKey(paperKey)}>文献资料与引用{paper.bibliography?.confirmed?' · 已确认':''}</button>}
+              <button className="mobile-paper-tool" type="button" popoverTarget="mobile-paper-tools">论文工具</button>
+              <div id="mobile-paper-tools" popover="auto" className={craft.mobileTools} onToggle={event=>{if(event.newState==='open')event.currentTarget.querySelector<HTMLButtonElement>('button')?.focus();}}>
+                <h3>论文工具</h3>{paper.id!==samplePaper.id&&<button type="button" onClick={()=>{document.getElementById('mobile-paper-tools')?.hidePopover();setBibliographyKey(paperKey);}}>文献资料与引用</button>}
+                <label>正文字号<select value={fontSize} onChange={event=>setFontSize(Number(event.target.value))}>{[18,20,22].map(size=><option key={size} value={size}>{size} px</option>)}</select></label>
+                <button type="button" disabled={translationState==='unsupported'||translationState==='working'} onClick={()=>{document.getElementById('mobile-paper-tools')?.hidePopover();void translateParagraphs('all');}}>翻译全部未译段落</button>
+                <button type="button" popoverTarget="mobile-paper-tools" popoverTargetAction="hide">关闭工具</button>
+              </div>
           {paper.id !== samplePaper.id && <OriginalPdf key={`${paper.ownerId ?? 'guest'}:${paper.id}`} paper={paper} request={pdfRequest?.paperId === paper.id && pdfRequest.ownerId === paper.ownerId ? pdfRequest : undefined} onRequestHandled={() => setPdfRequest(undefined)} onRepair={(source, title, sections) => {
             if (paperRef.current.id !== source.id || (source.ownerId ?? null) !== userIdRef.current) return;
-            updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title ? title : current.title,bibliography:current.bibliography&&current.title===source.title&&title!==current.title?{...current.bibliography,confirmed:false}:current.bibliography, paragraphs: current.paragraphs.map((paragraph, index) => ({...paragraph, section: sections[index] ?? paragraph.section}))} : current);
+            updatePaper(current => current.id === source.id && current.ownerId === source.ownerId ? {...current, title: current.title === source.title && !current.bibliography?.confirmed ? title : current.title, paragraphs: current.paragraphs.map((paragraph, index) => {const original=source.paragraphs[index];return original?.id===paragraph.id&&original.original===paragraph.original&&original.section===paragraph.section?{...paragraph,section:sections[index]??paragraph.section}:paragraph;})} : current);
           }} />}
               <div className="paper-reading-preferences desktop-paper-tool"><label>字号<select aria-label="正文字号" value={fontSize} onChange={event => {const size = Number(event.target.value); setFontSize(size); try {localStorage.setItem('acaora:paper-font-size', String(size));} catch { /* Optional preference. */ }}}>{[18,20,22].map(size => <option key={size} value={size}>{size}</option>)}</select></label></div>
               {(trailEntries.length > 0 || forwardEntries.length > 0) && <div className="paper-reading-trail"><button type="button" aria-label="返回刚才的位置" title="返回（阅读区内 Alt＋←）" disabled={!trailEntries.length} onClick={() => returnToReading(trailEntries.length - 1)}><ArrowLeft size={15} aria-hidden="true" /><span>返回</span></button><button type="button" aria-label="前进到下一处阅读位置" title="前进（阅读区内 Alt＋→）" disabled={!forwardEntries.length} onClick={forwardToReading}><ArrowRight size={15} aria-hidden="true" /><span>前进</span></button>{trailEntries.length > 0 && <><button type="button" aria-label="阅读轨迹" popoverTarget="paper-reading-history" onClick={event => {
@@ -1009,6 +1020,7 @@ export default function PaperLab() {
         <div id="paper-ai" className="paper-mode-content" hidden={mobilePanel !== "ai"}>
         {hydrated && (visited.ai || mobilePanel === 'ai') ? <AiStudio
           paper={paper}
+          initialAction={new URLSearchParams(locationQuery??'').get('action')??undefined}
           activeParagraph={activeParagraph}
           activeIndex={activeIndex}
           mobileVisible={mobilePanel === "ai"}
@@ -1128,9 +1140,10 @@ async function extractPdf(file: File, onProgress: (progress: number) => void): P
   try {
   const document = await loadingTask.promise;
   const paragraphs: Paragraph[] = [];
-  let currentSection = "Introduction";
+  let currentSection = "未分节内容";
   let inferredTitle = file.name.replace(/\.pdf$/i, "").replace(/[-_]+/g, " ");
   let reachedReferences = false;
+  const extractedPages: {lines:PdfLine[];height:number}[]=[];
 
   for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
     const page = await document.getPage(pageNumber);
@@ -1139,36 +1152,44 @@ async function extractPdf(file: File, onProgress: (progress: number) => void): P
       .filter((item): item is typeof item & { str: string; transform: number[]; width: number } => "str" in item && 'width' in item && typeof item.str === "string" && Array.isArray(item.transform))
       .map((item) => ({ text: item.str.trim(), x: item.transform[4] ?? 0, y: Math.round(item.transform[5] ?? 0), width: item.width, size: Math.hypot(item.transform[2], item.transform[3]) }))
       .filter((item) => item.text);
-    const lines = readingOrderLines(items, page.getViewport({scale: 1}).width);
+    const viewport=page.getViewport({scale:1});
+    const lines = readingOrderLines(items, viewport.width);
 
     if (pageNumber === 1) {
       inferredTitle = inferPdfTitle(lines, inferredTitle);
     }
 
-    let accumulator = "";
+    extractedPages.push({lines,height:viewport.height});
+    onProgress(Math.round(pageNumber/document.numPages*80));
+  }
+  const cleanPages=stripRepeatedMargins(extractedPages);
+  const evidenceText=cleanPages.flatMap(page=>page.lines.map(line=>line.text)).join(' ');
+  const joinEvidence=buildPdfJoinEvidence(evidenceText);
+  for(let index=0;index<cleanPages.length;index++){
+    const pageNumber=index+1,lines=cleanPages[index].lines;
+    let accumulator:PdfLine[]=[];
+    let length=0;
+    const flush=()=>{const text=joinPdfLines(accumulator,joinEvidence);if(text)paragraphs.push(makeParagraph(text,pageNumber,currentSection));accumulator=[];length=0;};
     const bodySize = bodyFontSize(lines);
-    for (const {text: line, size} of lines) {
+    for (const item of lines) {
+      const {text:line,size}=item;
       if (reachedReferences) break;
       const section = detectSection(line, size > bodySize + .5);
       if (section) {
-        if (accumulator.length > 80) paragraphs.push(makeParagraph(accumulator, pageNumber, currentSection));
-        accumulator = "";
+        flush();
         if (['References', 'Acknowledgements', 'Supplementary Materials'].includes(section)) {reachedReferences = true; break;}
         currentSection = section;
         continue;
       }
-      accumulator = `${accumulator} ${line}`.trim();
-      if (accumulator.length > 520 && /[.!?)]$/.test(line)) {
-        paragraphs.push(makeParagraph(accumulator, pageNumber, currentSection));
-        accumulator = "";
-      }
+      accumulator.push(item);length+=line.length;
+      if (length > 520 && /[.!?)]$/.test(line)) flush();
     }
-    if (accumulator.length > 80) paragraphs.push(makeParagraph(accumulator, pageNumber, currentSection));
-    onProgress(Math.round((pageNumber / document.numPages) * 100));
+    flush();
+    onProgress(80+Math.round(pageNumber/document.numPages*20));
   }
 
-  const filtered = paragraphs.filter((paragraph) => paragraph.original.length >= 80 && !/©|all rights reserved|downloaded from/i.test(paragraph.original));
-  if (!filtered.length) throw new Error("没有识别到可阅读文本。扫描版 PDF 暂不支持，请使用带文本层的论文。" );
+  const filtered = paragraphs.filter((paragraph) => paragraph.original.length > 0);
+  if (!filtered.some(paragraph=>paragraph.original.length>=80)) throw new Error("没有识别到足够的可阅读文本。扫描版 PDF 暂不支持，请使用带文本层的论文。" );
   const now = Date.now();
   return {
     id: crypto.randomUUID(),
