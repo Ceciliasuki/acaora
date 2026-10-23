@@ -1,0 +1,74 @@
+/* Shared hover language. Native layout, focus and selected state remain owned
+   by each surface. Home has its own authored feedback; source text never moves. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  body[data-hover-feedback] :is(button, .ui-button, summary):not(:disabled, [aria-disabled="true"], [aria-busy="true"], .ambient-toggle, .paper-text-mark):not(.acaora-site *, [data-original-text] *, [contenteditable] *) {
+    translate: 0 0;
+    scale: 1;
+    transition: translate 240ms cubic-bezier(.16,1,.3,1), scale 240ms cubic-bezier(.16,1,.3,1), transform 200ms ease-out, background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 240ms ease;
+  }
+  body[data-hover-feedback] :is(button, .ui-button, summary):not(:disabled, [aria-disabled="true"], [aria-busy="true"], .ambient-toggle, .paper-text-mark):not(.acaora-site *, [data-original-text] *, [contenteditable] *):is(:hover, :focus-visible) {
+    translate: 0 -2px;
+    scale: 1.015;
+  }
+
+  /* Selection plates measure these controls. Their target geometry stays still. */
+  body[data-hover-feedback] :is(.motion-navigation, [role="tablist"]) :is(a, button),
+  body[data-hover-feedback] :is(button[role="tab"], button[aria-pressed], .project-list > button, button[aria-label^="打开论文："]) {
+    translate: 0 0;
+    scale: 1;
+  }
+  body[data-hover-feedback] :is(.motion-navigation, [role="tablist"]) :is(a, button):not(:disabled, [aria-disabled="true"]):is(:hover, :focus-visible),
+  body[data-hover-feedback] button[aria-pressed]:not(:disabled):is(:hover, :focus-visible) {
+    translate: 0 0;
+    scale: 1;
+    box-shadow: inset 0 -2px currentColor;
+  }
+
+  body[data-hover-feedback] :is(a, button) > svg:not(.ui-spinner):not(.acaora-site *, [data-original-text] *) {
+    translate: 0 0;
+    transition: translate 260ms cubic-bezier(.16,1,.3,1);
+  }
+  body[data-hover-feedback] :is(a, button):not(:disabled, [aria-disabled="true"], [aria-busy="true"]):is(:hover, :focus-visible) > svg:not(.ui-spinner):not(.acaora-site *, [data-original-text] *) {
+    translate: 2px 0;
+  }
+
+  /* List hit areas stay fixed; just their title/leading symbol answers the pointer. */
+  body[data-hover-feedback] :is(a[aria-label^="选择课程："], button[aria-label^="打开论文："], .course-lesson-link, .project-list > button, .overview-record) :is(strong, .course-lesson-copy, b) {
+    translate: 0 0;
+    transition: translate 280ms cubic-bezier(.16,1,.3,1);
+  }
+  body[data-hover-feedback] :is(a[aria-label^="选择课程："], button[aria-label^="打开论文："], .course-lesson-link, .project-list > button, .overview-record):not(:disabled):is(:hover, :focus-visible) :is(strong, .course-lesson-copy, b) {
+    translate: 6px 0;
+  }
+  body[data-hover-feedback] button[aria-label^="打开论文："]:is(:hover, :focus-visible),
+  body[data-hover-feedback] .project-list > button:is(:hover, :focus-visible) {
+    translate: 0 0;
+    scale: 1;
+  }
+
+  body[data-hover-feedback] a[aria-labelledby^="workspace-"] {
+    translate: 0 0;
+    transition: translate 320ms cubic-bezier(.16,1,.3,1), box-shadow 320ms ease, border-color 180ms ease;
+  }
+  body[data-hover-feedback] a[aria-labelledby^="workspace-"]:is(:hover, :focus-visible) {
+    translate: 0 -4px;
+    box-shadow: 0 12px 24px -18px rgb(25 55 110 / 40%);
+  }
+  body[data-hover-feedback] a:not(.acaora-site *, .ui-button, [aria-disabled="true"]):is(:hover, :focus-visible) {
+    text-decoration-color: currentColor;
+    text-underline-offset: 4px;
+  }
+  body[data-hover-feedback] :is(.settings-state, .help-layout, .auth-result-page, .auth-form-wrap) a {
+    transition: color 180ms ease, text-decoration-color 180ms ease;
+  }
+  body[data-hover-feedback] :is(.settings-state, .help-layout, .auth-result-page, .auth-form-wrap) a:is(:hover, :focus-visible) {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+  body[data-hover-feedback] :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea):not(:disabled, [readonly]) {
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+  body[data-hover-feedback] :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea):not(:disabled, [readonly]):hover {
+    border-color: var(--brand, #305fce);
+  }
+}

@@ -1,5 +1,6 @@
 'use client';
 import SourcePreview from './source-preview';
+import {readingCue, useAnnotationCue} from '../components/reading-cue';
 
 import {useEffect, useRef, useState} from 'react';
 import type {AnnotationDraft, PaperAnnotation, PaperRecord, Paragraph, TextAnchor} from './paper-types';
@@ -11,8 +12,9 @@ export function AnnotationEditor({draft,onSave,onCancel}: {draft:AnnotationDraft
  const [comment,setComment]=useState(draft.comment);
  const [color,setColor]=useState(draft.color);
  const input=useRef<HTMLTextAreaElement>(null);
- useEffect(()=>{input.current?.focus();},[]);
- return <form className="paper-annotation-editor" aria-label={draft.annotationId?'编辑批注':'添加批注'} onSubmit={event=>{event.preventDefault();onSave({...draft,comment,color});}}>
+ const form=useRef<HTMLFormElement>(null);
+ useEffect(()=>{input.current?.focus();return readingCue(form.current);},[]);
+ return <form ref={form} className="paper-annotation-editor" aria-label={draft.annotationId?'编辑批注':'添加批注'} onSubmit={event=>{event.preventDefault();onSave({...draft,comment,color});}}>
   <h3>{draft.annotationId?'编辑批注':'添加批注'}</h3>
   <blockquote>{draft.anchors.map(anchor=>anchor.quote).join('\n')}</blockquote>
   <label>批注内容<textarea ref={input} aria-label="批注内容" value={comment} maxLength={5000} placeholder="记录你的理解、疑问或需要核对的依据" onChange={event=>setComment(event.target.value)}/></label>
@@ -22,6 +24,8 @@ export function AnnotationEditor({draft,onSave,onCancel}: {draft:AnnotationDraft
 }
 
 export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,onCompare,onAddToProject}: {paper:PaperRecord;onEdit:(paragraphId:string,annotation:PaperAnnotation)=>void;onDelete:(paragraphId:string,id:string)=>void;onJump:(index:number)=>void;onCreate:(anchors:TextAnchor[],highlightOnly:boolean)=>void;onCompare?:(index:number)=>void;onAddToProject?:(paragraph:Paragraph,annotation:PaperAnnotation)=>void}) {
+ const root=useRef<HTMLElement>(null);
+ useAnnotationCue(root,JSON.stringify(paper.paragraphs.flatMap(p=>(p.annotations??[]).map(a=>a.id))));
  const [query,setQuery]=useState('');
  const [color,setColor]=useState('all');
  const [commentsOnly,setCommentsOnly]=useState(false);
@@ -41,7 +45,7 @@ export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,o
  async function copy(){try{await navigator.clipboard.writeText(collected());setFeedback(`已复制 ${picked.length} 条带来源的摘录。`);}catch{setFeedback('剪贴板不可用，请使用“导出所选摘录”保存文件。');}}
  const hasFilters=Boolean(query||color!=='all'||commentsOnly);
  const active=paper.paragraphs[paper.activeParagraph];
- return <section className="paper-annotation-list" aria-label="划线批注">
+ return <section ref={root} className="paper-annotation-list" aria-label="划线批注">
   <header><h3>划线批注</h3><span>{entries.length}</span></header>
   {entries.length>0&&<div className={styles.filters}>
    <input type="search" aria-label="搜索批注" value={query} placeholder="搜索摘录、评论或章节" onChange={event=>setQuery(event.target.value)}/>
@@ -58,7 +62,7 @@ export default function AnnotationPanel({paper,onEdit,onDelete,onJump,onCreate,o
   </div>}
   {!entries.length&&<p>选中文字后添加高亮或批注。也可用 Alt＋M 高亮、Alt＋A 批注。</p>}
   {active&&<button className="paper-annotate-paragraph" type="button" onClick={()=>onCreate([{paragraphId:active.id,start:0,end:active.original.length,quote:active.original}],false)}>批注当前段落</button>}
-  {filtered.map(({paragraph,index,annotation})=><article key={annotationKey(paragraph.id,annotation.id)} className={`annotation-entry color-${annotation.color}`}>
+  {filtered.map(({paragraph,index,annotation})=><article key={annotationKey(paragraph.id,annotation.id)} data-annotation-id={annotation.id} className={`annotation-entry color-${annotation.color}`}>
    <label className={styles.pick}><input type="checkbox" aria-label={`选择 P${index+1} 的批注：${annotation.quote.slice(0,40)}`} checked={selected.has(annotationKey(paragraph.id,annotation.id))} onChange={()=>choose(annotationKey(paragraph.id,annotation.id))}/>加入摘录集</label>
    <SourcePreview paper={paper} index={index} onNavigate={onJump} onCompare={onCompare}/><button className="annotation-location" type="button" onClick={()=>onJump(index)}>P{index+1} · 第 {paragraph.page} 页</button>
    <blockquote>{annotation.quote}</blockquote>{annotation.comment&&<p>{annotation.comment}</p>}

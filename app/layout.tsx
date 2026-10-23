@@ -7,6 +7,7 @@ import "./hover-navigation.css";
 import "./workspace-motion.css";
 import "./paper-reading.css";
 import './research-workflows.css';
+import './interaction-feedback.css';
 import LightCurtain from "./components/light-curtain";
 import WorkspaceAccessibility from './components/workspace-accessibility';
 
@@ -37,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" data-scroll-behavior="smooth">
-      <body><WorkspaceAccessibility /><LightCurtain />{children}</body>
+      <body data-hover-feedback><WorkspaceAccessibility /><LightCurtain />{children}</body>
     </html>
   );
 }

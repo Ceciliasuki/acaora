@@ -3,3 +3,7 @@
 .help h2 {font-size:20px;margin:36px 0 12px;}
 .help p {margin:12px 0;}
 .help a {color:var(--brand-blue,#305fce);text-decoration:underline;text-underline-offset:4px;}
+.help a {text-decoration-thickness:1px;transition:text-decoration-color 160ms ease,color 160ms ease;}
+.help a:is(:hover,:focus-visible) {text-decoration-thickness:2px;color:var(--brand-blue-hover,#244dae);}
+.help a:focus-visible {outline:2px solid var(--brand-blue,#305fce);outline-offset:4px;border-radius:2px;}
+@media(prefers-reduced-motion:reduce) {.help a {transition:none;}}
