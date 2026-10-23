@@ -11,7 +11,7 @@ for(const width of [320,375,768]) test(`Release touch layout and core controls a
   const context=await browser.newContext({viewport:{width,height:900},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
   const page=await context.newPage();await installApiMocks(page,{signedIn:true,projects:[project]});await mkdir(output,{recursive:true});
   for(const route of ['courses','papers','data','projects','settings','auth']) {
-    await page.goto(`/${route}`);
+    await page.goto(route==='papers'?'/papers?view=reader':`/${route}`);
     if(route==='papers') await expect(page.getByLabel('论文标题',{exact:true})).toBeVisible();
     if(route==='projects') {await expect(page.getByRole('heading',{name:project.title,exact:true})).toBeVisible();await page.getByLabel('查找项目',{exact:true}).fill('不存在的计划');await page.getByRole('button',{name:'查看全部项目',exact:true}).click();await page.getByRole('group',{name:'任务筛选',exact:true}).getByRole('button',{name:'待办 70',exact:true}).click();}
     if(route==='data') {await page.getByRole('button',{name:'固定本次结果',exact:true}).click();await page.getByRole('combobox',{name:'分析变量',exact:true}).selectOption('年龄');await page.getByText('查看固定结果对照',{exact:true}).click();await expect(page.locator('.data-result-comparison')).toContainText('7.02');}

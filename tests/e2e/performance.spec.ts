@@ -149,7 +149,10 @@ test('PERF-08 an account switch cancels the pending cursor commit and isolates d
   await expect(page.locator('[data-paragraph-index="6"]')).toHaveAttribute('data-active', 'true');
   state.userId = 'other-performance-user';
   await page.evaluate(() => window.dispatchEvent(new Event('acaora:auth-change')));
-  await expect(page.locator('[data-paragraph-index="0"]')).toHaveAttribute('data-active', 'true');
+  await expect(page.getByLabel('论文标题')).toHaveCount(0);
+  await expect(page.getByRole('region',{name:'论文列表',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:`打开论文：${paper.title}`,exact:true}).click();
+  await expect(page.locator('[data-paragraph-index="0"]')).toHaveAttribute('data-active','true');
   await page.clock.fastForward(16_000);
   await page.waitForTimeout(700);
   expect(state.requests.filter(value => value === 'PUT /api/cloud/papers')).toHaveLength(0);

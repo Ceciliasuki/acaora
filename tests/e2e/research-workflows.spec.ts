@@ -33,7 +33,8 @@ for(const width of [1440,375]) {
     await page.route('**/api/papers/search?**',route=>route.fulfill({json:{papers:[{title:'Crossref candidate title',authors:['A Researcher','B Scholar'],year:2024,venue:'Research Methods',doi:'10.1234/evidence',url:'https://doi.org/10.1234/evidence'}]}}));
     await page.goto('/papers?view=reader');
     await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
-    await page.getByRole('button',{name:/文献资料与引用/}).click();
+    if(width===375)await page.getByRole('button',{name:'论文工具',exact:true}).click();
+    await (width===375?page.locator('#mobile-paper-tools').getByRole('button',{name:'文献资料与引用',exact:true}):page.getByRole('button',{name:/文献资料与引用/})).click();
     const dialog=page.getByRole('dialog',{name:'书目信息与引用'});
     await expect(dialog.getByRole('button',{name:'导出 BibTeX'})).toBeDisabled();
     await dialog.getByLabel('DOI',{exact:true}).fill('10.1234/evidence');

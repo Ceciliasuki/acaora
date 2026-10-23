@@ -50,6 +50,7 @@ test('segment rewrites cover only public static pages and reject traversal paths
  const matches=(source,segment)=>rules.some(rule=>rule.source===source&&new RegExp('^(?:'+rule.has[1].value+')$').test(segment));
  assert.ok(matches('/papers','/papers/__PAGE__'));
  assert.ok(matches('/papers','/_tree'));
+ assert.ok(matches('/help','/_tree'),'help links must use the same CDN segment protocol');
  assert.equal(matches('/papers','/../../api/profile'),false);
  assert.ok((await config.headers()).every(rule=>rule.headers.some(h=>h.key==='X-Nextjs-Postponed'&&h.value==='2')));
 });

@@ -960,7 +960,7 @@ export default function PaperLab() {
               <button className="mobile-paper-tool" type="button" popoverTarget="mobile-paper-tools">论文工具</button>
               <div id="mobile-paper-tools" popover="auto" className={craft.mobileTools} onToggle={event=>{if(event.newState==='open')event.currentTarget.querySelector<HTMLButtonElement>('button')?.focus();}}>
                 <h3>论文工具</h3>{paper.id!==samplePaper.id&&<button type="button" onClick={()=>{document.getElementById('mobile-paper-tools')?.hidePopover();setBibliographyKey(paperKey);}}>文献资料与引用</button>}
-                <label>正文字号<select value={fontSize} onChange={event=>setFontSize(Number(event.target.value))}>{[18,20,22].map(size=><option key={size} value={size}>{size} px</option>)}</select></label>
+                <label>手机正文字号<select value={fontSize} onChange={event=>{const size=Number(event.target.value);setFontSize(size);try{localStorage.setItem('acaora:paper-font-size',String(size));}catch{/* Optional preference. */}}}>{[18,20,22].map(size=><option key={size} value={size}>{size} px</option>)}</select></label>
                 <button type="button" disabled={translationState==='unsupported'||translationState==='working'} onClick={()=>{document.getElementById('mobile-paper-tools')?.hidePopover();void translateParagraphs('all');}}>翻译全部未译段落</button>
                 <button type="button" popoverTarget="mobile-paper-tools" popoverTargetAction="hide">关闭工具</button>
               </div>

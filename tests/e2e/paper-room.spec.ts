@@ -81,6 +81,7 @@ test('Entering the reading room suspends the hidden light field and restores its
   await page.getByRole('button', {name: '开启背景动效'}).click();
   if (available) await expect(canvas).toHaveAttribute('data-motion', 'running');
   await page.locator('#app-sidebar').getByRole('link', {name: '论文研究', exact: true}).click();
+  await page.getByRole('button', {name: '打开示例论文', exact: true}).click();
   await expect(page.getByLabel('论文标题')).toBeVisible();
   await expect(page.locator('.light-curtain')).toBeHidden();
   await expect(page.getByRole('button', {name: '暂停背景动效'})).toBeHidden();

@@ -48,7 +48,7 @@ body:has(.light-curtain-canvas[data-motion="unavailable"]) .ambient-toggle { dis
 .app-sidebar > nav a.active svg { color: var(--brand); }
 .app-sidebar a:focus-visible { outline-color: var(--brand); }
 .student-sidebar-foot { border-top: 0; padding-top: 18px; }
-.student-sidebar-foot > a { border: 0; }
+.student-sidebar-foot > a { border: 0; color: var(--text-2); }
 .app-sidebar .student-sidebar-foot p { display: block; }
 .sidebar-profile-link { color: var(--text); border-radius: 9px; }
 .sidebar-profile-link:hover { background: rgb(255 255 255 / 65%); }

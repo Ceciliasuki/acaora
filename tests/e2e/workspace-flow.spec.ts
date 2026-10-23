@@ -24,11 +24,17 @@ test('Project search and keyboard selection preserve the source draft and recove
   await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('未保存的原项目草稿');
   await page.getByLabel('查找项目',{exact:true}).fill('复核最终');
   await expect(list.getByRole('button')).toHaveCount(1);
+  await expect(page.getByRole('heading',{name:'贸易研究：长任务清单',exact:true})).toBeVisible();
+  await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('未保存的原项目草稿');
+  await list.getByRole('button',{name:/已归档的实证分析/}).press('Enter');
   await expect(page.getByRole('heading',{name:'已归档的实证分析',exact:true})).toBeVisible();
   await page.getByLabel('查找项目',{exact:true}).fill('没有这个项目');
   await expect(page.getByText('没有匹配的项目。',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'查看全部项目',exact:true}).click();
   await expect(list.getByRole('button')).toHaveCount(3);
+  await list.getByRole('button',{name:/已归档的实证分析/}).press('Home');
+  await expect(list.getByRole('button',{name:/贸易研究/})).toBeFocused();
+  await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('未保存的原项目草稿');
 });
 
 test('Long task lists filter by actual state and restore usable focus after a completed row leaves the filter',async({page})=>{

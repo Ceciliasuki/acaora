@@ -86,22 +86,28 @@ test('AI paragraph references navigate to their source and mark out-of-range ref
 test('AI original-page links override saved PDF history and stay local', async ({page}) => {
   const state = await installApiMocks(page, {signedIn: true});
   await page.addInitScript(() => sessionStorage.setItem('statlab-deepseek-key', 'controlled-key'));
-  await page.route('**/api/papers/ai', route => route.fulfill({json: {result: {answer: 'The supporting paragraph is P2.'}, model: 'test'}}));
   await page.goto('/papers?view=reader');
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF').setInputFiles({name: 'citations.pdf', mimeType: 'application/pdf', buffer: textPdf()});
   await expect(page.getByLabel('论文标题')).toHaveValue('Controlled Reading Tools Study', {timeout: 30_000});
+  // Title preservation can add a paragraph; resolve the actual page-two source.
+  const source = page.locator('[data-paragraph-index]').filter({hasText: 'Page 2 contains a controlled study paragraph'});
+  await expect(source).toHaveCount(1);
+  const sourceIndex = Number(await source.getAttribute('data-paragraph-index'));
+  const reference = `P${sourceIndex + 1}`;
+  await page.route('**/api/papers/ai', route => route.fulfill({json: {result: {answer: `The supporting paragraph is ${reference}.`}, model: 'test'}}));
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
   await page.getByLabel('原 PDF 页码').fill('3');
   await page.getByRole('button', {name: '关闭原 PDF', exact: true}).click();
   await page.getByRole('button', {name: 'AI 分析', exact: true}).click();
   await page.getByRole('tab', {name: '论文问答', exact: true}).click();
   await page.getByRole('button', {name: '向论文提问', exact: true}).click();
-  await page.getByRole('button', {name: '查看 P2 对应原 PDF 第 2 页', exact: true}).click();
+  await page.getByRole('button', {name: `查看 ${reference} 对应原 PDF 第 2 页`, exact: true}).click();
   await expect(page.getByLabel('原 PDF 页码')).toHaveValue('2');
   await expect(page.getByRole('img', {name: '原 PDF 第 2 页', exact: true})).toBeVisible();
   expect(JSON.stringify(state.requestBodies)).not.toMatch(/pdfData|base64|application\/pdf|%PDF/);
   await page.getByRole('button', {name: '关闭原 PDF', exact: true}).click();
+  await expect(source).toHaveAttribute('data-active', 'true');
   await expect(page.locator('[data-active=true]')).toContainText('Page 2 contains');
 });
 
