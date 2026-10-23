@@ -44,6 +44,9 @@ test('shared hover leaves reading and input geometry stable and respects reduced
   const original=await geometry();
   await text.hover();
   await expect.poll(geometry).toEqual(original);
+  const navigation=page.getByRole('button',{name:'跳转位置',exact:true});
+  await navigation.hover();
+  await expect.poll(()=>navigation.evaluate(el=>{const style=getComputedStyle(el);return [style.translate,style.scale];})).toEqual(['none','none']);
   await page.goto('/data');
   const button=page.getByRole('button',{name:'导入 / 更换数据',exact:true});
   await page.emulateMedia({reducedMotion:'reduce'});

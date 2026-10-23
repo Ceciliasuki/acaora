@@ -72,3 +72,12 @@
     border-color: var(--brand, #305fce);
   }
 }
+/* Reading history records positions while navigation controls take focus.
+   Keep the entire navigation hit geometry stationary; icons still respond. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  #paper-reader .paper-reading-navigation button {
+    translate: none;
+    scale: none;
+    transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  }
+}
