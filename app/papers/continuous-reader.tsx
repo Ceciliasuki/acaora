@@ -4,6 +4,7 @@ import {memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useS
 import type {Paragraph, PaperAnnotation, TextAnchor} from './paper-types';
 import {annotationSegments} from './paper-annotations.mjs';
 import SelectionTools from './selection-tools';
+import {readingCue, useAnnotationCue} from '../components/reading-cue';
 import MotionNavigation from '../components/motion-navigation';
 import ReaderNavigator, {FindText, type NavigatorHandle} from './reader-navigator';
 import {findInPaper, type FindOptions, type FindRange} from './reader-find';
@@ -32,6 +33,7 @@ type Props = {
 
 export default memo(function ContinuousReader({navigationRef, onNavigate, onBack, onForward, noteIndex, header, tools, paperId, paragraphs, activeIndex, showTranslations, mode, onSelect, jump,onCreateAnnotation,onEditAnnotation}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+  useAnnotationCue(rootRef, JSON.stringify(paragraphs.flatMap(p => (p.annotations ?? []).map(a => a.id))));
   const navigatorRef = useRef<NavigatorHandle>(null);
   const [find, setFind] = useState<FindOptions>({query: '', caseSensitive: false});
   const matches = useMemo(() => findInPaper(paragraphs, find), [paragraphs, find]);
@@ -93,12 +95,14 @@ export default memo(function ContinuousReader({navigationRef, onNavigate, onBack
 
   useEffect(() => {
     if (!jump || jump.index >= paragraphs.length) return;
+    let clearCue = () => {};
     const frame = requestAnimationFrame(() => {
+      clearCue = readingCue(rootRef.current?.querySelector<HTMLElement>(`[data-paragraph-index="${jump.index}"] [data-original-text]`) ?? null);
       position(jump.index, jump.offset); handledJump.current = jump.id;
       // Find stays keyboard-operable while Enter cycles through source locations.
       if (!rootRef.current?.querySelector('[data-reader-find]')?.contains(document.activeElement)) rootRef.current?.focus({preventScroll: true});
     });
-    return () => cancelAnimationFrame(frame);
+    return () => {cancelAnimationFrame(frame); clearCue();};
   }, [jump, paragraphs.length, position]);
 
   useEffect(() => {
@@ -252,7 +256,7 @@ const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active,
   const translationLanguage = inferTextLanguage(paragraph.translation);
   return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active} data-note-active={noteActive}>
     {startsSection && <h2>{paragraph.section}</h2>}
-    <p data-original-text lang={inferTextLanguage(paragraph.original)}>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}><FindText text={segment.text} start={segment.start} ranges={ranges}/></button>:<span key={segment.start}><FindText text={segment.text} start={segment.start} ranges={ranges}/></span>)}</p>
+    <p data-original-text lang={inferTextLanguage(paragraph.original)}>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} data-annotation-id={segment.annotation.id} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}><FindText text={segment.text} start={segment.start} ranges={ranges}/></button>:<span key={segment.start}><FindText text={segment.text} start={segment.start} ranges={ranges}/></span>)}</p>
     {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p lang={translationLanguage === 'zh' ? 'zh-CN' : translationLanguage}>{paragraph.translation}</p></div>}
   </div>;
 });

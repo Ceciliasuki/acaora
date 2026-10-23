@@ -1,4 +1,10 @@
 /* Motion follows interaction, with a stable reading surface. */
+/* Source and note cues share a quiet, temporary edge. No text reflow. */
+[data-reading-cue="true"] {outline:2px solid var(--brand,#305fce);outline-offset:3px;}
+@media(prefers-reduced-motion:no-preference) {
+  [data-reading-cue="true"] {animation:reading-link-cue 1100ms ease-out;}
+}
+@keyframes reading-link-cue {from {outline-color:var(--brand,#305fce);} to {outline-color:transparent;}}
 .workspace-refresh .motion-navigation-hover {
   position: absolute; left: 0; top: 0; width: 1px; height: 1px;
   border-radius: 7px; background: var(--brand-subtle); transform-origin: top left;

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import WorkflowGuide from '../components/workflow-guide';
 import {useState} from 'react';
 import {ArrowRight, Check, ChevronRight} from 'lucide-react';
 import type {CourseSummary} from './course-types';
@@ -29,6 +30,7 @@ export default function CourseOverview({course,available,assessments=[]}:{course
    </div>
    <CourseStatus progress={progress}/>
   </header>
+  <WorkflowGuide kind="course" />
   <div className="course-syllabus-heading"><h3>课程大纲</h3><span>{course.chapters.length} 章</span></div>
   <ol className={styles.chapters}>{course.chapters.map((chapter,i)=>{
    const single=chapter.lessons.length===1&&chapter.lessons[0].title===chapter.title;

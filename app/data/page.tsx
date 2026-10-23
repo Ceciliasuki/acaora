@@ -2,6 +2,7 @@
 
 import { ChangeEvent, DragEvent, MouseEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpFromLine, ChevronDown, HardDrive, RotateCcw } from "lucide-react";
+import WorkflowGuide from '../components/workflow-guide';
 import ResultTools, {type AnalysisResult} from './result-tools';
 import AnalysisRecipeTools from './analysis-recipe-tools';
 import DataWorkbench from './data-workbench';
@@ -183,6 +184,7 @@ export default function Home() {
 
         <div className={`page-body page-body--wide ${ui.body}`} onClickCapture={revealSection}>
 
+        <WorkflowGuide kind="data" />
         <SectionNavigation sections={stages} className="data-stage-nav" label="数据分析分区" />
         <section className={ui.dataset} id="import" aria-label="当前数据集">
           <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'示例数据':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
