@@ -181,7 +181,7 @@ test('REV-D1 edit metadata and task preserves unrelated fields, failed drafts an
   await page.getByRole('button',{name:'编辑任务：Original completed task'}).click();
   await page.getByLabel('任务文字',{exact:true}).fill('Edited completed task');
   await page.getByRole('button',{name:'保存任务文字'}).click();
-  expect(state.projects[0].metadata.tasks?.[0]).toEqual({id:'task-1',text:'Edited completed task',done:true});
+  await expect.poll(()=>state.projects[0].metadata.tasks?.[0]).toEqual({id:'task-1',text:'Edited completed task',done:true});
   await page.getByRole('button',{name:'移除任务：Edited completed task'}).click();
   await page.getByRole('dialog',{name:'移除这项任务？'}).getByRole('button',{name:'取消',exact:true}).click();
   expect(state.projects[0].metadata.tasks).toHaveLength(1);
