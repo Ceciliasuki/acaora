@@ -8,6 +8,7 @@ import "./workspace-motion.css";
 import "./paper-reading.css";
 import './research-workflows.css';
 import LightCurtain from "./components/light-curtain";
+import WorkspaceAccessibility from './components/workspace-accessibility';
 
 const title = "Acaora 学曦 · 大学生智能学习与研究平台";
 const description = "整理课程资料，阅读和标注论文，分析数据，管理研究项目。";
@@ -36,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" data-scroll-behavior="smooth">
-      <body><LightCurtain />{children}</body>
+      <body><WorkspaceAccessibility /><LightCurtain />{children}</body>
     </html>
   );
 }

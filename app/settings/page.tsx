@@ -3,10 +3,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 import craft from '../operational-craft.module.css';
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, Suspense, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
 import SettingsNavigation from './settings-navigation';
 import { Button, FormField, Input, PasswordField, StatusMessage, Textarea, PageHeader } from "../components/ui";
@@ -21,6 +21,33 @@ const emptyProfile: Profile = {
   graduation_year: "",
   preferences: { avatar: "", bio: "", interests: [], language: "zh-CN" },
 };
+
+function allowedAiReturnTo(value: string | null): string | null {
+  if (!value || !value.startsWith('/papers?') || /[\\\p{Cc}]/u.test(value)) return null;
+  try {
+    const url = new URL(value, 'https://acaora.invalid');
+    if (url.origin !== 'https://acaora.invalid' || url.pathname !== '/papers' || url.hash) return null;
+    const allowed = ['paper', 'paragraph', 'view', 'mode', 'action'];
+    if ([...url.searchParams.keys()].some(key => !allowed.includes(key) || url.searchParams.getAll(key).length !== 1)) return null;
+    const paper = url.searchParams.get('paper'), paragraph = url.searchParams.get('paragraph');
+    const action = url.searchParams.get('action') ?? 'paragraph';
+    if (!paper || paper.length > 200 || /[\\\p{Cc}]/u.test(paper) || paragraph && (paragraph.length > 200 || /[\\\p{Cc}]/u.test(paragraph))) return null;
+    if (url.searchParams.get('view') !== 'reader' || url.searchParams.get('mode') !== 'ai' || !['paragraph', 'summary', 'audit', 'replication', 'translate', 'chat', 'search'].includes(action)) return null;
+    const query = new URLSearchParams({view: 'reader', paper, mode: 'ai', action});
+    if (paragraph) query.set('paragraph', paragraph);
+    return `/papers?${query}`;
+  } catch {return null;}
+}
+
+function AiTaskReturn({configured, guest = false}: {configured: boolean; guest?: boolean}) {
+  const search = useSearchParams();
+  const returnTo = allowedAiReturnTo(search.get('returnTo'));
+  if (!returnTo) return null;
+  return <div className="settings-panel-copy">
+    <p>{guest ? '模型设置需要登录；匿名论文不会自动转入账户。登录后请回到此设置页完成配置。' : configured ? '当前会话已有 Key。返回后请确认论文、段落和分析方式，再手动运行。' : '保存当前会话的 Key 后，可返回原来的论文与 AI 操作。返回不会自动调用模型。'}</p>
+    <Link href={returnTo}>返回原来的 AI 任务</Link>
+  </div>;
+}
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -45,6 +72,7 @@ export default function SettingsPage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [changingPassword, setChangingPassword] = useState(false);
   const [aiKey, setAiKey] = useState("");
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [aiModel, setAiModel] = useState("");
   const [version, setVersion] = useState<BuildVersion | null>(null);
   const [versionState, setVersionState] = useState<"loading" | "ready" | "error">("loading");
@@ -55,6 +83,7 @@ export default function SettingsPage() {
       setLoading(true);
       setSessionError("");
       setAiKey(readAiKey());
+      setAiConfigured(Boolean(readAiKey()));
       // Metadata is independent of account fields; an unavailable model endpoint
       // must not hold the entire settings form behind its network timeout.
       void Promise.allSettled([
@@ -186,6 +215,7 @@ export default function SettingsPage() {
     try {
       saveAiKey(aiKey);
       setAiKey(readAiKey());
+      setAiConfigured(Boolean(readAiKey()));
       setMessage(aiKey.trim() ? "AI Key 已保存到当前浏览器会话。" : "当前会话的 AI Key 已清除。");
     } catch {
       setError("当前浏览器无法保存会话设置。请检查存储权限后重试，输入仍保留在此处。");
@@ -216,7 +246,7 @@ export default function SettingsPage() {
 
       {signedIn && !loading && <SettingsNavigation />}
 
-      {loading ? <div className="settings-state" role="status">正在读取账户…</div> : sessionError ? <div className="settings-state" role="alert"><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link></div> : <>
+      {loading ? <div className="settings-state" role="status">正在读取账户…</div> : sessionError ? <div className="settings-state" role="alert"><h2>暂时无法读取账户状态</h2><p>{sessionError}这不代表你没有登录；请重试一次。</p><Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>重新加载</Button></div> : !signedIn ? <div className="settings-state"><h2>登录后管理个人资料</h2><p>当前设备没有可用的登录会话。请重新登录后继续。</p><Link href="/auth">前往登录</Link><Suspense fallback={null}><AiTaskReturn configured={false} guest/></Suspense></div> : <>
         {(message || error) && <div className="workspace-feedback" data-tone={error ? "error" : "success"}><StatusMessage tone={error ? "error" : "success"}>{error || message}</StatusMessage></div>}
         <div className="settings-sections">
           <section className="settings-panel" id="profile">
@@ -235,7 +265,8 @@ export default function SettingsPage() {
           <section className="settings-panel" id="ai-models">
             <div className="settings-section-head"><h2>AI 与模型</h2></div>
             <p className="settings-panel-copy">{aiModelState === "ready" ? <>当前模型：<strong>{aiModel}</strong>。</> : aiModelState === "fallback" ? <>服务端未声明模型名，实际按服务端默认模型运行。</> : aiModelState === "error" ? <>暂时无法确认当前模型：配置请求失败。</> : <>正在读取服务端模型配置…</>}Key 仅保存在当前浏览器会话；发起分析时，Key 和所选文本会发送到 Acaora 服务端并转发给 DeepSeek。Acaora 不把 Key 写入账户数据库。</p>
-            <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" hint="关闭浏览器会话后自动清除。"><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
+            <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" hint="关闭浏览器会话后自动清除。"><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setAiConfigured(false); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
+            <Suspense fallback={null}><AiTaskReturn configured={aiConfigured}/></Suspense>
           </section>
 
           <section className="settings-panel" id="privacy">

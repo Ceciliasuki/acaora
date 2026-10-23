@@ -55,7 +55,7 @@ export default function LiteratureSearch({seed}:{seed:string}) {
   {error&&<div className="literature-error" role="alert"><p>{error}</p><button type="button" onClick={()=>void search(criteria)}>重新检索</button></div>}
   {status&&<p className="literature-status" role="status">{status}</p>}
   {results&&<>
-   <div className="literature-results-head"><div><h3>“{results.criteria.q}”的结果</h3><p>{results.source??'公共学术索引'}{typeof results.total==='number'?` · 索引返回 ${results.total.toLocaleString('zh-CN')} 条`:''} · 第 {results.page} 页</p></div><button type="button" disabled={!selected.size} onClick={exportRis}>导出引用{selected.size?`（${selected.size}）`:''}</button></div>
+   <div className="literature-results-head"><div><h3>“{results.criteria.q}”的结果</h3><p>{results.source??'公共学术索引'}{typeof results.total==='number'?` · 索引返回 ${results.total.toLocaleString('zh-CN')} 条`:' · 索引总量未知'} · 本页 {results.papers.length} 条 · 已选 {selected.size} 条 · 第 {results.page} 页</p><p>Crossref 书目信息采用宽泛匹配，综合检索不可用时可能回退 Semantic Scholar。支持作者、期刊、DOI、年份与类型；短语可作关键词输入，当前未保证引号精确匹配。结果数量不代表检索精度。</p></div><button type="button" disabled={!selected.size} onClick={exportRis}>导出引用{selected.size?`（${selected.size}）`:''}</button></div>
    {!results.papers.length?<p className="literature-empty">没有符合当前条件的文献。可调整关键词或放宽年份、类型范围后重试。</p>:<ol className="literature-records">{results.papers.map(paper=>{
     const key=`${paper.source}:${paper.id}`,url=safeLink(paper.url),pdf=safeLink(paper.pdfUrl);
     return <li key={key}>

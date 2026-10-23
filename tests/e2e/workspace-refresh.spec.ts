@@ -25,7 +25,11 @@ for (const width of [1440, 669, 375]) {
     for (const [path, heading] of [['courses', '课程中心'], ['papers', '论文研究'], ['data', '数据分析'], ['projects', '项目空间'], ['settings', '设置']]) {
       await page.goto(`/${path}`);
       await expect(page.getByRole('heading', {name: heading, exact: true, level: 1})).toBeVisible();
-      if (path === 'papers') await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+      if (path === 'papers') {
+        await expect(page.getByRole('region', {name: '论文列表', exact: true})).toBeVisible();
+        await page.getByRole('button', {name: `打开论文：${paper.title}`, exact: true}).click();
+        await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
+      }
       if (path === 'projects') await expect(page.getByRole('heading', {name: project.title, exact: true})).toBeVisible();
       if (path === 'settings') await expect(page.locator('#settings-name')).toHaveValue('测试同学');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);

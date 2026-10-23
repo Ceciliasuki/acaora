@@ -122,3 +122,10 @@
   .studio.studio :global(.variable-strip) { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 16px; }
 }
 @media (prefers-reduced-motion:reduce) { .importDetails > summary svg,.disclosure > summary svg { transition: none; } }
+.storageSummary {margin:12px 0;color:var(--text-2);font-size:13px;line-height:1.75;max-width:85ch;}
+.frequency {margin-top:20px;font-size:13px;line-height:1.75;overflow-wrap:anywhere;}
+.frequency summary {cursor:pointer;color:var(--brand-on-subtle);padding:8px 0;}
+.frequency table {width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+.frequency th,.frequency td {padding:8px;text-align:left;border-bottom:1px solid var(--border);}
+.studio .continuousHistogram {gap:0;padding-inline:0;}
+.continuousHistogram :global(.histogram-column i) {max-width:none;border-radius:0;border-inline-end:1px solid var(--surface);}

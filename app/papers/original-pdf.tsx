@@ -17,6 +17,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
   const [pageNumber, setPageNumber] = useState(paper.paragraphs[paper.activeParagraph]?.page ?? 1);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [repair,setRepair]=useState<{source:PaperRecord;title:string;sections:string[]}|null>(null);
   const [width, setWidth] = useState(800);
   const [pageWidth, setPageWidth] = useState(612);
   const [zoom, setZoom] = useState<number | 'fit'>('fit');
@@ -156,7 +157,8 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
         }
         return section ?? paragraph.section;
       });
-      onRepair(paper, title, sections);
+      const safeTitle=paper.bibliography?.confirmed?paper.title:title;
+      if(safeTitle!==paper.title||sections.some((section,index)=>section!==paper.paragraphs[index]?.section))setRepair({source:paper,title:safeTitle,sections});
     } catch (caught) {if (mountedRef.current) setError(caught instanceof Error ? caught.message : '原 PDF 未能保存，请重试。');}
     finally {void loadingTask?.destroy(); if (mountedRef.current) setBusy(false);}
   }
@@ -166,6 +168,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
     {open && <dialog ref={dialogRef} className={styles.dialog} aria-label="原 PDF" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
       <header className={styles.header}><strong>原 PDF</strong><button type="button" aria-label="关闭原 PDF" onClick={() => setOpen(false)}>关闭</button></header>
       <p className={styles.privacy}>原文件只保存在当前设备，不上传；清除浏览器数据后需重新选择。</p>
+      {repair&&<div className={styles.privacy}><p>识别到可修复的文献元信息。题名建议：{repair.title}。仅调整题名与章节标签，不改写正文、段落编号、笔记或批注。</p><button type="button" onClick={()=>{onRepair(repair.source,repair.title,repair.sections);setRepair(null);}}>确认修复题名与章节</button><button type="button" onClick={()=>setRepair(null)}>保留现有信息</button></div>}
       <div className={styles.controls}>
         {pdf && <><button type="button" aria-expanded={thumbnails} aria-controls="pdf-page-thumbnails" onClick={() => setThumbnails(value => !value)}>{thumbnails ? '收起页览' : '页面缩略图'}</button><button type="button" aria-label="顺时针旋转原 PDF" onClick={() => setRotation(value => (value + 90) % 360)}>旋转 {rotation}°</button></>}
         {pdf && <><button type="button" disabled={pageNumber <= 1} onClick={() => setPageNumber(n => n - 1)}>上一页</button><label>页码 <input type="number" min={1} max={pdf.numPages} aria-label="原 PDF 页码" value={pageNumber} onChange={e => setPageNumber(Math.max(1, Math.min(pdf.numPages, Number(e.target.value) || 1)))} /> / {pdf.numPages}</label><button type="button" disabled={pageNumber >= pdf.numPages} onClick={() => setPageNumber(n => n + 1)}>下一页</button></>}

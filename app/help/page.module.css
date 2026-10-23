@@ -1,0 +1,5 @@
+.help {min-width:0;padding:32px clamp(20px,5vw,72px);}
+.help article {max-width:72ch;line-height:1.85;color:var(--ink-primary,#242832);}
+.help h2 {font-size:20px;margin:36px 0 12px;}
+.help p {margin:12px 0;}
+.help a {color:var(--brand-blue,#305fce);text-decoration:underline;text-underline-offset:4px;}

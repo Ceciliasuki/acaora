@@ -16,15 +16,27 @@ const project: MockProject = {
 async function ready(page: Page, path: string) {
   await page.goto(path);
   if (path === "/") {
-    const preview = page.getByRole("img", { name: "Acaora 工作台的空状态" });
+    const preview = page.getByRole("figure", { name: "原文与笔记示例" });
     await expect(preview).toBeVisible();
-    await expect.poll(() => preview.evaluate((node) => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth > 0)).toBe(true);
+    await expect(preview.getByRole("heading", { name: "原文与独立笔记" })).toBeVisible();
+    await expect(preview.locator("blockquote[lang=en]")).not.toBeEmpty();
+    await expect(preview.getByText("重点检查是否存在数据泄漏。", { exact: true })).toBeVisible();
+    await expect.poll(() => preview.locator("blockquote").evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16);
+    await expect(preview.getByRole("link", { name: "打开示例工作台，核对原文" })).toHaveAttribute("href", "/papers?view=reader&paper=sample-paper");
   }
   if (path === "/dashboard") await expect(page.locator(".dashboard-loading")).toBeHidden();
-  if (path === "/papers") await expect(page.getByText("云端记忆已同步")).toHaveCount(1);
+  if (path === "/papers") {
+    const library = page.getByRole("region", { name: "论文列表", exact: true });
+    await expect(library).toBeVisible();
+    await expect(library.getByRole("status")).toHaveText("已同步");
+    await expect(library.getByRole("heading", { name: "还没有论文", exact: true })).toBeVisible();
+  }
   if (path === "/projects") await expect(page.getByRole("heading", { name: project.title })).toBeVisible();
   if (path === "/settings") await expect(page.locator("#settings-name")).toHaveValue("测试同学");
-  if (path === "/courses") await expect(page.getByRole("heading", { name: "概率论与数理统计", exact: true })).toBeVisible();
+  if (path === "/courses") {
+    await expect(page.getByRole("heading", { name: "全部课程", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "选择课程：概率论与数理统计", exact: true })).toBeVisible();
+  }
   await page.evaluate(() => document.fonts.ready);
 }
 

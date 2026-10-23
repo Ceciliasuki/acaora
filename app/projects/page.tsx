@@ -4,13 +4,17 @@ import craft from '../operational-craft.module.css';
 import styles from "../focused-workspaces.module.css";
 import AppSidebar from "../components/app-sidebar";
 import Link from "next/link";
+import {useSearchParams} from 'next/navigation';
 import { ArrowRight, BarChart3, BookOpen, FileSearch, GraduationCap, PenLine, Plus, Users, X, type LucideIcon } from "lucide-react";
 
-import { FormEvent, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from "react";
 import { authFetch, getCurrentUser } from "../lib/auth-client";
 import { Button, Dialog, ErrorState, PageHeader } from "../components/ui";
 import MotionNavigation from '../components/motion-navigation';
 import {paperSourceHref, validateProjectEvidence, type ProjectEvidence} from '../lib/project-evidence';
+import ProjectNotes from './project-notes';
+import {clearProjectNoteDraft} from './project-note-drafts';
+import editingStyles from './project-editing.module.css';
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -30,6 +34,97 @@ type Project = {
   created_at: string;
   updated_at: string;
 };
+type SaveProject = (next: Project, message?: string) => Promise<Project | false>;
+type ProjectFields = {title: string; goal: string; deadline: string};
+const projectFields = (project: Project): ProjectFields => ({title: project.title, goal: project.metadata.goal ?? '', deadline: project.metadata.deadline ?? ''});
+const sameFields = (left: ProjectFields, right: ProjectFields) => left.title === right.title && left.goal === right.goal && left.deadline === right.deadline;
+
+function ProjectMetadataEditor({project, saving, error, onSave, onStart}: {project: Project; saving: boolean; error: string; onSave: SaveProject; onStart: () => void}) {
+  const [draft, setDraft] = useState<ProjectFields | null>(null);
+  const [baseline, setBaseline] = useState(projectFields(project));
+  const trigger = useRef<HTMLButtonElement>(null);
+  const titleField = useRef<HTMLInputElement>(null);
+  const mounted = useRef(true);
+  const open = draft !== null;
+  const latest = projectFields(project);
+  const conflict = open && !sameFields(baseline, latest);
+  useEffect(() => {mounted.current = true; return () => {mounted.current = false;};}, []);
+  useEffect(() => {if (open) titleField.current?.focus();}, [open]);
+  function close() {setDraft(null); requestAnimationFrame(() => trigger.current?.focus());}
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (!draft || saving || conflict || !draft.title.trim()) return;
+    // Only the editable fields come from the form. Notes, tasks, evidence and the
+    // version always come from the latest received project, including after 409.
+    const saved = await onSave({...project, title: draft.title.trim(), metadata: {...project.metadata, goal: draft.goal, deadline: draft.deadline}}, '项目资料已保存。');
+    if (saved && mounted.current) close();
+  }
+  if (!draft) return <div className={editingStyles.editEntry}><Button ref={trigger} variant="secondary" disabled={saving} onClick={() => {onStart(); setBaseline(latest); setDraft(latest);}}>编辑项目资料</Button></div>;
+  return <form className={editingStyles.projectForm} aria-labelledby="project-edit-title" onSubmit={event => void save(event)}>
+    <h3 id="project-edit-title">编辑项目资料</h3>
+    {conflict && <div className={editingStyles.conflict} role="alert"><p>项目资料已在其他操作中更新。你的输入仍保留，请先比较已保存内容。</p><dl><div><dt>已保存名称</dt><dd>{latest.title}</dd></div><div><dt>已保存目标</dt><dd>{latest.goal || '未填写'}</dd></div><div><dt>已保存截止日期</dt><dd>{latest.deadline || '未填写'}</dd></div></dl><Button variant="secondary" disabled={saving} onClick={() => {setBaseline(latest); titleField.current?.focus();}}>保留输入并继续编辑资料</Button></div>}
+    <div className={editingStyles.fields}>
+      <label>项目名称<input ref={titleField} required maxLength={120} value={draft.title} disabled={saving} onChange={event => setDraft({...draft, title: event.target.value})}/></label>
+      <label>计划截止日期<input type="date" value={draft.deadline} disabled={saving} onChange={event => setDraft({...draft, deadline: event.target.value})}/></label>
+      <label className={editingStyles.goal}>项目目标<textarea aria-label="项目目标" rows={3} value={draft.goal} disabled={saving} onChange={event => setDraft({...draft, goal: event.target.value})}/></label>
+    </div>
+    {error && <p className={editingStyles.error} role="alert">{error}</p>}
+    <div className={editingStyles.actions}><Button type="submit" disabled={saving || conflict || !draft.title.trim()} loading={saving}>保存项目资料</Button><Button variant="secondary" disabled={saving} onClick={close}>取消编辑资料</Button></div>
+  </form>;
+}
+
+function ProjectTaskList({project, tasks, emptyMessage, saving, error, listRef, onSave, onToggle, onStart}: {project: Project; tasks: Task[]; emptyMessage: string; saving: boolean; error: string; listRef: RefObject<HTMLDivElement | null>; onSave: SaveProject; onToggle: (taskId: string, control: HTMLInputElement) => Promise<void>; onStart: () => void}) {
+  const [editing, setEditing] = useState<{id: string; text: string; baseText: string} | null>(null);
+  const [removing, setRemoving] = useState<Task | null>(null);
+  const editor = useRef<HTMLInputElement>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
+  const mounted = useRef(true);
+  const editingId = editing?.id;
+  const currentTask = project.metadata.tasks?.find(task => task.id === editingId);
+  const editConflict = !!editing && (!currentTask || currentTask.text !== editing.baseText);
+  const removalTask = project.metadata.tasks?.find(task => task.id === removing?.id);
+  const removeConflict = !!removing && (!removalTask || removalTask.text !== removing.text || removalTask.done !== removing.done);
+  useEffect(() => {mounted.current = true; return () => {mounted.current = false;};}, []);
+  useEffect(() => {if (editingId) editor.current?.focus();}, [editingId]);
+  function restoreFocus() {
+    requestAnimationFrame(() => {
+      if (!mounted.current) return;
+      if (trigger.current?.isConnected) trigger.current.focus();
+      else (listRef.current?.querySelector<HTMLInputElement>('input:not([disabled])') ?? listRef.current?.closest('section')?.querySelector<HTMLInputElement>('input[aria-label="新任务"]'))?.focus();
+    });
+  }
+  function closeEditor() {setEditing(null); restoreFocus();}
+  function closeRemoval() {setRemoving(null); restoreFocus();}
+  async function saveTask(event: FormEvent) {
+    event.preventDefault();
+    if (!editing || !currentTask || editConflict || saving || !editing.text.trim()) return;
+    const nextTasks = (project.metadata.tasks ?? []).map(task => task.id === editing.id ? {...task, text: editing.text.trim()} : task);
+    const saved = await onSave({...project, metadata: {...project.metadata, tasks: nextTasks}}, '任务文字已保存。');
+    if (saved && mounted.current) closeEditor();
+  }
+  async function removeTask() {
+    if (!removing || !removalTask || removeConflict || saving) return;
+    const nextTasks = (project.metadata.tasks ?? []).filter(task => task.id !== removing.id);
+    const saved = await onSave({...project, metadata: {...project.metadata, tasks: nextTasks}}, '任务已移除，项目笔记与论文关联保留。');
+    if (saved && mounted.current) closeRemoval();
+  }
+  return <>
+    {editing && <form className={editingStyles.taskForm} aria-label="编辑任务" onSubmit={event => void saveTask(event)}>
+      <label htmlFor="project-task-edit">任务文字</label><input ref={editor} id="project-task-edit" value={editing.text} required disabled={saving} onChange={event => setEditing({...editing, text: event.target.value})}/>
+      {editConflict && <div className={editingStyles.conflict} role="alert">{currentTask ? <><p>任务文字已更新。已保存内容：{currentTask.text}</p><Button variant="secondary" disabled={saving} onClick={() => {setEditing({...editing, baseText: currentTask.text}); editor.current?.focus();}}>保留输入并继续编辑任务</Button></> : <p>该任务已被其他操作移除。你的输入仍保留，可复制文字后取消编辑；不会重新创建已移除的任务。</p>}</div>}
+      {error && <p className={editingStyles.error} role="alert">{error}</p>}
+      <div className={editingStyles.actions}><Button type="submit" disabled={saving || editConflict || !editing.text.trim()} loading={saving}>保存任务文字</Button><Button variant="secondary" disabled={saving} onClick={closeEditor}>取消编辑任务</Button></div>
+    </form>}
+    <div className={`project-tasks ${editingStyles.taskList}`} ref={listRef}>{tasks.length ? tasks.map(task => <div className={editingStyles.taskRow} key={task.id}>
+      <label className={task.done ? 'done' : ''}><input type="checkbox" disabled={saving} checked={task.done} onChange={event => void onToggle(task.id, event.currentTarget)}/><span>{task.text}</span></label>
+      <div className={editingStyles.taskActions}><Button variant="ghost" size="sm" disabled={saving || editing !== null} aria-label={`编辑任务：${task.text}`} onClick={event => {onStart(); trigger.current = event.currentTarget; setEditing({id: task.id, text: task.text, baseText: task.text});}}>编辑</Button><Button variant="ghost" size="sm" disabled={saving || editing !== null} aria-label={`移除任务：${task.text}`} onClick={event => {onStart(); trigger.current = event.currentTarget; setRemoving({...task});}}>移除</Button></div>
+    </div>) : <p>{emptyMessage}</p>}</div>
+    <Dialog open={removing !== null} title="移除这项任务？" description={removing ? `只移除任务“${removing.text}”，项目、笔记和论文关联会保留。` : undefined} confirmLabel={removeConflict ? undefined : '确认移除任务'} destructive busy={saving} onConfirm={removeConflict ? undefined : () => void removeTask()} onClose={closeRemoval}>
+      {removeConflict && <div className={editingStyles.conflict} role="alert">{removalTask ? <><p>这项任务已有其他修改：{removalTask.text}（{removalTask.done ? '已完成' : '待办'}）。请检查后重新确认。</p><Button variant="secondary" disabled={saving} onClick={() => setRemoving({...removalTask})}>使用最新任务重新确认移除</Button></> : <p>该任务已被其他操作移除，无需再次删除。</p>}<Button variant="secondary" disabled={saving} onClick={closeRemoval}>取消移除任务</Button></div>}
+      {error && <p className={editingStyles.error} role="alert">{error}</p>}
+    </Dialog>
+  </>;
+}
 
 const kindOptions = [
   { value: "course", label: "课程项目", icon: BookOpen },
@@ -52,11 +147,19 @@ function projectProgress(project: Project) {
   return Math.round(tasks.filter((task) => task.done).length / tasks.length * 100);
 }
 
+// Observe same-route query changes under Suspense, like the paper reader.
+function ProjectLocation({onChange}: {onChange: (query: string) => void}) {
+  const query = useSearchParams().toString();
+  useEffect(() => onChange(query), [query, onChange]);
+  return null;
+}
+
 export default function ProjectsPage() {
   const [viewer, setViewer] = useState<Viewer>(null);
   const [loaded, setLoaded] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedId, setSelectedId] = useState("");
+  const [locationQuery, setLocationQuery] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -68,7 +171,6 @@ export default function ProjectsPage() {
   const [taskFilters, setTaskFilters] = useState<Record<string,"all"|"todo"|"done">>({});
   const taskListRef = useRef<HTMLDivElement>(null);
   const [filter, setFilter] = useState<"all" | "active">("all");
-  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
   const [deleteOpen, setDeleteOpen] = useState(false);
   /* A failed load is its own state: without it the page rendered a zeroed register
      and the "create your first project" empty state, i.e. it read "we could not
@@ -76,15 +178,31 @@ export default function ProjectsPage() {
   const [loadError, setLoadError] = useState("");
 
   const filteredProjects = useMemo(() => projects.filter(project => (filter !== "active" || project.status === "active") && `${project.title} ${project.metadata.goal ?? ""}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())), [filter, projects, query]);
-  const visibleSelectedId = filteredProjects.some((project) => project.id === selectedId) ? selectedId : filteredProjects[0]?.id ?? "";
+  const requestedId = new URLSearchParams(locationQuery ?? '').get('project');
+  const visibleSelectedId = requestedId ?? selectedId;
   const selected = projects.find((project) => project.id === visibleSelectedId) ?? null;
+  const missingTarget = requestedId !== null && !selected;
   const taskText = selected ? taskDrafts[selected.id] ?? "" : "";
-  const notes = selected ? noteDrafts[selected.id] ?? selected.metadata.notes ?? "" : "";
   const taskFilter = selected ? taskFilters[selected.id] ?? "all" : "all";
   const allTasks = selected?.metadata.tasks ?? [];
   const visibleTasks = allTasks.filter(task => taskFilter === "all" || (taskFilter === "done" ? task.done : !task.done));
   const remainingCount = allTasks.filter(task => !task.done).length;
   const activeCount = projects.filter((project) => project.status === "active").length;
+
+  const selectProject = useCallback((id: string | null, replace = false) => {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set('project', id);
+    else url.searchParams.delete('project');
+    url.searchParams.delete('new');
+    window.history[replace ? 'replaceState' : 'pushState'](null, '', `${url.pathname}${url.search}`);
+    setLocationQuery(url.searchParams.toString());
+    setSelectedId(id ?? '');
+  }, []);
+
+  useEffect(() => {
+    if (!loaded || !viewer || locationQuery === null || requestedId !== null || !projects.length) return;
+    queueMicrotask(() => selectProject(projects[0].id, true));
+  }, [loaded, viewer, locationQuery, requestedId, projects, selectProject]);
 
   useEffect(() => {
     let active = true;
@@ -92,7 +210,7 @@ export default function ProjectsPage() {
     const load = () => {
     if(!active)return;
     const epoch = ++accountEpoch.current;
-    setProjects([]); setViewer(null); setLoaded(false); setShowCreate(false); setDeleteOpen(false); setNoteDrafts({}); setTaskDrafts({}); setMessage(''); setLoadError('');
+    setProjects([]); setViewer(null); setLoaded(false); setShowCreate(false); setDeleteOpen(false); setTaskDrafts({}); setMessage(''); setLoadError('');
     void getCurrentUser()
       .then(async (user) => {
         if (!active || epoch !== accountEpoch.current) return;
@@ -105,8 +223,8 @@ export default function ProjectsPage() {
         const nextProjects = data.projects ?? [];
         setProjects(nextProjects);
         const requested = new URLSearchParams(window.location.search).get('project');
-        setSelectedId(nextProjects.find(project=>project.id===requested)?.id ?? nextProjects[0]?.id ?? '');
-        if (new URLSearchParams(window.location.search).get("new") === "1" || !nextProjects.length) setShowCreate(true);
+        setSelectedId(requested ?? nextProjects[0]?.id ?? '');
+        if (new URLSearchParams(window.location.search).get("new") === "1" || (!nextProjects.length && requested === null)) setShowCreate(true);
       })
       .catch((error: unknown) => {if(active && epoch===accountEpoch.current)setLoadError(error instanceof Error ? error.message : '项目读取失败。');})
       .finally(() => {if(active && epoch===accountEpoch.current)setLoaded(true);});
@@ -141,7 +259,7 @@ export default function ProjectsPage() {
       if (epoch !== accountEpoch.current) return;
       if (!response.ok || !payload.project) throw new Error(payload.error ?? "创建项目失败。");
       setProjects((current) => [payload.project!, ...current]);
-      setSelectedId(payload.project.id);
+      selectProject(payload.project.id);
       setShowCreate(false);
       setMessageTone("success");
       setMessage("项目已创建，可以开始拆解任务了。");
@@ -155,7 +273,7 @@ export default function ProjectsPage() {
     }
   }
 
-  async function saveProject(next: Project, successMessage = "项目已保存。") {
+  async function saveProject(next: Project, successMessage = "项目已保存。"): Promise<Project | false> {
     if (operationLock.current) return false;
     operationLock.current = true;
     setSaving(true);
@@ -180,7 +298,7 @@ export default function ProjectsPage() {
       setProjects((current) => current.map((project) => project.id === next.id ? payload.project! : project));
       setMessageTone("success");
       setMessage(successMessage);
-      return true;
+      return payload.project;
     } catch (error) {
       if (epoch !== accountEpoch.current) return false;
       setMessageTone("error");
@@ -223,8 +341,10 @@ export default function ProjectsPage() {
       const payload = await response.json() as {error?:string};
       if(epoch!==accountEpoch.current)return;
       if (!response.ok) throw new Error(payload.error ?? "删除项目失败。");
+      clearProjectNoteDraft(viewer!.id, selected.id);
       setProjects(current => current.filter(project => project.id !== selected.id));
-      setSelectedId(""); setDeleteOpen(false); setMessageTone("success"); setMessage("项目已删除。");
+      selectProject(projects.find(project => project.id !== selected.id)?.id ?? null, true);
+      setDeleteOpen(false); setMessageTone("success"); setMessage("项目已删除。");
     } catch (error) {
       if(epoch!==accountEpoch.current)return;
       setMessageTone("error"); setMessage(error instanceof Error ? error.message : "删除项目失败，请重试。");
@@ -288,6 +408,7 @@ export default function ProjectsPage() {
 
   return (
     <main className={`student-app project-app workspace-refresh ${craft.craft}`}>
+      <Suspense fallback={null}><ProjectLocation onChange={setLocationQuery}/></Suspense>
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
@@ -296,7 +417,7 @@ export default function ProjectsPage() {
         <div className="page-body">
         {message && !showCreate && !deleteOpen && <div className="project-message workspace-feedback" data-tone={messageTone} role={messageTone === "error" ? "alert" : "status"}>{message}</div>}
 
-        {!loaded ? <section className="project-loading"><i /><p>正在读取项目…</p></section> : loadError ? (
+        {!loaded || locationQuery === null ? <section className="project-loading"><i /><p>正在读取项目…</p></section> : loadError ? (
           <ErrorState
             description={loadError}
             action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
@@ -306,14 +427,14 @@ export default function ProjectsPage() {
         ) : (
           <>
 
-            {!projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => {setMessage(""); setShowCreate(true);}}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
+            {missingTarget ? <ErrorState title="无法打开指定项目" description="当前账户无法访问此项目，可能已删除或尚未同步。没有打开其他项目。" action={<Button variant="secondary" onClick={() => selectProject(projects[0]?.id ?? null, true)}>返回项目列表</Button>} /> : !projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => {setMessage(""); setShowCreate(true);}}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
                   <MotionNavigation as="div" className="project-filter" label="项目筛选" role="group" value={filter}><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></MotionNavigation>
                   <div className="project-search"><label htmlFor="project-search">查找项目</label><input id="project-search" type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="项目名称或目标"/>{query && <button type="button" aria-label="清除项目搜索" onClick={()=>setQuery("")}><X size={15} aria-hidden="true"/></button>}</div>
                   <div className="project-list" role="group" aria-label="项目列表">{filteredProjects.map((project) => {
                     const kind = kindInfo(project.kind);
-                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onKeyDown={navigateProject} onClick={() => setSelectedId(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;
+                    return <button className={project.id === visibleSelectedId ? "active" : ""} aria-current={project.id === visibleSelectedId ? "true" : undefined} key={project.id} onKeyDown={navigateProject} onClick={() => selectProject(project.id)}><div><span>{kind.label} · {statusLabels[project.status]}</span><strong>{project.title}</strong><small>{(project.metadata.tasks ?? []).filter((task) => task.done).length} / {(project.metadata.tasks ?? []).length} 项任务完成</small></div></button>;
                   })}{!filteredProjects.length && <div className="project-filter-empty"><p>{query ? "没有匹配的项目。" : "没有进行中的项目。"}</p><button type="button" onClick={()=>{setQuery("");setFilter("all");}}>查看全部项目</button></div>}</div>
 
                 </aside>
@@ -321,12 +442,19 @@ export default function ProjectsPage() {
                 {selected && <article key={selected.id} className="project-detail">
                   <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" disabled={saving} value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => {setMessage(""); setDeleteOpen(true);}} disabled={saving}>删除</button></div></header>
 
+                  <ProjectMetadataEditor key={`details:${viewer.id}:${selected.id}`} project={selected} saving={saving} error={messageTone === 'error' ? message : ''} onSave={saveProject} onStart={() => setMessage('')}/>
+
                   <p className="project-summary"><span key={(selected.metadata.tasks ?? []).filter((task) => task.done).length}>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>
 
                   <div className="project-detail-grid">
-                    <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={event => void addTask(event)}><input value={taskText} onChange={(event) => setTaskDrafts(current => ({...current,[selected.id]:event.target.value}))} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><MotionNavigation as="div" className="project-task-filter" role="group" label="任务筛选" value={taskFilter}>{([['all',`全部 ${allTasks.length}`],['todo',`待办 ${remainingCount}`],['done',`已完成 ${allTasks.length-remainingCount}`]] as const).map(([value,label])=><button key={value} type="button" aria-pressed={taskFilter===value} onClick={()=>setTaskFilters(current=>({...current,[selected.id]:value}))}>{label}</button>)}</MotionNavigation><div className="project-tasks" ref={taskListRef}>{visibleTasks.length ? visibleTasks.map((task) => <label className={task.done ? "done" : ""} key={task.id}><input type="checkbox" disabled={saving} checked={task.done} onChange={event => void toggleTask(task.id,event.currentTarget)} /><span>{task.text}</span></label>) : <p>{!allTasks.length ? "还没有任务。可以先记录需要查找的论文或待处理的数据。" : taskFilter === "todo" ? "当前没有待办任务。" : "当前没有已完成任务。"}</p>}</div></section>
+                    <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={event => void addTask(event)}><input value={taskText} onChange={(event) => setTaskDrafts(current => ({...current,[selected.id]:event.target.value}))} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><MotionNavigation as="div" className="project-task-filter" role="group" label="任务筛选" value={taskFilter}>{([['all',`全部 ${allTasks.length}`],['todo',`待办 ${remainingCount}`],['done',`已完成 ${allTasks.length-remainingCount}`]] as const).map(([value,label])=><button key={value} type="button" aria-pressed={taskFilter===value} onClick={()=>setTaskFilters(current=>({...current,[selected.id]:value}))}>{label}</button>)}</MotionNavigation>
+                      <ProjectTaskList key={`tasks:${viewer.id}:${selected.id}`} project={selected} tasks={visibleTasks} emptyMessage={!allTasks.length ? '还没有任务。可以先记录需要查找的论文或待处理的数据。' : taskFilter === 'todo' ? '当前没有待办任务。' : '当前没有已完成任务。'} saving={saving} error={messageTone === 'error' ? message : ''} listRef={taskListRef} onSave={saveProject} onToggle={toggleTask} onStart={() => setMessage('')}/>
+                    </section>
 
-                    <section className="project-note-card"><header><h3>项目笔记</h3></header><textarea value={notes} onChange={(event) => setNoteDrafts((current) => ({ ...current, [selected.id]: event.target.value }))} placeholder="记录研究思路、导师反馈或待解决的问题…" id="project-notes" aria-label="项目笔记" /><div className="project-note-actions"><span className="workspace-draft-state">{notes !== (selected.metadata.notes ?? "") ? "有未保存修改" : "与已保存笔记一致"}</span><Button disabled={saving || notes === (selected.metadata.notes ?? "")} onClick={() => void saveProject({ ...selected, metadata: { ...selected.metadata, notes } }, "项目笔记已保存。")}>{saving ? "保存中…" : "保存笔记"}</Button></div></section>
+                    <ProjectNotes key={`${viewer.id}:${selected.id}`} ownerId={viewer.id} projectId={selected.id} savedNotes={selected.metadata.notes ?? ''} savedUpdatedAt={selected.updated_at} saving={saving} onSave={async notes => {
+                      const saved = await saveProject({...selected, metadata: {...selected.metadata, notes}}, '项目笔记已保存。');
+                      return saved ? {notes: saved.metadata.notes ?? '', updatedAt: saved.updated_at} : false;
+                    }} />
                   </div>
 
                   <section className="project-evidence" aria-labelledby="project-evidence-title"><header><h3 id="project-evidence-title">论文证据</h3><p>在论文笔记或批注中选择“加入项目”，保留摘录和来源位置。</p></header>

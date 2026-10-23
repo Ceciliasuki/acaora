@@ -227,6 +227,8 @@ test('attaching the original repairs old metadata without replacing paragraph id
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
   await page.getByLabel('选择当前论文的原 PDF').setInputFiles({name: 'manuscript.pdf', mimeType: 'application/pdf', buffer: manuscriptPdf()});
   await expect(page.getByLabel('原 PDF 第 1 页')).toBeVisible();
+  await expect(page.getByLabel('论文标题')).toHaveValue(old.title);
+  await page.getByRole('button',{name:'确认修复题名与章节'}).click();
   await page.getByRole('button', {name: '关闭原 PDF', exact: true}).click();
   await expect(page.getByLabel('论文标题')).toHaveValue('Analyzing Academic Abstracts Across Cohorts: A Transparent Validation Study with Sensitivity Checks');
   await page.locator('.section-chips').getByRole('button', {name: 'Dataset Construction', exact: true}).click();

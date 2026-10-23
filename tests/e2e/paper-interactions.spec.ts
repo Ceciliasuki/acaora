@@ -142,7 +142,7 @@ for (const width of [1024,1440]) test(`Desktop at ${width}px fits the window wit
   await page.goto('/papers?view=reader'); await expect(page.getByLabel('论文标题')).toHaveValue(paper.title);
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await page.getByRole('button', {name: '笔记', exact: true}).click();
-  await page.getByLabel('正文字号').selectOption('22');
+  await page.getByLabel('正文字号',{exact:true}).selectOption('22');
   await expect(page.locator('.plab-body')).toHaveCSS('font-size', '22px');
   expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
   expect(await page.locator('.plab-workbench').evaluate(el => el.getBoundingClientRect().bottom <= innerHeight)).toBe(true);

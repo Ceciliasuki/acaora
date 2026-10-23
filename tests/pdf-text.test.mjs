@@ -6,7 +6,7 @@ import ts from 'typescript';
 // Compile the actual pure TypeScript parser with the project's existing compiler.
 const source = await readFile(new URL('../app/papers/pdf-text.ts', import.meta.url), 'utf8');
 const compiled = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.ES2022, target: ts.ScriptTarget.ES2022}}).outputText;
-const {readingOrderLines} = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
+const {readingOrderLines, inferPdfTitle, detectSection, stripRepeatedMargins, buildPdfJoinEvidence, joinPdfLines, inferTextLanguage} = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 
 function rows(offset = 0, numeric = false) {
   return Array.from({length: 6}, (_, index) => [
@@ -64,4 +64,106 @@ test('numeric rows below two-column prose keep both sides on each row', () => {
 test('sequential indented prose blocks are not mistaken for simultaneous columns', () => {
   const items = [700, 680, 660, 600, 580, 560, 500, 480, 460].map((y, index) => ({text: `Sequential line ${index} is part of a single ordered document flow.`, x: index >= 3 && index < 6 ? 540 : 40, y, width: 320, size: 10}));
   assert.deepEqual(readingOrderLines(items, 1000).map(line => line.text), items.map(item => item.text));
+});
+
+test('title inference combines adjacent title lines and stops before smaller author text', () => {
+  assert.equal(inferPdfTitle([
+    {text: 'A Study of Transparent Research', size: 18, y: 700},
+    {text: 'Across Multiple Independent Cohorts', size: 18, y: 676},
+    {text: 'Alex Researcher and Robin Scholar', size: 11, y: 630},
+  ], 'fallback'), 'A Study of Transparent Research Across Multiple Independent Cohorts');
+});
+
+test('numbered subsections and roman headings need typography for unknown labels', () => {
+  assert.equal(detectSection('2.1 Models for 2020 Data', true), 'Models for 2020 Data');
+  assert.equal(detectSection('II. Empirical Strategy', true), 'Empirical Strategy');
+  assert.equal(detectSection('2.1 Models for 2020 Data'), '');
+  assert.equal(detectSection('2 15 2019 0.05', true), '');
+  assert.equal(detectSection('3 We find that the estimates vary across each of the many observed groups', true), '');
+  assert.equal(detectSection('3. We find a difference.', true), '');
+  assert.equal(detectSection('1.2 Methods'), 'Methods');
+});
+
+const proseLine = (text, y, extra = {}) => ({text, y, size: 10, x: 40, width: 420, ...extra});
+
+test('margin filtering removes only repeated outer-margin prose and page numbers', () => {
+  const pages = [1, 2, 3].map(number => ({height: 800, lines: [
+    proseLine('Journal of Controlled Studies', 770, {size: 8}),
+    proseLine(`Page ${number} of 3`, 25, {size: 8}),
+    proseLine('A repeated sentence belongs to every body section.', 400),
+    proseLine('1 2 3 4 5 6', 30),
+    proseLine('x = y + 2', 765),
+  ]}));
+  for (const page of stripRepeatedMargins(pages)) {
+    assert.deepEqual(page.lines.map(line => line.text), ['A repeated sentence belongs to every body section.', '1 2 3 4 5 6', 'x = y + 2']);
+  }
+  assert.equal(stripRepeatedMargins(pages.slice(0, 1))[0].lines.length, 5);
+});
+
+test('unique margin content and title-sized repeated lines remain intact', () => {
+  const pages = [1, 2, 3].map(number => ({height: 800, lines: [
+    proseLine(`Unique footer content ${number}`, 25, {size: 8}),
+    proseLine('Repeated large heading', 770, {size: 16}),
+    proseLine('A sufficiently long body sentence sets the normal type size.', 400),
+  ]}));
+  assert.deepEqual(stripRepeatedMargins(pages), pages);
+});
+
+test('line-end repair requires layout and independent whole-word evidence', () => {
+  const lines = [proseLine('We describe an inter-', 600), proseLine('vention using controlled data.', 586, {width: 310})];
+  assert.equal(joinPdfLines(lines, 'The intervention was preregistered.'), 'We describe an intervention using controlled data.');
+  assert.equal(joinPdfLines(lines), 'We describe an inter- vention using controlled data.');
+  assert.equal(joinPdfLines(lines.map(({text,size,y}) => ({text,size,y})), 'The intervention was preregistered.'), 'We describe an inter- vention using controlled data.');
+  assert.equal(joinPdfLines([lines[0], {...lines[1], x: 540, y: 700}], 'The intervention was preregistered.'), 'We describe an inter- vention using controlled data.');
+});
+
+test('true compounds, minus signs, numbers and formulas retain their characters', () => {
+  const lines = [proseLine('A cross-', 600), proseLine('sectional study of well-being has coefficient -0.5 and x-y = -2.', 586)];
+  assert.equal(joinPdfLines(lines, 'We also use crosssectional spelling.'), 'A cross- sectional study of well-being has coefficient -0.5 and x-y = -2.');
+  assert.equal(joinPdfLines([proseLine('An inter-', 600), proseLine('vention appears.', 586)], 'The words inter-vention and intervention both occur.'), 'An inter- vention appears.');
+  assert.equal(joinPdfLines([proseLine('An inter\u00ad', 600), proseLine('vention appears.', 586)]), 'An intervention appears.');
+});
+
+test('one shared document index preserves conservative repairs across paragraph flushes', () => {
+  const evidence = buildPdfJoinEvidence('The INTERVENTION was preregistered. Both inter-vention and intervention occur. Crosssectional is a word.');
+  const cases = [
+    [proseLine('An inter-', 600), proseLine('vention appears.', 586)],
+    [proseLine('A cross-', 600), proseLine('sectional study.', 586)],
+    [proseLine('An inter\u00ad', 600), proseLine('vention appears.', 586)],
+    [proseLine('Coefficient -0.5 and x-y = -2.', 600), proseLine('Other numbers 123-456.', 586)],
+  ];
+  for (let index = 0; index < 500; index++) {
+    assert.equal(joinPdfLines(cases[index % cases.length], evidence), [
+      'An inter- vention appears.', 'A cross- sectional study.',
+      'An intervention appears.', 'Coefficient -0.5 and x-y = -2. Other numbers 123-456.',
+    ][index % cases.length]);
+  }
+  assert.equal(joinPdfLines(cases[0], buildPdfJoinEvidence('The INTERVENTION was preregistered.')), 'An intervention appears.');
+});
+
+test('plain paragraphs do not scan document evidence and indexed flushes never rescan it', () => {
+  const document = 'The intervention was preregistered with controlled observations. '.repeat(7000);
+  const original = String.prototype.toLowerCase;
+  let documentScans = 0;
+  String.prototype.toLowerCase = function () {
+    if (String(this) === document) documentScans++;
+    return original.call(this);
+  };
+  try {
+    const plain = [proseLine('No line break repair is needed.', 600), proseLine('The next sentence is complete.', 586)];
+    assert.equal(joinPdfLines(plain, document), 'No line break repair is needed. The next sentence is complete.');
+    assert.equal(documentScans, 0);
+    const evidence = buildPdfJoinEvidence(document);
+    const broken = [proseLine('An inter-', 600), proseLine('vention appears.', 586)];
+    for (let index = 0; index < 500; index++) assert.equal(joinPdfLines(broken, evidence), 'An intervention appears.');
+    assert.equal(documentScans, 1);
+  } finally {
+    String.prototype.toLowerCase = original;
+  }
+});
+
+test('language inference labels only sufficiently clear English or Chinese', () => {
+  assert.equal(inferTextLanguage('The study evaluates the results of our model using observations from multiple cohorts and reports uncertainty in the estimates.'), 'en');
+  assert.equal(inferTextLanguage('本研究使用多个样本比较统计模型的结果，并报告估计的不确定性。'), 'zh');
+  for (const text of ['Introduction', 'x-y = -2', 'Une étude quantitative sur plusieurs cohortes avec des résultats statistiques.', '中文与 English terminology mixed in this short title']) assert.equal(inferTextLanguage(text), undefined);
 });

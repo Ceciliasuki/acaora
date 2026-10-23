@@ -1,0 +1,2 @@
+.skip {position:fixed;inset:12px auto auto 12px;z-index:1000;transform:translateY(-180%);padding:12px 18px;background:var(--brand-blue,#305fce);color:#fff;border-radius:8px;text-decoration:underline;text-underline-offset:4px;}
+.skip:focus {transform:translateY(0);outline:3px solid var(--ink-primary,#242832);outline-offset:3px;}

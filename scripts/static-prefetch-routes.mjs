@@ -2,7 +2,7 @@
 // The home page reads viewer cookies when auth is configured, so it is dynamic.
 export const staticPrefetchRoutes = [
   '/auth', '/auth/reset', '/courses', '/dashboard', '/data',
-  '/dev/ui-kit', '/papers', '/projects', '/settings',
+  '/dev/ui-kit', '/help', '/papers', '/projects', '/settings',
 ];
 export const prefetchAssetDirectory = 'acaora-segments';
 // The deployed adapter does not substitute captures from request headers.

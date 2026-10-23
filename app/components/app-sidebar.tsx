@@ -4,6 +4,7 @@
 
 import {
   Menu,
+  CircleHelp,
   PanelLeftClose,
   PanelLeftOpen,
   X,
@@ -144,6 +145,7 @@ export default function AppSidebar({
       {active === 'dashboard' ? <nav aria-label="主要导航">{links}</nav> :
         <MotionNavigation className="sidebar-nav-motion" label="主要导航" value={active} rememberKey="workspace-sidebar">{links}</MotionNavigation>}
       <div className="student-sidebar-foot">
+        <Link href="/help" aria-label="帮助与恢复" onClick={()=>setOpen(false)}><CircleHelp size={20} aria-hidden="true"/><span>帮助与恢复</span></Link>
         <QuickNavigation onNavigate={()=>setOpen(false)}/>
         <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料" onClick={() => setOpen(false)}>
           {displayedProfile.avatarUrl ? <img src={displayedProfile.avatarUrl} width="72" height="72" alt="" /> : <b>{displayedProfile.initials}</b>}

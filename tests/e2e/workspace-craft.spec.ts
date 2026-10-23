@@ -121,7 +121,7 @@ test('Task and note drafts belong to their project when switching records', asyn
   await page.locator('.project-list').getByRole('button',{name:/文献整理与研究计划/}).click();
   await expect(page.getByLabel('新任务',{exact:true})).toHaveValue('第一条草稿');
   await expect(page.getByLabel('项目笔记',{exact:true})).toHaveValue('尚未保存的研究思路');
-  await expect(page.getByText('有未保存修改',{exact:true})).toBeVisible();
+  await expect(page.locator('#project-note-state')).toHaveText('草稿已保存在本机 · 尚未保存到账户');
 });
 
 test('Project creation and deletion failures stay visible inside their dialog', async ({page})=>{

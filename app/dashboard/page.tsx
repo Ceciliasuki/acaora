@@ -12,7 +12,7 @@ type Viewer = { id: string; email?: string } | null;
 type Project = { id: string; title: string; status?: string; updated_at?: string };
 type Paper = { id: string; title: string; updatedAt?: number; paragraphs?: unknown[] };
 type LoadState = "loading" | "guest" | "empty" | "ready" | "error";
-type Activity = { id: string; title: string; detail: string; updatedAt: number; href: "/papers" | "/projects" };
+type Activity = { id: string; title: string; detail: string; updatedAt: number; href: string; kind: '论文' | '项目' };
 
 const workspaces = [
   { href: "/courses", title: "课程中心" },
@@ -55,8 +55,8 @@ export default function DashboardPage() {
   }, []);
 
   const activity = useMemo<Activity[]>(() => [
-    ...papers.map((paper) => ({ id: `paper-${paper.id}`, title: paper.title, detail: `${paper.paragraphs?.length ?? 0} 个段落`, updatedAt: paper.updatedAt ?? 0, href: "/papers" as const })),
-    ...projects.map((project) => ({ id: `project-${project.id}`, title: project.title, detail: statusLabel(project.status), updatedAt: project.updated_at ? Date.parse(project.updated_at) : 0, href: "/projects" as const })),
+    ...papers.map((paper) => ({ id: `paper-${paper.id}`, title: paper.title, detail: `${paper.paragraphs?.length ?? 0} 个段落`, updatedAt: paper.updatedAt ?? 0, kind: '论文' as const, href: `/papers?${new URLSearchParams({view: 'reader', paper: paper.id})}` })),
+    ...projects.map((project) => ({ id: `project-${project.id}`, title: project.title, detail: statusLabel(project.status), updatedAt: project.updated_at ? Date.parse(project.updated_at) : 0, kind: '项目' as const, href: `/projects?${new URLSearchParams({project: project.id})}` })),
   ].sort((a, b) => (Number.isFinite(b.updatedAt) ? b.updatedAt : 0) - (Number.isFinite(a.updatedAt) ? a.updatedAt : 0)).slice(0, 4), [papers, projects]);
   const displayName = viewer?.email?.split("@")[0] ?? "同学";
   const counted = state === "ready" || state === "empty";
@@ -94,7 +94,7 @@ export default function DashboardPage() {
         {state === "loading" ? <div className={`dashboard-loading ${styles.loading}`} role="status" aria-label="正在读取工作台记录" /> : activity.length > 0 ? <div className={styles.records}>
           {activity.map((item) => <Link className={`overview-record ${styles.record}`} href={item.href} key={item.id}>
             <strong>{item.title}</strong>
-            <small><span>{item.href === "/papers" ? "论文" : "项目"} · {item.detail}</span><span>{stamp(item.updatedAt)}</span></small>
+            <small><span>{item.kind} · {item.detail}</span><span>{stamp(item.updatedAt)}</span></small>
           </Link>)}
           <p className={styles.scope}>显示论文与项目的最近记录。</p>
         </div> : <div className={styles.empty}>

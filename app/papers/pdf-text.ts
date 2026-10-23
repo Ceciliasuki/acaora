@@ -1,4 +1,5 @@
-export type PdfLine = {text: string; size: number; y: number};
+export type PdfLine = {text: string; size: number; y: number; x?: number; width?: number};
+export type PdfPageText = {lines: PdfLine[]; height: number};
 
 type TextItem = {text: string; x: number; y: number; width: number; size: number};
 
@@ -25,7 +26,10 @@ export function readingOrderLines(items: TextItem[], pageWidth: number): PdfLine
     }
     merged.push(run); runs.push(...merged); rowRuns.set(y, merged);
   }
-  const line = (row: TextItem[], y: number): PdfLine => ({y, size: Math.max(...row.map(item => item.size)), text: row.map(item => item.text).join(' ').replace(/\s+/g, ' ').trim()});
+  const line = (row: TextItem[], y: number): PdfLine => {
+    const x = Math.min(...row.map(item => item.x));
+    return {y, x, width: Math.max(...row.map(item => item.x + item.width)) - x, size: Math.max(...row.map(item => item.size)), text: row.map(item => item.text).join(' ').replace(/\s+/g, ' ').trim()};
+  };
   // Prefer the central split, then consider nearby gutters for unequal margins.
   const candidates = [.5, .45, .55, .4, .6, .35, .65].map(ratio => {
     const gutter = ratio * pageWidth;
@@ -55,7 +59,7 @@ export function readingOrderLines(items: TextItem[], pageWidth: number): PdfLine
 }
 
 export function detectSection(line: string, headingSize = false) {
-  const numbered = line.match(/^\d+(?:\.\d+)*[.)]?\s+([A-Za-z][A-Za-z ,:&()\-–/]{2,100})$/);
+  const numbered = line.match(/^(?:\d+(?:\.\d+)*[.)]?|[IVXLCDM]{1,6}[.)])\s+([A-Za-z][A-Za-z0-9 ,:&()\-–/]{2,100})$/);
   const normalized = (numbered?.[1] ?? line).trim();
   const sections: [RegExp, string][] = [
     [/^abstract$/i, 'Abstract'], [/^(introduction|background)$/i, 'Introduction'],
@@ -92,4 +96,87 @@ export function inferPdfTitle(lines: PdfLine[], fallback: string) {
     title.push(line.text);
   }
   return title.join(' ').trim() || fallback;
+}
+
+// A repeated, short line must occur at the same outer page margin on most
+// pages. Body repetitions, table rows and equations remain in the text.
+export function stripRepeatedMargins(pages: PdfPageText[]): PdfPageText[] {
+  if (pages.length < 2) return pages;
+  const keys = new Map<PdfLine, string>();
+  const occurrences = new Map<string, Set<number>>();
+  pages.forEach((page, index) => {
+    const body = bodyFontSize(page.lines.filter(line => line.y > page.height * .12 && line.y < page.height * .88));
+    for (const line of page.lines) {
+      if (!(page.height > 0) || line.text.length > 180 || !body || line.size > body + .5) continue;
+      const margin = line.y <= page.height * .08 ? 'bottom' : line.y >= page.height * .92 ? 'top' : '';
+      if (!margin) continue;
+      const text = line.text.trim().replace(/\s+/g, ' ').toLowerCase();
+      const pageNumber = /^(?:page\s+)?\d{1,4}(?:\s*(?:\/|of)\s*\d{1,4})?$/.test(text);
+      const letters = text.match(/\p{L}/gu)?.length ?? 0;
+      if (!pageNumber && (letters < 8 || letters < text.length * .55 || /[=<>∑∫]/u.test(text))) continue;
+      const key = `${margin}:${pageNumber ? '[page-number]' : text}`;
+      keys.set(line, key);
+      const seen = occurrences.get(key) ?? new Set<number>();
+      seen.add(index); occurrences.set(key, seen);
+    }
+  });
+  const threshold = Math.max(2, Math.ceil(pages.length * .6));
+  return pages.map(page => ({...page, lines: page.lines.filter(line => (occurrences.get(keys.get(line) ?? '')?.size ?? 0) < threshold)}));
+}
+
+// Hard hyphens are ambiguous. Join only with a continuous line layout AND an
+// unhyphenated spelling already present elsewhere in this document. Known
+// compound prefixes and an explicitly hyphenated spelling veto that repair.
+export type PdfJoinEvidence = {
+  words: ReadonlySet<string>;
+  compounds: ReadonlySet<string>;
+};
+
+// Share this document-level index across paragraph flushes. A string remains
+// accepted for isolated callers, but is indexed lazily only for repair candidates.
+export function buildPdfJoinEvidence(text: string): PdfJoinEvidence {
+  const normalized = text.toLowerCase();
+  return {
+    words: new Set(normalized.match(/\p{L}{3,}/gu) ?? []),
+    compounds: new Set(normalized.match(/\p{L}+(?:-\p{L}+)+/gu) ?? []),
+  };
+}
+
+export function joinPdfLines(lines: PdfLine[], evidence: PdfJoinEvidence | string = ''): string {
+  let indexEvidence: PdfJoinEvidence | undefined = typeof evidence === 'string' ? undefined : evidence;
+  const compoundPrefix = /^(?:well|self|cross|multi|non|anti|re|pre|post|low|high|long|short|case|data|state|time|small|large|full|single|double|all|half|two|three)$/i;
+  let text = '';
+  for (let index = 0; index < lines.length; index++) {
+    const current = lines[index], previous = lines[index - 1];
+    if (!previous) {text = current.text; continue;}
+    const soft = /\p{L}\u00ad$/u.test(previous.text) && /^\p{Ll}/u.test(current.text);
+    const left = previous.text.match(/(?:^|[^\p{L}-])(\p{L}{4,})-$/u)?.[1];
+    const right = current.text.match(/^(\p{Ll}{3,})(?=[^\p{L}-]|$)/u)?.[1];
+    let hard = false;
+    if (left && right && !compoundPrefix.test(left)
+      && previous.x !== undefined && previous.width !== undefined && current.x !== undefined
+      && Math.abs(previous.x - current.x) <= previous.size * 1.5 && Math.abs(previous.size - current.size) <= .8
+      && previous.y - current.y >= previous.size * .5 && previous.y - current.y <= previous.size * 2.4) {
+      indexEvidence ??= buildPdfJoinEvidence(evidence as string);
+      if (indexEvidence.words.has(`${left}${right}`.toLowerCase()) && !indexEvidence.compounds.has(`${left}-${right}`.toLowerCase())) {
+        const rightEdge = Math.max(...lines.filter(line => line.x !== undefined && line.width !== undefined && Math.abs(line.x - previous.x!) <= previous.size * 1.5).map(line => line.x! + line.width!));
+        hard = previous.x + previous.width >= rightEdge - previous.size;
+      }
+    }
+    text = soft || hard ? `${text.slice(0, -1)}${current.text}` : `${text} ${current.text}`;
+  }
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+// Leave uncertain/short/mixed-language text unlabelled instead of marking all
+// imported source material as English. 'zh' does not guess a writing script.
+export function inferTextLanguage(text: string): 'en' | 'zh' | undefined {
+  const letters = text.match(/\p{L}/gu)?.length ?? 0;
+  const han = text.match(/\p{Script=Han}/gu)?.length ?? 0;
+  if (han >= 8 && han / letters >= .6) return 'zh';
+  const latin = text.match(/[A-Za-z]/g)?.length ?? 0;
+  const words = text.toLowerCase().match(/[a-z]+/g) ?? [];
+  const markers = new Set(words.filter(word => /^(?:the|and|of|to|in|is|are|was|were|with|for|that|this|these|we|our|from|using|between|study|results)$/i.test(word)));
+  if (latin >= 40 && latin / letters >= .95 && words.length >= 12 && markers.size >= 3) return 'en';
+  return undefined;
 }

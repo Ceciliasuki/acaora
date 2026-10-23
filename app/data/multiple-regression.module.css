@@ -79,6 +79,24 @@
 .pendingResult { padding: 32px 0; border-top: 1px solid var(--border); color: var(--text-2); min-width: 0; }
 .pendingResult h3 { color: var(--text); }
 .pendingResult p { max-width: 48ch; }
+.modelPending { grid-template-columns: minmax(0,1fr); gap: 16px; }
+.modelPending > .modelSetup { padding-right: 0; border-right: 0; }
+.modelFields { min-width: 0; max-height: min(560px,calc(100svh - 280px)); overflow: auto; padding: 0 8px 4px 0; scrollbar-width: thin; scrollbar-color: var(--border-control) var(--surface); }
+.modelFields :is(input,select) { scroll-margin-block: 12px; }
+.modelSetup .modelOutcome { margin-top: 0; }
+.modelSetup .choices { max-height: 160px; }
+.modelSetup .modelStandardErrors { margin-top: 20px; }
+.modelStandardErrors > .help { margin: 0; }
+.modelNotes > summary { min-height: 44px; padding-block: 10px; cursor: pointer; color: var(--text-2); font-size: 13px; }
+.fitBar { position: sticky; bottom: 0; z-index: 1; background: var(--surface); padding: 12px 0 4px; border-top: 1px solid var(--border); }
+.fitBar .actions { margin-block: 10px; }
+.fitBar > .help { margin-block: 4px; }
+.modelFormula { margin: 0; font-size: 13px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.modelEmpty { margin: 0; padding-block: 16px; border-top: 1px solid var(--border); color: var(--text-2); font-size: 13px; }
+.modelPending .modelFields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 28px; }
+.modelPending .modelOutcome,.modelPending .modelStandardErrors,.modelPending .modelNotes { grid-column: 1 / -1; }
+.modelPending .modelOutcome { max-width: 420px; }
+.modelPending .modelStandardErrors { display: grid; grid-template-columns: minmax(200px,320px) minmax(0,1fr); align-items: end; max-width: 100%; }
 .history > summary { padding-block: 20px; }
 .workspaceDisclosure > summary:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 @media (max-width:1180px) {
@@ -92,5 +110,7 @@
   .workspaceDisclosure > summary { gap: 10px; }
   .workspaceDisclosure > summary > span { display: none; }
   .analysisLayout .metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .modelPending .modelFields,.modelPending .modelStandardErrors { grid-template-columns: minmax(0,1fr); }
+  .modelFields { max-height: min(560px,calc(100svh - 240px)); padding-right: 4px; }
 }
 @media (prefers-reduced-motion:reduce) { .workspaceDisclosure > summary svg { transition: none; } }

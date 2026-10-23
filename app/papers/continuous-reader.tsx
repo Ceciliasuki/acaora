@@ -7,6 +7,7 @@ import SelectionTools from './selection-tools';
 import MotionNavigation from '../components/motion-navigation';
 import ReaderNavigator, {FindText, type NavigatorHandle} from './reader-navigator';
 import {findInPaper, type FindOptions, type FindRange} from './reader-find';
+import {inferTextLanguage} from './pdf-text';
 
 export type ReadingAnchor = {index: number; offset: number};
 export type ReaderNavigation = {getPosition: () => ReadingAnchor; restorePosition: (anchor: ReadingAnchor) => void};
@@ -248,9 +249,10 @@ const ReaderParagraph = memo(function ReaderParagraph({paragraph, index, active,
   ranges?: FindRange[];
   onEditAnnotation: (paragraphId:string,annotation:PaperAnnotation)=>void;
 }) {
+  const translationLanguage = inferTextLanguage(paragraph.translation);
   return <div className="plab-paragraph" data-paragraph-id={paragraph.id} data-paragraph-index={index} data-active={active} data-note-active={noteActive}>
     {startsSection && <h2>{paragraph.section}</h2>}
-    <p data-original-text>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}><FindText text={segment.text} start={segment.start} ranges={ranges}/></button>:<span key={segment.start}><FindText text={segment.text} start={segment.start} ranges={ranges}/></span>)}</p>
-    {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p>{paragraph.translation}</p></div>}
+    <p data-original-text lang={inferTextLanguage(paragraph.original)}>{annotationSegments(paragraph).map(segment=>segment.annotation?<button type="button" key={segment.start} className={`paper-text-mark color-${segment.annotation.color}`} aria-label={`查看批注：${segment.annotation.quote.slice(0,50)}`} onClick={()=>{if(window.getSelection()?.isCollapsed!==false)onEditAnnotation(paragraph.id,segment.annotation!);}}><FindText text={segment.text} start={segment.start} ranges={ranges}/></button>:<span key={segment.start}><FindText text={segment.text} start={segment.start} ranges={ranges}/></span>)}</p>
+    {showTranslations && paragraph.translation && <div className="plab-inline-translation"><p lang={translationLanguage === 'zh' ? 'zh-CN' : translationLanguage}>{paragraph.translation}</p></div>}
   </div>;
 });
