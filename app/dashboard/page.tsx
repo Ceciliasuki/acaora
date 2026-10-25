@@ -48,6 +48,7 @@ export default function DashboardPage() {
         const projectPayload = await projectResponse.json() as { projects?: Project[] };
         const paperPayload = await paperResponse.json() as { papers?: Paper[] };
         if (!active||token!==generation) return;
+        if ((await getCurrentUser())?.id !== user.id || !active || token !== generation) return;
         const nextProjects = projectPayload.projects ?? [];
         const nextPapers = paperPayload.papers ?? [];
         setProjects(nextProjects); setPapers(nextPapers);

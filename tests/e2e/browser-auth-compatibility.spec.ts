@@ -66,3 +66,9 @@ test('failed logout keeps account contents and offers an actual error',async({pa
 test('reset-password form is invalidated when the account changes',async({page})=>{
  const state=await installApiMocks(page,{signedIn:true,userId:owner});await page.goto('/auth/reset');await expect(page.getByRole('textbox',{name:'新密码',exact:true})).toBeVisible();await page.getByRole('textbox',{name:'新密码',exact:true}).fill('ValidPass1');state.userId='41000000-0000-4000-8000-000000000002';await page.evaluate(()=>window.dispatchEvent(new Event('acaora:auth-change')));await expect(page.getByText('账户已变化，请重新打开重置链接或登录后设置密码。',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'保存新密码',exact:true})).toHaveCount(0);expect(state.requests.filter(item=>item==='PUT /api/auth/password')).toEqual([]);
 });
+
+test('dashboard rejects a late result when cookies change without a tab signal',async({page})=>{
+ const state=await installApiMocks(page,{signedIn:true,userId:owner,projects:[project]});let release!:()=>void;const held=new Promise<void>(r=>release=r);let first=true,started=false;
+ await page.route('**/api/projects',async route=>{if(first&&route.request().method()==='GET'){first=false;started=true;await held;return route.fulfill({json:{projects:[project]}});}await route.fallback();});
+ try{await page.goto('/dashboard');await expect.poll(()=>started).toBe(true);state.userId='41000000-0000-4000-8000-000000000002';state.projects=[];release();await expect(page.getByRole('heading',{name:'还没有论文或项目记录',exact:true})).toBeVisible();await expect(page.getByRole('link',{name:new RegExp(project.title)})).toHaveCount(0);}finally{release();}
+});
