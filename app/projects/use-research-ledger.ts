@@ -7,7 +7,9 @@ export function useResearchLedger(ownerId:string|null,projectId:string){
  const [events,setEvents]=useState<LedgerEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[busy,setBusy]=useState(false),[warning,setWarning]=useState(''),[project,setProject]=useState<BackupProject|null>(null),[access,setAccess]=useState<{role:'owner'|'editor'|'viewer';ownerId:string;shared:boolean}|null>(null);
  const identity=useRef(0),reads=useRef(0),controller=useRef<AbortController|null>(null),lock=useRef(false),invalid=useRef(false),origin=useRef({}),pending=useRef(new Map<string,string>());
  const reload=useCallback(async()=>{
-  if(!ownerId||invalid.current)return;const generation=++reads.current,token=identity.current;controller.current?.abort();const request=new AbortController();controller.current=request;setLoading(true);setError('');
+  if(invalid.current)return;
+  if(!ownerId||!uuid(projectId)){reads.current++;controller.current?.abort();setEvents([]);setProject(null);setAccess(null);setError('');setLoading(false);return;}
+  const generation=++reads.current,token=identity.current;controller.current?.abort();const request=new AbortController();controller.current=request;setLoading(true);setError('');
   try{const response=await authFetch(`/api/projects/workbench?${new URLSearchParams({project:projectId})}`,{signal:request.signal});const body=await response.json();if(generation!==reads.current||token!==identity.current||request.signal.aborted)return;if(!response.ok)throw new Error(body.error??'研究记录读取失败。');if(!Array.isArray(body.events)||!body.events.every(validateLedgerEvent))throw new Error('研究记录格式异常，未丢弃或替换原记录。');if((await getCurrentUser())?.id!==ownerId||token!==identity.current||generation!==reads.current||request.signal.aborted)return;setEvents(body.events);setProject(body.project??null);setAccess(body.access??{role:'owner',ownerId,shared:false});}
   catch(cause){if(!request.signal.aborted&&token===identity.current)setError(cause instanceof Error?cause.message:'读取失败。');}finally{if(generation===reads.current&&token===identity.current&&!request.signal.aborted)setLoading(false);}
  },[ownerId,projectId]);
