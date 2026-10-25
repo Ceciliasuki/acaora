@@ -1,5 +1,70 @@
 # Acaora processed-table reproduction runtime. See README.txt.
 suppressPackageStartupMessages({library(jsonlite); library(digest)})
+canonical_json <- function(value) {
+  # Match JSON.stringify's shortest round-tripping numbers and decimal cutoffs.
+  if(is.null(value))return('null')
+  if(is.character(value)&&length(value)==1&&!is.na(value)) {
+    escaped <- vapply(utf8ToInt(enc2utf8(value)),function(code) {
+      if(code==34)return('\\"')
+      if(code==92)return('\\\\')
+      short <- c('8'='\\b','9'='\\t','10'='\\n','12'='\\f','13'='\\r')
+      if(as.character(code) %in% names(short))return(unname(short[as.character(code)]))
+      if(code<32)return(sprintf('\\u%04x',code))
+      intToUtf8(code)
+    },'')
+    return(paste0('"',paste0(escaped,collapse=''),'"'))
+  }
+  if(is.logical(value)&&length(value)==1&&!is.na(value))return(if(value)'true' else 'false')
+  if(is.numeric(value)&&length(value)==1) {
+    if(!is.finite(value))stop('Non-finite verification setting')
+    if(value==0)return('0')
+    magnitude <- abs(value); token <- NULL
+    for(precision in 1:17) {candidate <- sprintf(paste0('%.',precision,'g'),magnitude);if(identical(as.numeric(candidate),as.numeric(magnitude))){token <- candidate;break}}
+    parts <- strsplit(tolower(token),'e',fixed=TRUE)[[1]];power <- if(length(parts)==2)as.integer(parts[2]) else 0L
+    decimal <- strsplit(parts[1],'.',fixed=TRUE)[[1]];point <- nchar(decimal[1])+power;digits <- sub('0+$','',paste0(decimal,collapse=''))
+    if(magnitude>=1e-6&&magnitude<1e21) {
+      body <- if(point<=0)paste0('0.',strrep('0',-point),digits) else if(point>=nchar(digits))paste0(digits,strrep('0',point-nchar(digits))) else paste0(substr(digits,1,point),'.',substring(digits,point+1))
+    } else {power <- point-1L;body <- paste0(substr(digits,1,1),if(nchar(digits)>1)paste0('.',substring(digits,2)) else '', 'e',if(power>=0)'+' else '',power)}
+    return(paste0(if(value<0)'-' else '',body))
+  }
+  if(is.list(value)) {
+    if(is.null(names(value)))return(paste0('[',paste(vapply(value,canonical_json,''),collapse=','),']'))
+    keys <- names(value);key_order <- vapply(keys,function(s)paste(sprintf('%02x',as.integer(iconv(s,to='UTF-16BE',toRaw=TRUE)[[1]])),collapse=''),'');keys <- keys[order(key_order,method='radix')]
+    return(paste0('{',paste(vapply(keys,function(k)paste0(canonical_json(k),':',canonical_json(value[[k]])),''),collapse=','),'}'))
+  }
+  stop('Unsupported verification setting')
+}
+verification_identity <- function(manifest,actual_fingerprint) {
+  if(!'verificationIdentity' %in% names(manifest))return(NULL)
+  identity <- manifest$verificationIdentity;keys <- c('engine','settingsHash','dataFingerprint','sourceFingerprint')
+  if(!is.list(identity)||!setequal(names(identity),keys)||length(identity)!=4||!all(vapply(identity,function(v)is.character(v)&&length(v)==1&&!is.na(v),FALSE)))stop('Invalid verificationIdentity')
+  if(!all(vapply(identity[setdiff(keys,'engine')],function(v)grepl('^[a-f0-9]{64}$',v),FALSE)))stop('Invalid verification fingerprint')
+  engines <- c(basic='acaora-stats-v2',ols='acaora-ols-v2',advanced='acaora-advanced-v4');a <- manifest$analysis
+  if(!a$kind %in% names(engines)||!identical(identity$engine,unname(engines[a$kind])))stop('Verification engine mismatch')
+  if(!identical(identity$dataFingerprint,actual_fingerprint))stop('Verification data SHA-256 mismatch')
+  settings <- enc2utf8(canonical_json(list(kind=a$kind,config=a$config)))
+  if(!identical(identity$settingsHash,digest(charToRaw(settings),algo='sha256',serialize=FALSE)))stop('Verification settings SHA-256 mismatch')
+  # sourceFingerprint declares the original source; only the processed table is present.
+  identity
+}
+verification_metrics <- function(a,result) {
+  if(a$kind=='basic') {
+    keys <- switch(a$config$method,describe=c('n','mean','sd','min','median','max'),relation=c('n','r','p','slope','intercept','r2','t'),NULL)
+    if(is.null(keys)||!all(keys %in% names(result)))return(NULL)
+    metrics <- lapply(keys,function(k)list(k,result[[k]]))
+  } else if(a$kind=='ols') {
+    keys <- c(n='n',r2='r2',adjustedR2='adjusted_r2',rmse='residual_se');fields <- c(estimate='coefficients',se='se',t='t',p='p',low='low',high='high',vif='vif')
+    if(!all(c(unname(keys),unname(fields),'labels') %in% names(result)))return(NULL)
+    labels <- result$labels
+    if(!length(labels)||any(vapply(result[unname(fields)],length,0L)!=length(labels)))return(NULL)
+    if(identical(labels[1],'Intercept'))labels[1] <- '\u622a\u8ddd'
+    if(anyDuplicated(labels))return(NULL)
+    metrics <- lapply(names(keys),function(k)list(k,result[[keys[[k]]]]))
+    for(i in seq_along(labels))for(k in names(fields))metrics[[length(metrics)+1]] <- list(paste0('coef:',labels[i],':',k),result[[fields[[k]]]][[i]])
+  } else return(NULL)
+  if(!all(vapply(metrics,function(pair)is.null(pair[[2]])||(is.numeric(pair[[2]])&&length(pair[[2]])==1),FALSE)))return(NULL)
+  lapply(metrics,function(pair)list(pair[[1]],if(is.null(pair[[2]])||!is.finite(pair[[2]]))NULL else unname(pair[[2]])))
+}
 js_sort <- function(x) {
   x <- unique(x)
   key <- vapply(x, function(s) paste(sprintf('%02x',as.integer(iconv(s,to='UTF-16BE',toRaw=TRUE)[[1]])),collapse=''), '')
@@ -60,7 +125,7 @@ binary_metrics <- function(y,p,threshold) {
   bins <- lapply(0:9,function(b){selected <- pmin(9,floor(p*10))==b;c(b/10,(b+1)/10,sum(selected),if(any(selected))mean(p[selected]) else NA,if(any(selected))mean(y[selected]) else NA)})
   list(auc=auc,ap=ap,brier=mean((p-y)^2),logloss=-mean(y*log(clipped)+(1-y)*log1p(-clipped)),tp=tp,fp=fp,tn=tn,fn=fn,precision=if(tp+fp>0)tp/(tp+fp) else NA,recall=tp/(tp+fn),specificity=tn/(tn+fp),f1=if(2*tp+fp+fn>0)2*tp/(2*tp+fp+fn) else NA,roc=roc,pr=pr,calibration=bins)
 }
-run_analysis <- function(a,data) {
+run_analysis <- function(a,data,verification=FALSE) {
   c <- a$config; m <- if(a$kind=='ols')'ols' else c$method; cols <- required(a)
   if(anyDuplicated(cols)||any(!cols %in% unlist(data$headers)))stop('Invalid required columns')
   raw <- do.call(rbind,lapply(data$rows,unlist)); colnames(raw) <- unlist(data$headers)
@@ -72,7 +137,7 @@ run_analysis <- function(a,data) {
   rows <- raw[valid,,drop=FALSE]; n <- nrow(rows); if(n < if(m=='describe')1 else 3)stop('Insufficient complete observations')
   out <- list(method=m,n=n,excluded=nrow(raw)-n,current_table_rows=which(valid)); column <- function(h)num(rows[,h])
   if(m=='describe') {x <- column(c$x);return(c(out,list(mean=mean(x),sd=sd(x),min=min(x),median=median(x),max=max(x),q1=unname(quantile(x,.25)),q3=unname(quantile(x,.75)))))}
-  if(m=='relation') {x <- column(c$x);y <- column(c$y);fit <- lm(y~x);s <- summary(fit);return(c(out,list(r=cor(x,y),coefficients=unname(coef(fit)),p=s$coefficients[2,4],r2=s$r.squared)))}
+  if(m=='relation') {x <- column(c$x);y <- column(c$y);fit <- lm(y~x);s <- summary(fit);out <- c(out,list(r=cor(x,y),coefficients=unname(coef(fit)),p=s$coefficients[2,4],r2=s$r.squared));if(verification)out <- c(out,list(slope=unname(coef(fit)[2]),intercept=unname(coef(fit)[1]),t=s$coefficients[2,3]));return(out)}
   if(m %in% c('paired','wilcoxon')) {
     d <- column(c$outcome)-column(c$second);out$differences <- d
     if(m=='paired') {fit <- t.test(d);out <- c(out,list(estimate=mean(d),se=sd(d)/sqrt(n),t=unname(fit$statistic),p=fit$p.value,df=n-1,low=fit$conf.int[1],high=fit$conf.int[2]))}
@@ -191,12 +256,16 @@ run_analysis <- function(a,data) {
     se <- sqrt(diag(cov));t <- b/se;p <- 2*pt(-abs(t),referenceDf);crit <- qt(.975,referenceDf);r2 <- 1-sum(e^2)/sum((y-mean(y))^2)
     out <- c(out,list(r2=r2,adjusted_r2=1-(1-r2)*(n-1)/df,residual_se=sqrt(sum(e^2)/df)))
   }
+  if(verification&&a$kind=='ols')out$vif <- c(NA_real_,colSums(sweep(x,2,colMeans(x),'-')^2)*diag(bread)[-1])
   c(out,list(labels=c('Intercept',labels),coefficients=unname(b),se=unname(se),t=unname(t),p=unname(p),low=unname(b-crit*se),high=unname(b+crit*se)))
 }
 main <- function() {
   manifest <- fromJSON('manifest.json',simplifyVector=FALSE)
-  if(digest(file='analysis-data.json',algo='sha256')!=manifest$dataset$fingerprint)stop('Data SHA-256 mismatch; export exact analysis-data.json from the workspace')
-  data <- fromJSON('analysis-data.json',simplifyVector=FALSE);result <- run_analysis(manifest$analysis,data)
+  fingerprint <- digest(file='analysis-data.json',algo='sha256')
+  if(fingerprint!=manifest$dataset$fingerprint)stop('Data SHA-256 mismatch; export exact analysis-data.json from the workspace')
+  identity <- verification_identity(manifest,fingerprint)
+  data <- fromJSON('analysis-data.json',simplifyVector=FALSE);result <- run_analysis(manifest$analysis,data,!is.null(identity))
+  if(!is.null(identity)) {result$verificationIdentity <- identity;metrics <- verification_metrics(manifest$analysis,result);if(!is.null(metrics))result$verificationMetrics <- metrics}
   result$versions <- list(R=R.version.string,jsonlite=as.character(packageVersion('jsonlite')),digest=as.character(packageVersion('digest')))
   write_json(result,'r-results.json',auto_unbox=TRUE,pretty=TRUE,digits=NA,na='null',null='null');cat('Wrote r-results.json\n')
 }

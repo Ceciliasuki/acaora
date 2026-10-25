@@ -15,6 +15,12 @@ import {paperSourceHref, validateProjectEvidence, type ProjectEvidence} from '..
 import ProjectNotes from './project-notes';
 import {clearProjectNoteDraft} from './project-note-drafts';
 import editingStyles from './project-editing.module.css';
+import ProjectResearchLinks from './project-research-links';
+import {withResearchProject} from '../lib/research-links';
+import ProjectResearchWorkspace from './project-research-workspace';
+import ProjectResearchOperations from './project-research-operations';
+import {ProjectInvitation} from './research-collaboration';
+import type {ProjectAnalysisRecord, ResearchDossier} from '../lib/project-research';
 
 type Viewer = { id: string; email?: string } | null;
 type Task = { id: string; text: string; done: boolean };
@@ -24,8 +30,12 @@ type ProjectMetadata = {
   notes?: string;
   tasks?: Task[];
   evidence?: ProjectEvidence[];
+  research?: ResearchDossier;
+  analysisRecords?: ProjectAnalysisRecord[];
 };
 type Project = {
+  user_id?:string;
+  access_role?:'owner'|'editor'|'viewer';
   id: string;
   title: string;
   kind: string;
@@ -201,6 +211,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     if (!loaded || !viewer || locationQuery === null || requestedId !== null || !projects.length) return;
+    if (/^[a-f0-9]{48,64}$/.test(new URLSearchParams(window.location.hash.slice(1)).get('invite')??'')) return;
     queueMicrotask(() => selectProject(projects[0].id, true));
   }, [loaded, viewer, locationQuery, requestedId, projects, selectProject]);
 
@@ -224,7 +235,8 @@ export default function ProjectsPage() {
         setProjects(nextProjects);
         const requested = new URLSearchParams(window.location.search).get('project');
         setSelectedId(requested ?? nextProjects[0]?.id ?? '');
-        if (new URLSearchParams(window.location.search).get("new") === "1" || (!nextProjects.length && requested === null)) setShowCreate(true);
+        const hasInvitation=/^[a-f0-9]{48,64}$/.test(new URLSearchParams(window.location.hash.slice(1)).get('invite')??'');
+        if (!hasInvitation&&(new URLSearchParams(window.location.search).get("new") === "1" || (!nextProjects.length && requested === null))) setShowCreate(true);
       })
       .catch((error: unknown) => {if(active && epoch===accountEpoch.current)setLoadError(error instanceof Error ? error.message : '项目读取失败。');})
       .finally(() => {if(active && epoch===accountEpoch.current)setLoaded(true);});
@@ -274,6 +286,7 @@ export default function ProjectsPage() {
   }
 
   async function saveProject(next: Project, successMessage = "项目已保存。"): Promise<Project | false> {
+    if(next.access_role==='viewer'){setMessageTone('error');setMessage('当前为查看权限，不能保存项目修改。');return false;}
     if (operationLock.current) return false;
     operationLock.current = true;
     setSaving(true);
@@ -412,9 +425,10 @@ export default function ProjectsPage() {
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
-        <PageHeader className="workspace-header" title="项目空间" description="管理目标、任务和研究笔记。" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
+        <PageHeader className="workspace-header" title="项目空间" description="组织研究设计、论文证据、分析记录与项目任务。" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
 
         <div className="page-body">
+        <ProjectInvitation ownerId={viewer?.id??null} onAccepted={()=>location.reload()}/>
         {message && !showCreate && !deleteOpen && <div className="project-message workspace-feedback" data-tone={messageTone} role={messageTone === "error" ? "alert" : "status"}>{message}</div>}
 
         {!loaded || locationQuery === null ? <section className="project-loading"><i /><p>正在读取项目…</p></section> : loadError ? (
@@ -423,7 +437,7 @@ export default function ProjectsPage() {
             action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
           />
         ) : !viewer ? (
-          <section className="project-login-wall"><h2>登录后查看项目</h2><p>项目、任务与笔记会在你的设备之间同步。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
+          <section className="project-login-wall"><h2>登录后查看项目</h2><p>登录后管理研究设计、论文摘录、分析登记与项目笔记。原始文件留在本机。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
         ) : (
           <>
 
@@ -440,28 +454,31 @@ export default function ProjectsPage() {
                 </aside>
 
                 {selected && <article key={selected.id} className="project-detail">
-                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" disabled={saving} value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" onClick={() => {setMessage(""); setDeleteOpen(true);}} disabled={saving}>删除</button></div></header>
+                  <header className="project-detail-head"><div><span>{kindInfo(selected.kind).label.toUpperCase()} · {statusLabels[selected.status]}</span><h2>{selected.title}</h2><p>{selected.metadata.goal || "还没有填写项目目标。"}</p></div><div><select aria-label="项目状态" disabled={saving||selected.access_role==='viewer'} value={selected.status} onChange={(event) => void saveProject({ ...selected, status: event.target.value as Project["status"] }, "项目状态已更新。") }><option value="active">进行中</option><option value="paused">暂停</option><option value="completed">已完成</option></select><button className="project-more" hidden={selected.access_role!==undefined&&selected.access_role!=='owner'} onClick={() => {setMessage(""); setDeleteOpen(true);}} disabled={saving}>删除</button></div></header>
 
-                  <ProjectMetadataEditor key={`details:${viewer.id}:${selected.id}`} project={selected} saving={saving} error={messageTone === 'error' ? message : ''} onSave={saveProject} onStart={() => setMessage('')}/>
+                  {selected.access_role==='viewer'?<p role="status">共享项目 · 查看权限。你可以读取研究内容，修改与成员管理由编辑成员或所有者完成。</p>:<ProjectMetadataEditor key={`details:${viewer.id}:${selected.id}`} project={selected} saving={saving} error={messageTone === 'error' ? message : ''} onSave={saveProject} onStart={() => setMessage('')}/>}
 
                   <p className="project-summary"><span key={(selected.metadata.tasks ?? []).filter((task) => task.done).length}>{(selected.metadata.tasks ?? []).filter((task) => task.done).length} / {(selected.metadata.tasks ?? []).length} 项任务完成</span><span>{projectProgress(selected)}%</span>{selected.metadata.deadline && <span>截止 {selected.metadata.deadline}</span>}</p>
 
+                  {['paper','data','writing','group'].includes(selected.kind) && <ProjectResearchWorkspace key={`research:${viewer.id}:${selected.id}`} ownerId={viewer.id} project={selected} saving={saving||selected.access_role==='viewer'} onSave={async research => Boolean(await saveProject({...selected, metadata: {...selected.metadata, research}}, '研究记录已保存。'))}/>}
+                  {['paper','data','writing','group'].includes(selected.kind) && <ProjectResearchOperations key={`operations:${viewer.id}:${selected.id}`} ownerId={viewer.id} project={selected} onRestored={restored=>setProjects(current=>current.map(item=>item.id===restored.id?{...item,...restored,metadata:restored.metadata}:item))}/>}
+                  <ProjectResearchLinks projectId={selected.id} notes={selected.metadata.notes ?? ''} evidence={selected.metadata.evidence ?? []} analyses={selected.metadata.analysisRecords}/>
+
                   <div className="project-detail-grid">
                     <section className="project-task-card"><header><div><h3>任务清单</h3></div></header><form onSubmit={event => void addTask(event)}><input value={taskText} onChange={(event) => setTaskDrafts(current => ({...current,[selected.id]:event.target.value}))} placeholder="输入下一步要做的事" aria-label="新任务" /><Button type="submit" disabled={saving || !taskText.trim()}>添加</Button></form><MotionNavigation as="div" className="project-task-filter" role="group" label="任务筛选" value={taskFilter}>{([['all',`全部 ${allTasks.length}`],['todo',`待办 ${remainingCount}`],['done',`已完成 ${allTasks.length-remainingCount}`]] as const).map(([value,label])=><button key={value} type="button" aria-pressed={taskFilter===value} onClick={()=>setTaskFilters(current=>({...current,[selected.id]:value}))}>{label}</button>)}</MotionNavigation>
-                      <ProjectTaskList key={`tasks:${viewer.id}:${selected.id}`} project={selected} tasks={visibleTasks} emptyMessage={!allTasks.length ? '还没有任务。可以先记录需要查找的论文或待处理的数据。' : taskFilter === 'todo' ? '当前没有待办任务。' : '当前没有已完成任务。'} saving={saving} error={messageTone === 'error' ? message : ''} listRef={taskListRef} onSave={saveProject} onToggle={toggleTask} onStart={() => setMessage('')}/>
+                      <ProjectTaskList key={`tasks:${viewer.id}:${selected.id}`} project={selected} tasks={visibleTasks} emptyMessage={!allTasks.length ? '还没有任务。可以先记录需要查找的论文或待处理的数据。' : taskFilter === 'todo' ? '当前没有待办任务。' : '当前没有已完成任务。'} saving={saving||selected.access_role==='viewer'} error={messageTone === 'error' ? message : ''} listRef={taskListRef} onSave={saveProject} onToggle={toggleTask} onStart={() => setMessage('')}/>
                     </section>
 
-                    <ProjectNotes key={`${viewer.id}:${selected.id}`} ownerId={viewer.id} projectId={selected.id} savedNotes={selected.metadata.notes ?? ''} savedUpdatedAt={selected.updated_at} saving={saving} onSave={async notes => {
+                    <ProjectNotes readOnly={selected.access_role==='viewer'} key={`${viewer.id}:${selected.id}`} ownerId={viewer.id} projectId={selected.id} savedNotes={selected.metadata.notes ?? ''} savedUpdatedAt={selected.updated_at} saving={saving} onSave={async notes => {
                       const saved = await saveProject({...selected, metadata: {...selected.metadata, notes}}, '项目笔记已保存。');
                       return saved ? {notes: saved.metadata.notes ?? '', updatedAt: saved.updated_at} : false;
                     }} />
                   </div>
 
                   <section className="project-evidence" aria-labelledby="project-evidence-title"><header><h3 id="project-evidence-title">论文证据</h3><p>在论文笔记或批注中选择“加入项目”，保留摘录和来源位置。</p></header>
-                    {(selected.metadata.evidence ?? []).filter(validateProjectEvidence).map(entry=><article key={entry.id}><p className="project-evidence-source">{entry.paperTitle} · 第 {entry.page} 页 · {entry.section}</p><blockquote>{entry.quote}</blockquote>{entry.comment&&<p><strong>个人评论：</strong>{entry.comment}</p>}<div><Link href={paperSourceHref(entry)}>返回原文</Link><button type="button" disabled={saving} onClick={()=>void saveProject({...selected,metadata:{...selected.metadata,evidence:(selected.metadata.evidence??[]).filter(item=>item.id!==entry.id)}},'已移除关联，原论文和批注保留。')}>移除关联</button></div></article>)}
+                    {(selected.metadata.evidence ?? []).filter(validateProjectEvidence).map(entry=><article key={entry.id}><p className="project-evidence-source">{entry.paperTitle} · 第 {entry.page} 页 · {entry.section}</p><blockquote>{entry.quote}</blockquote>{entry.comment&&<p><strong>个人评论：</strong>{entry.comment}</p>}<div><Link href={withResearchProject(paperSourceHref(entry), selected.id)}>返回原文</Link><button type="button" disabled={saving||selected.access_role==='viewer'} onClick={()=>void saveProject({...selected,metadata:{...selected.metadata,evidence:(selected.metadata.evidence??[]).filter(item=>item.id!==entry.id)}},'已移除关联，原论文和批注保留。')}>移除关联</button></div></article>)}
                     {!selected.metadata.evidence?.length&&<p>还没有关联的论文摘录。</p>}
                   </section>
-                  <nav className="project-related" aria-label="项目相关工作台"><Link href="/papers">查阅论文 <ArrowRight size={15} aria-hidden="true" /></Link><Link href="/data">分析数据 <ArrowRight size={15} aria-hidden="true" /></Link></nav>
                 </article>}
               </section>
             )}

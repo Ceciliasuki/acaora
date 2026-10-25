@@ -1,0 +1,13 @@
+.resources {margin:24px 0; font-size:14px;}
+.resources header {padding-bottom:16px;}
+.resources h3 {margin:0 0 6px; font-size:18px; font-weight:600;}
+.resources header p,.row p {margin:0; color:var(--text-2); line-height:1.6;}
+.row {display:flex; align-items:flex-start; justify-content:space-between; gap:16px 24px; border-top:1px solid var(--border); padding:16px 0;}
+.row>div {min-width:0; flex:1;}
+.row h4 {margin:0 0 8px; font-size:15px; font-weight:600;}
+.row ul {list-style:none; margin:0; padding:0; display:grid; gap:10px;}
+.row a {display:inline-flex; align-items:center; gap:8px; color:var(--brand); text-underline-offset:4px; overflow-wrap:anywhere;}
+.row>a {flex-shrink:0; padding:4px 0; font-weight:500;}
+.row svg {flex-shrink:0;}
+.row small {display:block; margin-top:8px; color:var(--text-2); line-height:1.6; font-size:12px;}
+@media(max-width:640px) {.row {flex-direction:column; gap:10px;}}

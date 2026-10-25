@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authError, privateNoStore, readRequestSession, supabaseRest } from "../auth/_shared";
 import {validateProjectEvidence} from '../../lib/project-evidence';
+import {validateProjectAnalyses, validateResearchDossier} from '../../lib/project-research';
 
 const projectKinds = new Set(["course", "paper", "data", "writing", "group", "career"]);
 const projectStatuses = new Set(["active", "paused", "completed"]);
@@ -28,6 +29,8 @@ function validateProject(payload: ProjectPayload) {
   if (!projectStatuses.has(status)) return { error: "项目状态不受支持。" };
   const metadata = payload.metadata && typeof payload.metadata === "object" ? payload.metadata : {};
   if (metadata.evidence !== undefined && (!Array.isArray(metadata.evidence) || metadata.evidence.length > 200 || !metadata.evidence.every(validateProjectEvidence))) return {error:'论文来源记录格式不正确或超过 200 条。'};
+  if (metadata.research !== undefined && !validateResearchDossier(metadata.research)) return {error:'研究设计或结论记录格式不正确。判读前请关联支撑材料，结论最多 20 条。'};
+  if (metadata.analysisRecords !== undefined && !validateProjectAnalyses(metadata.analysisRecords)) return {error:'分析登记记录格式不正确，或超过 30 条。只保存摘要、设置与数据指纹。'};
   if (JSON.stringify(metadata).length > 120_000) return { error: "项目内容过长，请精简后重试。" };
   return { title, kind, status, metadata };
 }
@@ -37,11 +40,14 @@ export async function GET() {
     const session = await readRequestSession();
     if (!session) return json({ error: "请先登录后使用项目工作台。" }, { status: 401 });
     const response = await supabaseRest(
-      "learning_projects?select=id,title,kind,status,metadata,created_at,updated_at&order=updated_at.desc",
+      "learning_projects?select=id,user_id,title,kind,status,metadata,created_at,updated_at&order=updated_at.desc",
       session.accessToken,
     );
     if (!response.ok) return json({ error: "项目工作台暂时无法读取数据。" }, { status: 503 });
-    return json({ projects: await response.json() });
+    const projects=await response.json() as Array<Record<string,unknown>>;
+    const accessResponse=await supabaseRest('rpc/list_research_project_access',session.accessToken,{method:'POST',body:'{}'});
+    const access=accessResponse.ok?await accessResponse.json() as Record<string,string>:{};
+    return json({ projects: projects.map(project=>({...project,access_role:project.user_id===session.user.id?'owner':access[String(project.id)]??'viewer'})) });
   } catch (error) {
     return authError(error);
   }
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
     });
     if (!response.ok) return json({ error: "创建项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
-    return json({ project: rows[0] }, { status: 201 });
+    return json({ project: {...rows[0] as Record<string,unknown>,access_role:'owner'} }, { status: 201 });
   } catch (error) {
     return authError(error);
   }
@@ -101,7 +107,10 @@ export async function PATCH(request: NextRequest) {
     if (!response.ok) return json({ error: "保存项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
     if (!rows[0]) return json({ error: expected ? '项目已有其他修改或已删除，请重新读取后再保存。' : '没有找到这个项目。' }, { status: expected ? 409 : 404 });
-    return json({ project: rows[0] });
+    const saved=rows[0] as Record<string,unknown>;
+    // A successful UPDATE is restricted by RLS to owner/editor. Keep that role
+    // in the response so the caller does not lose its access controls on save.
+    return json({ project: {...saved,access_role:saved.user_id===session.user.id?'owner':'editor'} });
   } catch (error) {
     return authError(error);
   }
@@ -115,8 +124,11 @@ export async function DELETE(request: NextRequest) {
     if (!id) return json({ error: "缺少项目编号。" }, { status: 400 });
     const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}`, session.accessToken, {
       method: "DELETE",
+      headers: {"Prefer":"return=representation"},
     });
     if (!response.ok) return json({ error: "删除项目失败，请稍后重试。" }, { status: 503 });
+    const deleted=await response.json() as unknown[];
+    if(!Array.isArray(deleted)||!deleted.length)return json({error:'项目不存在或当前账户没有删除权限。'}, {status:404});
     return json({ deleted: true });
   } catch (error) {
     return authError(error);

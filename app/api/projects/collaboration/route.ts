@@ -1,0 +1,15 @@
+import {NextRequest,NextResponse} from 'next/server';
+import {readRequestSession,privateNoStore,supabaseRest,authError} from '../../auth/_shared';
+import {uuid} from '../../../lib/research-ledger';
+const json=(value:unknown,status=200)=>privateNoStore(NextResponse.json(value,{status}));
+async function result(response:Response){const value=await response.json();if(response.ok)return json(value);const message=String(value.message??'');return json({error:message.includes('REVISION_CONFLICT')?'成员权限已有更新，请刷新后比较再操作。':message.includes('CAPACITY')?'本项目待使用邀请已达上限，请撤销旧邀请后重试。':message.includes('INVITE_UNAVAILABLE')?'邀请已过期、撤销或被使用，请向项目所有者获取新邀请。':message.includes('OWNER_ALREADY_MEMBER')?'你已经是这个项目的所有者。':'当前账户无权执行此协作操作。'},message.includes('REVISION_CONFLICT')?409:403);}
+export async function GET(request:NextRequest){try{const session=await readRequestSession();if(!session)return json({error:'请先登录。'},401);const project=request.nextUrl.searchParams.get('project');if(!uuid(project))return json({error:'项目标识不正确。'},400);return result(await supabaseRest('rpc/research_collaboration',session.accessToken,{method:'POST',body:JSON.stringify({p_action:'list',p_project_id:project})}));}catch(cause){return authError(cause);}}
+export async function POST(request:NextRequest){try{const session=await readRequestSession();if(!session)return json({error:'登录后才能预览或接受邀请。'},401);const raw=await request.text();if(raw.length>4096)return json({error:'协作请求过长。'},413);let body:Record<string,unknown>;try{body=JSON.parse(raw);}catch{return json({error:'请求格式无效。'},400);}if(!body||typeof body!=='object'||Array.isArray(body)||Object.keys(body).some(key=>!['action','projectId','userId','role','version','operationId','code','expectedOwnerId'].includes(key)))return json({error:'协作请求包含未知字段。'},400);if(body.expectedOwnerId!==session.user.id)return json({error:'账户已变化，请重新操作。'},409);
+ const actions=['invite','preview','accept','member','revoke-member','revoke-invite'];if(typeof body.action!=='string'||!actions.includes(body.action))return json({error:'不支持的协作操作。'},400);
+ if(['preview','accept','invite'].includes(body.action)&&(typeof body.code!=='string'||!/^[a-f0-9]{48,64}$/.test(body.code)))return json({error:'邀请内容无效。'},400);
+ if(!['preview','accept'].includes(body.action)&&!uuid(body.projectId))return json({error:'项目标识不正确。'},400);
+ if(['invite','revoke-invite'].includes(body.action)&&!uuid(body.operationId))return json({error:'邀请操作标识无效。'},400);
+ if(['invite','member'].includes(body.action)&&(typeof body.role!=='string'||!['viewer','editor'].includes(body.role)))return json({error:'请指定查看或编辑权限。'},400);
+ if(['member','revoke-member'].includes(body.action)&&(!uuid(body.userId)||!Number.isSafeInteger(body.version)||Number(body.version)<1))return json({error:'成员或权限版本无效。'},400);
+ return result(await supabaseRest('rpc/research_collaboration',session.accessToken,{method:'POST',body:JSON.stringify({p_action:body.action,p_project_id:body.projectId??null,p_user_id:body.userId??null,p_role:body.role??null,p_version:body.version??null,p_operation_id:body.operationId??null,p_code:body.code??null})}));
+}catch(cause){return authError(cause);}}

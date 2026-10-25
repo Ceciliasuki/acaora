@@ -85,7 +85,10 @@
 .reading.reading :global(.plab-index-head > span) { grid-column: 1; grid-row: 2; color: var(--paper-muted); font-size: 11px; }
 .reading.reading :global(.paper-panel-close) { display: inline-grid; grid-column: 2; grid-row: 1 / span 2; place-items: center; min-height: 40px; width: 40px; border: 0; border-radius: 4px; background: transparent; color: var(--paper-muted); }
 .reading.reading :global(.paper-panel-close:hover) { background: var(--brand-subtle); color: var(--brand); }
-.reading.reading :global(.plab-index-list) { margin: 0; display: block; }
+/* The overlay owns scrolling. A second flexing scroll area can collapse to a
+   subpixel below filters/backup tools when project context reduces the height. */
+.reading.reading :global(.plab-index > *) { flex-shrink: 0; }
+.reading.reading :global(.plab-index-list) { margin: 0; display: block; flex: 0 0 auto; overflow: visible; }
 .reading.reading :global(.plab-index-row) { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 8px; padding: 14px 0; border-radius: 0; border-bottom: 1px solid var(--paper-rule); background: transparent; box-shadow: none; }
 .reading.reading :global(.plab-index-row--current) { background: transparent; box-shadow: none; }
 .reading.reading :global(.plab-index-open) { padding: 0; }

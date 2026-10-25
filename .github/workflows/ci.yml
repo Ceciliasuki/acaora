@@ -73,6 +73,11 @@ jobs:
         # Keep these aligned with the requirements.txt exported by DataLab.
         run: python -m pip install numpy==2.5.4 scipy==1.18.1 statsmodels==0.15.0 pandas==3.0.6
 
+      - name: Local companion with pinned scientific Python
+        run: node --test --test-name-pattern="vendored scientific Python" tests/local-runner.test.mjs
+        env:
+          ACAORA_LOCAL_RUNNER_REAL: "1"
+
       - name: Deterministic mock E2E
         run: pnpm test:e2e
 

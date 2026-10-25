@@ -54,3 +54,6 @@ __pycache__/
 .codex/hooks.json
 supabase/.temp/
 .course-checks/
+
+# Local companion environment identities must never become public assets
+/public/repro/environment-lock.json

@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import platform
+import re
 from pathlib import Path
 import numpy as np
 import scipy
@@ -11,6 +12,62 @@ import statsmodels
 import statsmodels.api as sm
 
 ROOT = Path(__file__).resolve().parent
+
+def canonical_json(value):
+    """The manifest's JS canonical JSON (UTF-16 key order, finite JS numbers)."""
+    if value is None or isinstance(value, (str, bool)):
+        quoted = json.dumps(value, ensure_ascii=False, separators=(',', ':'))
+        return ''.join('\\u%04x' % ord(c) if 0xd800 <= ord(c) <= 0xdfff else c for c in quoted)
+    if isinstance(value, (int, float)):
+        number = float(value)
+        if not math.isfinite(number): raise ValueError('Non-finite verification setting')
+        if number == 0: return '0'
+        negative = '-' if number < 0 else ''; token = repr(abs(number)).lower()
+        mantissa, _, exponent = token.partition('e'); power = int(exponent or '0')
+        whole, _, fraction = mantissa.partition('.'); digits = (whole + fraction).rstrip('0')
+        point = len(whole) + power
+        if 1e-6 <= abs(number) < 1e21:
+            body = '0.' + '0' * (-point) + digits if point <= 0 else digits + '0' * (point-len(digits)) if point >= len(digits) else digits[:point]+'.'+digits[point:]
+        else:
+            power = point-1; body = digits[0] + ('.'+digits[1:] if len(digits)>1 else '') + 'e' + ('+' if power>=0 else '') + str(power)
+        return negative + body
+    if isinstance(value, list): return '[' + ','.join(canonical_json(v) for v in value) + ']'
+    if isinstance(value, dict):
+        return '{' + ','.join(canonical_json(k)+':'+canonical_json(value[k]) for k in sorted(value, key=lambda k:k.encode('utf-16-be', errors='surrogatepass'))) + '}'
+    raise ValueError('Unsupported verification setting')
+
+def verification_identity(manifest, actual_fingerprint):
+    if 'verificationIdentity' not in manifest: return None
+    identity = manifest['verificationIdentity']; keys = {'engine','settingsHash','dataFingerprint','sourceFingerprint'}
+    if not isinstance(identity, dict) or set(identity) != keys or any(not isinstance(identity[k],str) for k in keys): raise ValueError('Invalid verificationIdentity')
+    if any(not re.fullmatch('[a-f0-9]{64}', identity[k]) for k in keys-{'engine'}): raise ValueError('Invalid verification fingerprint')
+    analysis = manifest['analysis']; engines = {'basic':'acaora-stats-v2','ols':'acaora-ols-v2','advanced':'acaora-advanced-v4'}
+    if identity['engine'] != engines.get(analysis['kind']): raise ValueError('Verification engine mismatch')
+    if identity['dataFingerprint'] != actual_fingerprint: raise ValueError('Verification data SHA-256 mismatch')
+    settings = canonical_json({'kind':analysis['kind'],'config':analysis['config']}).encode('utf-8')
+    if identity['settingsHash'] != hashlib.sha256(settings).hexdigest(): raise ValueError('Verification settings SHA-256 mismatch')
+    # The original source is not in this pack: sourceFingerprint is a declaration.
+    return dict(identity)
+
+def verification_metrics(analysis, result):
+    if analysis['kind'] == 'basic':
+        keys = {'describe':['n','mean','sd','min','median','max'], 'relation':['n','r','p','slope','intercept','r2','t']}.get(analysis['config']['method'])
+        if not keys or any(k not in result for k in keys): return None
+        metrics = [[k,result[k]] for k in keys]
+    elif analysis['kind'] == 'ols':
+        keys = {'n':'n','r2':'r2','adjustedR2':'adjusted_r2','rmse':'residual_se'}
+        fields = {'estimate':'coefficients','se':'se','t':'t','p':'p','low':'low','high':'high','vif':'vif'}
+        if any(k not in result for k in [*keys.values(),*fields.values(),'labels']): return None
+        labels = result['labels']
+        if not labels or any(len(result[k]) != len(labels) for k in fields.values()): return None
+        names = ['截距' if i == 0 and label == 'Intercept' else label for i,label in enumerate(labels)]
+        if len(set(names)) != len(names): return None
+        metrics = [[key,result[field]] for key,field in keys.items()]
+        metrics += [[f'coef:{name}:{key}',result[field][i]] for i,name in enumerate(names) for key,field in fields.items()]
+    else: return None
+    metrics = clean(metrics)
+    if any(value is not None and (isinstance(value,bool) or not isinstance(value,(int,float))) for _,value in metrics): return None
+    return metrics
 
 def lcg(seed):
     state = int(seed) & 0xffffffff
@@ -101,7 +158,7 @@ def binary_metrics(y, p, threshold):
         bins.append([b/10,(b+1)/10,int(sum(select)),float(np.mean(p[select])) if any(select) else None,float(np.mean(y[select])) if any(select) else None])
     return dict(auc=auc,ap=ap,brier=np.mean((p-y)**2),logloss=-np.mean(y*np.log(clipped)+(1-y)*np.log1p(-clipped)),tp=tp,fp=fp,tn=tn,fn=fn,precision=tp/(tp+fp) if tp+fp else None,recall=tp/(tp+fn),specificity=tn/(tn+fp),f1=2*tp/(2*tp+fp+fn) if 2*tp+fp+fn else None,roc=roc,pr=pr,calibration=bins)
 
-def run(a, data):
+def run(a, data, verification=False):
     c=a['config']; m=c['method'] if a['kind']!='ols' else 'ols'; cols=required(a)
     if len(cols)!=len(set(cols)) or any(h not in data['headers'] for h in cols): raise ValueError('Invalid/missing required columns')
     text={s['name'] for s in c.get('categoricals',[])}
@@ -118,7 +175,9 @@ def run(a, data):
     if m=='describe':
         x=num(c['x']); out.update(mean=np.mean(x),sd=np.std(x,ddof=1),min=min(x),median=np.median(x),max=max(x),q1=np.quantile(x,.25),q3=np.quantile(x,.75)); return out
     if m=='relation':
-        x=num(c['x']); y=num(c['y']); fit=sm.OLS(y,sm.add_constant(x)).fit(); out.update(r=stats.pearsonr(x,y).statistic,coefficients=fit.params,p=fit.pvalues[1],r2=fit.rsquared); return out
+        x=num(c['x']); y=num(c['y']); fit=sm.OLS(y,sm.add_constant(x)).fit(); out.update(r=stats.pearsonr(x,y).statistic,coefficients=fit.params,p=fit.pvalues[1],r2=fit.rsquared)
+        if verification: out.update(slope=fit.params[1],intercept=fit.params[0],t=fit.tvalues[1])
+        return out
     if m in ('paired','wilcoxon'):
         d=num(c['outcome'])-num(c['second']); out['differences']=d
         if m=='paired':
@@ -251,6 +310,9 @@ def run(a, data):
     else: fit=sm.OLS(y,xx).fit(cov_type=c.get('standardErrors','classical') if c.get('standardErrors')=='HC3' else 'nonrobust',use_t=True)
     ci=fit.conf_int(); out.update(labels=['Intercept']+labels,coefficients=fit.params,se=fit.bse,t=fit.tvalues,p=fit.pvalues,low=ci[:,0],high=ci[:,1])
     if m!='logistic': out.update(r2=fit.rsquared,adjusted_r2=fit.rsquared_adj,residual_se=math.sqrt(fit.mse_resid))
+    if verification and a['kind']=='ols':
+        inverse=np.linalg.inv(xx.T@xx); centered_ss=np.sum((x-np.mean(x,axis=0))**2,axis=0)
+        out['vif']=[None]+list(centered_ss*np.diag(inverse)[1:])
     return out
 
 def clean(value):
@@ -263,8 +325,14 @@ def clean(value):
 
 def main():
     manifest=json.loads((ROOT/'manifest.json').read_text(encoding='utf-8')); raw=(ROOT/'analysis-data.json').read_bytes()
-    if hashlib.sha256(raw).hexdigest()!=manifest['dataset']['fingerprint']: raise ValueError('Data SHA-256 mismatch; export exact analysis-data.json from the original workspace')
-    data=json.loads(raw); result=run(manifest['analysis'],data)
+    fingerprint=hashlib.sha256(raw).hexdigest()
+    if fingerprint!=manifest['dataset']['fingerprint']: raise ValueError('Data SHA-256 mismatch; export exact analysis-data.json from the original workspace')
+    identity=verification_identity(manifest,fingerprint)
+    data=json.loads(raw); result=run(manifest['analysis'],data,identity is not None)
+    if identity is not None:
+        result['verificationIdentity']=identity
+        metrics=verification_metrics(manifest['analysis'],result)
+        if metrics is not None: result['verificationMetrics']=metrics
     result['versions']={'python':platform.python_version(),'numpy':np.__version__,'scipy':scipy.__version__,'statsmodels':statsmodels.__version__}
     (ROOT/'python-results.json').write_text(json.dumps(clean(result),ensure_ascii=False,indent=2,allow_nan=False),encoding='utf-8'); print('Wrote python-results.json')
 
