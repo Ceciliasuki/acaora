@@ -588,7 +588,7 @@ export default function PaperLab() {
       catch {originalSaved = false;}
       if (sourceUser !== userIdRef.current) throw new Error('账户已切换，导入记录仍按原账号保存在设备中。');
       setLibrary((current) => [extracted, ...current.filter((item) => item.id !== extracted.id)]);
-      setMessage(`已读取 ${extracted.paragraphs.length} 个段落，原始 PDF 未上传。${originalSaved ? '' : '设备空间不足或存储不可用；查看原 PDF 时请重新选择文件。'}`);
+      setMessage(`已读取 ${extracted.paragraphs.length} 个段落。${originalSaved ? '' : '设备空间不足或存储不可用；查看原 PDF 时请重新选择文件。'}`);
       setScreen('workspace'); writePaperLocation(extracted.id);
       setMobilePanel("reader");
       if (signedInRef.current) void syncNow();
@@ -871,8 +871,6 @@ export default function PaperLab() {
           <input className="sr-only" ref={fileInputRef} type="file" accept="application/pdf,.pdf" aria-label="导入英文论文 PDF" disabled={!hydrated || extracting} onChange={handlePdf} />
         </div>} />
 
-      <p className={craft.dataNotice}>{cloudState==='checking'?'正在确认账户。原 PDF 不上传；账户确认后才会恢复其论文记录。':userIdRef.current?'原 PDF 不上传；提取后的论文文本、译文与笔记按账户同步。表格、公式与复杂版式请核对原 PDF。':cloudState!=='guest'?'账户状态尚未确认，请保留本机内容；原 PDF 不上传。':'匿名模式：原 PDF 和提取文本、笔记仅保留在此浏览器，不会自动合入账户。表格与公式请核对原 PDF。'}</p>
-
       <ResearchProjectTrail paperId={screen === 'workspace' ? paper.id : undefined}/>
       {message && <div className="paper-message" role="status">{message}</div>}
       {bibliographyKey===paperKey&&<PaperBibliographyEditor key={paperKey} paper={paper} library={library} onClose={()=>setBibliographyKey(null)} onSave={bibliography=>{updatePaper(current=>({...current,bibliography}));setBibliographyKey(null);setMessage('文献资料已更新，正在保存。');}}/>}
@@ -943,9 +941,9 @@ export default function PaperLab() {
                 <button className="plab-index-delete" type="button" aria-label={`删除 ${record.title}`} onClick={() => void removeFromLibrary(record)}><X size={14} aria-hidden="true" /></button>
                 <span className="paper-library-filename">{record.fileName}</span>
               </article>;
-            }) : <div className="plab-index-empty"><strong>{activeTagFilter?'此标签下没有论文':'还没有保存的论文'}</strong><span>{activeTagFilter?'选择全部论文可返回完整论文库。':'导入 PDF 后，翻译、笔记和进度会保存在当前设备。'}</span></div>)}
+            }) : <div className="plab-index-empty"><strong>{activeTagFilter?'此标签下没有论文':'还没有保存的论文'}</strong><span>{activeTagFilter?'选择全部论文可返回完整论文库。':'导入 PDF，开始阅读与整理文献。'}</span></div>)}
           </div>
-          <div className="library-privacy"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong><p>{cloudState === "ready" || cloudState === "syncing" ? "提取文本、译文、笔记和 AI 结果已按账户隔离同步；原始 PDF 仅保存在当前设备，不上传。" : cloudState === "offline" ? "修改保存在当前设备；网络恢复后会继续同步。" : "原始 PDF 仅保存在当前设备；登录后可同步提取文本、译文、笔记与阅读进度。"}</p></div>
+          <div className="library-privacy" role="status"><strong>{{ ready: "云端记忆已同步", syncing: "正在同步更改", checking: "正在检查账户", error: "云同步暂不可用", offline: "当前离线", guest: "设备端记忆" }[cloudState]}</strong></div>
         </aside>
 
         {/* Full text is continuous; paragraph IDs still anchor notes and AI context. */}

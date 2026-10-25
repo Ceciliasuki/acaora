@@ -112,7 +112,7 @@ export default function ResearchBackupTools({ownerId, projectId, ledger}: {owner
   }
   const counts = stage ? Object.entries(ledgerKinds).map(([kind, label]) => ({label, count: stage.backup.events.filter(event => event.collection === kind).length})).filter(entry => entry.count > 0) : [];
   return <section aria-label="项目备份与恢复">
-    <h4>项目备份与恢复</h4><p className={styles.help}>备份包含项目主体、研究记录与版本历史。恢复只创建新的项目副本，不覆盖、合并或删除现有项目；原始 PDF、数据文件及本机完整快照需另行保管。</p>
+    <h4>项目备份与恢复</h4><p className={styles.help}>恢复将创建新项目副本，不会覆盖现有项目。</p>
     <div className={styles.actions}><Button variant="secondary" disabled={busy || view.phase === 'invalid' || ledger.loading} onClick={() => void exportBackup()}>{view.phase === 'exporting' ? '正在导出…' : '导出完整项目备份'}</Button><label>选择项目备份 JSON<input ref={input} aria-label="选择项目备份 JSON" type="file" accept="application/json,.json" disabled={busy && view.phase !== 'reading' || view.phase === 'invalid'} onChange={event => void choose(event)}/></label></div>
     {view.error && <p className={styles.error} role="alert">{view.error}</p>}{view.notice && <p role="status" className={styles.help}>{view.notice}</p>}
     {stage && <section aria-label="项目恢复预览"><h4>核对恢复内容</h4><p>{stage.backup.project.title} · {stage.fileName} · 导出时间 {stage.backup.exportedAt}</p><p>{stage.backup.events.length} 条历史记录，{new Set(stage.backup.events.map(event => event.entity_id)).size} 项研究条目。{counts.map(entry => `${entry.label} ${entry.count} 条`).join('；')}</p>

@@ -167,7 +167,6 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
     <button className="paper-original-trigger" type="button" onClick={() => restoreView()}>查看原 PDF</button>
     {open && <dialog ref={dialogRef} className={styles.dialog} aria-label="原 PDF" onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
       <header className={styles.header}><strong>原 PDF</strong><button type="button" aria-label="关闭原 PDF" onClick={() => setOpen(false)}>关闭</button></header>
-      <p className={styles.privacy}>原文件只保存在当前设备，不上传；清除浏览器数据后需重新选择。</p>
       {repair&&<div className={styles.privacy}><p>识别到可修复的文献元信息。题名建议：{repair.title}。仅调整题名与章节标签，不改写正文、段落编号、笔记或批注。</p><button type="button" onClick={()=>{onRepair(repair.source,repair.title,repair.sections);setRepair(null);}}>确认修复题名与章节</button><button type="button" onClick={()=>setRepair(null)}>保留现有信息</button></div>}
       <div className={styles.controls}>
         {pdf && <><button type="button" aria-expanded={thumbnails} aria-controls="pdf-page-thumbnails" onClick={() => setThumbnails(value => !value)}>{thumbnails ? '收起页览' : '页面缩略图'}</button><button type="button" aria-label="顺时针旋转原 PDF" onClick={() => setRotation(value => (value + 90) % 360)}>旋转 {rotation}°</button></>}
@@ -185,7 +184,7 @@ export default function OriginalPdf({paper, request, onRequestHandled, onRepair}
       <div className={styles.viewer} data-thumbnails={thumbnails && Boolean(pdf)}>
       {thumbnails && pdf && <div id="pdf-page-thumbnails" className={styles.thumbnailRail}><PdfThumbnails pdf={pdf} current={pageNumber} rotation={rotation} onSelect={setPageNumber}/></div>}
       <div className={styles.body} ref={bodyRef}>
-        {pdf ? <canvas ref={canvasRef} aria-label={`原 PDF 第 ${pageNumber} 页`} role="img" /> : <p>{file ? '正在打开原 PDF…' : '此设备尚未保存原文件。选择这篇论文的原 PDF，即可按原页查看图表；原有笔记和段落编号会保留。'}</p>}
+        {pdf ? <canvas ref={canvasRef} aria-label={`原 PDF 第 ${pageNumber} 页`} role="img" /> : <p>{file ? '正在打开原 PDF…' : '选择这篇论文的原 PDF，查看原始页面。'}</p>}
       </div>
       </div>
     </dialog>}

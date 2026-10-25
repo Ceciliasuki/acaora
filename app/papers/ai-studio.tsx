@@ -183,9 +183,8 @@ export default function AiStudio({ paper, activeParagraph, activeIndex, mobileVi
 
           <div className="ai-run-row">
             {!apiKey.trim() ? <Link className="ai-run" href={settingsHref} onClick={preserveTask}>配置模型，返回后执行</Link> : <button className="ai-run" type="button" disabled={working || !activeParagraph} onClick={() => void runAction()}>{working ? "DeepSeek 正在分析…" : actionMeta[action].button}</button>}
-            <span className="ai-run-note">{usage || (!apiKey.trim() ? '先配置当前会话的 Key；返回后由你点击运行。' : action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : contextScope)}</span>
+            <span className="ai-run-note">{usage || (!apiKey.trim() ? '先配置模型，再返回运行。' : action === "paragraph" || action === "translate" ? `当前分析第 ${activeIndex + 1} 段` : contextScope)}</span>
           </div>
-          <p className="ai-run-note">点击运行后，论文题名、当前章节和{contextScope}{action === 'translate' ? '及翻译风格' : ''}将经 Acaora 服务端发送给 DeepSeek。原 PDF 和个人笔记不随请求发送。</p>
           {error && <p className="ai-error" role="alert">{error}</p>}
         </div>
 

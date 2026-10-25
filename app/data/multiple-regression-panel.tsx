@@ -69,7 +69,7 @@ export default function MultipleRegressionPanel({data,isSample}:{data:DataSet;is
     <p className={styles.help}>完整样本数：{fit&&!stale?`${fit.n}（本次拟合）`:'尚未计算，拟合后确认'}{stale?'；当前设置尚未拟合。':''}</p>
     {errors.length>0&&<ul role="status">{errors.map(message=><li key={message}>{message}</li>)}</ul>}
     <div className={styles.actions}><Button disabled={busy||errors.length>0} onClick={run}>{busy?'正在拟合…':'拟合模型'}</Button>{busy&&<Button variant="secondary" onClick={cancel}>取消计算</Button>}</div>
-    {busy&&<p role="status">正在当前设备计算，原始数据不上传。</p>}{error&&<p role="alert">{error}</p>}
+    {busy&&<p role="status">正在计算…</p>}{error&&<p role="alert">{error}</p>}
     </div>
     <RegressionRecipeTools data={data} config={config} busy={busy} onApply={setConfig}/>
     </section>

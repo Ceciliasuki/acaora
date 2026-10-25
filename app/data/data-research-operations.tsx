@@ -80,7 +80,7 @@ function Operations({analysis,snapshot}:Props){
  const valid=Boolean(ownerId&&uuid(projectId)),ready=valid&&Boolean(ctx?.sourceFingerprint&&ctx.dataFingerprint),disabled=busy||ledger.busy;
  return <details id={`research-operations-${id}`} data-research-operations className={styles.recipe}><summary>专业研究操作</summary>
  {!valid?<p className={styles.help}>请登录并从研究项目进入 DataLab，以登记模型规格、运行矩阵和核验记录。</p>:<>
- <p className={styles.help}>原始数据在本机计算。项目只保存模型设置、数据指纹、完整精度汇总指标与版本记录。规格登记时间可追溯；登记本身不代表研究设计有效。</p>
+ <p className={styles.help}>规格登记时间可追溯；登记本身不代表研究设计有效。</p>
  <DataProvenanceTools ownerId={ownerId!} projectId={projectId} ledger={ledger}/>
  <fieldset className={styles.predictors} disabled={disabled||specFrozen}><legend>登记当前模型规格</legend><div className={styles.controls}>
  <label className={styles.control}>规格名称<input value={name} maxLength={200} onChange={e=>setName(e.target.value)}/></label><label className={styles.control}>分析角色<select value={role} onChange={e=>setRole(e.target.value as ModelSpecification['role'])}><option value="primary">主分析</option><option value="robustness">稳健性分析</option><option value="exploratory">探索性分析</option></select></label>

@@ -119,7 +119,8 @@ export async function installApiMocks(page: Page, initial: Partial<MockState> = 
     }
     if (url.pathname === "/api/profile") {
       if (!state.signedIn) return privateJson(route, { error: "请先登录。" }, 401);
-      return privateJson(route, request.method() === "PUT" ? { profile: request.postDataJSON() } : { user, profile });
+      if(request.method()==='PUT'){const {expectedOwnerId:actor,...saved}=request.postDataJSON();if(actor!==state.userId)return privateJson(route,{error:'账户已变化，未保存。'},409);return privateJson(route,{profile:saved});}
+      return privateJson(route,{user:{...user,id:state.userId},profile});
     }
     if (url.pathname === "/api/projects") {
       if (!state.signedIn) return privateJson(route, { error: "请先登录。" }, 401);

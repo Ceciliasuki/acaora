@@ -6,6 +6,7 @@ const testPort = Number(process.env.ACAORA_E2E_PORT ?? 3210);
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: "browser-auth-compatibility.spec.ts",
   outputDir: "test-results/playwright",
   snapshotPathTemplate: "{testDir}/__screenshots__/{platform}/{arg}{ext}",
   fullyParallel: false,

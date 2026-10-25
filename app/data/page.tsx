@@ -187,10 +187,10 @@ export default function Home() {
 
   return (
     <ResearchProvider data={data} source={sourceData} sample={isSample} joinHistory={joinHistory} workflow={workflow} dictionary={dictionary}><main className={`student-app data-app workspace-refresh ${craft.craft} ${ui.studio}`}>
-      <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
+      <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据分析" />
 
       <section className="workspace data-main data-shell" id="workspace">
-        <PageHeader className="workspace-header" title="数据分析" description="在当前设备读取文件，从样本检查开始分析。" actions={isSample && <Badge tone="warning">示例数据</Badge>} />
+        <PageHeader className="workspace-header" title="数据分析" description="导入数据，检查样本并建立分析。" actions={isSample && <Badge tone="warning">示例数据</Badge>} />
 
         <div className={`page-body page-body--wide ${ui.body}`} onClickCapture={revealSection}>
 
@@ -200,7 +200,6 @@ export default function Home() {
         <section className={ui.dataset} id="import" aria-label="当前数据集">
           <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'示例数据':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
           {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}{error && <p className="error-message" role="alert">{error}</p>}
-          <p className={ui.storageSummary}>原文件不上传；当前数据与固定结果仅在本次页面会话，刷新后需重选文件。方案需导出保存；命名快照仅保存在本机，登录后按账户隔离、匿名时仅在当前标签页，不含数据行，不作云同步。</p>
           <div className={ui.importOptions}><details className={ui.importDetails}><summary>文件格式与导入说明<ChevronDown size={16} aria-hidden="true"/></summary>
           <div className="upload-panel">
             <div className="panel-heading">

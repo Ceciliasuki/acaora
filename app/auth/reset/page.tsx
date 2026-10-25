@@ -1,8 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef,useState } from "react";
 import Link from "next/link";
-import { getCurrentUser, updatePassword as updateAccountPassword } from "../../lib/auth-client";
+import { authChangeEvent,getCurrentUser, updatePassword as updateAccountPassword } from "../../lib/auth-client";
 import { FormField, PasswordField } from "../../components/ui";
 
 export default function ResetPasswordPage() {
@@ -11,18 +11,26 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("正在验证重置链接…");
+  const ownerId=useRef<string|null>(null),epoch=useRef(0),redirect=useRef<number|undefined>(undefined);
 
   useEffect(() => {
+    let active=true;const generationRef=epoch;const generation=epoch.current;
+    const changed=()=>{epoch.current++;ownerId.current=null;setReady(false);setPassword('');setConfirmPassword('');setWorking(false);setMessage('账户已变化，请重新打开重置链接或登录后设置密码。');window.clearTimeout(redirect.current);};
+    window.addEventListener(authChangeEvent,changed);
     void getCurrentUser()
       .then((user) => {
+        if(!active||generation!==epoch.current)return;
+        ownerId.current=user?.id??null;
         setReady(Boolean(user));
         setMessage(user ? "" : "重置链接无效或已经过期，请重新申请。");
       })
-      .catch(() => setMessage("暂时无法验证重置链接，请稍后重试。"));
+      .catch(() => {if(active&&generation===epoch.current)setMessage("暂时无法验证重置链接，请稍后重试。");});
+    return()=>{active=false;generationRef.current++;window.clearTimeout(redirect.current);window.removeEventListener(authChangeEvent,changed);};
   }, []);
 
   async function updatePassword(event: FormEvent) {
     event.preventDefault();
+    const generation=epoch.current,actor=ownerId.current;if(!actor||working)return;
     if (password !== confirmPassword) {
       setMessage("两次输入的密码不一致。");
       return;
@@ -30,13 +38,14 @@ export default function ResetPasswordPage() {
     setWorking(true);
     setMessage("");
     try {
-      await updateAccountPassword(password);
+      await updateAccountPassword(password,actor);
+      if(generation!==epoch.current)return;
       setMessage("密码已更新，正在进入账户…");
-      window.setTimeout(() => location.replace("/dashboard"), 700);
+      redirect.current=window.setTimeout(() => {if(generation===epoch.current)location.replace("/dashboard");}, 700);
     } catch (cause) {
-      setMessage(cause instanceof Error ? cause.message : "密码更新失败。");
+      if(generation===epoch.current)setMessage(cause instanceof Error ? cause.message : "密码更新失败。");
     } finally {
-      setWorking(false);
+      if(generation===epoch.current)setWorking(false);
     }
   }
 

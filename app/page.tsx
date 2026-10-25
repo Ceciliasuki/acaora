@@ -20,7 +20,7 @@ export default async function AcaoraHome() {
     <HomeMotion><main className="acaora-site">
       <nav className="acaora-nav" aria-label="主导航">
         <Link className="acaora-brand" href="/"><span>A</span><div><strong>Acaora</strong><small>学曦</small></div></Link>
-        <div className="acaora-nav-links"><a href="#platform">平台</a><Link href="/papers">论文研究</Link><Link href="/data">数据分析</Link><a href="#principles">隐私与 AI</a></div>
+        <div className="acaora-nav-links"><a href="#platform">平台</a><Link href="/papers">论文研究</Link><Link href="/data">数据分析</Link><Link href="/help">使用帮助</Link></div>
         <div className="acaora-nav-actions">{viewer ? <><Link className="ghost-link" href="/dashboard">进入工作台</Link><Link className="home-viewer" href="/settings" aria-label={`打开 ${viewer.displayName} 的账户设置`}>{viewer.avatar ? <img src={viewer.avatar} alt="" width="32" height="32" /> : <span>{initials}</span>}<strong>{viewer.displayName}</strong></Link></> : <><Link className="ghost-link" href="/auth">登录</Link><Link className="primary-link" href="/auth?mode=register">创建账户</Link></>}</div>
       </nav>
 
@@ -36,11 +36,6 @@ export default async function AcaoraHome() {
       <section className="acaora-modules" id="platform">
         <div className="section-intro"><h2>工作区</h2></div>
         <div className="module-grid">{modules.map((module) => <Link className="module-card" href={module.href} key={module.title}><h3>{module.title}</h3><p>{module.copy}</p><ArrowUpRight size={20} aria-hidden="true" /></Link>)}</div>
-      </section>
-
-      <section className="acaora-principles" id="principles">
-        <div className="principle-copy"><h2>文件与同步</h2><p>原始文件不因登录自动上传。AI 输出单独标记，方便回到原文核对。</p></div>
-        <div className="principle-list"><article><div><h3>留在本机</h3><p>PDF 与数据文件在浏览器中解析，原始文件默认不上传。</p></div></article><article><div><h3>跟随账户</h3><p>登录后，阅读进度、笔记和项目记录按账户同步。</p></div></article></div>
       </section>
 
       <footer className="acaora-footer"><div className="acaora-brand"><span>A</span><div><strong>Acaora</strong><small>学习与研究工作台</small></div></div><div><Link href="/papers">论文</Link><Link href="/data">数据</Link><Link href="/projects">项目</Link><Link href="/help">帮助</Link><Link href={viewer ? "/settings" : "/auth"}>账户</Link></div></footer>
