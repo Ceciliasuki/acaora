@@ -7,12 +7,16 @@ import {installApiMocks,type MockProject} from './helpers';
 test.setTimeout(120000);
 const owner='41000000-0000-4000-8000-000000000001',now='2026-10-25T00:00:00.000Z';
 const project:MockProject={id:'42000000-0000-4000-8000-000000000001',user_id:owner,access_role:'owner',title:'兼容性验证研究',kind:'paper',status:'active',metadata:{notes:'仅用于隔离浏览器检查。'},created_at:now,updated_at:now};
-for(const signedIn of [false,true])for(const width of [1440,390])test(`account surfaces ${signedIn?'member':'guest'} ${width}px`,async({page,browserName},info)=>{
+for(const signedIn of [false,true])for(const width of [1440,390])test(`account surfaces ${signedIn?'member':'guest'} ${width}px`,async({context,browserName},info)=>{
+ for(const [route,title] of [['/dashboard','总览'],['/courses','课程中心'],['/papers','论文研究'],['/data','数据分析'],['/projects','项目空间'],['/settings','设置']]){
+  // Keep active-page errors separate from deliberate document teardown.
+  const page=await context.newPage();
+  try{
  await page.setViewportSize({width,height:width===390?844:1000});await page.emulateMedia({reducedMotion:'reduce'});
  const state=await installApiMocks(page,{signedIn,userId:owner,projects:signedIn?[project]:[]});
  await page.route('**/api/projects/workbench**',route=>route.fulfill({json:{project,events:[],access:{role:'owner',ownerId:owner,shared:false}}}));
  const diagnostics=trackBrowserRuntimeErrors(page);
- for(const [route,title] of [['/dashboard','总览'],['/courses','课程中心'],['/papers','论文研究'],['/data','数据分析'],['/projects','项目空间'],['/settings','设置']]){
+
   await page.goto(route);await expect(page.getByRole('heading',{name:title,exact:true,level:1})).toBeVisible();await expect(page.locator('.sidebar-profile-link')).toContainText(signedIn?'测试同学':'未登录');
   if(route==='/dashboard')await expect(page.locator('.overview-footer')).toContainText(signedIn?'student@example.com':'未登录');
   if(route==='/projects'){
@@ -31,8 +35,10 @@ for(const signedIn of [false,true])for(const width of [1440,390])test(`account s
    const accessibility=await new AxeBuilder({page}).include('.project-main').withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();expect(accessibility.violations).toEqual([]);
    await mkdir('outputs/browser-auth-audit',{recursive:true});await page.screenshot({path:`outputs/browser-auth-audit/${info.project.name}-${signedIn?'member':'guest'}-${width}.png`,animations:'disabled'});
   }
+  await page.waitForLoadState('networkidle');
+ const runtime=diagnostics(browserName);await info.attach(`${route.slice(1)}-cancelled-prefetch-diagnostics`,{body:JSON.stringify(runtime.cancelledPrefetches),contentType:'application/json'});expect(runtime.unexpected).toEqual([]);expect(state.requests.filter(item=>/^(POST|PATCH|PUT|DELETE) /.test(item))).toEqual([]);
+  }finally{await page.close();}
  }
- const runtime=diagnostics(browserName);await info.attach('cancelled-prefetch-diagnostics',{body:JSON.stringify(runtime.cancelledPrefetches),contentType:'application/json'});expect(runtime.unexpected).toEqual([]);expect(state.requests.filter(item=>/^(POST|PATCH|PUT|DELETE) /.test(item))).toEqual([]);
 });
 
 test('password login, reveal, refresh and logout preserve the intended session UI',async({page})=>{
