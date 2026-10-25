@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchWithTimeout } from "./http";
+import {clearAiKey} from './ai-settings';
 
 export type AuthUser = {
   id: string;
@@ -67,15 +68,47 @@ async function readJson<T>(response: Response): Promise<T> {
 // Share only an in-flight read, never a completed authentication result.
 // A new auth event starts a fresh read even if an older one is still pending.
 let pendingUser: Promise<AuthUser | null> | undefined;
+let authReadEpoch=0;
+let observedOwner:string|null|undefined;
+let authChannel:BroadcastChannel|undefined;
+let checkingIdentity:Promise<void>|undefined;
+const authSignalKey='acaora:auth-signal:v1';
+const remoteEvents=new WeakSet<Event>();
+
+function publishAuthSignal(){
+ try{if(authChannel){authChannel.postMessage('session-changed');return;}}catch{/* Use the storage signal if the channel was closed or denied. */}
+ try{localStorage.setItem(authSignalKey,`${Date.now()}:${Math.random()}`);localStorage.removeItem(authSignalKey);}catch{/* Focus/pageshow revalidation also works when browser storage is denied. */}
+}
+function emitRemoteAuthChange(){const event=new Event(authChangeEvent);remoteEvents.add(event);window.dispatchEvent(event);}
+function checkIdentity(explicitSignal=false){
+ if(observedOwner===undefined||checkingIdentity)return;
+ pendingUser=undefined;authReadEpoch++;
+ checkingIdentity=getCurrentUser().then(()=>undefined).catch(()=>{if(explicitSignal)emitRemoteAuthChange();}).finally(()=>{checkingIdentity=undefined;});
+}
+function openAuthChannel(){
+ if(authChannel||typeof BroadcastChannel==='undefined')return;
+ try{authChannel=new BroadcastChannel(authSignalKey);authChannel.onmessage=event=>{if(event.data==='session-changed')checkIdentity(true);};}catch{authChannel=undefined;}
+}
 if (typeof window !== "undefined") {
-  window.addEventListener(authChangeEvent, () => { pendingUser = undefined; });
+  openAuthChannel();
+  window.addEventListener(authChangeEvent,event=>{pendingUser=undefined;authReadEpoch++;clearAiKey();if(!remoteEvents.has(event))publishAuthSignal();});
+  window.addEventListener('storage',event=>{if(event.key===authSignalKey&&event.newValue)checkIdentity(true);});
+  window.addEventListener('focus',()=>checkIdentity());
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkIdentity();});
+  window.addEventListener('pagehide',()=>{authChannel?.close();authChannel=undefined;});
+  window.addEventListener('pageshow',()=>{openAuthChannel();checkIdentity();});
 }
 
 export function getCurrentUser(): Promise<AuthUser | null> {
   if (!pendingUser) {
-    pendingUser = authFetch("/api/auth/session")
+    const epoch=authReadEpoch;
+    const request = authFetch("/api/auth/session")
       .then(response => readJson<{ configured: boolean; user: AuthUser | null }>(response))
-      .then(payload => payload.user);
+      .then(payload => {
+        if(epoch===authReadEpoch&&pendingUser===request){const previous=observedOwner;observedOwner=payload.user?.id??null;if(previous===undefined)publishAuthSignal();else if(previous!==observedOwner){emitRemoteAuthChange();publishAuthSignal();}}
+        return payload.user;
+      });
+    pendingUser=request;
   }
   const request = pendingUser;
   return request.finally(() => { if (pendingUser === request) pendingUser = undefined; });
@@ -86,28 +119,31 @@ export async function getAuthStatus() {
   return readJson<{ configured: boolean }>(response);
 }
 
-export async function getProfile() {
+export async function getProfile(expectedOwnerId?:string) {
   const response = await authFetch("/api/profile");
-  const payload = await readJson<{ profile: Profile | null }>(response);
+  const payload = await readJson<{ profile: Profile | null;user?:AuthUser }>(response);
+  if(expectedOwnerId&&payload.user?.id!==expectedOwnerId){notifyAuthChanged();throw new Error('账户已变化，请重新读取个人资料。');}
   return payload.profile;
 }
 
-export async function saveProfile(profile: Profile) {
+export async function saveProfile(profile: Profile,expectedOwnerId:string) {
+  if((await getCurrentUser())?.id!==expectedOwnerId)throw new Error('账户已变化，未保存旧账户资料。');
   const response = await authFetch("/api/profile", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(profile),
+    body: JSON.stringify({...profile,expectedOwnerId}),
   });
   const payload = await readJson<{ profile: Profile }>(response);
   window.dispatchEvent(new Event("acaora:profile-change"));
   return payload.profile;
 }
 
-export async function updatePassword(password: string) {
+export async function updatePassword(password: string,expectedOwnerId:string) {
+  if((await getCurrentUser())?.id!==expectedOwnerId)throw new Error('账户已变化，请重新验证后设置密码。');
   const response = await authFetch("/api/auth/password", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password,expectedOwnerId }),
   });
   return readJson<{ updated: true }>(response);
 }

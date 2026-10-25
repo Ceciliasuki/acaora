@@ -39,7 +39,7 @@ export default function AnalysisProjectLink({snapshot,ownerId}:{snapshot:Researc
      const record:ProjectAnalysisRecord={id:snapshot.id,snapshotId:snapshot.id,name:snapshot.name,role,sample:snapshot.result.sample,method:snapshot.result.method,context:snapshot.result.context,settings:serializeProjectAnalysisSettings(snapshot.analysis),dataset:{name:snapshot.dataset.name,rows:snapshot.dataset.rows,fingerprint:snapshot.dataset.fingerprint,sourceFingerprint:snapshot.dataset.sourceFingerprint},metrics:snapshot.result.metrics.map(([key,value]):[string,string]=>[key,value]),interpretation:interpretation.trim(),evidenceIds:evidence?[evidence]:[],createdAt:snapshot.createdAt,registeredAt:new Date().toISOString()};
      if(!validateProjectAnalysis(record)||existing.length>=30)throw new Error('分析摘要或设置过长，或台账已达 30 条；请先导出并整理项目。完整快照仍保留在本机。');
      const name=snapshot.name.replace(/[[\]\r\n]/g,' ');
-     const note=`[分析快照：${name}](${href})\n数据：${snapshot.dataset.name}；处理表指纹：${snapshot.dataset.fingerprint}\n方法：${snapshot.result.method}${evidence?`\n对应论文证据 ID：${evidence}`:''}\n解释：${interpretation.trim()}\n本机来源：此快照仅在当前浏览器与账户可用，换设备需导入快照备份。`;
+     const note=`[分析快照：${name}](${href})\n数据：${snapshot.dataset.name}；处理表指纹：${snapshot.dataset.fingerprint}\n方法：${snapshot.result.method}${evidence?`\n对应论文证据 ID：${evidence}`:''}\n解释：${interpretation.trim()}`;
      const tasks=project.metadata.tasks??[];
      if((await getCurrentUser())?.id!==ownerId||signal?.aborted)throw new Error('账户已变化，未保存。');
      const response=await authFetch(`/api/projects?id=${encodeURIComponent(project.id)}`,{method:'PATCH',signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({...project,metadata:{...project.metadata,notes:[project.metadata.notes,note].filter(Boolean).join('\n\n'),analysisRecords:[...existing,record],tasks:task.trim()?[...tasks,{id:crypto.randomUUID(),text:task.trim(),done:false}]:tasks},expectedOwnerId:ownerId,expectedUpdatedAt:project.updated_at})});
@@ -52,7 +52,7 @@ export default function AnalysisProjectLink({snapshot,ownerId}:{snapshot:Researc
  }
  if(!ownerId||ownerId==='guest')return <p>登录后可以将本机快照摘要关联到当前账户的项目。</p>;
  return <details className={styles.recipe} onToggle={event=>{if(event.newState==='open'&&!projects.length&&!invalid)void load();}}><summary>关联快照到项目</summary>
-  <p className={styles.help}>将模型设置、摘要、数据指纹与解释登记到项目分析台账，并保留笔记链接，可选添加下一步任务。登记摘要随项目保存；原文件、数据行和完整快照不上传。</p>
+
   <label className={styles.control}>分析用途<select aria-label="分析用途" disabled={busy||invalid} value={role} onChange={event=>setRole(event.target.value as AnalysisRole)}>{Object.entries(analysisRoles).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label>
   <label className={styles.control}>关联项目<select disabled={busy||invalid} value={selected} onChange={event=>{setSelected(event.target.value);setEvidence('');}}><option value="">选择项目</option>{projects.map(project=><option key={project.id} value={project.id}>{project.title}</option>)}</select></label>
   <label className={styles.control}>对应论文证据（可选）<select disabled={busy||invalid} value={evidence} onChange={event=>setEvidence(event.target.value)}><option value="">暂不关联论文摘录</option>{projects.find(project=>project.id===selected)?.metadata.evidence?.map(entry=><option key={entry.id} value={entry.id}>{entry.paperTitle} · {entry.quote.slice(0,60)}</option>)}</select></label>

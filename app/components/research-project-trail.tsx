@@ -67,7 +67,7 @@ function ProjectTrail({paperId}: {paperId?: string}) {
   if (project) {
     const source = project.metadata.evidence?.find(validateProjectEvidence);
     return <aside className={styles.trail} aria-label="当前研究项目">
-      <div className={styles.copy}><strong>{project.title}</strong><p>{path === '/papers' ? '在笔记或批注中将摘录加入本项目，保留原文位置。' : '保存命名快照后，将分析解释与下一步加入本项目。快照仍保存在本机。'}</p></div>
+      <div className={styles.copy}><strong>{project.title}</strong><p>{path === '/papers' ? '在笔记或批注中将摘录加入本项目，保留原文位置。' : '保存命名快照后，将分析解释与下一步加入本项目。'}</p></div>
       <nav aria-label="继续当前研究"><Link href={withResearchProject('/projects', project.id)}><ArrowLeft size={15} aria-hidden="true"/>返回项目</Link>{path === '/papers' ? <Link href={withResearchProject('/data', project.id)}>分析数据<ArrowRight size={15} aria-hidden="true"/></Link> : <Link href={withResearchProject(source ? paperSourceHref(source) : '/papers', project.id)}>查阅论文<ArrowRight size={15} aria-hidden="true"/></Link>}<Link href={independent}>退出本项目流程</Link></nav>
     </aside>;
   }

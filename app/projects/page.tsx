@@ -422,7 +422,7 @@ export default function ProjectsPage() {
   return (
     <main className={`student-app project-app workspace-refresh ${craft.craft}`}>
       <Suspense fallback={null}><ProjectLocation onChange={setLocationQuery}/></Suspense>
-      <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目已进行用户隔离" : "登录后开启项目云端记忆"} />
+      <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目空间" : "未登录"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
         <PageHeader className="workspace-header" title="项目空间" description="组织研究设计、论文证据、分析记录与项目任务。" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
@@ -437,7 +437,7 @@ export default function ProjectsPage() {
             action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
           />
         ) : !viewer ? (
-          <section className="project-login-wall"><h2>登录后查看项目</h2><p>登录后管理研究设计、论文摘录、分析登记与项目笔记。原始文件留在本机。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
+          <section className="project-login-wall"><h2>登录后查看项目</h2><p>登录后管理研究设计、论文摘录、分析登记与项目笔记。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
         ) : (
           <>
 

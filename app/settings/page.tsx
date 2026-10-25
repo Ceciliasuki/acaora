@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import craft from '../operational-craft.module.css';
-import { ChangeEvent, Suspense, useEffect, useState } from "react";
+import { ChangeEvent, Suspense, useEffect, useRef,useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +11,7 @@ import AppSidebar from "../components/app-sidebar";
 import SettingsNavigation from './settings-navigation';
 import { Button, FormField, Input, PasswordField, StatusMessage, Textarea, PageHeader } from "../components/ui";
 import { clearAiKey, readAiKey, saveAiKey } from "../lib/ai-settings";
-import { getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
+import { authChangeEvent,getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
 import { getShortCommit, type BuildVersion } from "../lib/version";
 
 const emptyProfile: Profile = {
@@ -44,7 +44,7 @@ function AiTaskReturn({configured, guest = false}: {configured: boolean; guest?:
   const returnTo = allowedAiReturnTo(search.get('returnTo'));
   if (!returnTo) return null;
   return <div className="settings-panel-copy">
-    <p>{guest ? '模型设置需要登录；匿名论文不会自动转入账户。登录后请回到此设置页完成配置。' : configured ? '当前会话已有 Key。返回后请确认论文、段落和分析方式，再手动运行。' : '保存当前会话的 Key 后，可返回原来的论文与 AI 操作。返回不会自动调用模型。'}</p>
+    <p>{guest ? '登录后配置模型，再返回当前任务。' : configured ? '当前会话已有 Key。返回后请确认论文、段落和分析方式，再手动运行。' : '保存当前会话的 Key 后，可返回原来的论文与 AI 操作。返回不会自动调用模型。'}</p>
     <Link href={returnTo}>返回原来的 AI 任务</Link>
   </div>;
 }
@@ -76,9 +76,14 @@ export default function SettingsPage() {
   const [aiModel, setAiModel] = useState("");
   const [version, setVersion] = useState<BuildVersion | null>(null);
   const [versionState, setVersionState] = useState<"loading" | "ready" | "error">("loading");
+  const accountEpoch=useRef(0),ownerId=useRef<string|null>(null);
+
+  useEffect(()=>{const accountGeneration=accountEpoch;const changed=()=>{accountEpoch.current++;ownerId.current=null;setLoading(true);setSessionError('');setSignedIn(false);setProfile(emptyProfile);setSavedProfile(JSON.stringify(emptyProfile));setEmail('');setNewPassword('');setConfirmNewPassword('');setInterestInput('');setAiKey('');setAiConfigured(false);setMessage('');setError('');setSaving(false);setChangingPassword(false);setReloadKey(key=>key+1);};window.addEventListener(authChangeEvent,changed);return()=>{accountGeneration.current++;window.removeEventListener(authChangeEvent,changed);};},[]);
 
   useEffect(() => {
     let mounted = true;
+    const epoch=accountEpoch.current;
+    const current=()=>mounted&&epoch===accountEpoch.current;
     async function load() {
       setLoading(true);
       setSessionError("");
@@ -107,14 +112,16 @@ export default function SettingsPage() {
 
       try {
         const user = await getCurrentUser();
-        if (!mounted) return;
+        if (!current()) return;
         /* null user = genuinely signed out; a throw = the request failed. */
         if (!user) {
           setSignedIn(false);
+          ownerId.current=null;
           return;
         }
-        const next = await getProfile();
-        if (!mounted) return;
+        const next = await getProfile(user.id);
+        if (!current()) return;
+        ownerId.current=user.id;
         setSignedIn(true);
         setEmail(user.email || "");
         const loadedProfile = {
@@ -125,12 +132,12 @@ export default function SettingsPage() {
         setProfile(loadedProfile);
         setSavedProfile(JSON.stringify(loadedProfile));
       } catch (cause) {
-        if (mounted) {
+        if (current()) {
           setSignedIn(false);
           setSessionError(cause instanceof Error ? cause.message : "账户状态读取失败。");
         }
       } finally {
-        if (mounted) setLoading(false);
+        if (current()) setLoading(false);
       }
     }
     void load();
@@ -146,6 +153,7 @@ export default function SettingsPage() {
   }
 
   async function chooseAvatar(event: ChangeEvent<HTMLInputElement>) {
+    const epoch=accountEpoch.current;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -159,11 +167,12 @@ export default function SettingsPage() {
     }
     try {
       const avatar = await compressAvatar(file);
+      if(epoch!==accountEpoch.current)return;
       if (avatar.length > 260_000) throw new Error("AVATAR_TOO_LARGE");
       updatePreference("avatar", avatar);
       setError("");
     } catch {
-      setError("头像处理后仍然过大，请换一张更简单的图片。");
+      if(epoch===accountEpoch.current)setError("头像处理后仍然过大，请换一张更简单的图片。");
     }
   }
 
@@ -175,22 +184,25 @@ export default function SettingsPage() {
   }
 
   async function saveProfile() {
+    const epoch=accountEpoch.current,actor=ownerId.current;if(!actor||saving)return;
     setSaving(true);
     setError("");
     setMessage("");
     try {
-      const saved = await saveAccountProfile(profile);
+      const saved = await saveAccountProfile(profile,actor);
+      if(epoch!==accountEpoch.current||ownerId.current!==actor)return;
       setProfile(current => JSON.stringify(current) === JSON.stringify(profile) ? saved : current);
       setSavedProfile(JSON.stringify(saved));
       setMessage("个人资料已保存。");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "保存失败。");
+      if(epoch===accountEpoch.current)setError(cause instanceof Error ? cause.message : "保存失败。");
     } finally {
-      setSaving(false);
+      if(epoch===accountEpoch.current)setSaving(false);
     }
   }
 
   async function changePassword() {
+    const epoch=accountEpoch.current,actor=ownerId.current;if(!actor||changingPassword)return;
     if (newPassword !== confirmNewPassword) {
       setError("两次输入的新密码不一致。");
       return;
@@ -199,14 +211,15 @@ export default function SettingsPage() {
     setError("");
     setMessage("");
     try {
-      await updatePassword(newPassword);
+      await updatePassword(newPassword,actor);
+      if(epoch!==accountEpoch.current||ownerId.current!==actor)return;
       setNewPassword("");
       setConfirmNewPassword("");
       setMessage("登录密码已更新。");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "密码更新失败。");
+      if(epoch===accountEpoch.current)setError(cause instanceof Error ? cause.message : "密码更新失败。");
     } finally {
-      setChangingPassword(false);
+      if(epoch===accountEpoch.current)setChangingPassword(false);
     }
   }
 
@@ -232,15 +245,13 @@ export default function SettingsPage() {
   }
 
   async function logout() {
-    await signOut().catch(() => undefined);
-    router.replace("/");
-    router.refresh();
+    try{await signOut();router.replace("/");router.refresh();}catch(cause){setError(cause instanceof Error?cause.message:'退出未完成，请重试。');}
   }
 
   return <main className={`student-app settings-app workspace-refresh ${craft.craft}`}>
     <AppSidebar active="settings" />
     <section className="workspace settings-main settings-shell">
-      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与当前设备的模型设置。" actions={signedIn ? <>{profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></> : undefined} />
+      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与模型设置。" actions={signedIn ? <>{profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></> : undefined} />
 
       <div className="page-body">
 
@@ -264,14 +275,14 @@ export default function SettingsPage() {
 
           <section className="settings-panel" id="ai-models">
             <div className="settings-section-head"><h2>AI 与模型</h2></div>
-            <p className="settings-panel-copy">{aiModelState === "ready" ? <>当前模型：<strong>{aiModel}</strong>。</> : aiModelState === "fallback" ? <>服务端未声明模型名，实际按服务端默认模型运行。</> : aiModelState === "error" ? <>暂时无法确认当前模型：配置请求失败。</> : <>正在读取服务端模型配置…</>}Key 仅保存在当前浏览器会话；发起分析时，Key 和所选文本会发送到 Acaora 服务端并转发给 DeepSeek。Acaora 不把 Key 写入账户数据库。</p>
-            <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" hint="关闭浏览器会话后自动清除。"><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setAiConfigured(false); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
+            <p className="settings-panel-copy">{aiModelState === "ready" ? <>当前模型：<strong>{aiModel}</strong>。</> : aiModelState === "fallback" ? <>服务端未声明模型名，实际按服务端默认模型运行。</> : aiModelState === "error" ? <>暂时无法确认当前模型：配置请求失败。</> : <>正在读取服务端模型配置…</>}</p>
+            <div className="settings-narrow-form"><FormField label="DeepSeek API Key" id="settings-ai-key" ><Input type="password" name="deepseek-key" autoComplete="off" spellCheck={false} value={aiKey} onChange={(event) => setAiKey(event.target.value)} placeholder="sk-…" /></FormField><div className="settings-inline-actions"><Button onClick={saveAiSettings}>保存到当前会话</Button><Button variant="secondary" onClick={() => { clearAiKey(); setAiKey(""); setAiConfigured(false); setMessage("当前会话的 AI Key 已清除。"); }}>清除</Button></div></div>
             <Suspense fallback={null}><AiTaskReturn configured={aiConfigured}/></Suspense>
           </section>
 
           <section className="settings-panel" id="privacy">
             <div className="settings-section-head"><h2>隐私与数据</h2></div>
-            <div className="settings-info-grid"><article><b>原始文件</b><p>CSV、Excel、统计软件数据和论文 PDF 默认只在当前浏览器读取，不会因登录自动上传。</p></article><article><b>账户同步</b><p>个人资料、项目、提取后的论文文本、译文与笔记按账户隔离同步；原始 PDF 不上传。</p></article><article><b>资料导出</b><p>下载个人资料的 JSON 副本，副本不包含密码或登录凭据。</p><Button variant="secondary" onClick={exportProfile}>导出资料</Button></article><article><b>结束会话</b><p>退出当前设备上的账户。</p><Button variant="danger" onClick={() => void logout()}>退出登录</Button></article></div>
+            <div className="settings-info-grid"><article><b>资料导出</b><Button variant="secondary" onClick={exportProfile}>导出资料</Button></article><article><b>账户</b><Button variant="danger" onClick={() => void logout()}>退出登录</Button></article></div>
           </section>
 
           <section className="settings-panel settings-about" id="about">

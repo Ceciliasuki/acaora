@@ -61,8 +61,8 @@ jobs:
           SUPABASE_URL: "https://prefetch-build-fixture.supabase.co"
           SUPABASE_PUBLISHABLE_KEY: "sb_publishable_prefetch_build_fixture"
 
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
 
       - name: Set up Python for downloaded reproduction packages
         uses: actions/setup-python@v5
@@ -77,6 +77,12 @@ jobs:
         run: node --test --test-name-pattern="vendored scientific Python" tests/local-runner.test.mjs
         env:
           ACAORA_LOCAL_RUNNER_REAL: "1"
+
+      - name: Browser and account-state compatibility
+        run: pnpm test:compat --project=chromium --project=firefox --project=webkit
+
+      - name: HTTPS cookie and browser session isolation
+        run: pnpm test:auth-cookie --project=chromium --project=firefox --project=webkit
 
       - name: Deterministic mock E2E
         run: pnpm test:e2e

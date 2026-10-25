@@ -93,9 +93,9 @@ test('REV-D2-ERROR progress failures and anonymous states do not invent zero com
  await expect(resume).toContainText('登录后可读取账户的上次课时');
 });
 
-test('REV-C histogram exposes the exact nine shared bins and storage boundaries',async({page})=>{
+test('REV-C histogram exposes the exact nine shared bins without persistent storage boilerplate',async({page})=>{
   await installApiMocks(page);await page.goto('/data');
-  await expect(page.getByText(/当前数据与固定结果仅在本次页面会话/)).toBeVisible();
+  await expect(page.getByText(/当前数据与固定结果仅在本次页面会话/)).toHaveCount(0);
   await page.getByText('查看区间与频数表 · 单位未提供',{exact:true}).click();
   const rows=page.getByRole('table',{name:/原始区间端点与频数/}).locator('tbody tr');
   await expect(rows).toHaveCount(9);
@@ -207,5 +207,5 @@ test('REV-E keyboard skip link bypasses navigation and route titles remain publi
   await expect(page).toHaveTitle('项目空间 · Acaora 学曦');
   await page.getByRole('link',{name:'帮助与恢复',exact:true}).click();
   await expect(page).toHaveTitle('帮助与恢复 · Acaora 学曦');
-  await expect(page.getByRole('heading',{name:'草稿、数据与快照'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'保存与备份'})).toBeVisible();
 });

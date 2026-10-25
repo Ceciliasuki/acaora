@@ -35,13 +35,14 @@ type PasswordFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & 
 export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(function PasswordField({
   className,
   showPolicy = false,
+  name,
   minLength = passwordPolicy.minLength,
   maxLength = passwordPolicy.maxLength,
   ...props
 }, ref) {
   const [visible, setVisible] = useState(false);
   return <div className="ui-password-wrap">
-    <Input ref={ref} className={className} type={visible ? "text" : "password"} minLength={minLength} maxLength={maxLength} {...props} />
+    <Input ref={ref} name={name??props.id} className={className} type={visible ? "text" : "password"} minLength={minLength} maxLength={maxLength} {...props} />
     <IconButton className="ui-password-toggle" variant="ghost" label={visible ? "隐藏密码" : "显示密码"} onClick={() => setVisible((value) => !value)}>
       {visible ? <EyeOff size={18} /> : <Eye size={18} />}
     </IconButton>

@@ -9,16 +9,20 @@ const paper = {
   paragraphs:[{id:'loading-paragraph',page:1,section:'Introduction',original:'An existing local paper remains readable while the cloud request is pending.',translation:'',note:'',read:false,bookmarked:false}],
 };
 
-test('LOAD-01 page and sidebar share concurrent session reads', async ({page}) => {
+test('LOAD-01 initial concurrent session reads are shared before the dashboard identity recheck', async ({page}) => {
   const state = await installApiMocks(page,{signedIn:true});
+  let active=0,maxActive=0;
   await page.route('**/api/auth/session',async route=>{
-    await new Promise(resolve=>setTimeout(resolve,250));
-    await route.fallback();
+    active++;maxActive=Math.max(maxActive,active);
+    try{await new Promise(resolve=>setTimeout(resolve,250));await route.fallback();}finally{active--;}
   });
   await page.goto('/dashboard');
   await expect(page.locator('.sidebar-profile-link')).toContainText('测试同学');
   await expect(page.getByRole('status',{name:'正在读取工作台记录'})).toHaveCount(0);
-  expect(state.requests.filter(request=>request==='GET /api/auth/session')).toHaveLength(1);
+  await expect(page.getByRole('heading',{name:'还没有论文或项目记录',exact:true})).toBeVisible();
+  expect(maxActive).toBe(1);
+  // Initial sidebar/page readers share one request; a later read verifies ownership before displaying results.
+  expect(state.requests.filter(request=>request==='GET /api/auth/session')).toHaveLength(2);
 });
 
 test('LOAD-02 a confirmed owner can read and edit the local paper before cloud returns', async ({page}) => {

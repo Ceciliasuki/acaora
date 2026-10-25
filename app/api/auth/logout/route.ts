@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "../../../lib/supabase/server";
-import { privateNoStore } from "../_shared";
+import { authError,privateNoStore } from "../_shared";
 
 export async function POST() {
-  const supabase = await createSupabaseServerClient().catch(() => null);
-  if (supabase) await supabase.auth.signOut().catch(() => undefined);
-  return privateNoStore(NextResponse.json({ signedOut: true }));
+  try{
+    const supabase = await createSupabaseServerClient();
+    const {error}=await supabase.auth.signOut({scope:'local'});
+    if(error)return privateNoStore(NextResponse.json({error:'退出未完成，请检查连接后重试。当前会话状态尚未确认。'},{status:503}));
+    return privateNoStore(NextResponse.json({ signedOut: true }));
+  }catch(error){return authError(error);}
 }

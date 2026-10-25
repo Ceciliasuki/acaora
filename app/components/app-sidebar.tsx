@@ -30,14 +30,15 @@ export default function AppSidebar({
   active,
   initials = "AC",
   profileTitle = "Acaora 用户",
-  profileSubtitle = "本地优先模式",
+  profileSubtitle = "个人设置",
   avatarUrl = "",
 }: AppSidebarProps) {
   const [open, setOpen] = useState(false);
   const [isDrawer, setIsDrawer] = useState(false);
   const {expanded, rootRef, toggleRef, toggle, handlers} = useHoverNavigation();
   const [profile, setProfile] = useState<{initials: string; title: string; subtitle: string; avatarUrl: string} | null>(null);
-  const displayedProfile = profile ?? {initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl};
+  const [identity, setIdentity] = useState<'loading'|'guest'|'member'|'error'>('loading');
+  const displayedProfile = profile ?? (identity==='member' ? {initials, title: profileTitle, subtitle: profileSubtitle, avatarUrl} : {initials:'AC',title:identity==='guest'?'未登录':identity==='error'?'账户暂不可用':'正在读取账户…',subtitle:identity==='guest'?'登录账户':identity==='error'?'前往设置重试':'',avatarUrl:''});
   const triggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -47,22 +48,25 @@ export default function AppSidebar({
     let requestId = 0;
     async function loadProfile() {
       const currentRequest = ++requestId;
-      const user = await getCurrentUser().catch(() => null);
-      const data = user ? await getProfile().catch(() => null) : null;
+      let user;
+      try {user=await getCurrentUser();}catch{if(mounted&&currentRequest===requestId){setIdentity('error');setProfile(null);}return;}
+      const data = user ? await getProfile(user.id).catch(() => null) : null;
       if (!mounted || currentRequest !== requestId) return;
       if (!user) {
         setProfile(null);
+        setIdentity('guest');
         return;
       }
+      setIdentity('member');
       const title = data?.display_name || user.email || "Acaora 用户";
       setProfile({
         initials: String(title).slice(0, 2).toUpperCase(),
         title: String(title),
-        subtitle: data?.major || data?.university || "云端同步已开启",
+        subtitle: data?.major || data?.university || "个人设置",
         avatarUrl: data?.preferences?.avatar || "",
       });
     }
-    const reload = () => { void loadProfile(); };
+    const reload = () => { setProfile(null);setIdentity('loading');void loadProfile(); };
     void loadProfile();
     window.addEventListener(authChangeEvent, reload);
     window.addEventListener("acaora:profile-change", reload);
@@ -147,7 +151,7 @@ export default function AppSidebar({
       <div className="student-sidebar-foot">
         <Link className="workspace-quick-launch" href="/help" aria-label="帮助与恢复" title="帮助与恢复" onClick={()=>setOpen(false)}><CircleHelp size={20} aria-hidden="true"/><span>帮助与恢复</span></Link>
         <QuickNavigation onNavigate={()=>setOpen(false)}/>
-        <Link className="sidebar-profile-link" href="/settings" aria-label="编辑个人资料" onClick={() => setOpen(false)}>
+        <Link className="sidebar-profile-link" href={identity==='guest'?'/auth':'/settings'} aria-label={identity==='guest'?'登录账户':identity==='member'?'编辑个人资料':'账户设置'} onClick={() => setOpen(false)}>
           {displayedProfile.avatarUrl ? <img src={displayedProfile.avatarUrl} width="72" height="72" alt="" /> : <b>{displayedProfile.initials}</b>}
           <p><strong>{displayedProfile.title}</strong><small>{displayedProfile.subtitle}</small></p>
         </Link>

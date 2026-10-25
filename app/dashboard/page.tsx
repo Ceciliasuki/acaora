@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import AppSidebar from "../components/app-sidebar";
 import { Button } from "../components/ui";
-import { authFetch, getCurrentUser, signOut as signOutSession } from "../lib/auth-client";
+import { authChangeEvent,authFetch, getCurrentUser, signOut as signOutSession } from "../lib/auth-client";
 import styles from "./overview.module.css";
 
 type Viewer = { id: string; email?: string } | null;
@@ -30,28 +30,35 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [papers, setPapers] = useState<Paper[]>([]);
   const [state, setState] = useState<LoadState>("loading");
+  const [logoutError,setLogoutError]=useState(''),[signingOut,setSigningOut]=useState(false);
 
   useEffect(() => {
     let active = true;
+    let generation=0;
     async function load() {
+      const token=++generation;
+      setViewer(null);setProjects([]);setPapers([]);setState('loading');setLogoutError('');
       try {
         const user = await getCurrentUser();
-        if (!active) return;
+        if (!active||token!==generation) return;
         setViewer(user);
         if (!user) { setState("guest"); return; }
         const [projectResponse, paperResponse] = await Promise.all([authFetch("/api/projects"), authFetch("/api/cloud/papers")]);
         if (!projectResponse.ok || !paperResponse.ok) throw new Error("WORKSPACE_LOAD_FAILED");
         const projectPayload = await projectResponse.json() as { projects?: Project[] };
         const paperPayload = await paperResponse.json() as { papers?: Paper[] };
-        if (!active) return;
+        if (!active||token!==generation) return;
+        if ((await getCurrentUser())?.id !== user.id || !active || token !== generation) return;
         const nextProjects = projectPayload.projects ?? [];
         const nextPapers = paperPayload.papers ?? [];
         setProjects(nextProjects); setPapers(nextPapers);
         setState(nextProjects.length || nextPapers.length ? "ready" : "empty");
-      } catch { if (active) setState("error"); }
+      } catch { if (active&&token===generation) setState("error"); }
     }
+    const changed=()=>{void load();};
     void load();
-    return () => { active = false; };
+    window.addEventListener(authChangeEvent,changed);
+    return () => { active = false;generation++;window.removeEventListener(authChangeEvent,changed); };
   }, []);
 
   const activity = useMemo<Activity[]>(() => [
@@ -69,12 +76,12 @@ export default function DashboardPage() {
   }[state];
 
   async function signOut() {
-    await signOutSession().catch(() => undefined);
-    setViewer(null); setProjects([]); setPapers([]); setState("guest");
+    if(signingOut)return;setSigningOut(true);setLogoutError('');
+    try{await signOutSession();}catch(cause){setLogoutError(cause instanceof Error?cause.message:'退出未完成，请稍后重试。');}finally{setSigningOut(false);}
   }
 
   return <main className="student-app">
-    <AppSidebar active="dashboard" initials={viewer?.email?.slice(0, 2).toUpperCase() ?? "GU"} profileTitle={displayName} profileSubtitle={viewer ? "云端同步已开启" : "仅保存在当前设备"} />
+    <AppSidebar active="dashboard" initials={viewer?.email?.slice(0, 2).toUpperCase() ?? "GU"} profileTitle={displayName} profileSubtitle={viewer ? "总览" : "未登录"} />
     <section className={`student-main overview-main ${styles.page}`}>
       <header className={styles.header}>
         <h1>总览</h1>
@@ -105,8 +112,9 @@ export default function DashboardPage() {
       </section>
       </div>
       <footer className={`overview-footer ${styles.footer}`}>
-        <p>{viewer ? `${counted ? `${papers.length} 篇论文 · ${projects.length} 个项目 · ` : ""}${viewer.email ?? "已登录"}` : "匿名论文记录保存在当前设备"}</p>
-        {viewer ? <Button variant="ghost" size="sm" onClick={() => void signOut()}>退出</Button> : <Link className="ui-button ui-button--secondary" href="/auth">登录同步</Link>}
+        <p>{viewer ? `${counted ? `${papers.length} 篇论文 · ${projects.length} 个项目 · ` : ""}${viewer.email ?? "已登录"}` : state==='guest'?"未登录":state==='loading'?'正在确认账户…':'账户状态暂不可用'}</p>
+        {logoutError&&<p role="alert">{logoutError}</p>}
+        {viewer ? <Button variant="ghost" size="sm" loading={signingOut} onClick={() => void signOut()}>退出</Button> : state==='guest'?<Link className="ui-button ui-button--secondary" href="/auth">登录同步</Link>:null}
       </footer>
     </section>
   </main>;

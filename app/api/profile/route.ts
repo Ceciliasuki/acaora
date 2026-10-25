@@ -9,6 +9,7 @@ type ProfilePreferences = {
 };
 
 type ProfilePayload = {
+  expectedOwnerId?: unknown;
   display_name?: unknown;
   university?: unknown;
   major?: unknown;
@@ -53,6 +54,7 @@ export async function PUT(request: NextRequest) {
     const session = await readRequestSession();
     if (!session) return privateNoStore(NextResponse.json({ error: "请先登录。" }, { status: 401 }));
     const body = await request.json() as ProfilePayload;
+    if(!body||body.expectedOwnerId!==session.user.id)return privateNoStore(NextResponse.json({error:'账户或页面版本已变化，未保存。请重新读取个人资料。'},{status:409}));
     const year = Number(body.graduation_year);
     const profile = {
       id: session.user.id,
@@ -71,7 +73,7 @@ export async function PUT(request: NextRequest) {
     if (!result.ok) {
       const detail = await result.text();
       console.error("Profile update failed", result.status, detail.slice(0, 500));
-      return privateNoStore(NextResponse.json({ error: "资料保存失败，请确认 Supabase 已运行账户迁移。" }, { status: 502 }));
+      return privateNoStore(NextResponse.json({ error: "资料保存失败，请稍后重试。" }, { status: 502 }));
     }
     const profiles = await result.json() as Array<Record<string, unknown>>;
     return privateNoStore(NextResponse.json({ profile: profiles[0] ?? profile }));

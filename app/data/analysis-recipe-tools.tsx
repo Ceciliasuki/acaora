@@ -100,7 +100,7 @@ function RecipeSession({data, config, onApply}: Props) {
   return <details className="recipe-tools">
     <summary>保存与重跑分析方案</summary>
     <div className="recipe-tools-body">
-      <p>保存方法与变量设置，重新选择数据文件后可核对字段并重跑。原始数据仅在当前页面处理，刷新后需重新选择。</p>
+      <p>保存方法与变量设置，重新选择数据文件后可核对字段并重跑。</p>
       <div className="recipe-actions">
         <Button variant="secondary" size="sm" disabled={!fingerprint || reading} onClick={exportRecipe}><Download size={15} aria-hidden="true"/>导出当前方案</Button>
         <Button variant="ghost" size="sm" disabled={reading} onClick={() => fileInput.current?.click()}><Upload size={15} aria-hidden="true"/>{reading ? '正在读取方案…' : '导入分析方案'}</Button>
