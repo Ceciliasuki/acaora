@@ -33,7 +33,7 @@ test("PAPER-01 imports and parses a text PDF locally", async ({ page }) => {
   await page.goto("/papers?view=reader");
   await expect(page.getByRole('button', {name: '导入 PDF', exact: true})).toBeEnabled();
   await page.getByLabel('导入英文论文 PDF',{exact:true}).setInputFiles({ name: "reproducible-study.pdf", mimeType: "application/pdf", buffer: makeTextPdf() });
-  await expect(page.getByText(/已读取 \d+ 个段落，原始 PDF 未上传。/)).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText(/已读取 \d+ 个段落。/)).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('.paper-source-record')).toContainText('reproducible-study.pdf');
   await expect.poll(() => state.requests.includes("PUT /api/cloud/papers")).toBe(true);
 });

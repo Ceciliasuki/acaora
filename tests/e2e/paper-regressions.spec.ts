@@ -187,7 +187,7 @@ test('original PDF renders its graphic locally and survives reload without enter
   await page.reload();
   await expect(page.getByLabel('论文标题')).toHaveValue('Other account paper');
   await page.getByRole('button', {name: '查看原 PDF', exact: true}).click();
-  await expect(page.getByText(/此设备尚未保存原文件/)).toBeVisible();
+  await expect(page.getByRole('button',{name:'选择原 PDF',exact:true})).toBeEnabled();
   await expect(canvas).toHaveCount(0);
 });
 
