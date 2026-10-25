@@ -5,6 +5,7 @@ import {useEffect, useRef, useState, type FormEvent} from 'react';
 import {Button, Dialog, FormField, Select, Textarea} from '../components/ui';
 import {authChangeEvent, authFetch, getCurrentUser} from '../lib/auth-client';
 import {evidenceDuplicateKey, validateProjectEvidence, type ProjectEvidence, type ProjectEvidenceDraft} from '../lib/project-evidence';
+import {projectsChangedEvent} from '../lib/research-links';
 
 type Project = {
   id: string;
@@ -15,9 +16,10 @@ type Project = {
   updated_at: string;
 };
 
-export default function ProjectEvidencePicker({draft, ownerId, onClose, onSaved}: {
+export default function ProjectEvidencePicker({draft, ownerId, projectId = null, onClose, onSaved}: {
   draft: ProjectEvidenceDraft;
   ownerId: string;
+  projectId?: string | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -53,7 +55,8 @@ export default function ProjectEvidencePicker({draft, ownerId, onClose, onSaved}
         if (!response.ok) throw new Error(payload.error ?? '项目读取失败，请稍后重新打开。');
         const records = payload.projects ?? [];
         setProjects(records);
-        setSelectedId(records[0]?.id ?? '');
+        setSelectedId(projectId === null ? records[0]?.id ?? '' : records.find(item => item.id === projectId)?.id ?? '');
+        if (projectId !== null && !records.some(item => item.id === projectId)) setError('当前研究项目不可访问，请重新选择项目；未自动改用其他项目。');
       } catch (cause) {
         if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : '项目读取失败。');
       } finally {
@@ -64,7 +67,7 @@ export default function ProjectEvidencePicker({draft, ownerId, onClose, onSaved}
       controller.abort();
       window.removeEventListener(authChangeEvent, accountChanged);
     };
-  }, [ownerId]);
+  }, [ownerId, projectId]);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -111,6 +114,7 @@ export default function ProjectEvidencePicker({draft, ownerId, onClose, onSaved}
       if (!await checkOwner()) return;
       if (response.status === 409) throw new Error('项目刚刚有其他修改，请再次点击加入以读取最新内容。');
       if (!response.ok || !payload.project) throw new Error(payload.error ?? '加入项目失败，请重试。');
+      window.dispatchEvent(new Event(projectsChangedEvent));
       savedRef.current();
     } catch (cause) {
       if (!signal.aborted) setError(cause instanceof Error ? cause.message : '加入项目失败，请重试。');
@@ -125,7 +129,7 @@ export default function ProjectEvidencePicker({draft, ownerId, onClose, onSaved}
       <p>{draft.paperTitle} · 第 {draft.page} 页 · {draft.section}</p>
       <blockquote>{draft.quote}</blockquote>
       {loading ? <p role="status">正在读取项目…</p> : projects.length ? <>
-        <FormField label="选择项目"><Select value={selectedId} disabled={saving} onChange={event => {setSelectedId(event.target.value); setFeedback('');}}>{projects.map(project => <option key={project.id} value={project.id}>{project.title}</option>)}</Select></FormField>
+        <FormField label="选择项目"><Select value={selectedId} disabled={saving} onChange={event => {setSelectedId(event.target.value); setFeedback('');}}><option value="">选择项目</option>{projects.map(project => <option key={project.id} value={project.id}>{project.title}</option>)}</Select></FormField>
         <FormField label="个人评论"><Textarea value={comment} maxLength={5000} rows={4} disabled={saving} onChange={event => setComment(event.target.value)} /></FormField>
       </> : !error && <p>还没有项目。<Link href="/projects?new=1">先建立一个项目空间</Link>，再回来加入摘录。</p>}
       {error && <p className="ui-field-error" role="alert">{error}</p>}

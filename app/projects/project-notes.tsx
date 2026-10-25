@@ -5,8 +5,10 @@ import {Button, StatusMessage} from '../components/ui';
 import {clearProjectNoteDraft, isProjectNoteDraftDurable, readProjectNoteDraft, storeProjectNoteDraft, type ProjectNoteDraft} from './project-note-drafts';
 import styles from './project-notes.module.css';
 import Link from 'next/link';
+import {projectAnalysisLinks, withResearchProject} from '../lib/research-links';
 
 type Props = {
+  readOnly?:boolean;
   ownerId: string;
   projectId: string;
   savedNotes: string;
@@ -15,7 +17,7 @@ type Props = {
   onSave: (text: string) => Promise<false | {notes: string; updatedAt: string}>;
 };
 
-export default function ProjectNotes({ownerId, projectId, savedNotes, savedUpdatedAt, saving, onSave}: Props) {
+export default function ProjectNotes({readOnly=false,ownerId, projectId, savedNotes, savedUpdatedAt, saving, onSave}: Props) {
   const [draft, setDraft] = useState(() => readProjectNoteDraft(ownerId, projectId));
   const [durable, setDurable] = useState(() => !draft || isProjectNoteDraftDurable(draft));
   const [clearError, setClearError] = useState(false);
@@ -25,14 +27,14 @@ export default function ProjectNotes({ownerId, projectId, savedNotes, savedUpdat
   const mounted = useRef(true);
   const dirty = Boolean(draft && draft.text !== savedNotes);
   const conflict = Boolean(dirty && draft?.baseNotes !== savedNotes && submittedText !== savedNotes);
-  const snapshots=Array.from(savedNotes.matchAll(/\[分析快照：([^\]\n]{1,100})\]\((\/data\?snapshot=[^\s)#]+#history)\)/g)).flatMap(match=>{try{const url=new URL(match[2],'https://acaora.cn');const id=url.searchParams.get('snapshot');return id?[{name:match[1],href:`/data?${new URLSearchParams({snapshot:id})}#history`}]:[];}catch{return [];}});
+  const snapshots=projectAnalysisLinks(savedNotes).map(item => ({...item, href: withResearchProject(item.href, projectId)}));
 
   useEffect(() => {mounted.current = true; return () => {mounted.current = false;};}, []);
   useEffect(() => {
     if (!dirty || durable) return;
     const warn = (event: BeforeUnloadEvent) => {event.preventDefault(); event.returnValue = '';};
     window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
+  return () => window.removeEventListener('beforeunload', warn);
   }, [dirty, durable]);
 
   function remember(next: ProjectNoteDraft | null) {
@@ -72,6 +74,7 @@ export default function ProjectNotes({ownerId, projectId, savedNotes, savedUpdat
     setSubmittedText(null);
   }
 
+  if(readOnly)return <div><p>共享项目笔记（查看权限）</p><p style={{whiteSpace:'pre-wrap'}}>{savedNotes||'尚无笔记。'}</p></div>;
   return <section className="project-note-card">
     <header><h3>项目笔记</h3></header>
     {snapshots.length>0&&<nav aria-label="关联的本机分析快照">{snapshots.map((snapshot,index)=><p key={index}><Link href={snapshot.href}>打开分析快照：{snapshot.name}</Link><small> · 仅原保存设备与账户可用</small></p>)}</nav>}

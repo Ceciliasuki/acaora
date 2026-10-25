@@ -3,10 +3,14 @@
 import { ChangeEvent, DragEvent, MouseEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpFromLine, ChevronDown, HardDrive, RotateCcw } from "lucide-react";
 import WorkflowGuide from '../components/workflow-guide';
+import ResearchProjectTrail from '../components/research-project-trail';
 import ResultTools, {type AnalysisResult} from './result-tools';
 import AnalysisRecipeTools from './analysis-recipe-tools';
 import DataWorkbench from './data-workbench';
-import {ResearchProvider} from './research-context';
+import ResearchJoinTools from './research-join-tools';
+import type {JoinReceipt} from './research-joins';
+import {fingerprintDataset} from './analysis-recipe';
+import {ResearchProvider,type JoinHistory} from './research-context';
 import type {WorkflowResult,VariableEntry} from './data-workflow';
 import {authChangeEvent} from '../lib/auth-client';
 import {AnalysisHistory} from './research-history';
@@ -45,6 +49,7 @@ function freshWorkflow(data:DataSet):WorkflowResult{return {data,sourceRows:data
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
   const readLock = useRef(false), readEpoch=useRef(0);
+  const [joinHistory,setJoinHistory]=useState<JoinHistory[]>([]);
   const [sourceData,setSourceData]=useState<DataSet>(sampleData),[sourceKey,setSourceKey]=useState(0);
   const [workflow,setWorkflow]=useState<WorkflowResult>(()=>freshWorkflow(sampleData)),[dictionary,setDictionary]=useState<VariableEntry[]>([]);
 
@@ -73,7 +78,7 @@ export default function Home() {
     }else navigateTabs(event);
   }
 
-  useEffect(()=>{const clear=()=>{readEpoch.current++;readLock.current=false;setReading(false);setSourceData(sampleData);setData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setSourceKey(k=>k+1);setDatasetKey(k=>k+1);setIsSample(true);setFileStatus('登录状态已变化，已清除当前数据与分析，请重新导入。');};window.addEventListener(authChangeEvent,clear);return()=>window.removeEventListener(authChangeEvent,clear);},[]);
+  useEffect(()=>{const clear=()=>{readEpoch.current++;readLock.current=false;setReading(false);setSourceData(sampleData);setData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setJoinHistory([]);setSourceKey(k=>k+1);setDatasetKey(k=>k+1);setIsSample(true);setFileStatus('登录状态已变化，已清除当前数据与分析，请重新导入。');};window.addEventListener(authChangeEvent,clear);return()=>window.removeEventListener(authChangeEvent,clear);},[]);
 
   const numeric = useMemo(() => numericColumns(data), [data]);
   const categorical = useMemo(() => categoricalColumns(data), [data]);
@@ -115,7 +120,7 @@ export default function Home() {
       setError("文件超过 20 MB。请先抽样或拆分后再导入，以免浏览器失去响应。");
       return;
     }
-    const epoch=readEpoch.current;
+    const epoch=++readEpoch.current;
     readLock.current = true;
     setReading(true);
     setFileStatus(`正在读取 ${file.name}…`);
@@ -125,7 +130,7 @@ export default function Home() {
       const parsedNumeric = numericColumns(parsed);
       const parsedCategorical = categoricalColumns(parsed);
       if (!parsed.headers.length || !parsed.rows.length) throw new Error("文件中没有可分析的数据行。");
-      setData(parsed);setSourceData(parsed);setWorkflow(freshWorkflow(parsed));setDictionary([]);setSourceKey(k=>k+1);
+      setData(parsed);setSourceData(parsed);setWorkflow(freshWorkflow(parsed));setDictionary([]);setJoinHistory([]);setSourceKey(k=>k+1);
       setDatasetKey(key => key + 1);
       setShowAllVariables(false);
       setFileStatus(`已读取 ${file.name}：${parsed.rows.length} 行，${parsed.headers.length} 列。本次分析有效，刷新后需重新选择原文件。`);
@@ -144,6 +149,11 @@ export default function Home() {
     }
   }
 
+  async function applyJoin(joined:DataSet,receipt:JoinReceipt){
+    if(readLock.current)throw new Error('正在读取其他文件，请完成导入后重新预览合并。');if(joinHistory.length>=50)throw new Error('合并历史已达50次，请先导出快照与凭证后另建分析。');const token=++readEpoch.current,captured=sourceData,steps=structuredClone(workflow.records),definitions=structuredClone(dictionary);const fingerprint=await fingerprintDataset(captured);if(token!==readEpoch.current||readLock.current)throw new Error('数据或账户已变化，本次合并未应用。');
+    setJoinHistory(history=>[...history,{receipt,leftWorkflow:steps,leftSourceFingerprint:fingerprint,dictionary:definitions}]);setSourceData(joined);setData(joined);setWorkflow(freshWorkflow(joined));setDictionary(definitions.filter(entry=>joined.headers.includes(entry.name)));setSourceKey(key=>key+1);setDatasetKey(key=>key+1);setIsSample(false);setFileStatus('合并结果已作为新的分析原表。前序处理步骤与两表指纹保留在合并历史，未上传数据行。');setError('');
+  }
+
   function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     void loadFile(event.target.files?.[0]);
     event.target.value = "";
@@ -159,7 +169,7 @@ export default function Home() {
     if (readLock.current) return;
     setFileStatus("已恢复示例数据。");
     setShowAllVariables(false);
-    setData(sampleData);setSourceData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setSourceKey(k=>k+1);
+    setData(sampleData);setSourceData(sampleData);setWorkflow(freshWorkflow(sampleData));setDictionary([]);setJoinHistory([]);setSourceKey(k=>k+1);
     setDatasetKey(key => key + 1);
     setIsSample(true);
     setXVariable("睡眠时长");
@@ -176,7 +186,7 @@ export default function Home() {
   }
 
   return (
-    <ResearchProvider data={data} source={sourceData} workflow={workflow} dictionary={dictionary}><main className={`student-app data-app workspace-refresh ${craft.craft} ${ui.studio}`}>
+    <ResearchProvider data={data} source={sourceData} sample={isSample} joinHistory={joinHistory} workflow={workflow} dictionary={dictionary}><main className={`student-app data-app workspace-refresh ${craft.craft} ${ui.studio}`}>
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据仅在当前设备处理" />
 
       <section className="workspace data-main data-shell" id="workspace">
@@ -184,6 +194,7 @@ export default function Home() {
 
         <div className={`page-body page-body--wide ${ui.body}`} onClickCapture={revealSection}>
 
+        <ResearchProjectTrail/>
         <WorkflowGuide kind="data" />
         <SectionNavigation sections={stages} className="data-stage-nav" label="数据分析分区" />
         <section className={ui.dataset} id="import" aria-label="当前数据集">
@@ -370,7 +381,8 @@ export default function Home() {
         </details></section>
 
         <div className={ui.exploration}><DataExplorer key={`explorer-${datasetKey}`} data={data} onSelectPair={(x,y)=>{setXVariable(x);setYVariable(y);setTab('relation');requestAnimationFrame(()=>document.getElementById('analysis-tab-relation')?.focus());}}/></div>
-        <section id="history" className={ui.historySection}><AnalysisHistory/></section>
+        <ResearchJoinTools data={data} onApply={(joined,receipt)=>applyJoin(joined,receipt)}/>
+        <span id="research-operations" aria-hidden="true"/><section id="history" className={ui.historySection}><AnalysisHistory/></section>
 
         <section className="data-preview" id="preview">
           <div className="panel-heading compact">

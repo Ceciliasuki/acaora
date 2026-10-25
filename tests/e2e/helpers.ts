@@ -1,12 +1,16 @@
 import { expect, type Page, type Route } from "@playwright/test";
 import type {CourseSnapshot,CourseOperation} from '../../app/courses/course-types';
+import type {ResearchDossier,ProjectAnalysisRecord} from '../../app/lib/project-research';
+import type {ProjectEvidence} from '../../app/lib/project-evidence';
 
 export type MockProject = {
+  user_id?: string;
+  access_role?: 'owner'|'editor'|'viewer';
   id: string;
   title: string;
   kind: string;
   status: "active" | "paused" | "completed";
-  metadata: { goal?: string; deadline?: string; notes?: string; tasks?: Array<{ id: string; text: string; done: boolean }> };
+  metadata: { goal?: string; deadline?: string; notes?: string; tasks?: Array<{ id: string; text: string; done: boolean }>; evidence?:ProjectEvidence[];research?:ResearchDossier;analysisRecords?:ProjectAnalysisRecord[] };
   created_at: string;
   updated_at: string;
 };

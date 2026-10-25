@@ -212,3 +212,24 @@ test('project PATCH refuses malformed source evidence before writing otherwise v
   }
   assert.deepEqual(state.calls, []);
 });
+
+test('project PATCH validates structured research and analysis records before any REST write', async () => {
+  const {state, route} = await routeHarness('../app/api/projects/route.ts');
+  for (const patch of [{research: {version: 99}}, {analysisRecords: [{sourceRows: [[1, 2]]}]}, {analysisRecords: Array(31).fill({})}]) {
+    const source = projectPayload(); Object.assign(source.metadata, patch);
+    const response = await route.PATCH(request('/api/projects?id=project-1', 'PATCH', source));
+    assert.equal(response.status, 400); assert.match((await response.json()).error, /研究设计|分析登记/);
+  }
+  assert.deepEqual(state.calls, []);
+});
+
+test('project PATCH persists research alongside existing evidence, notes and version checks', async () => {
+  const {state, route} = await routeHarness('../app/api/projects/route.ts');
+  const source = projectPayload(); source.metadata.research = {version: 1, protocol: {question: 'A research question', hypothesis: '', dataSource: '', strategy: '', sample: '', variables: '', robustness: '', limitations: ''}, findings: [{id: 'claim-1', statement: 'Needs further evidence.', assessment: 'unreviewed', limitations: '', evidenceIds: [], analysisIds: [], withdrawn: false}]};
+  source.metadata.analysisRecords = [];
+  state.payload = [{id: 'project-1', metadata: source.metadata}];
+  const response = await route.PATCH(request('/api/projects?id=project-1', 'PATCH', source));
+  assert.equal(response.status, 200);
+  assert.deepEqual(JSON.parse(state.calls[0].init.body).metadata, source.metadata);
+  assert.ok(state.calls[0].resource.includes('updated_at=eq.'));
+});

@@ -12,6 +12,7 @@ import PaperLibrary, {defaultLibraryView, type LibraryView} from './paper-librar
 import PaperLocation from './paper-location';
 import {restoredPaperCopies} from './paper-backup';
 import ProjectEvidencePicker from './project-evidence-picker';
+import ResearchProjectTrail from '../components/research-project-trail';
 import type {ProjectEvidenceDraft} from '../lib/project-evidence';
 
 import AppSidebar from "../components/app-sidebar";
@@ -872,9 +873,10 @@ export default function PaperLab() {
 
       <p className={craft.dataNotice}>{cloudState==='checking'?'正在确认账户。原 PDF 不上传；账户确认后才会恢复其论文记录。':userIdRef.current?'原 PDF 不上传；提取后的论文文本、译文与笔记按账户同步。表格、公式与复杂版式请核对原 PDF。':cloudState!=='guest'?'账户状态尚未确认，请保留本机内容；原 PDF 不上传。':'匿名模式：原 PDF 和提取文本、笔记仅保留在此浏览器，不会自动合入账户。表格与公式请核对原 PDF。'}</p>
 
+      <ResearchProjectTrail paperId={screen === 'workspace' ? paper.id : undefined}/>
       {message && <div className="paper-message" role="status">{message}</div>}
       {bibliographyKey===paperKey&&<PaperBibliographyEditor key={paperKey} paper={paper} library={library} onClose={()=>setBibliographyKey(null)} onSave={bibliography=>{updatePaper(current=>({...current,bibliography}));setBibliographyKey(null);setMessage('文献资料已更新，正在保存。');}}/>}
-      {evidenceDraft?.key===paperKey&&paper.ownerId&&<ProjectEvidencePicker key={paperKey} ownerId={paper.ownerId} draft={evidenceDraft.draft} onClose={()=>setEvidenceDraft(null)} onSaved={()=>{setEvidenceDraft(null);setMessage('摘录已加入项目，可从项目返回原段落。');}}/>}
+      {evidenceDraft?.key===paperKey&&paper.ownerId&&<ProjectEvidencePicker key={`${paperKey}:${new URLSearchParams(locationQuery ?? '').get('project') ?? ''}`} projectId={new URLSearchParams(locationQuery ?? '').get('project')} ownerId={paper.ownerId} draft={evidenceDraft.draft} onClose={()=>setEvidenceDraft(null)} onSaved={()=>{setEvidenceDraft(null);setMessage('摘录已加入项目，可从项目返回原段落。');}}/>}
 
       {screen==='library'?<PaperLibrary papers={library} hydrated={hydrated} error={libraryError} status={libraryAction?'正在处理…':{ready:'已同步',syncing:'正在同步',checking:'正在检查账户',error:'同步暂不可用',offline:'离线保存',guest:'设备端保存'}[cloudState]} view={libraryView} onView={setLibraryView} busy={Boolean(libraryAction)||extracting} tools={backupTools} onRetry={()=>{setLibraryError('');setHydrated(false);setHydrationAttempt(value=>value+1);}} onOpen={record=>void enterPaper(record)} onFavorite={record=>void favoritePaper(record)} onDetails={record=>void editLibraryDetails(record)} onDelete={record=>void removeFromLibrary(record)} onDemo={()=>void openDemo()}/>:<>
       <div className="paper-navigation-bar">
