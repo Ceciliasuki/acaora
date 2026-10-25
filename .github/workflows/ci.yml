@@ -78,14 +78,14 @@ jobs:
         env:
           ACAORA_LOCAL_RUNNER_REAL: "1"
 
-      - name: Deterministic mock E2E
-        run: pnpm test:e2e
-
       - name: Browser and account-state compatibility
         run: pnpm test:compat --project=chromium --project=firefox --project=webkit
 
       - name: HTTPS cookie and browser session isolation
         run: pnpm test:auth-cookie --project=chromium --project=firefox --project=webkit
+
+      - name: Deterministic mock E2E
+        run: pnpm test:e2e
 
       - name: Ensure CI did not modify tracked files
         run: git diff --exit-code

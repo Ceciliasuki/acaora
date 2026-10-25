@@ -44,11 +44,11 @@ Supabase 的退出范围依据：[当前会话与其他设备的退出范围](ht
 - Impeccable 对改动界面的检测无发现。已查看桌面和手机截图；这不等同于全站可访问性认证。
 - 技术审查分项仅针对上述范围：可访问性 3/4、响应式 3/4、实现一致性 3/4。性能与主题体系本次未作全量度量，不计分，也不生成全站总分。
 - Windows WebKit 的 SameSite 限制可由 [Playwright v1.62.1 自身 Cookie 测试](https://github.com/microsoft/playwright/blob/v1.62.1/tests/library/browsercontext-cookies.spec.ts) 核对：Windows WebKit 的 Strict/Lax 用例标记为预期失败。本地仅跳过该引擎的独立 SameSite 子资源行为测试；其余 Cookie 流程照常执行，Linux CI 中仍执行该项 WebKit 检查。
-- Windows WebKit 会把取消的 Next 预取报告为 access-control 页面错误。trace 中对应网络结果为 `Load request cancelled`。测试仅在同一 URL、`_rsc` 预取、明确取消记录及 WebKit 同时匹配时单独记录诊断；其他 JavaScript、账户请求及真实 CORS 失败仍使测试失败。
+- WebKit 会把取消的 Next 预取报告为 access-control 页面错误。trace 中对应网络结果为 `Load request cancelled`。测试仅在同一 URL、`_rsc` 预取、明确取消记录及 WebKit 同时匹配时单独记录诊断；其他 JavaScript、账户请求及真实 CORS 失败仍使测试失败。
 - WebKit 自动化不能替代 macOS Safari、iOS 真机、浏览器扩展或所有隐私策略组合的验收。只测试合成账户的真实 Cookie 链路，不声称完成真实账户跨设备登录。
 
 ## 持续验证与发布
 
-`pnpm test:compat` 执行浏览器账户矩阵；`pnpm test:auth-cookie` 复用已有 `.next` 生产构建，运行隔离 HTTPS 检查。CI 在既有门槛后加入 Chromium、Firefox、WebKit 的这两组检查。本机安装了 Edge 时还会验证实际 Edge。
+`pnpm test:compat` 执行浏览器账户矩阵；`pnpm test:auth-cookie` 复用已有 `.next` 生产构建，运行隔离 HTTPS 检查。CI 在全量端到端回归前加入 Chromium、Firefox、WebKit 的这两组检查。本机安装了 Edge 时还会验证实际 Edge。
 
 发布是否完成，以本次 PR 的 CI、合并提交和生产 `/api/version` 完整 SHA 为准，不能由本地构建或此报告推定。
