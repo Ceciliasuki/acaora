@@ -162,6 +162,12 @@ function projectPayload() {
     metadata: {notes: 'Existing project notes.', tasks: [{id: 'task-1', title: 'Verify the source', done: false}], evidence: [structuredClone(evidence)]}};
 }
 
+test('project mutation responses preserve editor role and do not report an unauthorized delete as success',async()=>{
+ const {state,route}=await routeHarness('../app/api/projects/route.ts');state.payload=[{id:'project-1',user_id:'another-owner',title:'Shared',metadata:{}}];let response=await route.PATCH(request('/api/projects?id=project-1','PATCH',projectPayload()));assert.equal(response.status,200);assert.equal((await response.json()).project.access_role,'editor');
+ state.payload=[{id:'project-1',user_id:state.session.user.id,title:'Owned',metadata:{}}];response=await route.PATCH(request('/api/projects?id=project-1','PATCH',projectPayload()));assert.equal((await response.json()).project.access_role,'owner');
+ state.payload=[];response=await route.DELETE(request('/api/projects?id=project-1','DELETE',undefined));assert.equal(response.status,404);assert.equal(state.calls.at(-1).init.headers.Prefer,'return=representation');
+});
+
 test('project PATCH uses an encoded version filter and retains evidence alongside existing notes and tasks', async () => {
   const {state, route} = await routeHarness('../app/api/projects/route.ts');
   const id = 'project &?/#';

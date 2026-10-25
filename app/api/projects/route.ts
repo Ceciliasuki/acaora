@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     });
     if (!response.ok) return json({ error: "创建项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
-    return json({ project: rows[0] }, { status: 201 });
+    return json({ project: {...rows[0] as Record<string,unknown>,access_role:'owner'} }, { status: 201 });
   } catch (error) {
     return authError(error);
   }
@@ -107,7 +107,10 @@ export async function PATCH(request: NextRequest) {
     if (!response.ok) return json({ error: "保存项目失败，请稍后重试。" }, { status: 503 });
     const rows = await response.json() as unknown[];
     if (!rows[0]) return json({ error: expected ? '项目已有其他修改或已删除，请重新读取后再保存。' : '没有找到这个项目。' }, { status: expected ? 409 : 404 });
-    return json({ project: rows[0] });
+    const saved=rows[0] as Record<string,unknown>;
+    // A successful UPDATE is restricted by RLS to owner/editor. Keep that role
+    // in the response so the caller does not lose its access controls on save.
+    return json({ project: {...saved,access_role:saved.user_id===session.user.id?'owner':'editor'} });
   } catch (error) {
     return authError(error);
   }
@@ -121,8 +124,11 @@ export async function DELETE(request: NextRequest) {
     if (!id) return json({ error: "缺少项目编号。" }, { status: 400 });
     const response = await supabaseRest(`learning_projects?id=eq.${encodeURIComponent(id)}`, session.accessToken, {
       method: "DELETE",
+      headers: {"Prefer":"return=representation"},
     });
     if (!response.ok) return json({ error: "删除项目失败，请稍后重试。" }, { status: 503 });
+    const deleted=await response.json() as unknown[];
+    if(!Array.isArray(deleted)||!deleted.length)return json({error:'项目不存在或当前账户没有删除权限。'}, {status:404});
     return json({ deleted: true });
   } catch (error) {
     return authError(error);
