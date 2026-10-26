@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppSidebar from "../components/app-sidebar";
 import SettingsNavigation from './settings-navigation';
+import {MotionControl} from '../components/motion-preferences';
 import { Button, FormField, Input, PasswordField, StatusMessage, Textarea, PageHeader } from "../components/ui";
 import { clearAiKey, readAiKey, saveAiKey } from "../lib/ai-settings";
 import { authChangeEvent,getCurrentUser, getProfile, saveProfile as saveAccountProfile, signOut, updatePassword, type Profile } from "../lib/auth-client";
@@ -251,9 +252,10 @@ export default function SettingsPage() {
   return <main className={`student-app settings-app workspace-refresh ${craft.craft}`}>
     <AppSidebar active="settings" />
     <section className="workspace settings-main settings-shell">
-      <PageHeader className="workspace-header" title="设置" description="管理个人资料、账户安全与模型设置。" actions={signedIn ? <>{profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></> : undefined} />
+      <PageHeader className="workspace-header" title="设置" actions={signedIn ? <>{profileDirty && <span className="workspace-draft-state">资料有未保存修改</span>}<Button disabled={saving} loading={saving} onClick={() => void saveProfile()}>保存资料</Button></> : undefined} />
 
       <div className="page-body">
+      <MotionControl/>
 
       {signedIn && !loading && <SettingsNavigation />}
 
@@ -287,7 +289,6 @@ export default function SettingsPage() {
 
           <section className="settings-panel settings-about" id="about">
             <div className="settings-section-head"><h2>关于 Acaora</h2></div>
-            <p>整理课程资料，阅读论文，分析数据和管理研究项目。</p>
             <small>{versionState === "error" ? "暂时无法读取版本" : versionState === "ready" && version ? `Build ${getShortCommit(version.commit)} · ${version.environment || "unknown"} · ${version.buildTime || "unknown"}` : "正在读取版本…"}</small>
           </section>
         </div>

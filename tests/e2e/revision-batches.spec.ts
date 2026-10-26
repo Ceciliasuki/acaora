@@ -50,7 +50,7 @@ for(const width of [1366,375])test(`REV-UI affected surfaces at ${width}px`,asyn
   await page.goto('/courses');await expect(page.getByRole('region',{name:'继续学习'})).not.toContainText('正在读取');
   await page.screenshot({path:`${out}/courses-${width}.png`,animations:'disabled'});
   await page.goto('/');await expect(page.getByRole('figure',{name:'原文与笔记示例'})).toBeVisible();
-  await page.locator('figure').screenshot({path:`${out}/home-example-${width}.png`,animations:'disabled'});
+  await page.getByRole('figure',{name:'原文与笔记示例',exact:true}).screenshot({path:`${out}/home-example-${width}.png`,animations:'disabled'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
@@ -150,7 +150,7 @@ test('REV-G snapshot links project evidence, interpretation, task and backup rec
   await expect(page.getByRole('button',{name:'编辑任务：Check the source before interpreting the pattern'})).toBeVisible();
   await page.getByRole('link',{name:'返回原文',exact:true}).click();
   await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
-  await page.getByRole('link',{name:'项目空间',exact:true}).click();
+  await page.getByRole('link',{name:'研究项目',exact:true}).click();
   await page.getByRole('link',{name:'打开分析快照：Controlled snapshot'}).click();
   await expect(page.getByRole('region',{name:'已保存分析快照'})).toContainText('Controlled snapshot');
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'导出此快照 JSON'}).click();

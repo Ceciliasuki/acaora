@@ -9,42 +9,42 @@
   color-scheme: light;
 
   /* surfaces */
-  --bg-app: #f5f6f9;
+  --bg-app: #f7f6f2;
   --surface: #ffffff;
-  --surface-2: #f8f9fb;
+  --surface-2: #f0efea;
   /* paper - approved for the publication object alone: its field, its sheets, and
      the document edges inside it. It must never become the page's own ground, and
      every deeper paper step is mixed from this token rather than from a new hex. */
-  --surface-paper: #faf9f6;
+  --surface-paper: #fffefa;
   --surface-inverse: #121828;
   --surface-inverse-2: #1b2334;
 
   /* borders */
-  --border: #e3e6ec;
-  --border-strong: #ced4e0;
-  --border-control: #7d8899;          /* 3.59:1 on surface, 3.32:1 on app bg (WCAG 1.4.11) */
+  --border: #deddd5;
+  --border-strong: #c7c6be;
+  --border-control: #7d8899;
   --border-inverse: #2b3448;
 
   /* text */
-  --text: #131a2b;                    /* 17.35:1 on surface */
-  --text-2: #626978;                  /* 5.51:1 on surface, 5.10:1 on app bg */
-  --text-3: #8a92a2;                  /* 3.13:1 - large text or decorative only */
-  --text-inverse: #eef1f6;            /* 15.63:1 on inverse */
-  --text-inverse-2: #96a0b3;          /* 6.72:1 on inverse */
+  --text: #242820;
+  --text-2: #5d6359;
+  --text-3: #666c61;
+  --text-inverse: #eef1f6;
+  --text-inverse-2: #96a0b3;
 
   /* brand - the single accent for the whole product */
-  --brand: #2f5ad4;                   /* 5.94:1 on surface, 5.94:1 white-on-brand */
-  --brand-hover: #2648ab;
-  --brand-subtle: #eaefff;
-  --brand-on-subtle: #1f3f9e;         /* 8.08:1 on brand-subtle */
-  --brand-on-dark: #93b1fb;           /* 8.36:1 on inverse; --brand itself is only 2.98:1 */
+  --brand: #2d5277;
+  --brand-hover: #203f60;
+  --brand-subtle: #eaf0f4;
+  --brand-on-subtle: #254766;
+  --brand-on-dark: #93b1fb;
 
   /* ai - reserved for AI-semantic regions, never a generic second series color */
-  --ai: #0b6f66;                      /* 6.03:1 on surface */
+  --ai: #0b6f66;
   --ai-subtle: #e4f6f3;
   --ai-vivid: #14b8a6;
-  --ai-on-dark: #5fe3cd;              /* 11.25:1 on inverse */
-  --ai-ink-on-vivid: #0c2f2b;         /* 5.79:1 on ai-vivid */
+  --ai-on-dark: #5fe3cd;
+  --ai-ink-on-vivid: #0c2f2b;
 
   /* semantic - "info" intentionally reuses --brand (one accent per project) */
   --success: #1a7a5a;
@@ -56,10 +56,15 @@
 
   /* typography - px (not rem) so the scale never depends on the root font-size */
   --font-sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  --font-editorial: "Acaora Serif", "Songti SC", "STSong", "SimSun", serif;
+  --surface-app: var(--bg-app);
+  --brand-tint: var(--brand-subtle);
+  --shadow-overlay: var(--shadow-3);
+  --seal: #9c4234;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --fs-display: 30px;  --lh-display: 36px;
-  --fs-page: 24px;     --lh-page: 32px;
-  --fs-section: 18px;  --lh-section: 26px;
+  --fs-page: 44px;     --lh-page: 1.25;
+  --fs-section: 24px;  --lh-section: 1.4;
   --fs-card: 15px;     --lh-card: 22px;
   --fs-body: 15px;     --lh-body: 24px;
   --fs-sm: 13px;       --lh-sm: 20px;

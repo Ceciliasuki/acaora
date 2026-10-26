@@ -16,7 +16,7 @@ test('RESUME-01 project drafts survive client navigation, reload, and account sw
   await expect(page.getByRole('status').filter({hasText: '草稿已保存在本机'})).toBeVisible();
   await page.getByRole('link', {name: '设置与隐私', exact: true}).click();
   await expect(page.getByRole('heading', {name: '设置', exact: true})).toBeVisible();
-  await page.getByRole('link', {name: '项目空间', exact: true}).click();
+  await page.getByRole('link', {name: '研究项目', exact: true}).click();
   await expect(notes).toHaveValue('A local draft with its final character。');
   await page.reload();
   await expect(notes).toHaveValue('A local draft with its final character。');
@@ -55,7 +55,7 @@ test('RESUME-02 failed cloud saves retain drafts and unavailable local storage w
   await expect(page.getByText('草稿暂未写入本机，请勿刷新或关闭页面', {exact: true})).toBeVisible();
   await page.getByRole('link', {name: '设置与隐私', exact: true}).click();
   await expect(page.getByRole('heading', {name: '设置', exact: true})).toBeVisible();
-  await page.getByRole('link', {name: '项目空间', exact: true}).click();
+  await page.getByRole('link', {name: '研究项目', exact: true}).click();
   await expect(notes).toHaveValue('The latest input survives a client-side navigation');
   const warning = page.waitForEvent('dialog');
   // Chromium can leave the navigation promise pending after cancelling its

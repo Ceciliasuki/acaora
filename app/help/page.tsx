@@ -5,7 +5,7 @@ import styles from './page.module.css';
 
 export default function HelpPage() {
   return <main className="student-app workspace-refresh"><AppSidebar active="settings"/><section className={`student-main ${styles.help}`} data-main-content>
-    <PageHeader title="帮助与恢复" description="导入文献、保存分析与恢复任务。"/>
+    <PageHeader title="帮助与恢复"/>
     <article>
       <h2>抽取内容与原 PDF</h2><p>目前支持有文本层的 PDF。表格、公式、页眉和复杂双栏可能无法可靠还原；数字、图表与引用请核对原 PDF。扫描件不支持 OCR。题名或书目信息不完整时，使用文献信息编辑入口确认，不必删除重导入。</p>
       <h2>保存与备份</h2><p>在数据分析中保存命名快照，使用复现包导出分析设置与脚本。项目空间和论文研究均提供备份导出与恢复入口。</p>

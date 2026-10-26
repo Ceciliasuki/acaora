@@ -862,7 +862,7 @@ export default function PaperLab() {
           every value in it is already printed where it belongs: the library count in
           the index, the paragraph position and reading progress in the reader, the
           sync state beside the library, and the privacy facts in the colophon. */}
-      <PageHeader className="workspace-header plab-head" title="论文研究" description={screen==='workspace'?'阅读原文、整理笔记，核对引用对应的段落。':undefined} actions={<div className="plab-head-tools">
+      <PageHeader className="workspace-header plab-head" title="论文研究" actions={<div className="plab-head-tools">
           {screen==='workspace'&&<button className={`plab-tool ${mobilePanel==='reader'?'desktop-paper-tool':''}`} type="button" onClick={()=>void returnToLibrary()} disabled={extracting}><ArrowLeft size={16} aria-hidden="true"/>返回论文列表</button>}
           {['working','done','error'].includes(translationState)&&<span className="paper-translation-feedback" role="status">{translatorStatusLabel(translationState,isEdge)}</span>}
           <button className="plab-tool plab-tool--primary" type="button" onClick={() => fileInputRef.current?.click()} disabled={extracting || !hydrated}>

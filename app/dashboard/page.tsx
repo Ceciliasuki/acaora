@@ -7,19 +7,13 @@ import AppSidebar from "../components/app-sidebar";
 import { Button } from "../components/ui";
 import { authChangeEvent,authFetch, getCurrentUser, signOut as signOutSession } from "../lib/auth-client";
 import styles from "./overview.module.css";
+import {researchWorkspaces,learningWorkspace} from '../components/workspace-content';
 
 type Viewer = { id: string; email?: string } | null;
 type Project = { id: string; title: string; status?: string; updated_at?: string };
 type Paper = { id: string; title: string; updatedAt?: number; paragraphs?: unknown[] };
 type LoadState = "loading" | "guest" | "empty" | "ready" | "error";
 type Activity = { id: string; title: string; detail: string; updatedAt: number; href: string; kind: '论文' | '项目' };
-
-const workspaces = [
-  { href: "/courses", title: "课程中心" },
-  { href: "/papers", title: "论文研究" },
-  { href: "/data", title: "数据分析" },
-  { href: "/projects", title: "项目空间" },
-] as const;
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" });
 function stamp(time: number) { return time > 0 && Number.isFinite(time) ? dateFormatter.format(time) : "未记录日期"; }
@@ -85,13 +79,14 @@ export default function DashboardPage() {
     <section className={`student-main overview-main ${styles.page}`}>
       <header className={styles.header}>
         <h1>总览</h1>
+        {state==='ready'&&activity[0]&&<Link className={styles.resume} href={activity[0].href}>继续上次工作<ArrowRight size={18} aria-hidden="true"/></Link>}
       </header>
       <div className={styles.content}>
         <nav className={styles.workspaces} aria-label="工作空间">
-          <h2 className={styles.sectionTitle}>工作空间</h2>
+          <h2 className={styles.sectionTitle}>研究工作</h2>
           <div className={styles.directory}>
-            {workspaces.map((workspace) => <Link className={styles.workspace} href={workspace.href} key={workspace.href} aria-labelledby={`workspace-${workspace.href.slice(1)}`}>
-              <h3 id={`workspace-${workspace.href.slice(1)}`}>{workspace.title}</h3>
+            {researchWorkspaces.map((workspace) => <Link className={`${styles.workspace} ${workspace.id==='projects'?styles.featured:''}`} href={workspace.href} key={workspace.href} aria-labelledby={`workspace-${workspace.id}`}>
+              <div><h3 id={`workspace-${workspace.id}`}>{workspace.title}</h3><p>{workspace.copy}</p></div>
               <ArrowRight size={22} strokeWidth={1.5} aria-hidden="true" />
             </Link>)}
           </div>
@@ -103,7 +98,6 @@ export default function DashboardPage() {
             <strong>{item.title}</strong>
             <small><span>{item.kind} · {item.detail}</span><span>{stamp(item.updatedAt)}</span></small>
           </Link>)}
-          <p className={styles.scope}>显示论文与项目的最近记录。</p>
         </div> : <div className={styles.empty}>
           <h3>{absence.title}</h3>
           <p>{absence.detail}</p>
@@ -111,6 +105,7 @@ export default function DashboardPage() {
         </div>}
       </section>
       </div>
+      <section className={styles.learning} aria-labelledby="learning-heading"><div><h2 id="learning-heading">课程学习</h2><p>{learningWorkspace.copy}</p></div><Link className={styles.learningLink} href={learningWorkspace.href}>进入课程<ArrowRight size={18} aria-hidden="true"/></Link></section>
       <footer className={`overview-footer ${styles.footer}`}>
         <p>{viewer ? `${counted ? `${papers.length} 篇论文 · ${projects.length} 个项目 · ` : ""}${viewer.email ?? "已登录"}` : state==='guest'?"未登录":state==='loading'?'正在确认账户…':'账户状态暂不可用'}</p>
         {logoutError&&<p role="alert">{logoutError}</p>}

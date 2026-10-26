@@ -3,23 +3,29 @@ import { installApiMocks } from './helpers';
 
 const captures = 'outputs/audit-refinements-2026-10-15';
 
-test('expanded shared navigation leaves titles readable across workspaces and narrow desktop', async ({ page }) => {
+test('expanded shared navigation preserves title position and restores readable content when closed', async ({ page }) => {
   await installApiMocks(page, { signedIn: true, projects: [{ id: 'audit-project', title: '测试项目', kind: 'paper', status: 'active', metadata: {}, created_at: '2026-10-15T00:00:00Z', updated_at: '2026-10-15T00:00:00Z' }] });
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   for (const [route, width] of [['dashboard', 1440], ['papers', 1440], ['data', 1440], ['projects', 1440], ['settings', 1440], ['papers', 1024]] as const) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(`/${route}`);
     const rail = page.locator('.sidebar-auto-slot');
+    await page.mouse.move(width-20,20);
+    await expect(rail).toHaveAttribute('data-expanded','false');
+    const heading=page.getByRole('heading',{level:1});
+    const initialTitle=await heading.boundingBox();
     await page.locator('#app-sidebar').hover();
     await expect(rail).toHaveAttribute('data-expanded', 'true');
     await expect.poll(async () => (await page.locator('#app-sidebar').boundingBox())?.width).toBe(232);
-    await expect.poll(async () => {
-      const sidebar = await page.locator('#app-sidebar').boundingBox();
-      const title = await page.getByRole('heading', { level: 1 }).boundingBox();
-      return Boolean(sidebar && title && title.x >= sidebar.x + sidebar.width);
-    }).toBe(true);
+    expect((await heading.boundingBox())!.x).toBe(initialTitle!.x);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     if (route === 'dashboard' || width === 1024) await page.screenshot({ path: `${captures}/${route}-expanded-${width}.png` });
+    await page.mouse.move(width-20,20);
+    await expect(rail).toHaveAttribute('data-expanded','false');
+    await expect.poll(async()=>{
+      const sidebar=await page.locator('#app-sidebar').boundingBox(),title=await heading.boundingBox();
+      return Boolean(sidebar&&title&&title.x>=sidebar.x+sidebar.width);
+    }).toBe(true);
   }
 });
 
@@ -46,20 +52,7 @@ test('a fresh homepage omits formula styles while course formulas keep their typ
   await page.screenshot({ path: `${captures}/course-formulas.png` });
 });
 
-test('blocking the motion preference store still allows the current page toggle', async ({ page }) => {
-  await installApiMocks(page);
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.addInitScript(() => {
-    const read = Storage.prototype.getItem; const write = Storage.prototype.setItem;
-    Storage.prototype.getItem = function (key) { if (key === 'acaora:ambient-motion') throw new DOMException('Blocked', 'SecurityError'); return read.call(this, key); };
-    Storage.prototype.setItem = function (key, value) { if (key === 'acaora:ambient-motion') throw new DOMException('Blocked', 'SecurityError'); return write.call(this, key, value); };
-  });
-  await page.goto('/dashboard');
-  const canvas = page.locator('.light-curtain canvas');
-  await expect(canvas).toHaveAttribute('data-motion', /paused|unavailable/);
-  test.skip(await canvas.getAttribute('data-motion') === 'unavailable', 'No WebGL context is available.');
-  await page.getByRole('button', { name: '开启背景动效' }).click();
-  await expect(canvas).toHaveAttribute('data-motion', 'running');
-  await page.getByRole('button', { name: '暂停背景动效' }).click();
-  await expect(canvas).toHaveAttribute('data-motion', 'paused');
+test('blocking the preference store still allows interface motion to be switched in this session',async({page})=>{
+ await installApiMocks(page);await page.addInitScript(()=>{const read=Storage.prototype.getItem,write=Storage.prototype.setItem;Storage.prototype.getItem=function(key){if(key==='acaora:interface-motion')throw new DOMException('Blocked','SecurityError');return read.call(this,key);};Storage.prototype.setItem=function(key,value){if(key==='acaora:interface-motion')throw new DOMException('Blocked','SecurityError');return write.call(this,key,value);};});
+ await page.goto('/settings');const control=page.getByRole('checkbox',{name:/界面动效/});await control.uncheck();await expect(page.locator('html')).toHaveAttribute('data-interface-motion','off');await control.check();await expect(page.locator('html')).toHaveAttribute('data-interface-motion','on');
 });

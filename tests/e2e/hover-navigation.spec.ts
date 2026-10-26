@@ -5,7 +5,7 @@ import {installApiMocks} from './helpers';
 
 const captures = 'outputs/advanced-motion-2026-10-13';
 
-test('hover rails make room for content, leave with delay, and support keyboard escape', async ({page}) => {
+test('hover rails preserve content position, leave with delay, and support keyboard escape', async ({page}) => {
   await page.setViewportSize({width:1440, height:1000});
   await installApiMocks(page, {signedIn:true});
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -21,10 +21,8 @@ test('hover rails make room for content, leave with delay, and support keyboard 
   await aside.hover();
   await expect(sidebar).toHaveAttribute('data-expanded', 'true');
   await expect.poll(async () => (await aside.boundingBox())?.width).toBe(232);
-  const expanded = await aside.boundingBox();
-  expect((await heading.boundingBox())!.x).toBeGreaterThanOrEqual(expanded!.x + expanded!.width);
-  expect((await heading.boundingBox())!.x).toBeGreaterThan(initial!.x);
-  await sidebar.getByRole('link', {name:'论文研究', exact:true}).hover();
+  expect((await heading.boundingBox())!.x).toBe(initial!.x);
+  await sidebar.getByRole('link', {name:'论文阅读', exact:true}).hover();
   await expect(sidebar).toHaveAttribute('data-expanded', 'true');
   await page.screenshot({path:`${captures}/app-navigation-expanded-1440.png`});
   await page.mouse.move(1100, 100);
@@ -33,11 +31,11 @@ test('hover rails make room for content, leave with delay, and support keyboard 
   await expect.poll(async () => (await aside.boundingBox())?.width).toBe(72);
   await page.keyboard.press('Tab');
   // Focus the real rail link using a keyboard-originated focus, not a mouse click.
-  await sidebar.getByRole('link', {name:'课程中心', exact:true}).focus();
+  await sidebar.getByRole('link', {name:'课程学习', exact:true}).focus();
   await expect(sidebar).toHaveAttribute('data-expanded', 'true');
   await expect.poll(async () => {
     const rail = await aside.boundingBox(); const title = await heading.boundingBox();
-    return Boolean(rail && title && title.x >= rail.x + rail.width);
+    return Boolean(rail && title && title.x === initial!.x);
   }).toBe(true);
   await page.keyboard.press('Escape');
   await expect(sidebar).toHaveAttribute('data-expanded', 'false');
@@ -63,7 +61,7 @@ test('chapter rail keeps reading and answers intact, with reduced motion and nar
   await page.goto('/courses/STAT-201/lesson-1');
   const marker = page.locator('.sidebar-nav-motion .motion-navigation-marker');
   await expect(marker).toBeVisible();
-  expect(await marker.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(48, 95, 206)');
+  expect(await marker.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(45, 82, 119)');
   const answer = page.locator('[aria-labelledby="title-STAT-201-l1-q3"]').getByLabel('输入数值答案');
   await answer.fill('0.6');
   const chapter = page.getByRole('button', {name:'章节导航', exact:true});

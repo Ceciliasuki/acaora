@@ -190,7 +190,7 @@ export default function Home() {
       <AppSidebar active="data" profileTitle="DataLab 工作台" profileSubtitle="数据分析" />
 
       <section className="workspace data-main data-shell" id="workspace">
-        <PageHeader className="workspace-header" title="数据分析" description="导入数据，检查样本并建立分析。" actions={isSample && <Badge tone="warning">示例数据</Badge>} />
+        <PageHeader className="workspace-header" title="数据分析" actions={isSample && <Badge tone="warning">示例数据</Badge>} />
 
         <div className={`page-body page-body--wide ${ui.body}`} onClickCapture={revealSection}>
 
@@ -198,7 +198,7 @@ export default function Home() {
         <WorkflowGuide kind="data" />
         <SectionNavigation sections={stages} className="data-stage-nav" label="数据分析分区" />
         <section className={ui.dataset} id="import" aria-label="当前数据集">
-          <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'示例数据':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
+          <div className={ui.datasetRow}><div className={ui.sourceName}><span className={ui.fileType}>{formatLabel(data.name)}</span><div><h2 title={data.name}>{data.name}</h2><p>{isSample?'合成示例 · 非真实调查':'当前处理表'}{workflow.records.length?` · 已应用 ${workflow.records.length} 个处理步骤`:''}</p></div></div><dl className={ui.sampleFacts}><div><dt>观测</dt><dd>{data.rows.length}</dd></div><div><dt>变量</dt><dd>{data.headers.length}</dd></div><div><dt>缺失值</dt><dd>{missingCount}</dd></div></dl><button type="button" className={ui.changeFile} disabled={reading} onClick={()=>inputRef.current?.click()}><ArrowUpFromLine size={16} aria-hidden="true"/>{reading?'正在读取…':'导入 / 更换数据'}</button></div>
           {fileStatus && <p className="data-load-status" role="status">{fileStatus}</p>}{error && <p className="error-message" role="alert">{error}</p>}
           <div className={ui.importOptions}><details className={ui.importDetails}><summary>文件格式与导入说明<ChevronDown size={16} aria-hidden="true"/></summary>
           <div className="upload-panel">
@@ -406,7 +406,7 @@ export default function Home() {
           </div>
         </section>
 
-        <footer><span>Acaora · DataLab</span><p>用于探索性学习与课程项目；正式研究请结合研究设计与专业判断。</p></footer>
+        <footer><span>Acaora · DataLab</span></footer>
         </div>
 
       </section>

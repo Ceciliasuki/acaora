@@ -1,3 +1,5 @@
+@font-face {font-family:'Acaora Serif';src:url('/fonts/source-serif/SourceSerif4-Regular.woff2') format('woff2');font-display:swap;font-weight:400 600;}
+
 /* Shared hover language. Native layout, focus and selected state remain owned
    by each surface. Home has its own authored feedback; source text never moves. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -81,3 +83,54 @@
     transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
   }
 }
+
+/* Keep the current palette and accessibility fixes without replacing page layouts. */
+body {background:var(--bg-app);color:var(--text)}
+body h1,body h2,body h3 {letter-spacing:0}
+body[data-hover-feedback] main.student-app :is(header.ui-page-header,.page-bar,.overview-header) h1,
+body .student-app .overview-main > header h1,
+body .student-app .learning-main > header h1 {font:500 clamp(32px,3.2vw,44px)/1.25 var(--font-editorial);letter-spacing:0}
+body .student-app .plab-head h1 {font:500 28px/1.3 var(--font-editorial);letter-spacing:0}
+body .student-app :is(.project-login-wall,.project-empty,.settings-state) h2 {font-size:24px;line-height:1.4;letter-spacing:0}
+body .student-app .ui-button--primary,body .acaora-site .ui-button--primary,body .student-app .project-create-button {color:var(--surface);background:var(--brand);background-image:none;opacity:1;box-shadow:none;border:1px solid var(--brand);font-weight:500}
+body .ui-button {min-height:44px;border-radius:6px;text-decoration:none}
+body .ui-button:disabled,body .project-create-button:disabled {opacity:.48;cursor:not-allowed}
+body .ui-button--primary:not(:disabled):hover {background:var(--brand-hover);border-color:var(--brand-hover)}
+body :is(button,a,input,select,textarea,summary):focus-visible {outline:2px solid var(--brand);outline-offset:3px}
+body :is(button,.ui-button):not(:disabled,[aria-disabled="true"]):active {translate:0 1px;scale:.98}
+body .student-app .app-sidebar.student-sidebar {background:var(--surface-paper);border:1px solid var(--border);box-shadow:none}
+body .student-app .sidebar-auto-slot[data-expanded="true"] .app-sidebar {box-shadow:var(--shadow-overlay)}
+body .student-app [hidden] {display:none!important}
+body .auth-story-copy h1 {font-family:var(--font-editorial);letter-spacing:0}
+body .auth-story {background:var(--surface-2)}
+body .auth-story .acaora-brand small {color:var(--text-2);font-size:12px}
+body .auth-back {color:var(--text-2)}
+.motion-preference {display:flex;align-items:center;gap:12px;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--border);font-size:14px}
+.motion-preference input {width:18px;height:18px;accent-color:var(--brand)}
+.motion-preference small {display:block;font-size:12px;line-height:1.7;color:var(--text-2);margin-top:5px}
+.not-found-page {max-width:720px;margin:18dvh auto;padding:24px}
+.not-found-page h1 {font:500 clamp(32px,4vw,44px)/1.3 var(--font-editorial);margin:20px 0}
+.not-found-page > p {line-height:1.9;color:var(--text-2)}
+.not-found-page > div {display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-top:32px}
+.home-mobile-menu {display:none}
+@media(min-width:761px){body .sidebar-menu-button,body .sidebar-close-button{display:none}}
+@media(max-width:760px){
+ body .student-app .workspace-header h1,body .student-app .overview-main > header h1{font-size:32px}
+ .acaora-nav {position:relative;gap:12px;padding-inline:16px;margin-inline:16px}
+ .home-mobile-menu {display:block;margin-left:auto}
+ .home-mobile-menu > button {display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;cursor:pointer;list-style:none;border:1px solid var(--border);border-radius:6px;color:var(--text)}
+ .home-mobile-menu > nav {position:absolute;z-index:44;top:calc(100% + 8px);left:0;right:0;display:flex;flex-direction:column;padding:12px 20px;border:1px solid var(--border);border-radius:8px;background:var(--surface-paper);box-shadow:var(--shadow-overlay)}
+ .home-mobile-menu nav a {display:flex;align-items:center;min-height:44px;color:var(--text);font-size:14px;text-decoration:none}
+}
+html[data-interface-motion="off"] *,html[data-interface-motion="off"] *::before,html[data-interface-motion="off"] *::after {animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html[data-interface-motion="off"] body[data-hover-feedback] :is(a,button,summary,svg,strong,b) {translate:none!important;scale:1!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}body[data-hover-feedback] :is(a,button,summary,svg,strong,b){translate:none!important;scale:1!important}}
+
+body .acaora-site .hero-main {background:var(--brand);border-color:var(--brand);box-shadow:none}
+body .acaora-site .hero-main:hover {background:var(--brand-hover)}
+
+/* Research tools and learning keep their existing destinations, in separate groups. */
+.sidebar-nav-group {position:relative;z-index:1;display:grid;gap:6px;flex-shrink:0;min-width:0}
+.sidebar-nav-group + .sidebar-nav-group {border-top:1px solid var(--border);margin-top:8px;padding-top:12px}
+.app-sidebar > nav {min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.app-sidebar .student-sidebar-foot {flex-shrink:0}

@@ -22,14 +22,18 @@ test('home hover responds and restores the current pose, including reduced motio
     await page.mouse.move(0,0);
     await expect.poll(pose).toEqual(initial);
   }
-  const row=page.getByRole('link',{name:'课程学习 阅读课程讲解、完成练习，继续学习进度。'});
+  const row=page.locator('.module-card[href="/courses"]');
   const heading=row.locator('h3');
   const initial=await heading.evaluate(el=>getComputedStyle(el).transform);
+  const arrow=row.locator('svg');
+  const initialArrow=await arrow.evaluate(el=>getComputedStyle(el).transform);
   await row.hover();
-  await expect.poll(()=>heading.evaluate(el=>getComputedStyle(el).transform)).not.toBe(initial);
+  await expect.poll(()=>arrow.evaluate(el=>getComputedStyle(el).transform)).not.toBe(initialArrow);
+  expect(await heading.evaluate(el=>getComputedStyle(el).transform)).toBe(initial);
   await mkdir('outputs/reference-motion',{recursive:true});
   await page.screenshot({path:'outputs/reference-motion/hover-entry.png'});
   await page.mouse.move(0,0);
+  await expect.poll(()=>arrow.evaluate(el=>getComputedStyle(el).transform)).toBe(initialArrow);
   await expect.poll(()=>heading.evaluate(el=>getComputedStyle(el).transform)).toBe(initial);
   await page.emulateMedia({reducedMotion:'reduce'});
   await source.scrollIntoViewIfNeeded();
