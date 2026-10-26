@@ -44,7 +44,7 @@
 .workspaces :global(.module-card) {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:26px 44px;text-align:center}
 .workspaces :global(.module-card) :is(h3,p) {text-align:center}
 .workspaces :global(.module-card) > svg {position:absolute;right:4px;top:50%;margin-top:-10px}
-.workspaces :global(.module-card):is(:hover,:focus-visible) :is(h3,p) {transform:none}
+:global(.acaora-site) .workspaces:global(.acaora-modules) :global(.module-card):is(:hover,:focus-visible) :is(h3,p) {transform:none}
 .writing {position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:96px 96px;gap:120px 32px;max-width:920px;margin:0 auto;min-width:0}
 .writing article {position:relative;grid-column:span 2;min-width:0;padding:28px 12px 0;text-align:center}
 .writing article:first-of-type {grid-column:2 / span 2;padding:0 12px 22px}

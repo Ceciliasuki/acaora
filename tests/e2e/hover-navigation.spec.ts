@@ -61,7 +61,7 @@ test('chapter rail keeps reading and answers intact, with reduced motion and nar
   await page.goto('/courses/STAT-201/lesson-1');
   const marker = page.locator('.sidebar-nav-motion .motion-navigation-marker');
   await expect(marker).toBeVisible();
-  expect(await marker.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(48, 95, 206)');
+  expect(await marker.evaluate(element => getComputedStyle(element).backgroundColor)).toBe('rgb(45, 82, 119)');
   const answer = page.locator('[aria-labelledby="title-STAT-201-l1-q3"]').getByLabel('输入数值答案');
   await answer.fill('0.6');
   const chapter = page.getByRole('button', {name:'章节导航', exact:true});

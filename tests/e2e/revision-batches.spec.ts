@@ -50,7 +50,7 @@ for(const width of [1366,375])test(`REV-UI affected surfaces at ${width}px`,asyn
   await page.goto('/courses');await expect(page.getByRole('region',{name:'继续学习'})).not.toContainText('正在读取');
   await page.screenshot({path:`${out}/courses-${width}.png`,animations:'disabled'});
   await page.goto('/');await expect(page.getByRole('figure',{name:'原文与笔记示例'})).toBeVisible();
-  await page.locator('figure').screenshot({path:`${out}/home-example-${width}.png`,animations:'disabled'});
+  await page.getByRole('figure',{name:'原文与笔记示例',exact:true}).screenshot({path:`${out}/home-example-${width}.png`,animations:'disabled'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
 
