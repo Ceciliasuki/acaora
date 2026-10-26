@@ -9,7 +9,7 @@
   .acaora-site :is(.module-card,.hero-main):is(:hover,:focus-visible) svg {transform:none;}
 }
 .home-motion .acaora-site .acaora-hero {align-items:center;gap:clamp(32px,5vw,88px);padding-top:90px;padding-bottom:96px;}
-.home-motion .acaora-site .home-intro h1 {font-size:clamp(64px,7.2vw,100px);line-height:1.12;letter-spacing:-.04em;margin:0 0 32px;max-width:none;}
+.home-motion .acaora-site .home-intro h1 {font-size:clamp(64px,7.2vw,100px);line-height:1.12;letter-spacing:0;margin:0 0 32px;max-width:none;}
 .home-title-line {display:block;overflow:clip;padding-bottom:.08em;margin-bottom:-.08em;}
 .home-title-line > span {display:block;transform-origin:left bottom;}
 .home-motion .acaora-site .home-intro {transform:translateY(var(--hero-travel,0px));}
@@ -39,3 +39,5 @@
  .home-motion .acaora-site .hero-main {transition:background-color 180ms ease,box-shadow 280ms ease;}
  .home-motion .acaora-site .hero-main:is(:hover,:focus-visible) {background:var(--brand-hover);box-shadow:0 8px 18px -10px rgb(30 65 140 / 50%);}
 }
+
+.home-motion .acaora-site .home-intro h1 {font-family:var(--font-editorial);letter-spacing:0}

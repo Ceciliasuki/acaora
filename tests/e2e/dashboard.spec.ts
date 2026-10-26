@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { freezeDynamicUi, installApiMocks } from "./helpers";
 
-test("overview presents all workspaces equally and lists real recent records once", async ({ page }) => {
+test("overview separates research and learning and lists real recent records once", async ({ page }) => {
   await freezeDynamicUi(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await installApiMocks(page, { signedIn: true, cloudPapers: [
@@ -11,19 +11,20 @@ test("overview presents all workspaces equally and lists real recent records onc
   ], projects: [{ id: "project-a", title: "高校学习行为数据分析", kind: "data", status: "active", metadata: {}, created_at: "2026-08-16T07:00:00Z", updated_at: "2026-08-16T07:00:00Z" }] });
   await page.goto("/dashboard");
   const workspaces = page.getByRole("navigation", { name: "工作空间", exact: true });
-  await expect(workspaces.getByRole("link")).toHaveCount(4);
-  for (const [name, href] of [["课程中心", "/courses"], ["论文研究", "/papers"], ["数据分析", "/data"], ["项目空间", "/projects"]]) {
+  await expect(workspaces.getByRole("link")).toHaveCount(3);
+  for (const [name, href] of [["论文阅读", "/papers"], ["数据分析", "/data"], ["研究项目", "/projects"]]) {
     await expect(workspaces.getByRole("link", { name, exact: true })).toHaveAttribute("href", href);
   }
   await expect(page.getByText("数字化学习环境下的高校研究能力培养路径探讨", { exact: true })).toHaveCount(1);
   await expect(page.locator(".overview-record")).toHaveCount(4);
   await expect(page.locator(".overview-record").first()).toContainText("2 个段落");
+  await expect(page.getByRole("region",{name:"课程学习",exact:true}).getByRole("link",{name:"进入课程",exact:true})).toHaveAttribute("href","/courses");
   await expect(page.locator(".overview-footer")).toContainText("3 篇论文 · 1 个项目");
   await page.screenshot({ path: "test-results/design-preview/dashboard-desktop.png", fullPage: true });
   for (const width of [320, 375, 768]) {
     await page.setViewportSize({ width, height: 900 });
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
-    await expect(workspaces.getByRole("link", { name: "项目空间", exact: true })).toBeVisible();
+    await expect(workspaces.getByRole("link", { name: "研究项目", exact: true })).toBeVisible();
     await page.screenshot({ path: `test-results/design-preview/dashboard-mobile-${width}.png`, fullPage: true });
   }
 });
@@ -41,7 +42,7 @@ test("guest overview keeps all workspaces available without fetching private rec
   const state = await installApiMocks(page);
   await page.goto("/dashboard");
   await expect(page.getByText("从当前任务开始", { exact: true })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "工作空间", exact: true }).getByRole("link")).toHaveCount(4);
+  await expect(page.getByRole("navigation", { name: "工作空间", exact: true }).getByRole("link")).toHaveCount(3);
   expect(state.requests).not.toContain("GET /api/cloud/papers");
   expect(state.requests).not.toContain("GET /api/projects");
 });

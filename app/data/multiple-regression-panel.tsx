@@ -4,7 +4,7 @@ import {Button} from '../components/ui';
 import {formatNumber,formatP,numericColumns,type DataSet} from '../stats';
 import ResultTools,{type AnalysisResult} from './result-tools';
 import {statisticsCsv} from './data-exploration';
-import {MAX_PREDICTORS,regressionConfigErrors,type RegressionConfig} from './regression-config';
+import {MAX_PREDICTORS,defaultRegressionConfig,regressionConfigErrors,type RegressionConfig} from './regression-config';
 import type {RegressionFit} from './multiple-regression';
 import RegressionRecipeTools,{downloadRegressionFile} from './regression-recipe-tools';
 import CategoricalControls from './categorical-controls';
@@ -21,7 +21,7 @@ const number=(value:number|null,digits=3)=>value===null?'—':formatNumber(value
 const seName=(config:RegressionConfig)=>config.standardErrors==='HC3'?'HC3 稳健':'常规';
 export default function MultipleRegressionPanel({data,isSample}:{data:DataSet;isSample:boolean}){
   const numeric=useMemo(()=>numericColumns(data),[data]);
-  const [config,setConfig]=useState<RegressionConfig>(()=>{const outcome=numeric.includes('统计学成绩')?'统计学成绩':numeric.at(-1)??'';return {outcome,predictors:numeric.filter(name=>name!==outcome).slice(0,2),standardErrors:'HC3'};});
+  const [config,setConfig]=useState<RegressionConfig>(()=>defaultRegressionConfig(data));
   const [query,setQuery]=useState('');
   const [fit,setFit]=useState<RegressionFit|null>(null);
   const [busy,setBusy]=useState(false);
@@ -58,7 +58,7 @@ export default function MultipleRegressionPanel({data,isSample}:{data:DataSet;is
   return <div className={`${styles.workbench} ${styles.analysisLayout} ${!fit?styles.modelPending:''}`}><section className={`${styles.setup} ${styles.modelSetup}`} aria-label="回归分析设置"><h3>模型设置</h3>
     <p className={styles.intro}>依次选择因变量、解释变量与标准误。模型包含截距，仅使用所选字段均完整的观测。</p>
     <div className={styles.modelFields}>
-    <div className={`${styles.controls} ${styles.modelOutcome}`}><label className={styles.control}>回归因变量<select aria-label="回归因变量" disabled={busy} value={config.outcome} onChange={event=>{const outcome=event.target.value;setConfig(current=>({...current,outcome,predictors:current.predictors.filter(name=>name!==outcome),categoricals:(current.categoricals??[]).filter(c=>c.name!==outcome)}));}}>{numeric.map(header=><option key={header}>{header}</option>)}</select></label></div>
+    <div className={`${styles.controls} ${styles.modelOutcome}`}><label className={styles.control}>回归因变量<select aria-label="回归因变量" disabled={busy} value={config.outcome} onChange={event=>{const outcome=event.target.value;setConfig(current=>({...current,outcome,predictors:current.predictors.filter(name=>name!==outcome),categoricals:(current.categoricals??[]).filter(c=>c.name!==outcome)}));}}><option value="" disabled>请选择因变量</option>{numeric.map(header=><option key={header}>{header}</option>)}</select></label></div>
     <fieldset className={styles.predictors} disabled={busy}><legend>数值解释变量 · 已选 {config.predictors.length} / {MAX_PREDICTORS}</legend><label className={styles.control}>查找解释变量<input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="输入变量名称"/></label><div className={styles.choices}>{numeric.filter(name=>name!==config.outcome&&!(config.categoricals??[]).some(c=>c.name===name)&&name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).map(name=><label className={styles.check} key={name}><input type="checkbox" checked={config.predictors.includes(name)} disabled={!config.predictors.includes(name)&&config.predictors.length>=MAX_PREDICTORS} onChange={event=>setConfig(current=>({...current,predictors:event.target.checked?[...current.predictors,name]:current.predictors.filter(value=>value!==name)}))}/>{name}</label>)}</div><p className={styles.help}>已选：{config.predictors.join('、')||'尚未选择'}。</p></fieldset>
     <CategoricalControls data={data} value={config.categoricals??[]} exclude={[config.outcome,...config.predictors]} disabled={busy} onChange={categoricals=>setConfig(c=>({...c,categoricals}))}/>
     <div className={`${styles.controls} ${styles.modelStandardErrors}`}><label className={styles.control}>标准误方式<select aria-label="标准误方式" disabled={busy} value={config.standardErrors} onChange={event=>setConfig(current=>({...current,standardErrors:event.target.value as RegressionConfig['standardErrors']}))}><option value="HC3">HC3 稳健标准误</option><option value="classical">常规标准误</option></select></label><p className={styles.help}>HC3 允许异方差；两种方式均要求观测独立，不能替代聚类或时间序列稳健估计。</p></div>

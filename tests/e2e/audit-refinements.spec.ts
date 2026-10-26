@@ -46,20 +46,7 @@ test('a fresh homepage omits formula styles while course formulas keep their typ
   await page.screenshot({ path: `${captures}/course-formulas.png` });
 });
 
-test('blocking the motion preference store still allows the current page toggle', async ({ page }) => {
-  await installApiMocks(page);
-  await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.addInitScript(() => {
-    const read = Storage.prototype.getItem; const write = Storage.prototype.setItem;
-    Storage.prototype.getItem = function (key) { if (key === 'acaora:ambient-motion') throw new DOMException('Blocked', 'SecurityError'); return read.call(this, key); };
-    Storage.prototype.setItem = function (key, value) { if (key === 'acaora:ambient-motion') throw new DOMException('Blocked', 'SecurityError'); return write.call(this, key, value); };
-  });
-  await page.goto('/dashboard');
-  const canvas = page.locator('.light-curtain canvas');
-  await expect(canvas).toHaveAttribute('data-motion', /paused|unavailable/);
-  test.skip(await canvas.getAttribute('data-motion') === 'unavailable', 'No WebGL context is available.');
-  await page.getByRole('button', { name: '开启背景动效' }).click();
-  await expect(canvas).toHaveAttribute('data-motion', 'running');
-  await page.getByRole('button', { name: '暂停背景动效' }).click();
-  await expect(canvas).toHaveAttribute('data-motion', 'paused');
+test('blocking the preference store still allows interface motion to be switched in this session',async({page})=>{
+ await installApiMocks(page);await page.addInitScript(()=>{const read=Storage.prototype.getItem,write=Storage.prototype.setItem;Storage.prototype.getItem=function(key){if(key==='acaora:interface-motion')throw new DOMException('Blocked','SecurityError');return read.call(this,key);};Storage.prototype.setItem=function(key,value){if(key==='acaora:interface-motion')throw new DOMException('Blocked','SecurityError');return write.call(this,key,value);};});
+ await page.goto('/settings');const control=page.getByRole('checkbox',{name:/界面动效/});await control.uncheck();await expect(page.locator('html')).toHaveAttribute('data-interface-motion','off');await control.check();await expect(page.locator('html')).toHaveAttribute('data-interface-motion','on');
 });

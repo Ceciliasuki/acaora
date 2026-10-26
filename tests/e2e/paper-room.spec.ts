@@ -70,25 +70,6 @@ test('Reading room on mobile keeps all tools reachable without changing the pape
   await page.screenshot({path: 'outputs/papers-room-2026-10-14/search-mobile.png', fullPage: true, animations: 'disabled'});
 });
 
-test('Entering the reading room suspends the hidden light field and restores its preference on return', async ({page}) => {
-  await page.setViewportSize({width: 1440, height: 900});
-  await page.emulateMedia({reducedMotion: 'no-preference'});
-  await installApiMocks(page, {signedIn: true});
-  await page.goto('/dashboard');
-  const canvas = page.locator('.light-curtain canvas');
-  await expect(canvas).toHaveAttribute('data-motion', /paused|unavailable/);
-  const available = await canvas.getAttribute('data-motion') !== 'unavailable';
-  await page.getByRole('button', {name: '开启背景动效'}).click();
-  if (available) await expect(canvas).toHaveAttribute('data-motion', 'running');
-  await page.locator('#app-sidebar').getByRole('link', {name: '论文研究', exact: true}).click();
-  await page.getByRole('button', {name: '打开示例论文', exact: true}).click();
-  await expect(page.getByLabel('论文标题')).toBeVisible();
-  await expect(page.locator('.light-curtain')).toBeHidden();
-  await expect(page.getByRole('button', {name: '暂停背景动效'})).toBeHidden();
-  if (available) await expect(canvas).toHaveAttribute('data-motion', 'hidden');
-  await page.locator('#app-sidebar').getByRole('link', {name: '总览', exact: true}).click();
-  await expect(page.getByRole('heading', {name: '总览', exact: true})).toBeVisible();
-  await expect(page.locator('.light-curtain')).toBeVisible();
-  await expect(page.getByRole('button', {name: '暂停背景动效'})).toBeVisible();
-  if (available) await expect(canvas).toHaveAttribute('data-motion', 'running');
+test('reading room keeps the decorative background absent',async({page})=>{
+ await installApiMocks(page,{signedIn:true});await page.goto('/papers?view=reader&paper=sample-paper');await expect(page.getByLabel('论文标题')).toBeVisible();await expect(page.locator('.light-curtain,.ambient-toggle')).toHaveCount(0);
 });

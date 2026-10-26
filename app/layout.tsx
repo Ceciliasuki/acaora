@@ -8,7 +8,7 @@ import "./workspace-motion.css";
 import "./paper-reading.css";
 import './research-workflows.css';
 import './interaction-feedback.css';
-import LightCurtain from "./components/light-curtain";
+import MotionPreferences from './components/motion-preferences';
 import WorkspaceAccessibility from './components/workspace-accessibility';
 
 const title = "Acaora 学曦 · 大学生智能学习与研究平台";
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 /* Matches --bg-app so the mobile browser chrome stays continuous with the
    app background instead of cutting to a white surface. */
 export const viewport: Viewport = {
-  themeColor: "#ecf1f7",
+  themeColor: "#f7f6f2",
 };
 
 export default function RootLayout({
@@ -38,7 +38,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" data-scroll-behavior="smooth">
-      <body data-hover-feedback><WorkspaceAccessibility /><LightCurtain />{children}</body>
+      <body data-hover-feedback><WorkspaceAccessibility /><MotionPreferences />{children}</body>
     </html>
   );
 }

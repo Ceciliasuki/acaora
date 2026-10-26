@@ -32,7 +32,7 @@ export default function MotionNavigation({value, label, className, children, as:
     marker.style.transform = transform;
     root.dataset.hoverVisible = 'true';
     hovered.current = control;
-    if (animate && ready && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (animate && ready && !matchMedia('(prefers-reduced-motion: reduce)').matches && document.documentElement.dataset.interfaceMotion !== 'off') {
       marker.animate([{transform:`translate(${previous.left-bounds.left+root.scrollLeft}px, ${previous.top-bounds.top+root.scrollTop}px) scale(${previous.width/target.width}, ${previous.height/target.height})`}, {transform}], {duration:200, easing:'cubic-bezier(.16,1,.3,1)'});
     }
   }
@@ -70,7 +70,7 @@ export default function MotionNavigation({value, label, className, children, as:
       marker!.style.transform = transform;
       root!.dataset.motionReady = "true";
       if (rememberKey) remembered.set(rememberKey, next);
-      if (animate && previous && !preference.matches) {
+      if (animate && previous && !preference.matches && document.documentElement.dataset.interfaceMotion !== 'off') {
         root!.dataset.motionMoving = 'true';
         const animation = marker!.animate([
         {transform: `translate(${previous.x}px, ${previous.y}px) scale(${previous.width / next.width}, ${previous.height / next.height})`}, {transform},

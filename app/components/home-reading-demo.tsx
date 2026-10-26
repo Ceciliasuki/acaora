@@ -32,7 +32,7 @@ export default function HomeReadingDemo() {
   const original = samplePaper.paragraphs[1].original;
   const split = original.indexOf('.') + 1;
   return <figure ref={root} className={styles.preview} aria-label="原文与笔记示例" data-demo-step={step}>
-    <header className={styles.header}><h2>原文与独立笔记</h2><p>产品自带示例 · 不是真实研究成果</p></header>
+    <header className={styles.header}><h2>原文与独立笔记</h2></header>
     <div className={styles.demoControls}>
       <div role="group" aria-label="查看示例步骤">{steps.map((label, index) => <button type="button" key={label} aria-pressed={step === index} onClick={() => {setPlaying(false); setStep(index);}}><span>{index + 1}</span>{label}</button>)}</div>
       <button type="button" aria-label={playing ? '停止演示' : played ? '重播示例' : '播放示例'} onClick={() => {if (playing) {setPlaying(false); setStep(2);} else {setStep(0); setPlayed(true); setPlaying(true);}}}>{played ? <RotateCcw size={14} aria-hidden="true"/> : <Play size={14} aria-hidden="true"/>}{playing ? '停止' : played ? '重播' : '播放示例'}</button>

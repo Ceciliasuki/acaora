@@ -23,15 +23,13 @@ test('PERF-01 idle workspace does not continuously render a decorative backgroun
   });
   await page.goto('/dashboard');
   await expect(page.getByRole('heading', {name: '总览', exact: true})).toBeVisible();
-  await expect(page.locator('.light-curtain canvas')).toHaveAttribute('data-motion', /paused|unavailable/);
+  await expect(page.locator('.light-curtain,.ambient-toggle')).toHaveCount(0);
   const start = await page.evaluate(() => (window as unknown as {__backgroundDraws: number}).__backgroundDraws);
   await page.waitForTimeout(2000);
   const draws = await page.evaluate(() => (window as unknown as {__backgroundDraws: number}).__backgroundDraws) - start;
   await testInfo.attach('background-cost', {body: JSON.stringify({intervalMs: 2000, draws}), contentType: 'application/json'});
   expect(draws).toBe(0);
-  if (await page.locator('.light-curtain canvas').getAttribute('data-motion') !== 'unavailable') {
-    await expect(page.getByRole('button', {name: '开启背景动效'})).toBeVisible();
-  }
+
 });
 
 test('PERF-02 reading position survives reload without full-paper uploads at each pause', async ({page}, testInfo) => {

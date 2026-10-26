@@ -27,3 +27,10 @@ export function parseRegressionRecipe(text:string):RegressionRecipe{
 export function createRegressionRecipe(data:DataSet,config:RegressionConfig,fingerprint:string):RegressionRecipe{
   return parseRegressionRecipe(JSON.stringify({format:'acaora-regression-recipe',version:1,engine:REGRESSION_ENGINE,confidence:.95,missingPolicy:'listwise-complete-cases',intercept:true,config,dataset:{fingerprint,headers:data.headers,rows:data.rows.length},createdAt:new Date().toISOString()}));
 }
+
+/** Identifier-like columns remain selectable but are never silently modelled. */
+export function defaultRegressionConfig(data:DataSet):RegressionConfig {
+  const fields=numericColumns(data).filter(name=>!/(^|[_\s-])(id|uuid|index|row|key)([_\s-]|$)|^(编号|序号|学号|样本编号|观测编号|记录号)$/i.test(name.trim()));
+  const outcome=fields.includes('统计学成绩')?'统计学成绩':fields.at(-1)??'';
+  return {outcome,predictors:fields.filter(name=>name!==outcome).slice(0,2),standardErrors:'HC3'};
+}

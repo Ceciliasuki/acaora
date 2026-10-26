@@ -425,7 +425,7 @@ export default function ProjectsPage() {
       <AppSidebar active="projects" initials={initials} profileTitle={viewer?.email?.split("@")[0] ?? "匿名学习者"} profileSubtitle={viewer ? "项目空间" : "未登录"} />
 
       <section className={`student-main project-main project-shell ${styles.focused}`}>
-        <PageHeader className="workspace-header" title="项目空间" description="组织研究设计、论文证据、分析记录与项目任务。" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
+        <PageHeader className="workspace-header" title="项目空间" actions={<button className="project-create-button" disabled={!viewer || saving} onClick={() => {setMessage(""); setShowCreate(true);}}><Plus size={17} aria-hidden="true" />新建项目</button>} />
 
         <div className="page-body">
         <ProjectInvitation ownerId={viewer?.id??null} onAccepted={()=>location.reload()}/>
@@ -437,11 +437,11 @@ export default function ProjectsPage() {
             action={<Button variant="secondary" onClick={() => location.reload()}>重新加载</Button>}
           />
         ) : !viewer ? (
-          <section className="project-login-wall"><h2>登录后查看项目</h2><p>登录后管理研究设计、论文摘录、分析登记与项目笔记。</p><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
+          <section className="project-login-wall"><h2>登录后查看项目</h2><Link href="/auth">注册或密码登录 <ArrowRight size={16} aria-hidden="true" /></Link></section>
         ) : (
           <>
 
-            {missingTarget ? <ErrorState title="无法打开指定项目" description="当前账户无法访问此项目，可能已删除或尚未同步。没有打开其他项目。" action={<Button variant="secondary" onClick={() => selectProject(projects[0]?.id ?? null, true)}>返回项目列表</Button>} /> : !projects.length ? <section className="project-empty"><h2>还没有项目</h2><p>创建项目后，可以添加任务、关联资料和记录笔记。</p><button onClick={() => {setMessage(""); setShowCreate(true);}}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
+            {missingTarget ? <ErrorState title="无法打开指定项目" description="当前账户无法访问此项目，可能已删除或尚未同步。没有打开其他项目。" action={<Button variant="secondary" onClick={() => selectProject(projects[0]?.id ?? null, true)}>返回项目列表</Button>} /> : !projects.length ? <section className="project-empty"><h2>还没有项目</h2><button onClick={() => {setMessage(""); setShowCreate(true);}}>建立项目空间 <ArrowRight size={16} aria-hidden="true" /></button></section> : (
               <section className="project-workbench">
                 <aside className="project-library">
                   <MotionNavigation as="div" className="project-filter" label="项目筛选" role="group" value={filter}><button className={filter === "all" ? "active" : ""} aria-pressed={filter === "all"} onClick={() => setFilter("all")}>全部 {projects.length}</button><button className={filter === "active" ? "active" : ""} aria-pressed={filter === "active"} onClick={() => setFilter("active")}>进行中 {activeCount}</button></MotionNavigation>

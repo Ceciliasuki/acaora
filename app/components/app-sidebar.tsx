@@ -123,13 +123,13 @@ export default function AppSidebar({
     };
   }, [isDrawer, open]);
 
-  const links = navigation.map((item, index) => {
+  const links = ([['research','研究'],['learning','学习'],['account','账户']] as const).map(([group,label])=><div className="sidebar-nav-group" data-nav-group={group} role="group" aria-label={label} key={group}>{navigation.filter(item=>item.group===group).map((item, index) => {
     const Icon = item.icon;
     return <Link aria-current={item.id === active ? 'page' : undefined} aria-label={item.label}
       title={item.label} style={{'--navigation-step': Math.min(index, 4)} as React.CSSProperties} className={item.id === active ? 'active' : ''} href={item.href} key={item.id} onClick={() => setOpen(false)}>
       <Icon size={20} aria-hidden="true" /><span>{item.label}</span>
     </Link>;
-  });
+  })}</div>);
 
   return <>
     <IconButton ref={triggerRef} className="sidebar-menu-button" variant="secondary" label="打开主导航" aria-expanded={open} aria-controls="app-sidebar" onClick={() => setOpen(true)}><Menu size={21} /></IconButton>

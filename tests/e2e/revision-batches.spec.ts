@@ -150,7 +150,7 @@ test('REV-G snapshot links project evidence, interpretation, task and backup rec
   await expect(page.getByRole('button',{name:'编辑任务：Check the source before interpreting the pattern'})).toBeVisible();
   await page.getByRole('link',{name:'返回原文',exact:true}).click();
   await expect(page.getByLabel('论文标题',{exact:true})).toHaveValue(source.title);
-  await page.getByRole('link',{name:'项目空间',exact:true}).click();
+  await page.getByRole('link',{name:'研究项目',exact:true}).click();
   await page.getByRole('link',{name:'打开分析快照：Controlled snapshot'}).click();
   await expect(page.getByRole('region',{name:'已保存分析快照'})).toContainText('Controlled snapshot');
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'导出此快照 JSON'}).click();

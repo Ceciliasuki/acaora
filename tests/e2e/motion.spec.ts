@@ -5,66 +5,12 @@ test.beforeEach(async ({ page }) => {
   await installApiMocks(page, { signedIn: true });
 });
 
-test("light curtain is decorative and reduced motion keeps controls steady", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.addInitScript(() => localStorage.setItem("acaora:ambient-motion", "on"));
-  await page.goto("/dashboard");
-  const curtain = page.locator("body > .light-curtain");
-  await expect(curtain).toHaveAttribute("aria-hidden", "true");
-  expect(await curtain.evaluate((node) => getComputedStyle(node).pointerEvents)).toBe("none");
-  await expect(curtain.locator("canvas")).toHaveAttribute("data-motion", /paused|unavailable/);
-  await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeHidden();
-  const action = page.getByRole("navigation", { name: "工作空间" }).getByRole("link", { name: "项目空间", exact: true });
-  await action.hover();
-  expect(await action.evaluate((node) => getComputedStyle(node).transform)).toBe("none");
-  await action.focus();
-  expect(await action.evaluate((node) => getComputedStyle(node).outlineStyle)).toBe("solid");
-  await action.press("Enter");
-  await expect(page).toHaveURL(/\/projects$/);
-  await expect(page.getByRole("heading", { name: "项目空间", exact: true, level: 1 })).toBeVisible();
+test('reduced motion keeps task controls steady without a background shader',async({page})=>{
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/dashboard');await expect(page.locator('.light-curtain,.ambient-toggle')).toHaveCount(0);
+ const action=page.getByRole('navigation',{name:'工作空间',exact:true}).getByRole('link',{name:'研究项目',exact:true});await action.hover();expect(await action.evaluate(node=>getComputedStyle(node).translate)).toBe('none');await action.focus();expect(await action.evaluate(node=>getComputedStyle(node).outlineStyle)).toBe('solid');
 });
-
-test("the global light surface changes, pauses, and survives workspace navigation", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await page.goto("/dashboard");
-  const canvas = page.locator("body > .light-curtain canvas");
-  await expect(canvas).toHaveAttribute("data-motion", /paused|unavailable/);
-  test.skip(await canvas.getAttribute("data-motion") === "unavailable", "This browser cannot create a WebGL context; the static fallback is tested separately.");
-  await page.getByRole("button", { name: "开启背景动效" }).click();
-  await expect(canvas).toHaveAttribute("data-motion", /running|unavailable/);
-  test.skip(await canvas.getAttribute("data-motion") === "unavailable", "This browser cannot create a WebGL context; the static fallback is tested separately.");
-  await page.reload();
-  await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeVisible();
-  await expect(canvas).toHaveAttribute("data-motion", "running");
-  const firstFrame = await canvas.screenshot();
-  await expect.poll(async () => (await canvas.screenshot()).equals(firstFrame)).toBe(false);
-  await page.getByRole("button", { name: "暂停背景动效" }).click();
-  await expect(canvas).toHaveAttribute("data-motion", "paused");
-  const stillFrame = await canvas.screenshot();
-  await page.waitForTimeout(250);
-  expect((await canvas.screenshot()).equals(stillFrame)).toBe(true);
-  const original = await canvas.elementHandle();
-  await page.locator("#app-sidebar").getByRole("link", { name: "数据分析", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "数据分析", exact: true })).toBeVisible();
-  expect(await original!.evaluate((node) => node.isConnected)).toBe(true);
-  await expect(canvas).toHaveAttribute("data-motion", "paused");
-  await page.getByRole("button", { name: "开启背景动效" }).click();
-  await expect(canvas).toHaveAttribute("data-motion", "running");
-});
-
-test("without WebGL the static global material keeps the workspace usable", async ({ page }) => {
-  await page.addInitScript(() => {
-    const getContext = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...args: Parameters<typeof getContext>) {
-      if (String(args[0]).startsWith("webgl")) return null;
-      return Reflect.apply(getContext, this, args);
-    } as typeof getContext;
-  });
-  await page.goto("/dashboard");
-  await expect(page.locator(".light-curtain canvas")).toHaveAttribute("data-motion", "unavailable");
-  await expect(page.getByRole("button", { name: "暂停背景动效" })).toBeHidden();
-  await expect(page.getByRole("navigation", { name: "工作空间" }).getByRole("link", { name: "论文研究", exact: true })).toBeVisible();
-  expect(await page.locator(".light-curtain").evaluate((node) => getComputedStyle(node).backgroundImage)).not.toBe("none");
+test('interface motion preference persists across task navigation',async({page})=>{
+ await page.goto('/settings');const control=page.getByRole('checkbox',{name:/界面动效/});await control.uncheck();await expect(page.locator('html')).toHaveAttribute('data-interface-motion','off');await page.goto('/data');await expect(page.locator('html')).toHaveAttribute('data-interface-motion','off');await expect(page.locator('.ambient-toggle')).toHaveCount(0);
 });
 
 test("project creation keeps hover and press feedback and opens its dialog", async ({ page }) => {

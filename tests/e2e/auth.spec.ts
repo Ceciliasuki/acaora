@@ -44,16 +44,16 @@ test("AUTH-04 workspace logo returns to Dashboard without losing identity", asyn
 test("AUTH-05 all workspace navigation preserves the session", async ({ page }) => {
   await login(page);
   const destinations = [
-    ["课程中心", /\/courses$/],
-    ["论文研究", /\/papers$/],
+    ["课程学习", /\/courses$/],
+    ["论文阅读", /\/papers$/],
     ["数据分析", /\/data$/],
-    ["项目空间", /\/projects$/],
+    ["研究项目", /\/projects$/],
     ["设置与隐私", /\/settings$/],
   ] as const;
   for (const [name, pathname] of destinations) {
     await page.locator("#app-sidebar").getByRole("link", { name, exact: true }).click();
     await expect(page).toHaveURL(pathname);
-    if (name === "项目空间") await page.getByRole("button", { name: "关闭", exact: true }).click();
+    if (name === "研究项目") await page.getByRole("button", { name: "关闭", exact: true }).click();
   }
   await expect(page.getByText("测试同学", { exact: true })).toBeVisible();
 });

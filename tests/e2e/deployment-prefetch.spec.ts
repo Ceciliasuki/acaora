@@ -39,7 +39,7 @@ test('static CDN prefetch returns fresh segment trees and warm navigation needs 
   expect(invalid).toEqual([]);
   expect(trees).toBeLessThan(20);
   const before=requests;
-  await page.locator('#app-sidebar').getByRole('link',{name:'论文研究',exact:true}).click();
+  await page.locator('#app-sidebar').getByRole('link',{name:'论文阅读',exact:true}).click();
   await expect(page.getByRole('heading',{name:'论文研究',exact:true,level:1})).toBeVisible();
   expect(requests-before).toBe(0);
 });
