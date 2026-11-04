@@ -1,3 +1,5 @@
+/* Hallmark · theme: brand · shape: reading spread · genre: modern-minimal · redesign: full · v2.0.0 */
+/* Critique: give the original and its margin notes one shared reading surface. */
 .preview {margin:0;min-width:0;border:1px solid var(--border-strong);border-radius:14px;background:var(--surface);overflow:hidden;color:var(--text);}
 .demoControls {display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:12px 20px;border-bottom:1px solid var(--border);}
 .demoControls > div {display:flex;gap:4px;flex-wrap:wrap;}
@@ -6,7 +8,7 @@
 .demoControls button[aria-pressed="true"], .demoControls button:hover {background:var(--brand-subtle);color:var(--brand-on-subtle);}
 .demoControls button:focus-visible {outline:2px solid var(--brand);outline-offset:-2px;}
 .exampleMark {background:transparent;color:inherit;box-decoration-break:clone;-webkit-box-decoration-break:clone;transition:background-color 220ms ease;}
-.exampleMark[data-emphasized="true"] {background:#f7e9b8;}
+.exampleMark[data-emphasized="true"] {background:var(--hm-highlight);}
 .note {transition:background-color 220ms ease;}
 .note[data-emphasized="true"] {background:var(--brand-subtle);}
 @media(prefers-reduced-motion:reduce) {.demoControls button,.exampleMark,.note {transition:none;}}
@@ -29,15 +31,15 @@
 .header p {font-size:12px;}
 .demoControls {padding:0 0 12px;border:0;}
 .stage {position:relative;min-height:500px;padding:26px 22px 174px 6px;isolation:isolate;}
-.source {position:relative;width:94%;min-height:300px;padding:28px 30px;background:#fff;border:1px solid var(--border);border-radius:4px;box-shadow:0 18px 36px -26px rgb(24 45 80 / 28%);transform:rotate(1deg);transform-origin:50% 35%;transition:transform 750ms cubic-bezier(.16,1,.3,1);}
-.source blockquote {font-family:Georgia,'Times New Roman',serif;font-size:20px;line-height:1.7;}
-.note {position:absolute;z-index:1;right:4px;bottom:22px;width:76%;margin:0;padding:24px 28px;border:1px solid #cfdaf0;border-radius:4px;background:#f1f5fe;box-shadow:0 18px 32px -25px rgb(24 45 80 / 30%);transform:translate(26px,20px) rotate(3deg);opacity:.45;transition:transform 800ms cubic-bezier(.16,1,.3,1),opacity 550ms ease,background-color 350ms ease;}
+.source {position:relative;width:94%;min-height:300px;padding:28px 30px;background:var(--surface);border:1px solid var(--border);border-radius:4px;box-shadow:var(--hm-paper-shadow);transform:rotate(1deg);transform-origin:50% 35%;transition:transform 750ms cubic-bezier(.16,1,.3,1);}
+.source blockquote {font-family:var(--font-editorial);font-size:20px;line-height:1.7;}
+.note {position:absolute;z-index:1;right:4px;bottom:22px;width:76%;margin:0;padding:24px 28px;border:1px solid var(--border);border-radius:4px;background:var(--brand-subtle);box-shadow:var(--hm-paper-shadow);transform:translate(26px,20px) rotate(3deg);opacity:.45;transition:transform 800ms cubic-bezier(.16,1,.3,1),opacity 550ms ease,background-color 350ms ease;}
 .note p {font-size:18px;}
 .preview[data-demo-step="1"] .source {transform:rotate(-1deg) translateY(-6px);}
 .preview[data-demo-step="1"] .note {transform:translate(12px,10px) rotate(1deg);opacity:.65;}
 .preview[data-demo-step="2"] .source {transform:rotate(-3deg) translate(-10px,-6px);}
-.preview[data-demo-step="2"] .note {transform:rotate(1.5deg);opacity:1;background:#f1f5fe;}
-.exampleMark {background-image:linear-gradient(#f7e9b8,#f7e9b8);background-repeat:no-repeat;background-size:0% 100%;transition:background-size 650ms cubic-bezier(.16,1,.3,1);}
+.preview[data-demo-step="2"] .note {transform:rotate(1.5deg);opacity:1;background:var(--brand-subtle);}
+.exampleMark {background-image:linear-gradient(var(--hm-highlight),var(--hm-highlight));background-repeat:no-repeat;background-size:0% 100%;transition:background-size 650ms cubic-bezier(.16,1,.3,1);}
 .exampleMark[data-emphasized="true"] {background-color:transparent;background-size:100% 100%;}
 .preview figcaption {padding:16px 0;border-top:1px solid var(--border);font-size:12px;}
 @media(max-width:899px) {
@@ -52,11 +54,47 @@
  .source,.note {transform:none!important;transition:none;opacity:1;}
  .exampleMark {transition:none;}
 }
-.exampleMark[data-emphasized="true"] {background-image:linear-gradient(#f7e9b8,#f7e9b8);}
+.exampleMark[data-emphasized="true"] {background-image:linear-gradient(var(--hm-highlight),var(--hm-highlight));}
 /* Individual transforms compose with the demonstration instead of replacing it. */
 @media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
  .source {transition:transform 750ms cubic-bezier(.16,1,.3,1),translate 420ms cubic-bezier(.16,1,.3,1),rotate 420ms cubic-bezier(.16,1,.3,1),scale 420ms cubic-bezier(.16,1,.3,1),box-shadow 420ms ease;translate:0 0;rotate:0deg;scale:1;}
- .source:hover {translate:0 -12px;rotate:2deg;scale:1.025;box-shadow:0 26px 42px -24px rgb(24 45 80 / 35%);}
+ .source:hover {translate:0 -12px;rotate:2deg;scale:1.025;box-shadow:var(--hm-paper-shadow);}
  .note {transition:transform 800ms cubic-bezier(.16,1,.3,1),opacity 550ms ease,background-color 350ms ease,translate 420ms cubic-bezier(.16,1,.3,1),rotate 420ms cubic-bezier(.16,1,.3,1),scale 420ms cubic-bezier(.16,1,.3,1),box-shadow 420ms ease;translate:0 0;rotate:0deg;scale:1;}
- .note:hover {translate:0 -10px;rotate:-2deg;scale:1.025;box-shadow:0 24px 34px -22px rgb(24 45 80 / 35%);}
+ .note:hover {translate:0 -10px;rotate:-2deg;scale:1.025;box-shadow:var(--hm-paper-shadow);}
 }
+
+/* A shared sheet with an open margin: no stacked frames or rotated text. */
+.preview {border:1px solid var(--border);border-radius:8px;background:var(--surface-paper);box-shadow:var(--hm-paper-shadow);overflow:visible}
+.header {padding:24px 24px 16px}
+.header h2 {font-size:16px;font-weight:500}
+.demoControls {margin-inline:24px;padding:0 0 16px;gap:4px;border-bottom:1px solid var(--border)}
+.demoControls button {font-size:12px;padding:8px 4px;border-radius:4px;gap:4px}
+.demoControls button[aria-pressed="true"] {background:transparent;color:var(--brand);box-shadow:inset 0 -2px var(--brand)}
+.stage {display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:24px;min-height:0;padding:32px 24px 36px;align-items:start}
+.source {width:auto;min-height:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;transform:none;translate:0 0;rotate:0deg;scale:1}
+.preview h3 {margin-bottom:16px;font-size:12px;line-height:1.6}
+.source blockquote {font-size:19px;line-height:1.8;font-family:var(--font-editorial)}
+.note {position:relative;inset:auto;width:auto;margin:0;padding:0 0 0 20px;border:0;border-left:1px solid var(--border);border-radius:0;background:transparent;box-shadow:none;transform:none;opacity:1;translate:0 0;rotate:0deg;scale:1}
+.note p {margin-bottom:16px;font-size:16px;line-height:1.9}
+.note span {display:block;font-size:12px;line-height:1.8}
+.note[data-emphasized="true"],.preview[data-demo-step="2"] .note {background:transparent;transform:none;opacity:1;border-left-color:var(--brand)}
+.preview[data-demo-step="1"] .source,.preview[data-demo-step="2"] .source,.preview[data-demo-step="1"] .note {transform:none;opacity:1}
+.preview figcaption {margin-inline:24px;padding:16px 0 20px;gap:8px;line-height:1.8;font-size:12px}
+.preview figcaption a {text-decoration:none}
+.preview figcaption a:hover {text-decoration:underline}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .source,.note {transition:translate 280ms ease,border-color 200ms ease}
+ .source:hover,.note:hover {translate:0 -4px;rotate:0deg;scale:1;box-shadow:none}
+}
+@media(max-width:560px){
+ .header {padding:20px 20px 12px}
+ .demoControls {margin-inline:20px;justify-content:flex-start;gap:8px}
+ .demoControls > div {width:100%;justify-content:space-between;gap:0}
+ .stage {grid-template-columns:minmax(0,1fr);gap:24px;padding:24px 20px}
+ .source blockquote {font-size:19px;line-height:1.8}
+ .note {padding:20px 0 0;border-left:0;border-top:1px solid var(--border)}
+ .note[data-emphasized="true"] {border-top-color:var(--brand)}
+ .note p {margin-bottom:8px}
+ .preview figcaption {margin-inline:20px}
+}
+@media(prefers-reduced-motion:reduce){.source,.note {translate:none;rotate:none;scale:none;transition:none}}

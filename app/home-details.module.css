@@ -1,3 +1,6 @@
+/* Hallmark · theme: brand · shape: app screen · genre: modern-minimal · redesign: full · v2.0.0 */
+/* Hallmark · waive 80 · writing diagram connects the three existing research functions · The owner explicitly requested these writing guide curves and equal nodes, so the research diagram remains without replacing any product sample. */
+/* Hallmark · waive 24b · existing research controls retain their established spacing · The research plot retains its axis offsets and the writing diagram keeps the owner approved node geometry. */
 .section {padding:56px 68px;border-top:1px solid var(--border);color:var(--text)}
 .intro,.writingHeader {min-width:0;margin-bottom:40px;text-align:center}
 .intro h2,.writingHeader h2 {margin:0;font:500 clamp(32px,3.2vw,44px)/1.35 var(--font-editorial);letter-spacing:0}
@@ -13,7 +16,7 @@
 .toolbar {display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap}.toolbar > span {font-size:12px;color:var(--text-2)}
 .variableSwitch {display:flex;gap:4px;padding:4px;background:var(--surface-2);border-radius:8px}
 .variableSwitch button {min-height:44px;padding:8px 16px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--text-2);font:500 13px/1.5 var(--font-sans);cursor:pointer;transition:background-color 160ms ease,color 160ms ease,box-shadow 160ms ease,transform 140ms ease}
-.variableSwitch button[aria-pressed="true"] {background:var(--surface-paper);color:var(--brand);box-shadow:0 1px 4px rgb(36 40 32 / 9%)}
+.variableSwitch button[aria-pressed="true"] {background:var(--surface-paper);color:var(--brand);box-shadow:0 1px 4px var(--hm-shadow-ink)}
 .variableSwitch button:hover {color:var(--brand)}.variableSwitch button:active {transform:scale(.96)}
 .figure {margin:24px 0 0}.chartHeading {display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}.chartHeading h3 {margin:0;font:500 19px/1.6 var(--font-sans);letter-spacing:0}.chartHeading > span {font-size:12px;color:var(--text-2)}
 .plot {position:relative;padding-left:22px;margin-top:12px}.plot svg {display:block;width:100%;height:auto}.grid line {stroke:var(--border);stroke-width:1;vector-effect:non-scaling-stroke}.grid .verticalGrid {stroke-dasharray:2 6;opacity:.55}
@@ -25,10 +28,10 @@
 .crosshair {fill:none;stroke:var(--brand);stroke-opacity:.38;stroke-width:1;stroke-dasharray:3 4;pointer-events:none}.crosshair line {vector-effect:non-scaling-stroke}
 .plotControl {position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:4px;background:transparent;cursor:crosshair;touch-action:pan-y}
 .analysis button:focus-visible {outline:2px solid var(--brand);outline-offset:3px}
-.pointTooltip {position:absolute;z-index:2;left:clamp(8px,calc(var(--point-x) + 12px),calc(100% - 178px));top:clamp(8px,calc(var(--point-y) - 104px),calc(100% - 96px));width:170px;max-width:calc(100% - 16px);padding:12px 14px;border:1px solid var(--border);border-radius:7px;background:var(--surface-paper);box-shadow:0 5px 20px rgb(36 40 32 / 9%);pointer-events:none;font:12px/1.7 var(--font-sans);font-variant-numeric:tabular-nums}
+.pointTooltip {position:absolute;z-index:2;left:clamp(8px,calc(var(--point-x) + 12px),calc(100% - 178px));top:clamp(8px,calc(var(--point-y) - 104px),calc(100% - 96px));width:170px;max-width:calc(100% - 16px);padding:12px 14px;border:1px solid var(--border);border-radius:7px;background:var(--surface-paper);box-shadow:0 5px 20px var(--hm-shadow-ink);pointer-events:none;font:12px/1.7 var(--font-sans);font-variant-numeric:tabular-nums}
 .pointTooltip strong,.pointTooltip > span {display:flex;align-items:baseline;justify-content:space-between;gap:12px}.pointTooltip strong {color:var(--brand);margin-bottom:6px}.pointTooltip small {font-size:10px;font-weight:400;color:var(--text-2)}.pointTooltip > span {color:var(--text-2)}.pointTooltip b {color:var(--text);font-weight:500;white-space:nowrap}
 .fitToggle {display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:6px 0 6px 8px;background:transparent;border:0;color:var(--text-2);font:12px/1.5 var(--font-sans);cursor:pointer}.fitToggle span {width:22px;height:2px;background:var(--brand);opacity:.7;transition:opacity 150ms ease}.fitToggle[aria-pressed="false"] span {height:1px;opacity:.3}.fitToggle[aria-pressed="true"] {color:var(--brand)}
-.chartCaption {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px}.chartCaption button {min-height:44px;padding:4px 0 4px 10px;border:0;background:transparent;color:var(--brand);font:inherit;cursor:pointer}.chartCaption button:disabled {color:var(--text-2);opacity:.65;cursor:default}
+.chartCaption {display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px}.chartCaption button {min-height:44px;padding:4px 0 4px 10px;border:0;background:transparent;color:var(--brand);font:inherit;cursor:pointer}.chartCaption button:disabled {color:var(--text-2);background:var(--surface-2);opacity:1;cursor:not-allowed}
 .srOnly {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 .metricChange {animation:metricChange 300ms ease-out both}
 @keyframes fitReveal {from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
@@ -64,3 +67,41 @@
 @media(prefers-reduced-motion:reduce){.pointPosition,.point,.fit,.variableSwitch button,.fitToggle span{transition:none}.fit path,.metricChange{animation:none}.variableSwitch button:active{transform:none}}
 @media(prefers-reduced-motion:reduce){.writing article::before,.writing h3,.writingGuides path{transition:none}.writing article:hover::before{transform:none}}
 @media(max-width:760px){.writing::before{content:none}.writing article:not(:last-of-type)::after{content:"";position:absolute;left:4px;top:36px;width:1px;height:calc(100% + 8px);background:var(--brand);opacity:.25}}
+
+/* Hallmark · brand product study: one capped plot, a shared baseline for writing and navigation. */
+.section,.writingSection {padding:72px max(24px,calc((100% - 1120px)/2));border-top:1px solid var(--border)}
+.intro,.writingHeader {margin-bottom:40px}
+.intro .sectionTitle,.writingHeader .sectionTitle {font-size:clamp(36px,4vw,52px)}
+.titleGlyphs {padding:0 0 16px}.titleGlyphs > span:nth-child(3){margin-left:0}.titleGlyphs::after{width:32px;opacity:1}
+.analysis {max-width:1040px;padding:28px 32px;border-radius:6px;box-shadow:none}
+.toolbar {padding-bottom:20px}.toolbar > span {font-size:13px}
+.variableSwitch {border-radius:6px}.variableSwitch button {border-radius:4px}
+.chartHeading h3 {font-size:20px;font-weight:500}
+.metrics {margin-top:20px;padding-top:24px}.metrics dd {font-size:36px}
+.writingSection {padding-top:64px;padding-bottom:64px}
+.writing {max-width:960px}
+.writing h3 {font-family:var(--font-sans);font-size:22px;font-weight:500}
+.writing p {font-size:14px}
+.workspaces :global(.module-grid){max-width:1040px}
+.workspaces :global(.module-card){min-height:108px;padding-block:24px}
+.sectionAction {margin-top:24px}.sectionAction a {font-size:14px}
+@media(max-width:760px){.section,.writingSection{padding:40px 24px}.analysis{padding:20px 16px}.intro,.writingHeader{margin-bottom:28px}.metrics dd{font-size:30px}.chartHeading h3{font-size:16px}.workspaces :global(.module-card){padding-inline:36px}}
+
+.fit path {stroke-dasharray:none;animation:none}
+.intro h2,.writingHeader h2{ text-wrap:balance }
+
+/* One analytical plate, with statistics set into its right margin. */
+@media(min-width:761px){
+ .analysis {display:grid;grid-template-columns:minmax(0,1fr) 152px;column-gap:32px;row-gap:0;padding:28px 32px 24px;border-radius:8px}
+ .toolbar {grid-column:1/-1}
+ .figure {grid-column:1;grid-row:2/4;margin-top:24px;min-width:0}
+ .metrics {grid-column:2;grid-row:2;grid-template-columns:minmax(0,1fr);align-content:start;gap:24px;margin:32px 0 0;padding:8px 0 8px 24px;border-top:0;border-left:1px solid var(--border)}
+ .metrics dd {margin-top:4px;font-size:40px}
+ .note {grid-column:2;grid-row:3;align-self:end;margin:16px 0 20px;padding-left:24px}
+ .writing {grid-template-rows:88px 88px;row-gap:88px}
+ .writingGuides {top:88px;height:88px}
+}
+.chartHeading h3 {font-size:18px}
+.writing h3 {font-family:var(--font-editorial);font-size:24px;font-weight:400}
+.workspaces :global(.module-card) {min-height:112px}
+@media(max-width:760px){.chartHeading h3{font-size:16px}.writing h3{font-size:22px}}
