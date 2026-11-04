@@ -1,0 +1,72 @@
+/* Hallmark · theme: brand · genre: modern-minimal · shape: workbench · redesign: full · scope: app · v2.0.0 */
+/* Critique: retain the research objects and quiet palette; remove oversized chrome and repeated frames. */
+/* waive 8: existing section order and centered section headings explicitly approved by owner. */
+:root {
+  --hm-highlight: #f2e7bf;
+  --hm-paper-shadow: 0 16px 48px -32px color-mix(in srgb, var(--text) 28%, transparent);
+  --hm-container: 1440px;
+  --hm-gutter: clamp(24px, 4.5vw, 64px);
+  --hm-control-radius: 6px;
+  --hm-panel-radius: 10px;
+  --hm-rule: var(--border);
+  --hm-shadow-ink: color-mix(in srgb,var(--text) 9%,transparent);
+  --hm-soft-shadow: 0 6px 24px color-mix(in srgb, var(--text) 5%, transparent);
+  --hm-font: var(--font-sans);
+  --hm-editorial: var(--font-editorial);
+}
+html, body {overflow-x:clip}
+body {font-family:var(--hm-font)}
+body :is(a,button,input,select,textarea,summary):focus-visible {outline:2px solid var(--brand);outline-offset:3px}
+body :is(h1,h2,h3) {min-width:0;overflow-wrap:break-word}
+.student-app .page-bar {border-bottom:1px solid var(--hm-rule);background:transparent;box-shadow:none}
+.student-app .page-bar h1 {font-family:var(--hm-font);letter-spacing:0;font-weight:600;font-size:32px}
+.student-app .page-bar-inner {padding-top:32px;padding-bottom:24px}
+.student-app .ui-button {border-radius:var(--hm-control-radius);font-weight:500;box-shadow:none}
+.student-app :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea) {border-radius:var(--hm-control-radius);font-family:var(--hm-font)}
+.student-app :is(.analysis-panel,.project-workbench,.settings-panel,.course-list) {box-shadow:none;border-color:var(--hm-rule)}
+.student-app .app-sidebar {border:1px solid var(--hm-rule);background:var(--surface-paper);box-shadow:none;transition:background-color 160ms ease,border-color 160ms ease}
+.student-app .sidebar-auto-slot[data-expanded=true] .app-sidebar {box-shadow:var(--hm-soft-shadow)}
+.student-app .app-sidebar nav a {border-radius:var(--hm-control-radius);font-family:var(--hm-font);font-weight:500}
+.student-app .app-sidebar nav a:hover {background:var(--surface-2)}
+.student-app .app-sidebar nav a[aria-current=page] {color:var(--text-inverse);background:var(--brand)}
+.acaora-site {max-width:var(--hm-container);margin-inline:auto}
+.acaora-site .acaora-nav {width:auto;max-width:none;min-height:76px;height:auto;margin:0 var(--hm-gutter);padding:16px 0;border:0;border-bottom:1px solid var(--hm-rule);border-radius:0;background:transparent;box-shadow:none;gap:32px}
+.acaora-site .acaora-brand > span {background:var(--brand);color:var(--surface);border-radius:var(--hm-control-radius);box-shadow:none}
+.acaora-site .acaora-nav-links {gap:24px}
+.acaora-site .acaora-nav-links a {font-family:var(--hm-font);font-weight:500}
+.acaora-site .acaora-nav-actions .primary-link {border-radius:var(--hm-control-radius)}
+body .home-motion .acaora-site .acaora-hero {width:auto;max-width:none;margin:0 var(--hm-gutter);padding:64px 0 72px;grid-template-columns:minmax(0,.85fr) minmax(0,1.2fr);align-items:center;gap:clamp(40px,5vw,72px);min-height:660px}
+body .home-motion .acaora-site .home-intro {align-self:center;transform:none}
+body .home-motion .acaora-site .home-intro h1 {font-family:var(--hm-editorial);font-size:clamp(54px,5.2vw,74px);font-weight:400;line-height:1.18;letter-spacing:0;margin:0 0 36px}
+.acaora-site .hero-actions {margin-top:0}
+.acaora-site .hero-main {width:auto;min-width:176px;justify-content:space-between;min-height:48px;padding:12px 20px;border-radius:var(--hm-control-radius);box-shadow:none}
+.acaora-site .acaora-modules {border-top:0;padding-block:32px 72px}
+.acaora-site .module-grid {border-radius:0;border:0;background:transparent;padding:0;border-top:1px solid var(--hm-rule);border-bottom:1px solid var(--hm-rule)}
+.acaora-site .module-card {border-radius:0;background:transparent}
+.acaora-site .module-card:focus-visible {outline-offset:-4px}
+.acaora-site .module-card:hover {background:var(--brand-subtle)}
+@media(min-width:761px) and (max-width:1100px) {
+  .acaora-site .acaora-nav-links {gap:16px}.acaora-site .acaora-nav {gap:20px}
+  body .home-motion .acaora-site .acaora-hero {gap:36px;grid-template-columns:minmax(0,.85fr) minmax(0,1.1fr)}
+  body .home-motion .acaora-site .home-intro h1 {font-size:52px}
+}
+@media(max-width:899px) {
+  body .home-motion .acaora-site .acaora-hero {grid-template-columns:minmax(0,1fr);min-height:0;padding-top:44px;gap:40px}
+  body .home-motion .acaora-site .home-intro h1 {font-size:clamp(44px,8vw,64px)}
+}
+@media(max-width:760px) {
+  .acaora-site .acaora-nav {min-height:72px;gap:12px}.acaora-site .acaora-nav-actions {gap:12px}
+  .student-app .page-bar h1 {font-size:26px}.student-app .page-bar-inner {padding-top:24px;padding-bottom:20px}
+  .acaora-site .acaora-modules {padding-bottom:40px}
+}
+@media(prefers-reduced-motion:reduce) {.student-app .app-sidebar {transition:none}}
+
+@media(max-width:400px){.acaora-site .acaora-nav{margin-inline:16px;gap:8px}.acaora-site .acaora-nav-actions .primary-link{white-space:nowrap;min-width:80px;padding-inline:12px}.acaora-site .acaora-brand{gap:8px}.acaora-site .acaora-brand strong{font-size:18px}}
+
+body :is(h1,h2,h3){text-wrap:balance}
+
+/* The reading spread, rather than floating cards, anchors the first screen. */
+body .home-motion .acaora-site .acaora-hero {grid-template-columns:minmax(0,.76fr) minmax(0,1.24fr);gap:48px;padding-block:72px 88px;min-height:680px}
+body .home-motion .acaora-site .home-intro h1 {font-size:clamp(52px,5vw,72px);line-height:1.25;margin-bottom:40px}
+@media(max-width:1100px) and (min-width:900px){body .home-motion .acaora-site .acaora-hero{gap:32px;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}body .home-motion .acaora-site .home-intro h1{font-size:48px}}
+@media(max-width:899px){body .home-motion .acaora-site .acaora-hero{grid-template-columns:minmax(0,1fr);gap:48px;padding-block:48px 64px;min-height:0}body .home-motion .acaora-site .home-intro h1{font-size:clamp(44px,7vw,64px);margin-bottom:28px}}

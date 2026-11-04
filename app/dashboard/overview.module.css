@@ -1,3 +1,5 @@
+/* Hallmark · theme: brand · shape: app screen · genre: modern-minimal · redesign: full · v2.0.0 */
+/* Hallmark · waive 24b · existing research controls retain their established spacing · The research record timestamps and established control heights retain their compact workbench spacing. */
 .page.page.page {--overview-serif:var(--font-editorial);display:flex;flex-direction:column;width:100%;max-width:1240px;min-height:calc(100dvh - 40px);padding:40px clamp(28px,4vw,56px) 26px;border-radius:12px;background:var(--surface-paper)}
 .header {display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
 .header h1 {margin:0;color:var(--text);font:500 var(--fs-page)/1.3 var(--overview-serif);letter-spacing:0}
@@ -8,7 +10,7 @@
 .directory {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .workspace {position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;min-width:0;min-height:172px;padding:24px 20px;border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none;transition:background-color 180ms ease,border-color 180ms ease}
 .workspace > div {min-width:0}.workspace h3 {margin:0 0 12px;font:500 24px/1.4 var(--overview-serif);letter-spacing:0}.workspace p {margin:0;max-width:26em;color:var(--text-2);font:14px/1.85 var(--font-sans)}
-.featured {grid-column:1/-1;align-items:center;min-height:160px;padding:28px;background:var(--surface-2);border-left:3px solid var(--brand)}.featured h3 {font-size:32px}
+.featured {grid-column:1/-1;align-items:center;min-height:160px;padding:28px;background:var(--surface-2);border-left:0}.featured h3 {font-size:32px}
 .workspace svg {flex:0 0 auto;color:var(--brand);margin-top:3px;transition:transform 200ms ease}
 .workspace:is(:hover,:focus-visible) {border-color:var(--brand);background:var(--brand-subtle)}.workspace:is(:hover,:focus-visible) svg {transform:translateX(3px)}
 .workspace:focus-visible,.resume:focus-visible,.record:focus-visible,.learningLink:focus-visible {outline:2px solid var(--brand);outline-offset:4px}
@@ -21,7 +23,7 @@
 .record.record strong {display:block;color:var(--text);font-size:16px;font-weight:500;line-height:1.8;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:4px;transition:color 160ms ease,text-decoration-color 160ms ease}
 .record.record:is(:hover,:focus-visible) {background:transparent}.record.record:is(:hover,:focus-visible) strong {color:var(--brand);text-decoration-color:currentColor}
 .loading.loading {height:112px;border-radius:0}
-.empty {padding-top:6px}.empty h3 {margin:0;color:var(--text);font:400 15px/1.75 var(--font-sans)}.empty p {max-width:30ch;margin:10px 0 0;color:var(--text-2);font-size:13px;line-height:1.9}.empty button {margin-top:18px}
+.empty {padding-top:6px}.empty h3 {margin:0;color:var(--text);font:400 15px/1.75 var(--font-sans)}.empty p {margin:10px 0 0;color:var(--text-2);font-size:13px;line-height:1.9}.empty button {margin-top:18px}
 .learning {display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:32px;padding:24px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
 .learning h2 {margin:0 0 8px;font:500 22px/1.5 var(--overview-serif);letter-spacing:0}.learning p {margin:0;color:var(--text-2);font:14px/1.8 var(--font-sans)}
 .learningLink {display:inline-flex;align-items:center;gap:14px;min-height:44px;flex-shrink:0;color:var(--brand);font-size:14px;text-decoration:none}
@@ -29,3 +31,43 @@
 @media(max-width:1000px){.page.page.page{padding-inline:28px}.content{gap:28px}.workspace{padding:20px 16px}.featured{padding:24px}.recent{padding-left:20px}}
 @media(max-width:760px){.page.page.page{margin-top:52px;min-height:calc(100dvh - 88px);padding:28px 22px 24px}.header{margin-bottom:24px;padding-bottom:20px;gap:12px}.header h1{font-size:32px}.resume{font-size:13px;gap:6px}.content{grid-template-columns:minmax(0,1fr);gap:28px}.directory{grid-template-columns:minmax(0,1fr);gap:12px}.workspace{min-height:110px;padding:20px}.workspace h3{font-size:24px;margin-bottom:8px}.featured{min-height:132px}.featured h3{font-size:28px}.recent{padding:24px 0 0;border-left:0;border-top:1px solid var(--border)}.learning{margin-top:26px;align-items:flex-start;flex-direction:column;gap:12px}.footer.footer{padding-top:24px}.footer.footer p{min-width:0}.footer.footer > :global(.ui-button){flex-shrink:0;white-space:nowrap}}
 @media(prefers-reduced-motion:reduce){.workspace,.workspace svg,.record.record strong{transition:none}.workspace:is(:hover,:focus-visible) svg{transform:none}}
+
+/* Hallmark · brand workbench: a research directory, with updates as the second reading column. */
+.page.page.page {max-width:1320px;padding:40px 48px 28px;border:0;border-radius:0;background:var(--bg-app)}
+.header {margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border-strong)}
+.header h1 {font-family:var(--font-sans);font-size:36px;font-weight:600}
+.content {grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:48px}
+.sectionTitle {font-size:14px;color:var(--text);margin-bottom:20px}
+.directory {grid-template-columns:minmax(0,1fr);gap:0;border-top:1px solid var(--border-strong)}
+.workspace,.featured {grid-column:auto;min-height:128px;padding:24px 4px;border:0;border-bottom:1px solid var(--border);border-radius:0;background:transparent;align-items:center}
+.workspace h3,.featured h3 {font-family:var(--font-sans);font-size:24px;font-weight:500;margin-bottom:8px}
+.workspace p {font-size:14px;line-height:1.8}
+.workspace:is(:hover,:focus-visible) {background:var(--brand-subtle);border-color:var(--border)}
+.workspace svg {margin:0 12px;color:var(--brand)}
+.recent {padding:24px;border:1px solid var(--border);border-radius:6px;background:var(--surface-paper)}
+.records {gap:20px}.record.record {padding-bottom:20px}
+.record.record strong {font-size:16px;line-height:1.6}.record.record small {font-size:12px}
+.empty p {max-width:none;line-height:1.8}
+.learning {margin-top:40px;padding:24px;border:0;border-left:2px solid var(--brand);background:var(--surface-2)}
+.learning h2 {font-family:var(--font-sans);font-size:20px;font-weight:500}
+.footer.footer {padding-top:32px}
+@media(max-width:1000px){.page.page.page{padding-inline:28px}.content{gap:28px}.recent{padding:20px}}
+@media(max-width:760px){.page.page.page{padding:28px 20px}.header{margin-bottom:28px}.header h1{font-size:30px}.content{grid-template-columns:minmax(0,1fr);gap:28px}.workspace,.featured{min-height:120px;padding:20px 0}.recent{padding:20px}.learning{margin-top:28px;padding:20px}.learning h2{font-size:20px}}
+
+.featured h3{font-size:28px;font-weight:600}.learning{border-left:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-inline:0}.header h1{text-wrap:balance}.workspace:active{background:var(--surface-2)}
+
+/* Updates occupy a reading column, not a second container competing with the work. */
+.content {grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:48px}
+.recent {align-self:stretch;padding:0 0 0 32px;border:0;border-left:1px solid var(--border);border-radius:0;background:transparent}
+.recent .sectionTitle {padding-bottom:20px;margin-bottom:0;border-bottom:1px solid var(--border-strong)}
+.records,.empty {padding-top:24px}
+.record.record {gap:12px;padding-bottom:24px}
+.workspace,.featured {padding:28px 16px 28px 0}
+.workspace h3 {font-family:var(--font-editorial);font-size:28px;font-weight:400}
+.featured h3 {font-size:32px;font-weight:500}
+.workspace svg {transition:transform 200ms ease,opacity 200ms ease;opacity:.65}
+.workspace:is(:hover,:focus-visible) svg {opacity:1;transform:translateX(4px)}
+.learning {margin-top:48px;padding-block:24px}
+@media(max-width:1000px){.content{gap:32px}.recent{padding-left:24px}}
+@media(max-width:760px){.content{grid-template-columns:minmax(0,1fr);gap:32px}.recent{padding:0;border-left:0}.recent .sectionTitle{padding-bottom:16px}.workspace,.featured{padding:24px 12px 24px 0}.workspace h3{font-size:26px}.featured h3{font-size:30px}.learning{margin-top:32px}}
+@media(prefers-reduced-motion:reduce){.workspace svg{transition:none}.workspace:is(:hover,:focus-visible) svg{transform:none}}

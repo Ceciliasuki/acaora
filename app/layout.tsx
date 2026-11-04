@@ -8,6 +8,7 @@ import "./workspace-motion.css";
 import "./paper-reading.css";
 import './research-workflows.css';
 import './interaction-feedback.css';
+import './hallmark-ui.css';
 import MotionPreferences from './components/motion-preferences';
 import WorkspaceAccessibility from './components/workspace-accessibility';
 
